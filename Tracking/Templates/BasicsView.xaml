@@ -1,0 +1,26 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:util="clr-namespace:Tools.FlockingDevice.Tracking.Util"
+                    xmlns:processor="clr-namespace:Tools.FlockingDevice.Tracking.Processor">
+    <DataTemplate x:Key="Basics" DataType="processor:BasicProcessor">
+        <StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="5">
+                <GroupBox Header="Pre Processed Image">
+                    <Image Source="{Binding Path=PreProcessImage}" />
+                </GroupBox>
+                <GroupBox Header="Post Processed Image">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </StackPanel>
+
+            <CheckBox Content="Flip Vertical" VerticalAlignment="Center" IsChecked="{Binding Path=FlipVertical}" />
+            <CheckBox Content="Flip Horizontal" VerticalAlignment="Center" IsChecked="{Binding Path=FlipHorizontal}" />
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="ROI"/>
+                <TextBox Width="100" Text="{Binding Path=ROI, Converter={util:StringToRectangleConverter} }" VerticalAlignment="Center" TextAlignment="Center" />
+                <Button Content="Apply" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

@@ -1,0 +1,51 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Tools.FlockingDevice.Tracking.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="SensorHeight" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">240</Value>
+    </Setting>
+    <Setting Name="SensorWidth" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">320</Value>
+    </Setting>
+    <Setting Name="DepthConfidenceThreshold" Type="System.Single" Scope="Application">
+      <Value Profile="(Default)">500</Value>
+    </Setting>
+    <Setting Name="DepthSmoothing" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="MaxReproducedDepth" Type="System.Double" Scope="Application">
+      <Value Profile="(Default)">617</Value>
+    </Setting>
+    <Setting Name="MinReproducedDepth" Type="System.Double" Scope="Application">
+      <Value Profile="(Default)">457</Value>
+    </Setting>
+    <Setting Name="SingleTabletSize" Type="System.Double" Scope="Application">
+      <Value Profile="(Default)">1200</Value>
+    </Setting>
+    <Setting Name="NumErode" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">4</Value>
+    </Setting>
+    <Setting Name="NumDilate" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="ApproxPolyAccuracy" Type="System.Double" Scope="Application">
+      <Value Profile="(Default)">0.05</Value>
+    </Setting>
+    <Setting Name="FlipHorizontal" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="FlipVertical" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ROI" Type="System.Drawing.Rectangle" Scope="Application">
+      <Value Profile="(Default)">20, 20, 280, 200</Value>
+    </Setting>
+    <Setting Name="IsOutputOnInputImage" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="IsBoundingBoxEnabled" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

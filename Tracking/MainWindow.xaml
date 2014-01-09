@@ -1,0 +1,258 @@
+﻿<Window x:Class="Tools.FlockingDevice.Tracking.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:command="http://www.galasoft.ch/mvvmlight"
+        xmlns:util="clr-namespace:Tools.FlockingDevice.Tracking.Util"
+        xmlns:processor="clr-namespace:Tools.FlockingDevice.Tracking.Processor"
+        xmlns:controls="clr-namespace:Tools.FlockingDevice.Tracking.Controls"
+        xmlns:vm="clr-namespace:Tools.FlockingDevice.Tracking.ViewModel"
+        Title="Flocking Device - Tracking"
+        Width="1920"
+        Height="1080"
+        x:Name="Self"
+        DataContext="{Binding Source={StaticResource ResourceKey=Locator}, Path=Main}">
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing">
+            <command:EventToCommand Command="{Binding Source={StaticResource ResourceKey=Locator}, Path=ShutdownCommand}" PassEventArgsToCommand="False" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
+    <Window.Resources>
+        <util:ProcessorTemplateSelector x:Key="ProcessorViewTemplateSelector" />
+
+        <DataTemplate x:Key="ProcessorTemplate" DataType="processor:RgbProcessor">
+            <Grid>
+                <controls:RemovableExpander Header="{Binding Path=FriendlyName}" IsExpanded="True">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Remove">
+                            <command:EventToCommand Command="{Binding Path=Main.InputSource.RemoveProcessorCommand, Mode=OneWay, Source={StaticResource ResourceKey=Locator}}" CommandParameter="{Binding}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1000" />
+                            <ColumnDefinition Width="400" />
+                        </Grid.ColumnDefinitions>
+
+                        <ContentPresenter Grid.Column="0" Content="{Binding}"
+                                          ContentTemplateSelector="{StaticResource ResourceKey=ProcessorViewTemplateSelector}" />
+
+                        <ScrollViewer Grid.Column="1" Height="200"
+                                      Width="400">
+                            <ItemsControl ItemsSource="{Binding Path=Exceptions}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Vertical" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <Label Content="{Binding Path=Message}" FontWeight="Bold" />
+                                            <Label Content="{Binding Path=StackTrace}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </controls:RemovableExpander>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="InputSourceTemplate" DataType="vm:InputSourceViewModel">
+            <Grid>
+                <ScrollViewer>
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0"
+                                        AllowDrop="True">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="DragOver">
+                                        <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="Drop">
+                                        <command:EventToCommand Command="{Binding Path=DropTargetColorCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+
+                                <GroupBox Header="Color Image">
+                                    <StackPanel>
+                                        <Image Source="{Binding Path=ColorImage}" />
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <ItemsControl ItemsSource="{Binding Path=ColorImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Vertical" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1"
+                                        AllowDrop="True">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="DragOver">
+                                        <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="Drop">
+                                        <command:EventToCommand Command="{Binding Path=DropTargetDepthCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+
+                                <GroupBox Header="Depth Image">
+                                    <StackPanel>
+                                        <Image Source="{Binding Path=DepthImage}" />
+                                        <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=Model.DepthSmoothing}" />
+                                        <StackPanel Orientation="Horizontal">
+                                            <Label Content="Depth Confidence Threshold"/>
+                                            <Slider Width="340" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=Model.DepthConfidenceThreshold}" />
+                                            <TextBlock Text="{Binding Path=Model.DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <ItemsControl ItemsSource="{Binding Path=DepthImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Vertical" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+
+        <Style TargetType="{x:Type Slider}">
+            <Setter Property="Margin" Value="5" />
+        </Style>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Margin" Value="5" />
+        </Style>
+        <Style TargetType="{x:Type Image}">
+            <Setter Property="Margin" Value="5" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal"
+                    Grid.Row="0">
+            <Button Content="Start" IsEnabled="{Binding Path=InputSource, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=StartDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
+            <Button Content="Stop" IsEnabled="{Binding Path=InputSource, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=StopDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
+            <Button Content="Pause" IsEnabled="{Binding Path=InputSource, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=PauseDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
+            <Button Content="Resume" IsEnabled="{Binding Path=InputSource, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=ResumeDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
+        </StackPanel>
+
+        <Grid Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <ListView ItemsSource="{Binding Path=InputSourceTypes}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Label Content="{Binding Path=Name}">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                        <command:EventToCommand Command="{Binding Path=Main.DragInitiateCommand, Source={StaticResource ResourceKey=Locator}, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </Label>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ListView>
+                <ListView ItemsSource="{Binding Path=ProcessorTypes}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Label Content="{Binding Path=Name}">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                        <command:EventToCommand Command="{Binding Path=Main.DragInitiateCommand, Source={StaticResource ResourceKey=Locator}, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </Label>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ListView>
+            </StackPanel>
+
+            <Grid Grid.Column="1"
+                  AllowDrop="True"
+                  Background="Transparent">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="DragOver">
+                        <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="Drop">
+                        <command:EventToCommand Command="{Binding Path=DropTargetCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+
+                <ContentControl Content="{Binding Path=InputSource, Mode=OneWay}"
+                                ContentTemplate="{StaticResource ResourceKey=InputSourceTemplate}"
+                                Visibility="{Binding Path=InputSource, Mode=OneWay, Converter={util:NullToVisibilityConverter}}"/>
+
+                <!--<ItemsControl ItemsSource="{Binding Path=Devices}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=Id}" />
+                                <Label Content="{Binding Path=X}" />
+                                <Label Content="{Binding Path=Y}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>-->
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

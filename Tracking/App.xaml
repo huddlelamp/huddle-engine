@@ -1,0 +1,21 @@
+﻿<Application x:Class="Tools.FlockingDevice.Tracking.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModel="clr-namespace:Tools.FlockingDevice.Tracking.ViewModel"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <Application.Resources>
+        <ResourceDictionary>
+            <viewModel:ViewModelLocator x:Key="Locator" d:IsDataSource="True"  />
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Templates/BasicsView.xaml"/>
+                <ResourceDictionary Source="Templates/DepthProcessorView.xaml"/>
+                <ResourceDictionary Source="Templates/CannyEdgesView.xaml"/>
+                <ResourceDictionary Source="Templates/FindContoursView.xaml"/>
+                <ResourceDictionary Source="Templates/BlobTrackerView.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
