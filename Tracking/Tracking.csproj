@@ -151,6 +151,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controls\DropHereZone.xaml.cs">
+      <DependentUpon>DropHereZone.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\RemovableExpander.xaml.cs">
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
     </Compile>
@@ -186,6 +189,10 @@
     <Compile Include="ViewModel\InputSourceViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Page Include="Controls\DropHereZone.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\RemovableExpander.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
