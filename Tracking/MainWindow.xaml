@@ -65,15 +65,41 @@
         <DataTemplate x:Key="InputSourceTemplate" DataType="vm:InputSourceViewModel">
             <Grid>
                 <ScrollViewer>
-                    <StackPanel>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-                            <StackPanel Grid.Column="0"
-                                        AllowDrop="True">
+                        <GroupBox Grid.Column="0" Grid.Row="0"
+                                  Header="Color Image">
+                            <StackPanel>
+                                <Image Source="{Binding Path=ColorImage}" />
+                            </StackPanel>
+                        </GroupBox>
+
+                        <Grid Grid.Column="0" Grid.Row="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=ColorImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Vertical" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+
+                            <Grid Grid.Row="1"
+                                  AllowDrop="True"
+                                  Background="Transparent"
+                                  MinHeight="400">
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="DragOver">
                                         <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
@@ -82,24 +108,53 @@
                                         <command:EventToCommand Command="{Binding Path=DropTargetColorCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
+                                <Rectangle Margin="40"
+                                       StrokeDashArray="10 5"
+                                       Stroke="Gainsboro"
+                                       StrokeThickness="5"
+                                       RadiusX="40" RadiusY="40" />
 
-                                <GroupBox Header="Color Image">
-                                    <StackPanel>
-                                        <Image Source="{Binding Path=ColorImage}" />
-                                    </StackPanel>
-                                </GroupBox>
+                                <TextBlock Text="Drop processor here"
+                                       Margin="0 100 0 0"
+                                       FontFamily="SegoeUI"
+                                       FontWeight="Light"
+                                       FontSize="60"
+                                       Foreground="Gainsboro"
+                                       HorizontalAlignment="Center" />
+                            </Grid>
+                        </Grid>
 
-                                <ItemsControl ItemsSource="{Binding Path=ColorImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Vertical" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                </ItemsControl>
+                        <GroupBox Grid.Column="1" Grid.Row="0"
+                                      Header="Depth Image">
+                            <StackPanel>
+                                <Image Source="{Binding Path=DepthImage}" />
+                                <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=Model.DepthSmoothing}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="Depth Confidence Threshold"/>
+                                    <Slider Width="340" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=Model.DepthConfidenceThreshold}" />
+                                    <TextBlock Text="{Binding Path=Model.DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
+                                </StackPanel>
                             </StackPanel>
+                        </GroupBox>
 
-                            <StackPanel Grid.Column="1"
-                                        AllowDrop="True">
+                        <Grid Grid.Column="1" Grid.Row="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=DepthImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Vertical" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+
+                            <Grid Grid.Row="1"
+                                  AllowDrop="True"
+                                  Background="Transparent"
+                                  MinHeight="400">
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="DragOver">
                                         <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
@@ -108,29 +163,22 @@
                                         <command:EventToCommand Command="{Binding Path=DropTargetDepthCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
+                                <Rectangle Margin="40"
+                                           StrokeDashArray="10 5"
+                                           Stroke="Gainsboro"
+                                           StrokeThickness="5"
+                                           RadiusX="40" RadiusY="40"/>
 
-                                <GroupBox Header="Depth Image">
-                                    <StackPanel>
-                                        <Image Source="{Binding Path=DepthImage}" />
-                                        <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=Model.DepthSmoothing}" />
-                                        <StackPanel Orientation="Horizontal">
-                                            <Label Content="Depth Confidence Threshold"/>
-                                            <Slider Width="340" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=Model.DepthConfidenceThreshold}" />
-                                            <TextBlock Text="{Binding Path=Model.DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </GroupBox>
-
-                                <ItemsControl ItemsSource="{Binding Path=DepthImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Vertical" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                </ItemsControl>
-                            </StackPanel>
+                                <TextBlock Text="Drop processor here"
+                                           Margin="0 100 0 0"
+                                           FontFamily="SegoeUI"
+                                           FontWeight="Light"
+                                           FontSize="60"
+                                           Foreground="Gainsboro"
+                                           HorizontalAlignment="Center" />
+                            </Grid>
                         </Grid>
-                    </StackPanel>
+                    </Grid>
                 </ScrollViewer>
             </Grid>
         </DataTemplate>
@@ -231,6 +279,22 @@
                         <command:EventToCommand Command="{Binding Path=DropTargetCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
+
+                <Grid Visibility="{Binding Path=InputSource, Mode=OneWay, Converter={util:NotNullToVisibilityConverter}}">
+                    <Rectangle Margin="40"
+                           StrokeDashArray="10 5"
+                           Stroke="Gainsboro"
+                           StrokeThickness="5"
+                           RadiusX="40" RadiusY="40" />
+
+                    <TextBlock Text="Drop source here"
+                           Margin="0 100 0 0"
+                           FontFamily="SegoeUI"
+                           FontWeight="Light"
+                           FontSize="60"
+                           Foreground="Gainsboro"
+                           HorizontalAlignment="Center" />
+                </Grid>
 
                 <ContentControl Content="{Binding Path=InputSource, Mode=OneWay}"
                                 ContentTemplate="{StaticResource ResourceKey=InputSourceTemplate}"

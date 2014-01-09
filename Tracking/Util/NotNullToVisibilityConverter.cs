@@ -9,20 +9,23 @@ using Tools.FlockingDevice.Tracking.InputSource;
 namespace Tools.FlockingDevice.Tracking.Util
 {
     [ValueConversion(typeof(IInputSource), typeof(Visibility))]
-    public class NullToVisibilityConverter : ConverterMarkupExtension<NullToVisibilityConverter>, IValueConverter
+    public class NotNullToVisibilityConverter : ConverterMarkupExtension<NotNullToVisibilityConverter>, IValueConverter
     {
         #region properties
 
-        public bool Invert { get; set; }
+        private double _invert = 1.7;
+
+        public double Invert
+        {
+            get { return _invert; }
+            set { _invert = value; }
+        }
 
         #endregion
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (Invert)
-                return value == null ? Visibility.Visible : Visibility.Collapsed;
-
-            return value == null ? Visibility.Collapsed : Visibility.Visible;
+            return value == null ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
