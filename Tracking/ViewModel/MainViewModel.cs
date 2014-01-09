@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Xml.Serialization;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using GalaSoft.MvvmLight;
@@ -13,6 +14,7 @@ using GalaSoft.MvvmLight.Command;
 using Tools.FlockingDevice.Tracking.Domain;
 using Tools.FlockingDevice.Tracking.Extensions;
 using Tools.FlockingDevice.Tracking.InputSource;
+using Tools.FlockingDevice.Tracking.Model;
 using Tools.FlockingDevice.Tracking.Processor;
 using Tablet = Tools.FlockingDevice.Tracking.Domain.Tablet;
 
@@ -46,6 +48,8 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         public RelayCommand StopDataSourceCommand { get; private set; }
         public RelayCommand PauseDataSourceCommand { get; private set; }
         public RelayCommand ResumeDataSourceCommand { get; private set; }
+
+        public RelayCommand SavePipelineCommand { get; private set; }
 
         public RelayCommand<MouseButtonEventArgs> DragInitiateCommand { get; private set; }
         public RelayCommand<DragEventArgs> DragOverCommand { get; private set; }
@@ -256,6 +260,8 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 if (InputSource != null) InputSource.Resume();
             });
 
+            SavePipelineCommand = new RelayCommand(OnSavePipeline);
+
             DragInitiateCommand = new RelayCommand<MouseButtonEventArgs>(OnDragInitiate);
 
             DragOverCommand = new RelayCommand<DragEventArgs>(
@@ -285,9 +291,14 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                     var inputSourceModel = Activator.CreateInstance(inputSourceType) as IInputSource;
 
                     if (InputSource == null)
-                        InputSource = new InputSourceViewModel();
+                    {
+                        InputSource = new InputSourceViewModel
+                        {
+                            Pipeline = new Pipeline()
+                        };
+                    }
 
-                    InputSource.Model = inputSourceModel;
+                    InputSource.Pipeline.InputSource = inputSourceModel;
 
                     //// pass in the root grid since its adorner layer was used to add ListBoxItems adorners to
                     //RemoveAdorner(_listBoxItem, _topLevelGrid);
@@ -298,6 +309,14 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             {
                 //RemoveAdorner(_listBoxItem, _topLevelGrid)
             });
+        }
+
+        private void OnSavePipeline()
+        {
+            //foreach (var VARIABLE in Dep)
+            //{
+
+            //}
         }
 
         private void OnDragInitiate(MouseButtonEventArgs e)

@@ -1,7 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:processor="clr-namespace:Tools.FlockingDevice.Tracking.Processor">
-    <DataTemplate x:Key="CannyEdges" DataType="processor:CannyEdges">
+                    xmlns:processor="clr-namespace:Tools.FlockingDevice.Tracking.Processor"
+                    xmlns:openCv="clr-namespace:Tools.FlockingDevice.Tracking.Processor.OpenCv">
+    <DataTemplate x:Key="CannyEdges" DataType="openCv:CannyEdges">
         <StackPanel>
             <StackPanel Orientation="Horizontal" Margin="5">
                 <GroupBox Header="Pre Processed Image">

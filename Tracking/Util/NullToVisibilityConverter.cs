@@ -17,6 +17,16 @@ namespace Tools.FlockingDevice.Tracking.Util
 
         #endregion
 
+        #region ctor
+
+// ReSharper disable once EmptyConstructor
+        public NullToVisibilityConverter()
+        {
+            // emtpy
+        }
+
+        #endregion
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (Invert)

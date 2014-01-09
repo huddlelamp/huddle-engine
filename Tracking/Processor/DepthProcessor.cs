@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.External.Extensions;
 using Emgu.CV.Structure;
@@ -27,6 +28,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the MinReproducedDepth property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public double MinReproducedDepth
         {
             get
@@ -62,6 +64,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the MaxReproducedDepth property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public double MaxReproducedDepth
         {
             get

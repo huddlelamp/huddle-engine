@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using Tools.FlockingDevice.Tracking.Properties;
 using Tools.FlockingDevice.Tracking.Util;
 
-namespace Tools.FlockingDevice.Tracking.Processor
+namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
+    [XmlType]
     [ViewTemplate("CannyEdges")]
     public class CannyEdges : RgbProcessor
     {
@@ -28,6 +25,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the NumDilate property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public int NumDilate
         {
             get
@@ -63,6 +61,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the NumErode property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public int NumErode
         {
             get

@@ -169,6 +169,7 @@
     <Compile Include="Domain\Tablet.cs" />
     <Compile Include="Domain\IDevice.cs" />
     <Compile Include="Extensions\DependencyObjectExtensions.cs" />
+    <Compile Include="Model\Pipeline.cs" />
     <Compile Include="Processor\OpenCv\CannyEdges.cs" />
     <Compile Include="Processor\GenericProcessor.cs" />
     <Compile Include="Processor\OpenCv\Basics.cs" />

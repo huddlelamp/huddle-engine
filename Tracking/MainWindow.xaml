@@ -89,7 +89,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=ColorImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
+                            <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Pipeline.ColorImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Orientation="Vertical" />
@@ -130,7 +130,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=DepthImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
+                            <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Pipeline.DepthImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Orientation="Vertical" />

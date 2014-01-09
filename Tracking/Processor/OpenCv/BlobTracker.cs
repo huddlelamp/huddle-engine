@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Xml.Serialization;
 using Emgu.CV;
-using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Emgu.CV.VideoSurveillance;
-using GalaSoft.MvvmLight.Threading;
 using Tools.FlockingDevice.Tracking.Domain;
 using Tools.FlockingDevice.Tracking.Properties;
 using Tools.FlockingDevice.Tracking.Util;
-using Point = System.Drawing.Point;
 
-namespace Tools.FlockingDevice.Tracking.Processor
+namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
+    [XmlType]
     [ViewTemplate("BlobTracker")]
     public class BlobTracker : RgbProcessor
     {
@@ -54,6 +53,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the IsOutputOnInputImage property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public bool IsOutputOnInputImage
         {
             get
@@ -89,6 +89,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the IsBoundingBoxEnabled property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public bool IsBoundingBoxEnabled
         {
             get

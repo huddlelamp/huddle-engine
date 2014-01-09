@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Windows.Media.Imaging;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
-using GalaSoft.MvvmLight.Threading;
 using Tools.FlockingDevice.Tracking.Properties;
 using Tools.FlockingDevice.Tracking.Util;
 
-namespace Tools.FlockingDevice.Tracking.Processor
+namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
+    [XmlType]
     [ViewTemplate("FindContours")]
     public class FindContours : RgbProcessor
     {
@@ -35,6 +34,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the IsFillContours property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public bool IsFillContours
         {
             get
@@ -70,6 +70,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the SingleTabletSize property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public double SingleTabletSize
         {
             get
@@ -105,6 +106,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the ApproxPolyAccuracy property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public double ApproxPolyAccuracy
         {
             get

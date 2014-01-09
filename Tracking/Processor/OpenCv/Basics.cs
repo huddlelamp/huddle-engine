@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.External.Structure;
@@ -6,8 +7,9 @@ using Emgu.CV.Structure;
 using Tools.FlockingDevice.Tracking.Properties;
 using Tools.FlockingDevice.Tracking.Util;
 
-namespace Tools.FlockingDevice.Tracking.Processor
+namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
+    [XmlType]
     [ViewTemplate("Basics")]
     public class Basics : RgbProcessor
     {
@@ -38,6 +40,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the ROI property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public Rectangle ROI
         {
             get
@@ -73,6 +76,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the FlipVertical property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public bool FlipVertical
         {
             get
@@ -108,6 +112,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the FlipHorizontal property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public bool FlipHorizontal
         {
             get
