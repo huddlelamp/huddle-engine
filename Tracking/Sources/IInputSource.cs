@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Xml.Serialization;
-using Tools.FlockingDevice.Tracking.Source.Senz3D;
+using Tools.FlockingDevice.Tracking.Sources.Senz3D;
 
-namespace Tools.FlockingDevice.Tracking.Source
+namespace Tools.FlockingDevice.Tracking.Sources
 {
     [XmlInclude(typeof(Senz3Dv2InputSource))]
     public interface IInputSource : IDisposable
     {
         #region events
 
-        event EventHandler<ImageEventArgs2> ImageReady;
+        event EventHandler<ImageEventArgs> ImageReady;
 
         #endregion
 

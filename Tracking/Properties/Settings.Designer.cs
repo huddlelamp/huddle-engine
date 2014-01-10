@@ -157,5 +157,17 @@ namespace Tools.FlockingDevice.Tracking.Properties {
                 return ((bool)(this["IsBoundingBoxEnabled"]));
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Pipeline.ppl")]
+        public string PipelineFilename {
+            get {
+                return ((string)(this["PipelineFilename"]));
+            }
+            set {
+                this["PipelineFilename"] = value;
+            }
+        }
     }
 }

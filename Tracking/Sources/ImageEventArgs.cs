@@ -2,9 +2,9 @@
 using Emgu.CV;
 using Emgu.CV.Structure;
 
-namespace Tools.FlockingDevice.Tracking.Source
+namespace Tools.FlockingDevice.Tracking.Sources
 {
-    public class ImageEventArgs2 : EventArgs
+    public class ImageEventArgs : EventArgs
     {
         #region properties
 
@@ -26,7 +26,7 @@ namespace Tools.FlockingDevice.Tracking.Source
 
         #region ctor
 
-        public ImageEventArgs2(Image<Rgb, byte> colorImage, Image<Rgb, byte> depthImage, long elapsedTime)
+        public ImageEventArgs(Image<Rgb, byte> colorImage, Image<Rgb, byte> depthImage, long elapsedTime)
         {
             ColorImage = colorImage;
             DepthImage = depthImage;

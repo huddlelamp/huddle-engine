@@ -9,8 +9,7 @@ using System.Xml.Schema;
 using System.Xml.Serialization;
 using GalaSoft.MvvmLight;
 using Tools.FlockingDevice.Tracking.Processor;
-using Tools.FlockingDevice.Tracking.Source;
-using Tools.FlockingDevice.Tracking.Source.Senz3D;
+using Tools.FlockingDevice.Tracking.Sources;
 
 namespace Tools.FlockingDevice.Tracking.Model
 {

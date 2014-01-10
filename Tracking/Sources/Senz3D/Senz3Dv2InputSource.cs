@@ -8,14 +8,14 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using Tools.FlockingDevice.Tracking.Util;
 
-namespace Tools.FlockingDevice.Tracking.Source.Senz3D
+namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
 {
     [ViewTemplate("Senz3DInputSource")]
     public class Senz3Dv2InputSource : InputSource
     {
         #region events
 
-        public override event EventHandler<ImageEventArgs2> ImageReady;
+        public override event EventHandler<ImageEventArgs> ImageReady;
 
         #endregion
 
@@ -176,7 +176,7 @@ namespace Tools.FlockingDevice.Tracking.Source.Senz3D
                 Image<Rgb, byte> depthImage = new Image<Rgb, byte>(depthBitmap);
 
                 if (ImageReady != null)
-                    ImageReady(this, new ImageEventArgs2(colorImage, depthImage, diffImageFrameTime));
+                    ImageReady(this, new ImageEventArgs(colorImage, depthImage, diffImageFrameTime));
             }
 
             pp.Close();

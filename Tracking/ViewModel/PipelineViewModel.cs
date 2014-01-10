@@ -14,8 +14,8 @@ using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Threading;
 using Tools.FlockingDevice.Tracking.Model;
 using Tools.FlockingDevice.Tracking.Processor;
-using Tools.FlockingDevice.Tracking.Source;
-using Tools.FlockingDevice.Tracking.Source.Senz3D;
+using Tools.FlockingDevice.Tracking.Properties;
+using Tools.FlockingDevice.Tracking.Sources;
 using Application = System.Windows.Application;
 using DragDropEffects = System.Windows.DragDropEffects;
 using DragEventArgs = System.Windows.DragEventArgs;
@@ -35,12 +35,6 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         public RelayCommand<DragEventArgs> DropTargetColorCommand { get; private set; }
 
         public RelayCommand<DragEventArgs> DropTargetDepthCommand { get; private set; }
-
-        #endregion
-
-        #region const
-
-        private const string Filename = "Pipeline.ppl";
 
         #endregion
 
@@ -290,7 +284,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         public void Save()
         {
             var serializer = new XmlSerializer(typeof(Pipeline));
-            using (var stream = new FileStream(Filename, FileMode.Create))
+            using (var stream = new FileStream(Settings.Default.PipelineFilename, FileMode.Create))
             {
                 var xmlTextWriter = XmlWriter.Create(stream, new XmlWriterSettings { NewLineChars = Environment.NewLine, Indent = true });
                 serializer.Serialize(xmlTextWriter, Model);
@@ -302,7 +296,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             try
             {
                 var serializer = new XmlSerializer(typeof(Pipeline));
-                using (var stream = new FileStream(Filename, FileMode.Open))
+                using (var stream = new FileStream(Settings.Default.PipelineFilename, FileMode.Open))
                 {
                     Model = serializer.Deserialize(stream) as Pipeline;
                 }
@@ -321,7 +315,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #region Image Source
 
-        private void OnImageReady(object sender, ImageEventArgs2 e)
+        private void OnImageReady(object sender, ImageEventArgs e)
         {
             //Console.WriteLine("OnImageReady");
 

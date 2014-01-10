@@ -15,7 +15,9 @@ using Tools.FlockingDevice.Tracking.Domain;
 using Tools.FlockingDevice.Tracking.Extensions;
 using Tools.FlockingDevice.Tracking.Model;
 using Tools.FlockingDevice.Tracking.Processor;
-using Tools.FlockingDevice.Tracking.Source;
+using Tools.FlockingDevice.Tracking.Processor.OpenCv;
+using Tools.FlockingDevice.Tracking.Sources;
+using Tools.FlockingDevice.Tracking.Sources.Senz3D;
 using Tablet = Tools.FlockingDevice.Tracking.Domain.Tablet;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
@@ -235,6 +237,27 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 Devices.Add(new Smartphone { Id = 21, X = 68.3728, Y = 34.7203, Angle = 324.8937 });
                 Devices.Add(new Smartphone { Id = 7, X = 86.4733, Y = 76.2743, Angle = 34.6327 });
                 Devices.Add(new Tablet { Id = 11, X = 12.4536, Y = 33.7632, Angle = 12.8237 });
+
+                InputSourceTypes.Add(typeof(Senz3Dv2InputSource));
+
+                ProcessorTypes.Add(typeof(Basics));
+                ProcessorTypes.Add(typeof(CannyEdges));
+                ProcessorTypes.Add(typeof(FindContours));
+                ProcessorTypes.Add(typeof(BlobTracker));
+
+                var pipeline = new Pipeline
+                {
+                    InputSource = new Senz3Dv2InputSource(),
+                    
+                };
+                pipeline.ColorImageProcessors.Add(new Basics());
+                pipeline.DepthImageProcessors.Add(new Basics());
+                pipeline.DepthImageProcessors.Add(new CannyEdges());
+
+                Pipeline = new PipelineViewModel
+                {
+                    Model = pipeline
+                };
             }
             else
             {

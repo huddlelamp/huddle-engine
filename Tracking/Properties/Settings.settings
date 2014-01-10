@@ -47,5 +47,8 @@
     <Setting Name="IsBoundingBoxEnabled" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="PipelineFilename" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Pipeline.ppl</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

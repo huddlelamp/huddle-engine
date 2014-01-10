@@ -157,13 +157,10 @@
     <Compile Include="Controls\RemovableExpander.xaml.cs">
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Source\ColorImageEventArgs.cs" />
-    <Compile Include="Source\DepthImageEventArgs.cs" />
-    <Compile Include="Source\IInputSource.cs" />
-    <Compile Include="Source\ImageEventArgs2.cs" />
-    <Compile Include="Source\ImageEventArgs.cs" />
-    <Compile Include="Source\InputSource.cs" />
-    <Compile Include="Source\Senz3D\Senz3Dv2InputSource.cs" />
+    <Compile Include="Sources\IInputSource.cs" />
+    <Compile Include="Sources\ImageEventArgs.cs" />
+    <Compile Include="Sources\InputSource.cs" />
+    <Compile Include="Sources\Senz3D\Senz3Dv2InputSource.cs" />
     <Compile Include="Domain\AbstractDevice.cs" />
     <Compile Include="Domain\DeviceEventArgs.cs" />
     <Compile Include="Domain\Smartphone.cs" />

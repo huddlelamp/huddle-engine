@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
-using Tools.FlockingDevice.Tracking.Source;
+using Tools.FlockingDevice.Tracking.Sources;
 
 namespace Tools.FlockingDevice.Tracking.Util
 {
