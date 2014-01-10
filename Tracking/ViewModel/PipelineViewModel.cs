@@ -6,14 +6,16 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Xml;
 using System.Xml.Serialization;
 using Emgu.CV.External.Extensions;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Threading;
-using Tools.FlockingDevice.Tracking.InputSource;
 using Tools.FlockingDevice.Tracking.Model;
 using Tools.FlockingDevice.Tracking.Processor;
+using Tools.FlockingDevice.Tracking.Source;
+using Tools.FlockingDevice.Tracking.Source.Senz3D;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
 {
@@ -281,7 +283,8 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             var serializer = new XmlSerializer(typeof(Pipeline));
             using (var stream = new FileStream("pipeline.xml", FileMode.Create))
             {
-                serializer.Serialize(stream, Model);
+                var xmlTextWriter = XmlWriter.Create(stream, new XmlWriterSettings { NewLineChars = Environment.NewLine, Indent = true });
+                serializer.Serialize(xmlTextWriter, Model);
             }
         }
 

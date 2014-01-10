@@ -13,9 +13,9 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using Tools.FlockingDevice.Tracking.Domain;
 using Tools.FlockingDevice.Tracking.Extensions;
-using Tools.FlockingDevice.Tracking.InputSource;
 using Tools.FlockingDevice.Tracking.Model;
 using Tools.FlockingDevice.Tracking.Processor;
+using Tools.FlockingDevice.Tracking.Source;
 using Tablet = Tools.FlockingDevice.Tracking.Domain.Tablet;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
@@ -288,7 +288,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
                     if (inputSourceType == null) return;
 
-                    var inputSourceModel = Activator.CreateInstance(inputSourceType) as IInputSource;
+                    var inputSourceModel = Activator.CreateInstance(inputSourceType) as InputSource;
 
                     if (Pipeline == null)
                     {

@@ -4,10 +4,13 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 using GalaSoft.MvvmLight;
-using Tools.FlockingDevice.Tracking.InputSource;
 using Tools.FlockingDevice.Tracking.Processor;
+using Tools.FlockingDevice.Tracking.Source;
+using Tools.FlockingDevice.Tracking.Source.Senz3D;
 
 namespace Tools.FlockingDevice.Tracking.Model
 {
@@ -21,14 +24,14 @@ namespace Tools.FlockingDevice.Tracking.Model
         /// </summary>
         public const string InputSourcePropertyName = "InputSource";
 
-        private IInputSource _inputSource;
+        private InputSource _inputSource;
 
         /// <summary>
         /// Sets and gets the InputSource property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         [XmlElement]
-        public IInputSource InputSource
+        public InputSource InputSource
         {
             get
             {
@@ -128,9 +131,37 @@ namespace Tools.FlockingDevice.Tracking.Model
 
         public Pipeline()
         {
-            
+
         }
 
         #endregion
+
+        //#region IXmlSerializable
+
+        //public XmlSchema GetSchema()
+        //{
+        //    return null;
+        //}
+
+        //public void ReadXml(XmlReader reader)
+        //{
+        //    reader.IsStartElement("InputSource");
+        //    var type = Type.GetType(reader.GetAttribute("AssemblyQualifiedName"));
+        //    var serial = new XmlSerializer(type);
+
+        //    reader.ReadStartElement("IAnimal");
+        //    InputSource = ((IInputSource)serial.Deserialize(reader));
+        //    reader.ReadEndElement(); //InputSource
+        //}
+
+        //public void WriteXml(XmlWriter writer)
+        //{
+        //    writer.WriteStartElement("InputSource");
+        //    writer.WriteAttributeString("AssemblyQualifiedName", InputSource.GetType().AssemblyQualifiedName);
+        //    var xmlSerializer = new XmlSerializer(InputSource.GetType());
+        //    xmlSerializer.Serialize(writer, InputSource);
+        //    writer.WriteEndElement();
+        //}
+        //#endregion
     }
 }

@@ -40,7 +40,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
         /// Sets and gets the ROI property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [XmlAttribute]
+        [XmlIgnore]
         public Rectangle ROI
         {
             get

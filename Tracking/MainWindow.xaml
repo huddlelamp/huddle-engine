@@ -203,6 +203,13 @@
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
+            <Button Content="Save Pipeline" IsEnabled="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=SavePipelineCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
         </StackPanel>
 
         <Grid Row="1">

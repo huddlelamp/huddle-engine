@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Media.Imaging;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.External.Extensions;
@@ -103,7 +104,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
-        #region ExceptionStack
+        #region Exceptions
 
         /// <summary>
         /// The <see cref="Exceptions" /> property's name.
@@ -116,6 +117,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the Exceptions property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlIgnore]
         public ObservableCollection<Exception> Exceptions
         {
             get

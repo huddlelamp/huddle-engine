@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Data;
-using Tools.FlockingDevice.Tracking.InputSource;
+using Tools.FlockingDevice.Tracking.Source;
 
 namespace Tools.FlockingDevice.Tracking.Util
 {

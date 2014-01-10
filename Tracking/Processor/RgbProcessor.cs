@@ -4,12 +4,18 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
+using Tools.FlockingDevice.Tracking.Processor.OpenCv;
 
 namespace Tools.FlockingDevice.Tracking.Processor
 {
+    [XmlInclude(typeof(Basics))]
+    [XmlInclude(typeof(BlobTracker))]
+    [XmlInclude(typeof(CannyEdges))]
+    [XmlInclude(typeof(FindContours))]
     public abstract class RgbProcessor : GenericProcessor<Rgb, byte>
     {
         #region private fields

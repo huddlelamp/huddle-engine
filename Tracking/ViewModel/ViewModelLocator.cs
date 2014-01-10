@@ -16,8 +16,6 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Ioc;
 using Microsoft.Practices.ServiceLocation;
-using Tools.FlockingDevice.Tracking.InputSource;
-using Tools.FlockingDevice.Tracking.InputSource.Senz3D;
 using Tools.FlockingDevice.Tracking.Processor;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
