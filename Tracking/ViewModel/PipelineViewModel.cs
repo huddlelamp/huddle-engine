@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Xml.Serialization;
 using Emgu.CV.External.Extensions;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
@@ -15,7 +17,7 @@ using Tools.FlockingDevice.Tracking.Processor;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
 {
-    public class InputSourceViewModel : ViewModelBase
+    public class PipelineViewModel : ViewModelBase
     {
         #region commands
 
@@ -33,36 +35,36 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #region properties
 
-        #region Pipeline
+        #region Model
 
         /// <summary>
-        /// The <see cref="Pipeline" /> property's name.
+        /// The <see cref="Model" /> property's name.
         /// </summary>
-        public const string PipelinePropertyName = "Pipeline";
+        public const string ModelPropertyName = "Model";
 
-        private Pipeline _pipeline;
+        private Pipeline _model;
 
         /// <summary>
-        /// Sets and gets the Pipeline property.
+        /// Sets and gets the Model property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public Pipeline Pipeline
+        public Pipeline Model
         {
             get
             {
-                return _pipeline;
+                return _model;
             }
 
             set
             {
-                if (_pipeline == value)
+                if (_model == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(PipelinePropertyName);
-                _pipeline = value;
-                RaisePropertyChanged(PipelinePropertyName);
+                RaisePropertyChanging(ModelPropertyName);
+                _model = value;
+                RaisePropertyChanged(ModelPropertyName);
             }
         }
 
@@ -142,36 +144,36 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #region ctor
 
-        public InputSourceViewModel()
+        public PipelineViewModel()
         {
             // exit hook to stop input source
             Application.Current.Exit += (s, e) => Stop();
 
             PropertyChanged += (_s, _e) =>
             {
-                if (Equals(PipelinePropertyName, _e.PropertyName))
+                if (Equals(ModelPropertyName, _e.PropertyName))
                 {
-                    Pipeline.PropertyChanging += (s, e) =>
+                    Model.PropertyChanging += (s, e) =>
                     {
-                        if (Pipeline.InputSource == null) return;
+                        if (Model.InputSource == null) return;
 
                         switch (e.PropertyName)
                         {
                             case Pipeline.InputSourcePropertyName:
-                                Pipeline.InputSource.Stop();
-                                Pipeline.InputSource.ImageReady -= OnImageReady;
+                                Model.InputSource.Stop();
+                                Model.InputSource.ImageReady -= OnImageReady;
                                 break;
                         }
                     };
 
-                    Pipeline.PropertyChanged += (s, e) =>
+                    Model.PropertyChanged += (s, e) =>
                     {
-                        if (Pipeline.InputSource == null) return;
+                        if (Model.InputSource == null) return;
 
                         switch (e.PropertyName)
                         {
                             case Pipeline.InputSourcePropertyName:
-                                Pipeline.InputSource.ImageReady += OnImageReady;
+                                Model.InputSource.ImageReady += OnImageReady;
                                 break;
                         }
                     };
@@ -180,10 +182,10 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
             RemoveProcessorCommand = new RelayCommand<RgbProcessor>(processor =>
             {
-                if (Pipeline == null) return;
+                if (Model == null) return;
 
-                Pipeline.ColorImageProcessors.Remove(processor);
-                Pipeline.DepthImageProcessors.Remove(processor);
+                Model.ColorImageProcessors.Remove(processor);
+                Model.DepthImageProcessors.Remove(processor);
             });
 
             #region Drag & Drop
@@ -217,12 +219,12 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         private void OnDropTargetColor(DragEventArgs e)
         {
-            OnDropTarget(Pipeline.ColorImageProcessors, e);
+            OnDropTarget(Model.ColorImageProcessors, e);
         }
 
         private void OnDropTargetDepth(DragEventArgs e)
         {
-            OnDropTarget(Pipeline.DepthImageProcessors, e);
+            OnDropTarget(Model.DepthImageProcessors, e);
         }
 
         private void OnDropTarget(ICollection<RgbProcessor> toTarget, DragEventArgs e)
@@ -240,7 +242,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             }
             catch (Exception)
             {
-                processor = Activator.CreateInstance(processorType, Pipeline.InputSource) as RgbProcessor;
+                processor = Activator.CreateInstance(processorType, Model.InputSource) as RgbProcessor;
             }
 
             toTarget.Add(processor); // add to new collection
@@ -252,26 +254,35 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public void Start()
         {
-            if (Pipeline != null && Pipeline.InputSource != null)
-                Pipeline.InputSource.Start();
+            if (Model != null && Model.InputSource != null)
+                Model.InputSource.Start();
         }
 
         public void Stop()
         {
-            if (Pipeline != null && Pipeline.InputSource != null)
-                Pipeline.InputSource.Stop();
+            if (Model != null && Model.InputSource != null)
+                Model.InputSource.Stop();
         }
 
         public void Pause()
         {
-            if (Pipeline != null && Pipeline.InputSource != null)
-                Pipeline.InputSource.Pause();
+            if (Model != null && Model.InputSource != null)
+                Model.InputSource.Pause();
         }
 
         public void Resume()
         {
-            if (Pipeline != null && Pipeline.InputSource != null)
-                Pipeline.InputSource.Resume();
+            if (Model != null && Model.InputSource != null)
+                Model.InputSource.Resume();
+        }
+
+        public void Save()
+        {
+            var serializer = new XmlSerializer(typeof(Pipeline));
+            using (var stream = new FileStream("pipeline.xml", FileMode.Create))
+            {
+                serializer.Serialize(stream, Model);
+            }
         }
 
         #endregion
@@ -298,8 +309,8 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 colorImageCopy.Dispose();
             });
 
-            if (Pipeline.ColorImageProcessors.Any())
-                foreach (var colorProcessor in Pipeline.ColorImageProcessors.ToArray())
+            if (Model.ColorImageProcessors.Any())
+                foreach (var colorProcessor in Model.ColorImageProcessors.ToArray())
                 {
                     colorImage = colorProcessor.Process(colorImage);
                     //image.Dispose();
@@ -324,8 +335,8 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 depthImageCopy.Dispose();
             });
 
-            if (Pipeline.DepthImageProcessors.Any())
-                foreach (var depthProcessor in Pipeline.DepthImageProcessors.ToArray())
+            if (Model.DepthImageProcessors.Any())
+                foreach (var depthProcessor in Model.DepthImageProcessors.ToArray())
                 {
                     depthImage = depthProcessor.Process(depthImage);
                     //image.Dispose();

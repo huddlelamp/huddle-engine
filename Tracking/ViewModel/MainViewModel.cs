@@ -130,36 +130,36 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #endregion
 
-        #region InputSource
+        #region Pipeline
 
         /// <summary>
-        /// The <see cref="InputSource" /> property's name.
+        /// The <see cref="Pipeline" /> property's name.
         /// </summary>
-        public const string InputSourcePropertyName = "InputSource";
+        public const string PipelinePropertyName = "Pipeline";
 
-        private InputSourceViewModel _inputSource;
+        private PipelineViewModel _pipeline;
 
         /// <summary>
-        /// Sets and gets the InputSource property.
+        /// Sets and gets the Pipeline property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public InputSourceViewModel InputSource
+        public PipelineViewModel Pipeline
         {
             get
             {
-                return _inputSource;
+                return _pipeline;
             }
 
             set
             {
-                if (_inputSource == value)
+                if (_pipeline == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(InputSourcePropertyName);
-                _inputSource = value;
-                RaisePropertyChanged(InputSourcePropertyName);
+                RaisePropertyChanging(PipelinePropertyName);
+                _pipeline = value;
+                RaisePropertyChanged(PipelinePropertyName);
 
                 RaisePropertyChanged(IsInputSourceSetPropertyName);
             }
@@ -180,7 +180,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         /// </summary>
         public bool IsInputSourceSet
         {
-            get { return InputSource != null; }
+            get { return Pipeline != null; }
         }
 
         #endregion
@@ -245,19 +245,19 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
             StartDataSourceCommand = new RelayCommand(() =>
             {
-                if (InputSource != null) InputSource.Start();
+                if (Pipeline != null) Pipeline.Start();
             });
             StopDataSourceCommand = new RelayCommand(() =>
             {
-                if (InputSource != null) InputSource.Stop();
+                if (Pipeline != null) Pipeline.Stop();
             });
             PauseDataSourceCommand = new RelayCommand(() =>
             {
-                if (InputSource != null) InputSource.Pause();
+                if (Pipeline != null) Pipeline.Pause();
             });
             ResumeDataSourceCommand = new RelayCommand(() =>
             {
-                if (InputSource != null) InputSource.Resume();
+                if (Pipeline != null) Pipeline.Resume();
             });
 
             SavePipelineCommand = new RelayCommand(OnSavePipeline);
@@ -290,15 +290,15 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
                     var inputSourceModel = Activator.CreateInstance(inputSourceType) as IInputSource;
 
-                    if (InputSource == null)
+                    if (Pipeline == null)
                     {
-                        InputSource = new InputSourceViewModel
+                        Pipeline = new PipelineViewModel
                         {
-                            Pipeline = new Pipeline()
+                            Model = new Pipeline()
                         };
                     }
 
-                    InputSource.Pipeline.InputSource = inputSourceModel;
+                    Pipeline.Model.InputSource = inputSourceModel;
 
                     //// pass in the root grid since its adorner layer was used to add ListBoxItems adorners to
                     //RemoveAdorner(_listBoxItem, _topLevelGrid);
@@ -313,10 +313,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         private void OnSavePipeline()
         {
-            //foreach (var VARIABLE in Dep)
-            //{
-
-            //}
+            Pipeline.Save();
         }
 
         private void OnDragInitiate(MouseButtonEventArgs e)

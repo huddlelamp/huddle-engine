@@ -27,7 +27,7 @@
                 <controls:RemovableExpander Header="{Binding Path=FriendlyName}" IsExpanded="True">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="Remove">
-                            <command:EventToCommand Command="{Binding Path=Main.InputSource.RemoveProcessorCommand, Mode=OneWay, Source={StaticResource ResourceKey=Locator}}" CommandParameter="{Binding}" />
+                            <command:EventToCommand Command="{Binding Path=Main.Pipeline.RemoveProcessorCommand, Mode=OneWay, Source={StaticResource ResourceKey=Locator}}" CommandParameter="{Binding}" />
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                     <Grid>
@@ -62,7 +62,7 @@
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="InputSourceTemplate" DataType="vm:InputSourceViewModel">
+        <DataTemplate x:Key="InputSourceTemplate" DataType="vm:PipelineViewModel">
             <Grid>
                 <ScrollViewer>
                     <Grid>
@@ -89,7 +89,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Pipeline.ColorImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
+                            <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Model.ColorImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Orientation="Vertical" />
@@ -115,11 +115,11 @@
                             <StackPanel>
                                 <Image Source="{Binding Path=DepthImage}"
                                        MinHeight="200" MinWidth="200"  />
-                                <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=Model.DepthSmoothing}" />
+                                <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=Model.InputSource.DepthSmoothing}" />
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="Depth Confidence Threshold"/>
-                                    <Slider Width="340" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=Model.DepthConfidenceThreshold}" />
-                                    <TextBlock Text="{Binding Path=Model.DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
+                                    <Slider Width="340" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=Model.InputSource.DepthConfidenceThreshold}" />
+                                    <TextBlock Text="{Binding Path=Model.InputSource.DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
                                 </StackPanel>
                             </StackPanel>
                         </GroupBox>
@@ -130,7 +130,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Pipeline.DepthImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
+                            <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Model.DepthImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Orientation="Vertical" />
@@ -175,28 +175,28 @@
 
         <StackPanel Orientation="Horizontal"
                     Grid.Row="0">
-            <Button Content="Start" IsEnabled="{Binding Path=InputSource, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Start" IsEnabled="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
                         <command:EventToCommand Command="{Binding Path=StartDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
-            <Button Content="Stop" IsEnabled="{Binding Path=InputSource, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Stop" IsEnabled="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
                         <command:EventToCommand Command="{Binding Path=StopDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
-            <Button Content="Pause" IsEnabled="{Binding Path=InputSource, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Pause" IsEnabled="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
                         <command:EventToCommand Command="{Binding Path=PauseDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
-            <Button Content="Resume" IsEnabled="{Binding Path=InputSource, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Resume" IsEnabled="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
                         <command:EventToCommand Command="{Binding Path=ResumeDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
@@ -243,7 +243,7 @@
             <Grid Grid.Column="1">
 
                 <controls:DropHereZone DropInfo="Drop source here"
-                                       Visibility="{Binding Path=InputSource, Mode=OneWay, Converter={util:NotNullToVisibilityConverter}}">
+                                       Visibility="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NotNullToVisibilityConverter}}">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="DragOver">
                             <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
@@ -254,9 +254,9 @@
                     </i:Interaction.Triggers>
                 </controls:DropHereZone>
 
-                <ContentControl Content="{Binding Path=InputSource, Mode=OneWay}"
+                <ContentControl Content="{Binding Path=Pipeline, Mode=OneWay}"
                                 ContentTemplate="{StaticResource ResourceKey=InputSourceTemplate}"
-                                Visibility="{Binding Path=InputSource, Mode=OneWay, Converter={util:NullToVisibilityConverter}}"/>
+                                Visibility="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NullToVisibilityConverter}}"/>
 
                 <!--<ItemsControl ItemsSource="{Binding Path=Devices}">
                     <ItemsControl.ItemsPanel>

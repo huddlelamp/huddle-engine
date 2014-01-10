@@ -187,7 +187,7 @@
     <Compile Include="Util\RoutedEventHelper.cs" />
     <Compile Include="Util\NullToVisibilityConverter.cs" />
     <Compile Include="Util\StringToRectangleConverter.cs" />
-    <Compile Include="ViewModel\InputSourceViewModel.cs" />
+    <Compile Include="ViewModel\PipelineViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="Controls\DropHereZone.xaml">
