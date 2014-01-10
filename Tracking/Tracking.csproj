@@ -115,6 +115,9 @@
     <Reference Include="Emgu.Util">
       <HintPath>..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.9.0.1922\bin\Emgu.Util.dll</HintPath>
     </Reference>
+    <Reference Include="FirstFloor.ModernUI">
+      <HintPath>..\packages\ModernUI.WPF.1.0.5\lib\net45\FirstFloor.ModernUI.dll</HintPath>
+    </Reference>
     <Reference Include="GalaSoft.MvvmLight.Extras.WPF45">
       <HintPath>..\packages\MvvmLightLibs.4.2.30.0\lib\net45\GalaSoft.MvvmLight.Extras.WPF45.dll</HintPath>
     </Reference>
@@ -156,6 +159,9 @@
     </Compile>
     <Compile Include="Controls\RemovableExpander.xaml.cs">
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\PipelinePage.xaml.cs">
+      <DependentUpon>PipelinePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Sources\IInputSource.cs" />
     <Compile Include="Sources\ImageEventArgs.cs" />
@@ -208,6 +214,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Pages\PipelinePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Templates\CannyEdgesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

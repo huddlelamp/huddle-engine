@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using Tools.FlockingDevice.Tracking.Util;
@@ -33,7 +34,9 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
 
         #endregion
 
-        private float _depthConfidenceThreshold = -1;
+        #region properties
+
+        #region FriendlyName
 
         public override string FriendlyName {
             get
@@ -42,27 +45,81 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
             }
         }
 
-        public override float DepthConfidenceThreshold
+        #endregion
+
+        #region DepthConfidenceThreshold
+
+        /// <summary>
+        /// The <see cref="DepthConfidenceThreshold" /> property's name.
+        /// </summary>
+        public const string DepthConfidenceThresholdPropertyName = "DepthConfidenceThreshold";
+
+        private float _depthConfidenceThreshold = -1;
+
+        /// <summary>
+        /// Sets and gets the DepthConfidenceThreshold property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlAttribute]
+        public float DepthConfidenceThreshold
         {
             get
             {
-                if (_device != null)
-                    _device.QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_CONFIDENCE_THRESHOLD, out _depthConfidenceThreshold);
-
                 return _depthConfidenceThreshold;
             }
+
             set
             {
-                _depthConfidenceThreshold = value;
+                if (_depthConfidenceThreshold == value)
+                {
+                    return;
+                }
 
-                if (_device != null)
-                    _device.SetProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_CONFIDENCE_THRESHOLD, _depthConfidenceThreshold);
+                RaisePropertyChanging(DepthConfidenceThresholdPropertyName);
+                _depthConfidenceThreshold = value;
+                RaisePropertyChanged(DepthConfidenceThresholdPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region DepthSmoothing
+
+        /// <summary>
+        /// The <see cref="DepthSmoothing" /> property's name.
+        /// </summary>
+        public const string DepthSmoothingPropertyName = "DepthSmoothing";
+
+        private bool _depthSmoothing = false;
+
+        /// <summary>
+        /// Sets and gets the DepthSmoothing property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlAttribute]
+        public bool DepthSmoothing
+        {
+            get
+            {
+                return _depthSmoothing;
             }
 
+            set
+            {
+                if (_depthSmoothing == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DepthSmoothingPropertyName);
+                _depthSmoothing = value;
+                RaisePropertyChanged(DepthSmoothingPropertyName);
+            }
         }
-        public override bool DepthSmoothing { get; set; }
-        public override bool FlipVertical { get; set; }
-        public override bool FlipHorizontal { get; set; }
+
+        #endregion
+
+        #endregion
 
         #region ctor
 
@@ -71,6 +128,17 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
             var sts = PXCMSession.CreateInstance(out _session);
 
             Debug.Assert(sts >= pxcmStatus.PXCM_STATUS_NO_ERROR, "could not create session instance");
+
+            PropertyChanged += (s, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case DepthConfidenceThresholdPropertyName:
+                        if (_device != null)
+                            _device.SetProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_CONFIDENCE_THRESHOLD, _depthConfidenceThreshold);
+                        break;
+                }
+            };
         }
 
         #endregion

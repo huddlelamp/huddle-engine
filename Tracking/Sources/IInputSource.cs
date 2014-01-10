@@ -17,14 +17,6 @@ namespace Tools.FlockingDevice.Tracking.Sources
 
         string FriendlyName { get; }
 
-        float DepthConfidenceThreshold { get; set; }
-
-        bool DepthSmoothing { get; set; }
-
-        bool FlipVertical { get; set; }
-
-        bool FlipHorizontal { get; set; }
-
         #endregion
 
         void Start();
