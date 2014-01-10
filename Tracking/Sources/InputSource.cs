@@ -5,7 +5,7 @@ using Tools.FlockingDevice.Tracking.Sources.Senz3D;
 
 namespace Tools.FlockingDevice.Tracking.Sources
 {
-    [XmlInclude(typeof(Senz3Dv2InputSource))]
+    [XmlInclude(typeof(Senz3DInputSource))]
     public abstract class InputSource : ObservableObject, IInputSource
     {
         public abstract void Dispose();

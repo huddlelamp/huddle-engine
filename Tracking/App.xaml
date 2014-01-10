@@ -12,6 +12,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/FirstFloor.ModernUI;component/Assets/ModernUI.xaml" />
                 <ResourceDictionary Source="/FirstFloor.ModernUI;component/Assets/ModernUI.Light.xaml"/>
+                <ResourceDictionary Source="/Themes/Plain.Themes.xaml"/>
                 <ResourceDictionary Source="Templates/BasicsView.xaml"/>
                 <ResourceDictionary Source="Templates/DepthProcessorView.xaml"/>
                 <ResourceDictionary Source="Templates/CannyEdgesView.xaml"/>

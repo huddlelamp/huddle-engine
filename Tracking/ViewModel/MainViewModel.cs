@@ -238,7 +238,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 Devices.Add(new Smartphone { Id = 7, X = 86.4733, Y = 76.2743, Angle = 34.6327 });
                 Devices.Add(new Tablet { Id = 11, X = 12.4536, Y = 33.7632, Angle = 12.8237 });
 
-                InputSourceTypes.Add(typeof(Senz3Dv2InputSource));
+                InputSourceTypes.Add(typeof(Senz3DInputSource));
 
                 ProcessorTypes.Add(typeof(Basics));
                 ProcessorTypes.Add(typeof(CannyEdges));
@@ -247,7 +247,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
                 var pipeline = new Pipeline
                 {
-                    InputSource = new Senz3Dv2InputSource(),
+                    InputSource = new Senz3DInputSource(),
                     
                 };
                 pipeline.ColorImageProcessors.Add(new Basics());

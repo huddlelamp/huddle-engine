@@ -11,24 +11,12 @@
              xmlns:processor="clr-namespace:Tools.FlockingDevice.Tracking.Processor"
              xmlns:viewModel="clr-namespace:Tools.FlockingDevice.Tracking.ViewModel"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300"
+             d:DesignHeight="1080" d:DesignWidth="1920"
              DataContext="{Binding Source={StaticResource ResourceKey=Locator}, Path=Main}">
-    <i:Interaction.Triggers>
-        <i:EventTrigger EventName="Closing">
-            <command:EventToCommand Command="{Binding Source={StaticResource ResourceKey=Locator}, Path=ShutdownCommand}" PassEventArgsToCommand="False" />
-        </i:EventTrigger>
-        <i:EventTrigger EventName="Closing">
-            <command:EventToCommand Command="{Binding Path=ClosingCommand}" PassEventArgsToCommand="False" />
-        </i:EventTrigger>
-    </i:Interaction.Triggers>
-
     <UserControl.Resources>
         <util:ProcessorTemplateSelector x:Key="ProcessorViewTemplateSelector" />
 
         <Style TargetType="{x:Type Slider}">
-            <Setter Property="Margin" Value="5" />
-        </Style>
-        <Style TargetType="{x:Type Button}">
             <Setter Property="Margin" Value="5" />
         </Style>
         <Style TargetType="{x:Type Image}">
@@ -36,14 +24,14 @@
         </Style>
 
         <Style x:Key="ListItemHeaderStyle" TargetType="{x:Type Label}">
-            <Setter Property="FontFamily" Value="SegoeUI" />
+            <!--<Setter Property="FontFamily" Value="SegoeUI" />-->
             <!--<Setter Property="FontWeight" Value="Light" />-->
-            <Setter Property="FontSize" Value="18" />
+            <!--<Setter Property="FontSize" Value="18" />-->
         </Style>
         <Style x:Key="ListItemStyle" TargetType="{x:Type Label}">
-            <Setter Property="FontFamily" Value="SegoeUI" />
+            <!--<Setter Property="FontFamily" Value="SegoeUI" />-->
             <!--<Setter Property="FontWeight" Value="Light" />-->
-            <Setter Property="FontSize" Value="18" />
+            <!--<Setter Property="FontSize" Value="18" />-->
         </Style>
 
         <Style x:Key="ContainerStyle" TargetType="{x:Type Border}">
@@ -55,8 +43,8 @@
         </Style>
 
         <Style x:Key="ContainerRemoveableBoxStyle" TargetType="{x:Type controls:RemovableExpander}">
-            <Setter Property="FontFamily" Value="SegoeUI" />
-            <Setter Property="FontSize" Value="18" />
+            <!--<Setter Property="FontFamily" Value="SegoeUI" />-->
+            <!--<Setter Property="FontSize" Value="18" />-->
             <Setter Property="Margin" Value="10" />
         </Style>
 

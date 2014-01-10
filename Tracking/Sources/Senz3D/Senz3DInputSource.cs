@@ -12,7 +12,7 @@ using Tools.FlockingDevice.Tracking.Util;
 namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
 {
     [ViewTemplate("Senz3DInputSource")]
-    public class Senz3Dv2InputSource : InputSource
+    public class Senz3DInputSource : InputSource
     {
         #region events
 
@@ -41,7 +41,7 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
         public override string FriendlyName {
             get
             {
-                return "Senz3D v2 Input Source";
+                return "Senz3D Input Source";
             }
         }
 
@@ -123,7 +123,7 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
 
         #region ctor
 
-        public Senz3Dv2InputSource()
+        public Senz3DInputSource()
         {
             var sts = PXCMSession.CreateInstance(out _session);
 

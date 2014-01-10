@@ -166,7 +166,7 @@
     <Compile Include="Sources\IInputSource.cs" />
     <Compile Include="Sources\ImageEventArgs.cs" />
     <Compile Include="Sources\InputSource.cs" />
-    <Compile Include="Sources\Senz3D\Senz3Dv2InputSource.cs" />
+    <Compile Include="Sources\Senz3D\Senz3DInputSource.cs" />
     <Compile Include="Domain\AbstractDevice.cs" />
     <Compile Include="Domain\DeviceEventArgs.cs" />
     <Compile Include="Domain\Smartphone.cs" />
@@ -237,6 +237,10 @@
     <Page Include="Templates\BasicsView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Plain.Themes.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
