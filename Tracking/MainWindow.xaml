@@ -7,6 +7,7 @@
         xmlns:processor="clr-namespace:Tools.FlockingDevice.Tracking.Processor"
         xmlns:controls="clr-namespace:Tools.FlockingDevice.Tracking.Controls"
         xmlns:vm="clr-namespace:Tools.FlockingDevice.Tracking.ViewModel"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
         Title="Flocking Device - Tracking"
         Width="1920"
         Height="1080"
@@ -17,14 +18,33 @@
         <i:EventTrigger EventName="Closing">
             <command:EventToCommand Command="{Binding Source={StaticResource ResourceKey=Locator}, Path=ShutdownCommand}" PassEventArgsToCommand="False" />
         </i:EventTrigger>
+        <i:EventTrigger EventName="Closing">
+            <command:EventToCommand Command="{Binding Path=ClosingCommand}" PassEventArgsToCommand="False" />
+        </i:EventTrigger>
     </i:Interaction.Triggers>
 
     <Window.Resources>
         <util:ProcessorTemplateSelector x:Key="ProcessorViewTemplateSelector" />
 
+        <Style TargetType="{x:Type Slider}">
+            <Setter Property="Margin" Value="5" />
+        </Style>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Margin" Value="5" />
+        </Style>
+        <Style TargetType="{x:Type Image}">
+            <Setter Property="Margin" Value="5" />
+        </Style>
+
+        <Style x:Key="ListItemStyle" TargetType="{x:Type Label}">
+            <Setter Property="FontFamily" Value="SegoeUI" />
+            <!--<Setter Property="FontWeight" Value="Light" />-->
+            <Setter Property="FontSize" Value="18" />
+        </Style>
+
         <DataTemplate x:Key="ProcessorTemplate" DataType="processor:RgbProcessor">
             <Grid>
-                <controls:RemovableExpander Header="{Binding Path=FriendlyName}" IsExpanded="True">
+                <controls:RemovableExpander Header="{Binding Path=FriendlyName}" IsExpanded="{Binding Path=IsRenderImages}">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="Remove">
                             <command:EventToCommand Command="{Binding Path=Main.Pipeline.RemoveProcessorCommand, Mode=OneWay, Source={StaticResource ResourceKey=Locator}}" CommandParameter="{Binding}" />
@@ -155,15 +175,16 @@
             </Grid>
         </DataTemplate>
 
-        <Style TargetType="{x:Type Slider}">
-            <Setter Property="Margin" Value="5" />
-        </Style>
-        <Style TargetType="{x:Type Button}">
-            <Setter Property="Margin" Value="5" />
-        </Style>
-        <Style TargetType="{x:Type Image}">
-            <Setter Property="Margin" Value="5" />
-        </Style>
+        <DataTemplate x:Key="ListViewTemplate" DataType="{x:Type system:Type}">
+            <Label Content="{Binding Path=Name}"
+                                   Style="{StaticResource ResourceKey=ListItemStyle}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                        <command:EventToCommand Command="{Binding Path=Main.DragInitiateCommand, Source={StaticResource ResourceKey=Locator}, Mode=OneWay}" PassEventArgsToCommand="True" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Label>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -175,35 +196,35 @@
 
         <StackPanel Orientation="Horizontal"
                     Grid.Row="0">
-            <Button Content="Start" IsEnabled="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Start" IsEnabled="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
                         <command:EventToCommand Command="{Binding Path=StartDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
-            <Button Content="Stop" IsEnabled="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Stop" IsEnabled="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
                         <command:EventToCommand Command="{Binding Path=StopDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
-            <Button Content="Pause" IsEnabled="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Pause" IsEnabled="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
                         <command:EventToCommand Command="{Binding Path=PauseDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
-            <Button Content="Resume" IsEnabled="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Resume" IsEnabled="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
                         <command:EventToCommand Command="{Binding Path=ResumeDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
-            <Button Content="Save Pipeline" IsEnabled="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Save Pipeline" IsEnabled="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
                         <command:EventToCommand Command="{Binding Path=SavePipelineCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
@@ -214,43 +235,23 @@
 
         <Grid Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0">
-                <ListView ItemsSource="{Binding Path=InputSourceTypes}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Label Content="{Binding Path=Name}">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                                        <command:EventToCommand Command="{Binding Path=Main.DragInitiateCommand, Source={StaticResource ResourceKey=Locator}, Mode=OneWay}" PassEventArgsToCommand="True" />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                            </Label>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ListView>
-                <ListView ItemsSource="{Binding Path=ProcessorTypes}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Label Content="{Binding Path=Name}">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                                        <command:EventToCommand Command="{Binding Path=Main.DragInitiateCommand, Source={StaticResource ResourceKey=Locator}, Mode=OneWay}" PassEventArgsToCommand="True" />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                            </Label>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ListView>
+                <ListView ItemsSource="{Binding Path=InputSourceTypes}"
+                          ItemTemplate="{StaticResource ResourceKey=ListViewTemplate}"
+                          Margin="10" />
+                <ListView ItemsSource="{Binding Path=ProcessorTypes}"
+                          ItemTemplate="{StaticResource ResourceKey=ListViewTemplate}"
+                          Margin="10" />
             </StackPanel>
 
             <Grid Grid.Column="1">
 
                 <controls:DropHereZone DropInfo="Drop source here"
-                                       Visibility="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NotNullToVisibilityConverter}}">
+                                       Visibility="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NotNullToVisibilityConverter}}">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="DragOver">
                             <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
@@ -263,7 +264,7 @@
 
                 <ContentControl Content="{Binding Path=Pipeline, Mode=OneWay}"
                                 ContentTemplate="{StaticResource ResourceKey=InputSourceTemplate}"
-                                Visibility="{Binding Path=Pipeline, Mode=OneWay, Converter={util:NullToVisibilityConverter}}"/>
+                                Visibility="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NullToVisibilityConverter}}"/>
 
                 <!--<ItemsControl ItemsSource="{Binding Path=Devices}">
                     <ItemsControl.ItemsPanel>

@@ -43,6 +43,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         #endregion
 
         #region commands
+        public RelayCommand ClosingCommand { get; private set; }
 
         public RelayCommand StartDataSourceCommand { get; private set; }
         public RelayCommand StopDataSourceCommand { get; private set; }
@@ -137,7 +138,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         /// </summary>
         public const string PipelinePropertyName = "Pipeline";
 
-        private PipelineViewModel _pipeline;
+        private PipelineViewModel _pipeline = new PipelineViewModel();
 
         /// <summary>
         /// Sets and gets the Pipeline property.
@@ -240,6 +241,8 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 // Code runs "for real"
             }
 
+            ClosingCommand = new RelayCommand(OnSavePipeline);
+
             InputSourceTypes = new ObservableCollection<Type>(GetTypes<IInputSource>());
             ProcessorTypes = new ObservableCollection<Type>(GetTypes<RgbProcessor>());
 
@@ -290,15 +293,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
                     var inputSourceModel = Activator.CreateInstance(inputSourceType) as InputSource;
 
-                    if (Pipeline == null)
-                    {
-                        Pipeline = new PipelineViewModel
-                        {
-                            Model = new Pipeline()
-                        };
-                    }
-
-                    Pipeline.Model.InputSource = inputSourceModel;
+                    Pipeline.Model = new Pipeline { InputSource = inputSourceModel };
 
                     //// pass in the root grid since its adorner layer was used to add ListBoxItems adorners to
                     //RemoveAdorner(_listBoxItem, _topLevelGrid);
@@ -309,11 +304,18 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             {
                 //RemoveAdorner(_listBoxItem, _topLevelGrid)
             });
+
+            LoadPipeline();
         }
 
         private void OnSavePipeline()
         {
             Pipeline.Save();
+        }
+
+        private void LoadPipeline()
+        {
+            Pipeline.Load();
         }
 
         private void OnDragInitiate(MouseButtonEventArgs e)

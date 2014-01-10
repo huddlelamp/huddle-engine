@@ -14,7 +14,7 @@ using Tools.FlockingDevice.Tracking.Source.Senz3D;
 
 namespace Tools.FlockingDevice.Tracking.Model
 {
-    [XmlType]
+    [XmlRoot]
     public class Pipeline : ObservableObject
     {
         #region InputSource

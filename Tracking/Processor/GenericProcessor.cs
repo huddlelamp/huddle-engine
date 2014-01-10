@@ -34,6 +34,42 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
+        #region IsRenderImage
+
+        /// <summary>
+        /// The <see cref="IsRenderImages" /> property's name.
+        /// </summary>
+        public const string IsRenderImagesPropertyName = "IsRenderImages";
+
+        private bool _isRenderImages = true;
+
+        /// <summary>
+        /// Sets and gets the IsRenderImages property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlAttribute]
+        public bool IsRenderImages
+        {
+            get
+            {
+                return _isRenderImages;
+            }
+
+            set
+            {
+                if (_isRenderImages == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsRenderImagesPropertyName);
+                _isRenderImages = value;
+                RaisePropertyChanged(IsRenderImagesPropertyName);
+            }
+        }
+
+        #endregion
+
         #region PreProcessImage
 
         /// <summary>
@@ -142,19 +178,22 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         public Image<TColor, TDepth> Process(Image<TColor, TDepth> image)
         {
-            // the copy is required in order to not influence processing that happens later
-            var preProcessImage = PreProcess(image.Copy());
-
-            // draw debug information on image -> TODO might worth be worth it to bind that information to the data template directly
-            DrawDebug(preProcessImage);
-
-            DispatcherHelper.RunAsync(() =>
+            if (IsRenderImages)
             {
-                if (preProcessImage == null) return;
+                // the copy is required in order to not influence processing that happens later
+                var preProcessImage = PreProcess(image.Copy());
 
-                PreProcessImage = preProcessImage.ToBitmapSource();
-                preProcessImage.Dispose();
-            });
+                // draw debug information on image -> TODO might worth be worth it to bind that information to the data template directly
+                DrawDebug(preProcessImage);
+
+                DispatcherHelper.RunAsync(() =>
+                {
+                    if (preProcessImage == null) return;
+
+                    PreProcessImage = preProcessImage.ToBitmapSource();
+                    preProcessImage.Dispose();
+                });
+            }
 
             Image<TColor, TDepth> outputImage;
             try
@@ -171,14 +210,17 @@ namespace Tools.FlockingDevice.Tracking.Processor
                 return image;
             }
 
-            var postProcessImage = outputImage.Copy();
-            DispatcherHelper.RunAsync(() =>
+            if (IsRenderImages)
             {
-                if (postProcessImage == null) return;
+                var postProcessImage = outputImage.Copy();
+                DispatcherHelper.RunAsync(() =>
+                {
+                    if (postProcessImage == null) return;
 
-                PostProcessImage = postProcessImage.ToBitmapSource();
-                postProcessImage.Dispose();
-            });
+                    PostProcessImage = postProcessImage.ToBitmapSource();
+                    postProcessImage.Dispose();
+                });
+            }
 
             return outputImage;
         }

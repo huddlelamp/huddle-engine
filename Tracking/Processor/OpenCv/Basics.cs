@@ -63,6 +63,23 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
         #endregion
 
+        #region ROIString
+
+        private readonly RectangleConverter _doiConverter = new RectangleConverter();
+
+        [XmlAttribute(ROIPropertyName)]
+        public string ROIString
+        {
+            get { return (string)_doiConverter.ConvertTo(ROI, typeof(string)); }
+            set
+            {
+                var newROI = _doiConverter.ConvertFrom(value);
+                if (newROI != null) ROI = (Rectangle)newROI;
+            }
+        }
+
+        #endregion
+
         #region FlipVertical
 
         /// <summary>

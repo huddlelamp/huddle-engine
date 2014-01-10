@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using System.Xml;
 using System.Xml.Serialization;
@@ -16,6 +16,9 @@ using Tools.FlockingDevice.Tracking.Model;
 using Tools.FlockingDevice.Tracking.Processor;
 using Tools.FlockingDevice.Tracking.Source;
 using Tools.FlockingDevice.Tracking.Source.Senz3D;
+using Application = System.Windows.Application;
+using DragDropEffects = System.Windows.DragDropEffects;
+using DragEventArgs = System.Windows.DragEventArgs;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
 {
@@ -32,6 +35,12 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         public RelayCommand<DragEventArgs> DropTargetColorCommand { get; private set; }
 
         public RelayCommand<DragEventArgs> DropTargetDepthCommand { get; private set; }
+
+        #endregion
+
+        #region const
+
+        private const string Filename = "Pipeline.ppl";
 
         #endregion
 
@@ -281,10 +290,30 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         public void Save()
         {
             var serializer = new XmlSerializer(typeof(Pipeline));
-            using (var stream = new FileStream("pipeline.xml", FileMode.Create))
+            using (var stream = new FileStream(Filename, FileMode.Create))
             {
                 var xmlTextWriter = XmlWriter.Create(stream, new XmlWriterSettings { NewLineChars = Environment.NewLine, Indent = true });
                 serializer.Serialize(xmlTextWriter, Model);
+            }
+        }
+
+        public void Load()
+        {
+            try
+            {
+                var serializer = new XmlSerializer(typeof(Pipeline));
+                using (var stream = new FileStream(Filename, FileMode.Open))
+                {
+                    Model = serializer.Deserialize(stream) as Pipeline;
+                }
+
+                if (Model != null)
+                    Model.InputSource.ImageReady += OnImageReady;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(string.Format("Could not load pipeline. {0}.", e.Message), @"Pipeline Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
