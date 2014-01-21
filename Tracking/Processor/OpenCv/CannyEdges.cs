@@ -88,9 +88,9 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
         {
-            image = image.Dilate(NumDilate);
             image = image.Erode(NumErode);
-
+            image = image.Dilate(NumDilate);
+            
             return image;
         }
     }
