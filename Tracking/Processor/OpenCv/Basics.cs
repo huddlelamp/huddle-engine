@@ -166,12 +166,14 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
         {
             // mirror image
+            Image<Rgb, byte> res = image.Copy(ROI);                       
+            
             if (FlipHorizontal)
-                image = image.Flip(FLIP.HORIZONTAL);
+                res = res.Flip(FLIP.HORIZONTAL);
             if (FlipVertical)
-                image = image.Flip(FLIP.VERTICAL);
+                res = res.Flip(FLIP.VERTICAL);
 
-            return image.Copy(ROI);
+            return res;
         }
     }
 }
