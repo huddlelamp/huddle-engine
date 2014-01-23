@@ -283,11 +283,24 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public void Save()
         {
-            var serializer = new XmlSerializer(typeof(Pipeline));
-            using (var stream = new FileStream(Settings.Default.PipelineFilename, FileMode.Create))
+            var filename = Settings.Default.PipelineFilename;
+            var tempFilename = string.Format("{0}.tmp", filename);
+
+            try
             {
-                var xmlTextWriter = XmlWriter.Create(stream, new XmlWriterSettings { NewLineChars = Environment.NewLine, Indent = true });
-                serializer.Serialize(xmlTextWriter, Model);
+                var serializer = new XmlSerializer(typeof(Pipeline));
+                using (var stream = new FileStream(tempFilename, FileMode.Create))
+                {
+                    var xmlTextWriter = XmlWriter.Create(stream, new XmlWriterSettings { NewLineChars = Environment.NewLine, Indent = true });
+                    serializer.Serialize(xmlTextWriter, Model);
+                }
+
+                var bakFilename = string.Format("{0}.bak", Settings.Default.PipelineFilename);
+                File.Replace(tempFilename, filename, bakFilename);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(string.Format(@"Could not save pipeline.{0}Exception Message: {1}", Environment.NewLine, e.Message), @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

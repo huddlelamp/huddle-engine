@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:processor="clr-namespace:Tools.FlockingDevice.Tracking.Processor">
-    <DataTemplate x:Key="FindContours" DataType="processor:FindContoursProcessor">
+                    xmlns:processor="clr-namespace:Tools.FlockingDevice.Tracking.Processor.OpenCv">
+    <DataTemplate x:Key="FindContours" DataType="processor:FindContours">
         <StackPanel>
             <StackPanel Orientation="Horizontal" Margin="5">
                 <GroupBox Header="Pre Processed Image">
@@ -13,17 +13,31 @@
             </StackPanel>
 
             <CheckBox Content="Fill Contours" IsChecked="{Binding Path=IsFillContours}" />
+            <CheckBox Content="Draw Contours" IsChecked="{Binding Path=IsDrawContours}" />
+            <CheckBox Content="Draw Center" IsChecked="{Binding Path=IsDrawCenter}" />
 
-            <StackPanel Orientation="Horizontal">
-                <Label Content="1 TABLET AREA"/>
-                <Slider Value="{Binding Path=SingleTabletSize}" Width="340" Height="25" Minimum="0" Maximum="10000" />
-                <TextBlock Text="{Binding Path=SingleTabletSize, StringFormat={}{0:#}}"/>
+            <StackPanel>
+                <Label Content="Min Contour Area"/>
+                <Slider Value="{Binding Path=MinContourArea}" Minimum="0" Maximum="1000" />
+                <TextBlock Text="{Binding Path=MinContourArea}"/>
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal">
-                <Label Content="APPROX POLY ACC"/>
-                <Slider Value="{Binding Path=ApproxPolyAccuracy}" Width="340" Height="25" Minimum="0" Maximum="0.2" />
-                <TextBlock Text="{Binding Path=ApproxPolyAccuracy, StringFormat={}{0:0.000}}"/>
+            <StackPanel>
+                <Label Content="Min Angle"/>
+                <Slider Value="{Binding Path=MinAngle}" Minimum="0" Maximum="180" />
+                <TextBlock Text="{Binding Path=MinAngle}"/>
+            </StackPanel>
+
+            <StackPanel>
+                <Label Content="Max Angle"/>
+                <Slider Value="{Binding Path=MaxAngle}" Minimum="0" Maximum="180" />
+                <TextBlock Text="{Binding Path=MaxAngle}"/>
+            </StackPanel>
+
+            <StackPanel>
+                <Label Content="Timeout"/>
+                <Slider Value="{Binding Path=Timeout}" Minimum="0" Maximum="10000" />
+                <TextBlock Text="{Binding Path=Timeout}"/>
             </StackPanel>
         </StackPanel>
     </DataTemplate>

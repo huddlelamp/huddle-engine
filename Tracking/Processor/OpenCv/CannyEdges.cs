@@ -1,4 +1,5 @@
-﻿using System.Xml.Serialization;
+﻿using System;
+using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using Tools.FlockingDevice.Tracking.Properties;
@@ -12,73 +13,106 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
     {
         #region properties
 
-        #region NumDilate
+        #region Threshold
 
         /// <summary>
-        /// The <see cref="NumDilate" /> property's name.
+        /// The <see cref="Threshold" /> property's name.
         /// </summary>
-        public const string NumDilatePropertyName = "NumDilate";
+        public const string ThreholdPropertyName = "Threshold";
 
-        private int _numDilate = Settings.Default.NumDilate;
+        private double _threshold = 180.0;
 
         /// <summary>
-        /// Sets and gets the NumDilate property.
+        /// Sets and gets the Threshold property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [XmlAttribute]
-        public int NumDilate
+        public double Threshold
         {
             get
             {
-                return _numDilate;
+                return _threshold;
             }
 
             set
             {
-                if (_numDilate == value)
+                if (_threshold == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(NumDilatePropertyName);
-                _numDilate = value;
-                RaisePropertyChanged(NumDilatePropertyName);
+                RaisePropertyChanging(ThreholdPropertyName);
+                _threshold = value;
+                RaisePropertyChanged(ThreholdPropertyName);
             }
         }
 
         #endregion
 
-        #region NumErode
+        #region ThresholdLinking
 
         /// <summary>
-        /// The <see cref="NumErode" /> property's name.
+        /// The <see cref="ThresholdLinking" /> property's name.
         /// </summary>
-        public const string NumErodePropertyName = "NumErode";
+        public const string ThresholdLinkingPropertyName = "ThresholdLinking";
 
-        private int _numErode = Settings.Default.NumErode;
+        private double _thresholdLinking = 120.0;
 
         /// <summary>
-        /// Sets and gets the NumErode property.
+        /// Sets and gets the ThresholdLinking property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [XmlAttribute]
-        public int NumErode
+        public double ThresholdLinking
         {
             get
             {
-                return _numErode;
+                return _thresholdLinking;
             }
 
             set
             {
-                if (_numErode == value)
+                if (_thresholdLinking == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(NumErodePropertyName);
-                _numErode = value;
-                RaisePropertyChanged(NumErodePropertyName);
+                RaisePropertyChanging(ThresholdLinkingPropertyName);
+                _thresholdLinking = value;
+                RaisePropertyChanged(ThresholdLinkingPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region GaussianPyramidDownUpDecomposition
+
+        /// <summary>
+        /// The <see cref="GaussianPyramidDownUpDecomposition" /> property's name.
+        /// </summary>
+        public const string GaussianPyramidDownUpDecompositionPropertyName = "GaussianPyramidDownUpDecomposition";
+
+        private bool _gaussianPyramidDownUpDecomposition = true;
+
+        /// <summary>
+        /// Sets and gets the GaussianPyramidDownUpDecomposition property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool GaussianPyramidDownUpDecomposition
+        {
+            get
+            {
+                return _gaussianPyramidDownUpDecomposition;
+            }
+
+            set
+            {
+                if (_gaussianPyramidDownUpDecomposition == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(GaussianPyramidDownUpDecompositionPropertyName);
+                _gaussianPyramidDownUpDecomposition = value;
+                RaisePropertyChanged(GaussianPyramidDownUpDecompositionPropertyName);
             }
         }
 
@@ -88,9 +122,22 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
         {
-            image = image.Erode(NumErode);
-            image = image.Dilate(NumDilate);
-            
+            //Convert the image to grayscale and filter out the noise
+            var grayImage = image.Convert<Gray, Byte>();
+
+            // Dispose old image
+            image.Dispose();
+
+            if (GaussianPyramidDownUpDecomposition)
+                grayImage = grayImage.PyrDown().PyrUp();
+
+            var cannyEdges = grayImage.Canny(Threshold, ThresholdLinking);
+
+            image = cannyEdges.Convert<Rgb, byte>();
+
+            // Dispose gray image
+            grayImage.Dispose();
+
             return image;
         }
     }

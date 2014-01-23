@@ -15,6 +15,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
     [XmlInclude(typeof(Basics))]
     [XmlInclude(typeof(BlobTracker))]
     [XmlInclude(typeof(CannyEdges))]
+    [XmlInclude(typeof(ErodeDilate))]
     [XmlInclude(typeof(FindContours))]
     public abstract class RgbProcessor : GenericProcessor<Rgb, byte>
     {

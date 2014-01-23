@@ -160,7 +160,7 @@ namespace Tools.FlockingDevice.Tracking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Pipeline.ppl")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Pipeline.xml")]
         public string PipelineFilename {
             get {
                 return ((string)(this["PipelineFilename"]));

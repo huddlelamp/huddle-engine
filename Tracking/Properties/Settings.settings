@@ -48,7 +48,7 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="PipelineFilename" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Pipeline.ppl</Value>
+      <Value Profile="(Default)">Pipeline.xml</Value>
     </Setting>
   </Settings>
 </SettingsFile>

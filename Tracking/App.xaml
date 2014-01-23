@@ -16,6 +16,7 @@
                 <ResourceDictionary Source="Templates/BasicsView.xaml"/>
                 <ResourceDictionary Source="Templates/DepthProcessorView.xaml"/>
                 <ResourceDictionary Source="Templates/CannyEdgesView.xaml"/>
+                <ResourceDictionary Source="Templates/ErodeDilateView.xaml"/>
                 <ResourceDictionary Source="Templates/FindContoursView.xaml"/>
                 <ResourceDictionary Source="Templates/BlobTrackerView.xaml"/>
             </ResourceDictionary.MergedDictionaries>

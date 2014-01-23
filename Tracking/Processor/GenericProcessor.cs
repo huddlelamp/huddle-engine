@@ -142,37 +142,37 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
-        #region Exceptions
+        #region Messages
 
         /// <summary>
-        /// The <see cref="Exceptions" /> property's name.
+        /// The <see cref="Messages" /> property's name.
         /// </summary>
-        public const string ExceptionsPropertyName = "Exceptions";
+        public const string MessagesPropertyName = "Messages";
 
-        private ObservableCollection<Exception> _exceptions = new ObservableCollection<Exception>();
+        private ObservableCollection<string> _messages = new ObservableCollection<string>();
 
         /// <summary>
-        /// Sets and gets the Exceptions property.
+        /// Sets and gets the Messages property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         [XmlIgnore]
-        public ObservableCollection<Exception> Exceptions
+        public ObservableCollection<string> Messages
         {
             get
             {
-                return _exceptions;
+                return _messages;
             }
 
             set
             {
-                if (_exceptions == value)
+                if (_messages == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(ExceptionsPropertyName);
-                _exceptions = value;
-                RaisePropertyChanged(ExceptionsPropertyName);
+                RaisePropertyChanging(MessagesPropertyName);
+                _messages = value;
+                RaisePropertyChanged(MessagesPropertyName);
             }
         }
 
@@ -206,8 +206,8 @@ namespace Tools.FlockingDevice.Tracking.Processor
             {
                 DispatcherHelper.RunAsync(() =>
                 {
-                    if (!Exceptions.Any(i => Equals(e.Message, i.Message)))
-                        Exceptions.Add(e);
+                    if (!Messages.Any(m => Equals(e.Message, m)))
+                        Log(e.Message);
                 });
                 return image;
             }
@@ -237,6 +237,17 @@ namespace Tools.FlockingDevice.Tracking.Processor
         protected virtual void DrawDebug(Image<TColor, TDepth> image)
         {
             // empty
+        }
+
+        protected void Log(string format, params object[] args)
+        {
+            DispatcherHelper.RunAsync(() =>
+            {
+                if (Messages.Count > 100)
+                    Messages.RemoveAt(100);
+
+                Messages.Insert(0, string.Format(format, args));
+            });
         }
     }
 }

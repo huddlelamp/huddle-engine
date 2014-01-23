@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Pipeline xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <InputSource xsi:type="Senz3DInputSource" IsRenderColorImage="false" IsRenderDepthImage="false" DepthConfidenceThreshold="346.5048" DepthSmoothing="false" />
+  <ColorImageProcessors />
+  <DepthImageProcessors>
+    <Processor xsi:type="Basics" IsRenderImages="false" ROI="20, 20, 280, 200" FlipVertical="true" FlipHorizontal="true" />
+    <Processor xsi:type="ErodeDilate" IsRenderImages="false" NumDilate="3" NumErode="3" />
+    <Processor xsi:type="CannyEdges" IsRenderImages="false">
+      <Threshold>186.47112462006058</Threshold>
+      <ThresholdLinking>122.36474164133752</ThresholdLinking>
+      <GaussianPyramidDownUpDecomposition>true</GaussianPyramidDownUpDecomposition>
+    </Processor>
+    <Processor xsi:type="FindContours" IsRenderImages="true" IsFillContours="true">
+      <MinAngle>80</MinAngle>
+      <MaxAngle>100</MaxAngle>
+      <MinContourArea>123</MinContourArea>
+      <Timeout>2074</Timeout>
+      <IsDrawContours>true</IsDrawContours>
+      <IsDrawCenter>true</IsDrawCenter>
+    </Processor>
+  </DepthImageProcessors>
+</Pipeline>

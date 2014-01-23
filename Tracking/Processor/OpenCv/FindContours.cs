@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
+using Tools.FlockingDevice.Tracking.Processor.OpenCv.Filter;
+using Tools.FlockingDevice.Tracking.Processor.OpenCv.Struct;
 using Tools.FlockingDevice.Tracking.Properties;
 using Tools.FlockingDevice.Tracking.Util;
 
@@ -17,9 +21,153 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
         private readonly MemStorage _storage = new MemStorage();
 
+        private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
+
+        private List<RawObject> _objects = new List<RawObject>();
+
         #endregion
 
         #region properties
+
+        #region MinAngle
+
+        /// <summary>
+        /// The <see cref="MinAngle" /> property's name.
+        /// </summary>
+        public const string MinAnglePropertyName = "MinAngle";
+
+        private int _minAngle = 80;
+
+        /// <summary>
+        /// Sets and gets the MinAngle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int MinAngle
+        {
+            get
+            {
+                return _minAngle;
+            }
+
+            set
+            {
+                if (_minAngle == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(MinAnglePropertyName);
+                _minAngle = value;
+                RaisePropertyChanged(MinAnglePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region MaxAngle
+
+        /// <summary>
+        /// The <see cref="MaxAngle" /> property's name.
+        /// </summary>
+        public const string MaxAnglePropertyName = "MaxAngle";
+
+        private int _maxAngle = 100;
+
+        /// <summary>
+        /// Sets and gets the MaxAngle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int MaxAngle
+        {
+            get
+            {
+                return _maxAngle;
+            }
+
+            set
+            {
+                if (_maxAngle == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(MaxAnglePropertyName);
+                _maxAngle = value;
+                RaisePropertyChanged(MaxAnglePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region MinContourArea
+
+        /// <summary>
+        /// The <see cref="MinContourArea" /> property's name.
+        /// </summary>
+        public const string MinContourAreaPropertyName = "MinContourArea";
+
+        private int _minContourArea = 200;
+
+        /// <summary>
+        /// Sets and gets the MinContourArea property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int MinContourArea
+        {
+            get
+            {
+                return _minContourArea;
+            }
+
+            set
+            {
+                if (_minContourArea == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(MinContourAreaPropertyName);
+                _minContourArea = value;
+                RaisePropertyChanged(MinContourAreaPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Timeout
+
+        /// <summary>
+        /// The <see cref="Timeout" /> property's name.
+        /// </summary>
+        public const string TimeoutPropertyName = "Timeout";
+
+        private int _timeout = 500;
+
+        /// <summary>
+        /// Sets and gets the Timeout property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int Timeout
+        {
+            get
+            {
+                return _timeout;
+            }
+
+            set
+            {
+                if (_timeout == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(TimeoutPropertyName);
+                _timeout = value;
+                RaisePropertyChanged(TimeoutPropertyName);
+            }
+        }
+
+        #endregion
 
         #region IsFillContours
 
@@ -57,73 +205,71 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
         #endregion
 
-        #region SingleTabletSize
+        #region IsDrawContours
 
         /// <summary>
-        /// The <see cref="SingleTabletSize" /> property's name.
+        /// The <see cref="IsDrawContours" /> property's name.
         /// </summary>
-        public const string SingleTabletSizePropertyName = "SingleTabletSize";
+        public const string IsDrawContoursPropertyName = "IsDrawContours";
 
-        private double _singleTabletSize = Settings.Default.SingleTabletSize;
+        private bool _isDrawContours = true;
 
         /// <summary>
-        /// Sets and gets the SingleTabletSize property.
+        /// Sets and gets the IsDrawContours property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [XmlAttribute]
-        public double SingleTabletSize
+        public bool IsDrawContours
         {
             get
             {
-                return _singleTabletSize;
+                return _isDrawContours;
             }
 
             set
             {
-                if (_singleTabletSize == value)
+                if (_isDrawContours == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(SingleTabletSizePropertyName);
-                _singleTabletSize = value;
-                RaisePropertyChanged(SingleTabletSizePropertyName);
+                RaisePropertyChanging(IsDrawContoursPropertyName);
+                _isDrawContours = value;
+                RaisePropertyChanged(IsDrawContoursPropertyName);
             }
         }
 
         #endregion
 
-        #region ApproxPolyAccuracy
+        #region IsDrawCenter
 
         /// <summary>
-        /// The <see cref="ApproxPolyAccuracy" /> property's name.
+        /// The <see cref="IsDrawCenter" /> property's name.
         /// </summary>
-        public const string ApproxPolyAccuracyPropertyName = "ApproxPolyAccuracy";
+        public const string IsDrawCenterPropertyName = "IsDrawCenter";
 
-        private double _approxPolyAccuracy = Settings.Default.ApproxPolyAccuracy;
+        private bool _isDrawCenter = true;
 
         /// <summary>
-        /// Sets and gets the ApproxPolyAccuracy property.
+        /// Sets and gets the IsDrawCenter property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [XmlAttribute]
-        public double ApproxPolyAccuracy
+        public bool IsDrawCenter
         {
             get
             {
-                return _approxPolyAccuracy;
+                return _isDrawCenter;
             }
 
             set
             {
-                if (_approxPolyAccuracy == value)
+                if (_isDrawCenter == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(ApproxPolyAccuracyPropertyName);
-                _approxPolyAccuracy = value;
-                RaisePropertyChanged(ApproxPolyAccuracyPropertyName);
+                RaisePropertyChanging(IsDrawCenterPropertyName);
+                _isDrawCenter = value;
+                RaisePropertyChanged(IsDrawCenterPropertyName);
             }
         }
 
@@ -133,96 +279,94 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
         {
+            var now = DateTime.Now;
+
+            _objects.RemoveAll(o => ((now - o.LastUpdate).Milliseconds > Timeout));
+
             var outputImage = new Image<Rgb, byte>(image.Size.Width, image.Size.Height, Rgbs.Black);
 
-            #region second path
+            //Convert the image to grayscale and filter out the noise
+            var grayImage = image.Convert<Gray, Byte>();
 
-            //var triangleList = new List<Triangle2DF>();
-            //var boxList = new List<MCvBox2D>(); //a box is a rotated rectangle
-
-            //for (var contours2 = cannyEdges.FindContours(); contours2 != null; contours2 = contours2.HNext)
-            //{
-            //    var currentContour2 = contours2.ApproxPoly(contours2.Perimeter * ApproxPolyAccuracy, _storage);
-
-            //    var hull2 = currentContour2.GetConvexHull(ORIENTATION.CV_CLOCKWISE);
-
-            //    if (currentContour2.Area > 250) //only consider contours with area greater than 250
-            //    {
-            //        if (currentContour2.Total == 3) //The contour has 3 vertices, it is a triangle
-            //        {
-            //            var pts = currentContour2.ToArray();
-            //            triangleList.Add(new Triangle2DF(
-            //                pts[0],
-            //                pts[1],
-            //                pts[2]
-            //                ));
-
-            //            outputImage.FillConvexPoly(hull2.ToArray(), new Rgb(0, 255, 0));
-            //        }
-            //        else if (currentContour2.Total == 4) //The contour has 4 vertices.
-            //        {
-            //            #region determine if all the angles in the contour are within [80, 100] degree
-
-            //            var isRectangle = true;
-            //            var pts = currentContour2.ToArray();
-            //            var edges = PointCollection.PolyLine(pts, true);
-
-            //            for (int i = 0; i < edges.Length; i++)
-            //            {
-            //                double angle = Math.Abs(
-            //                    edges[(i + 1) % edges.Length].GetExteriorAngleDegree(edges[i]));
-            //                if (angle < 80 || angle > 100)
-            //                {
-            //                    isRectangle = false;
-            //                    break;
-            //                }
-            //            }
-
-            //            #endregion
-
-            //            if (isRectangle)
-            //            {
-            //                outputImage.FillConvexPoly(hull2.ToArray(), new Rgb(0, 255, 255));
-            //                boxList.Add(currentContour2.GetMinAreaRect());
-            //            }
-            //        }
-            //    }
-            //    _storage.Clear();
-            //}
-
-            #endregion
-
-            var grayImage = image.Convert<Gray, byte>();
-
-            for (var contours = grayImage.FindContours(); contours != null; contours = contours.HNext)
+            var triangleList = new List<Triangle2DF>();
+            for (var contours = grayImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_LIST, _storage); contours != null; contours = contours.HNext)
             {
-                var currentContour = contours.ApproxPoly(contours.Perimeter * ApproxPolyAccuracy, _storage);
+                var currentContour = contours.ApproxPoly(contours.Perimeter * 0.05, _storage);
 
-                var hull1 = currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE);
+                //Console.WriteLine("AREA {0}", currentContour.Area);
 
-                if (Math.Abs(hull1.Area - SingleTabletSize) < 1000)
+                if (currentContour.Area > MinContourArea) //only consider contours with area greater than 250
                 {
-                    if (IsFillContours)
-                        outputImage.FillConvexPoly(hull1.ToArray(), Rgbs.White);
-                    else
-                        outputImage.DrawPolyline(hull1.ToArray(), true, Rgbs.White, 1);
-                }
-                else if (Math.Abs(hull1.Area - SingleTabletSize * 2) < 1000 * 1.5)
-                {
-                    if (IsFillContours)
-                        outputImage.FillConvexPoly(hull1.ToArray(), Rgbs.Yellow);
-                    else
-                        outputImage.DrawPolyline(hull1.ToArray(), true, Rgbs.Yellow, 1);
-                }
-                //else
-                //{
-                //    if (IsFillContours)
-                //        outputImage.FillConvexPoly(hull1.ToArray(), Rgbs.Red);
-                //    else
-                //        outputImage.DrawPolyline(hull1.ToArray(), true, Rgbs.Red, 1);
-                //}
+                    if (currentContour.Total == 3) //The contour has 3 vertices, it is a triangle
+                    {
+                        Point[] pts = currentContour.ToArray();
+                        triangleList.Add(new Triangle2DF(
+                           pts[0],
+                           pts[1],
+                           pts[2]
+                           ));
+                    }
+                    else if (currentContour.Total == 4) //The contour has 4 vertices.
+                    {
+                        #region determine if all the angles in the contour are within [80, 100] degree
+                        bool isRectangle = true;
+                        Point[] pts = currentContour.ToArray();
+                        LineSegment2D[] edges = PointCollection.PolyLine(pts, true);
 
+                        for (int i = 0; i < edges.Length; i++)
+                        {
+                            var angle = Math.Abs(edges[(i + 1) % edges.Length].GetExteriorAngleDegree(edges[i]));
+
+
+                            if (angle < MinAngle || angle > MaxAngle)
+                            {
+                                isRectangle = false;
+                                break;
+                            }
+                        }
+                        #endregion
+
+                        //Log("Is Rectangle: {0}", isRectangle);
+
+                        if (isRectangle)
+                        {
+                            _objects.RemoveAll(o => currentContour.BoundingRectangle.IntersectsWith(o.Bounds));
+
+                            _objects.Add(new RawObject
+                            {
+                                LastUpdate = DateTime.Now,
+                                Bounds = currentContour.BoundingRectangle,
+                                Shape = currentContour.GetMinAreaRect(),
+                                Points = pts
+                            });
+                        }
+                    }
+                }
                 _storage.Clear();
+            }
+
+            foreach (var rawObject in _objects)
+            {
+                //var orig = currentContour.BoundingRectangle.Location;
+                //var pred = _kalmanFilter.GetPredictedPoint(orig);
+
+                //Log("Original={0}, Predicted={1}", orig, pred);
+
+                //outputImage.Draw(new CircleF(new PointF(orig.X, orig.Y), 5), Rgbs.Red, 5);
+
+
+
+                if (IsFillContours)
+                    outputImage.FillConvexPoly(rawObject.Points, Rgbs.Yellow);
+                
+                if (IsDrawContours)
+                    outputImage.Draw(rawObject.Shape, Rgbs.Red, 2);
+
+                if (IsDrawCenter)
+                {
+                    var circle = new CircleF(rawObject.Shape.center, 5);
+                    outputImage.Draw(circle, Rgbs.Green, 5);
+                }
             }
 
             grayImage.Dispose();

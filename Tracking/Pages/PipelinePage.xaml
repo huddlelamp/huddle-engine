@@ -58,32 +58,29 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                     <Grid Margin="10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1000" />
-                            <ColumnDefinition Width="400" />
-                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                        <ContentPresenter Grid.Column="0" Content="{Binding}"
+                        <ContentPresenter Grid.Row="0" Content="{Binding}"
                                           ContentTemplateSelector="{StaticResource ResourceKey=ProcessorViewTemplateSelector}" />
 
-                        <ScrollViewer Grid.Column="1" Height="200"
-                                      Width="400">
-                            <ItemsControl ItemsSource="{Binding Path=Exceptions}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Vertical" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel>
-                                            <Label Content="{Binding Path=Message}" FontWeight="Bold" />
-                                            <Label Content="{Binding Path=StackTrace}" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
+                        <Expander Grid.Row="1"
+                                  Header="Logs">
+                            <ScrollViewer Height="200">
+                                <ItemsControl ItemsSource="{Binding Path=Messages}"
+                                              Background="White">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel>
+                                                <Label Content="{Binding}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Expander>
                     </Grid>
                 </controls:RemovableExpander>
             </Border>
@@ -199,7 +196,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <Image Source="http://dockphp.com/img/drag-icon.png"
+                <Image Source="/FlockingDevice.Tracking;component/Resources/drag-icon.png"
                        Width="30" Height="30" />
 
                 <Label Grid.Column="1" Content="{Binding Path=Name}"
