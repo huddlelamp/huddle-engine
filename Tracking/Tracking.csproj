@@ -161,9 +161,13 @@
     <Compile Include="Controls\RemovableExpander.xaml.cs">
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Data\IData.cs" />
+    <Compile Include="Data\ImageData.cs" />
+    <Compile Include="Data\RgbImageData.cs" />
     <Compile Include="Pages\PipelinePage.xaml.cs">
       <DependentUpon>PipelinePage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Processor\BaseProcessor.cs" />
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
     <Compile Include="Processor\OpenCv\Filter\KalmanFilter.cs" />
     <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
@@ -180,7 +184,7 @@
     <Compile Include="Extensions\DependencyObjectExtensions.cs" />
     <Compile Include="Model\Pipeline.cs" />
     <Compile Include="Processor\OpenCv\CannyEdges.cs" />
-    <Compile Include="Processor\GenericProcessor.cs" />
+    <Compile Include="Processor\BaseImageProcessor.cs" />
     <Compile Include="Processor\OpenCv\Basics.cs" />
     <Compile Include="Processor\OpenCv\BlobTracker.cs" />
     <Compile Include="Processor\DepthProcessor.cs" />

@@ -17,7 +17,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
     [XmlInclude(typeof(CannyEdges))]
     [XmlInclude(typeof(ErodeDilate))]
     [XmlInclude(typeof(FindContours))]
-    public abstract class RgbProcessor : GenericProcessor<Rgb, byte>
+    public abstract class RgbProcessor : BaseImageProcessor<Rgb, byte>
     {
         #region private fields
 

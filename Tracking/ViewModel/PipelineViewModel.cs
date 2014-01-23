@@ -12,6 +12,7 @@ using Emgu.CV.External.Extensions;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Threading;
+using Tools.FlockingDevice.Tracking.Data;
 using Tools.FlockingDevice.Tracking.Model;
 using Tools.FlockingDevice.Tracking.Processor;
 using Tools.FlockingDevice.Tracking.Properties;
@@ -339,9 +340,12 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
             //_colorImageTask = Task.Factory.StartNew(() =>
             //{
-            var colorImage = e.ColorImage;
+            var allColorData = new IData[]
+            {
+                new RgbImageData(e.ColorImage) 
+            };
 
-            var colorImageCopy = colorImage.Copy();
+            var colorImageCopy = e.ColorImage.Copy();
             DispatcherHelper.RunAsync(() =>
             {
                 ColorImage = colorImageCopy.ToBitmapSource();
@@ -351,7 +355,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             if (Model.ColorImageProcessors.Any())
                 foreach (var colorProcessor in Model.ColorImageProcessors.ToArray())
                 {
-                    colorImage = colorProcessor.Process(colorImage);
+                    allColorData = colorProcessor.Process(allColorData);
                     //image.Dispose();
                 }
             //});
@@ -365,9 +369,12 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
             //_depthImageTask = Task.Factory.StartNew(() =>
             //{
-            var depthImage = e.DepthImage;
+            var allDepthData = new IData[]
+            {
+                new RgbImageData(e.DepthImage) 
+            };
 
-            var depthImageCopy = depthImage.Copy();
+            var depthImageCopy = e.DepthImage.Copy();
             DispatcherHelper.RunAsync(() =>
             {
                 DepthImage = depthImageCopy.ToBitmapSource();
@@ -377,7 +384,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             if (Model.DepthImageProcessors.Any())
                 foreach (var depthProcessor in Model.DepthImageProcessors.ToArray())
                 {
-                    depthImage = depthProcessor.Process(depthImage);
+                    allDepthData = depthProcessor.Process(allDepthData);
                     //image.Dispose();
                 }
             //});

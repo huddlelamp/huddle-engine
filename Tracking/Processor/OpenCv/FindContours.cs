@@ -19,8 +19,6 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
     {
         #region private fields
 
-        private readonly MemStorage _storage = new MemStorage();
-
         private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
 
         private List<RawObject> _objects = new List<RawObject>();
@@ -289,60 +287,62 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
             var grayImage = image.Convert<Gray, Byte>();
 
             var triangleList = new List<Triangle2DF>();
-            for (var contours = grayImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_LIST, _storage); contours != null; contours = contours.HNext)
+            using (var storage = new MemStorage())
             {
-                var currentContour = contours.ApproxPoly(contours.Perimeter * 0.05, _storage);
-
-                //Console.WriteLine("AREA {0}", currentContour.Area);
-
-                if (currentContour.Area > MinContourArea) //only consider contours with area greater than 250
+                for (var contours = grayImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_LIST, storage); contours != null; contours = contours.HNext)
                 {
-                    if (currentContour.Total == 3) //The contour has 3 vertices, it is a triangle
-                    {
-                        Point[] pts = currentContour.ToArray();
-                        triangleList.Add(new Triangle2DF(
-                           pts[0],
-                           pts[1],
-                           pts[2]
-                           ));
-                    }
-                    else if (currentContour.Total == 4) //The contour has 4 vertices.
-                    {
-                        #region determine if all the angles in the contour are within [80, 100] degree
-                        bool isRectangle = true;
-                        Point[] pts = currentContour.ToArray();
-                        LineSegment2D[] edges = PointCollection.PolyLine(pts, true);
+                    var currentContour = contours.ApproxPoly(contours.Perimeter * 0.05, storage);
 
-                        for (int i = 0; i < edges.Length; i++)
+                    //Console.WriteLine("AREA {0}", currentContour.Area);
+
+                    if (currentContour.Area > MinContourArea) //only consider contours with area greater than 250
+                    {
+                        if (currentContour.Total == 3) //The contour has 3 vertices, it is a triangle
                         {
-                            var angle = Math.Abs(edges[(i + 1) % edges.Length].GetExteriorAngleDegree(edges[i]));
-
-
-                            if (angle < MinAngle || angle > MaxAngle)
-                            {
-                                isRectangle = false;
-                                break;
-                            }
+                            Point[] pts = currentContour.ToArray();
+                            triangleList.Add(new Triangle2DF(
+                               pts[0],
+                               pts[1],
+                               pts[2]
+                               ));
                         }
-                        #endregion
-
-                        //Log("Is Rectangle: {0}", isRectangle);
-
-                        if (isRectangle)
+                        else if (currentContour.Total == 4) //The contour has 4 vertices.
                         {
-                            _objects.RemoveAll(o => currentContour.BoundingRectangle.IntersectsWith(o.Bounds));
+                            #region determine if all the angles in the contour are within [80, 100] degree
+                            bool isRectangle = true;
+                            Point[] pts = currentContour.ToArray();
+                            LineSegment2D[] edges = PointCollection.PolyLine(pts, true);
 
-                            _objects.Add(new RawObject
+                            for (int i = 0; i < edges.Length; i++)
                             {
-                                LastUpdate = DateTime.Now,
-                                Bounds = currentContour.BoundingRectangle,
-                                Shape = currentContour.GetMinAreaRect(),
-                                Points = pts
-                            });
+                                var angle = Math.Abs(edges[(i + 1) % edges.Length].GetExteriorAngleDegree(edges[i]));
+
+
+                                if (angle < MinAngle || angle > MaxAngle)
+                                {
+                                    isRectangle = false;
+                                    break;
+                                }
+                            }
+                            #endregion
+
+                            //Log("Is Rectangle: {0}", isRectangle);
+
+                            if (isRectangle)
+                            {
+                                _objects.RemoveAll(o => currentContour.BoundingRectangle.IntersectsWith(o.Bounds));
+
+                                _objects.Add(new RawObject
+                                {
+                                    LastUpdate = DateTime.Now,
+                                    Bounds = currentContour.BoundingRectangle,
+                                    Shape = currentContour.GetMinAreaRect(),
+                                    Points = pts
+                                });
+                            }
                         }
                     }
                 }
-                _storage.Clear();
             }
 
             foreach (var rawObject in _objects)
@@ -358,7 +358,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
                 if (IsFillContours)
                     outputImage.FillConvexPoly(rawObject.Points, Rgbs.Yellow);
-                
+
                 if (IsDrawContours)
                     outputImage.Draw(rawObject.Shape, Rgbs.Red, 2);
 

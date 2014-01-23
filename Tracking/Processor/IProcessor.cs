@@ -1,10 +1,10 @@
-﻿using Emgu.CV;
+﻿using System.Collections.Generic;
+using System.Windows.Documents;
+using Tools.FlockingDevice.Tracking.Data;
 
 namespace Tools.FlockingDevice.Tracking.Processor
 {
-    public interface IProcessor<TColor, TDepth>
-        where TColor : struct, IColor
-        where TDepth : new()
+    public interface IProcessor
     {
         #region public properties
 
@@ -12,6 +12,6 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
-        Image<TColor, TDepth> Process(Image<TColor, TDepth> image);
+        List<IData> Process(List<IData> allData);
     }
 }
