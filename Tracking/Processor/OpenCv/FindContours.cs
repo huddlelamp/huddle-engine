@@ -279,7 +279,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
         {
             var now = DateTime.Now;
 
-            _objects.RemoveAll(o => ((now - o.LastUpdate).Milliseconds > Timeout));
+            _objects.RemoveAll(o => (now - o.LastUpdate).TotalMilliseconds > Timeout);
 
             var outputImage = new Image<Rgb, byte>(image.Size.Width, image.Size.Height, Rgbs.Black);
 
@@ -354,8 +354,6 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
                 //outputImage.Draw(new CircleF(new PointF(orig.X, orig.Y), 5), Rgbs.Red, 5);
 
-
-
                 if (IsFillContours)
                     outputImage.FillConvexPoly(rawObject.Points, Rgbs.Yellow);
 
@@ -364,9 +362,11 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
                 if (IsDrawCenter)
                 {
-                    var circle = new CircleF(rawObject.Shape.center, 5);
-                    outputImage.Draw(circle, Rgbs.Green, 5);
+                    var circle = new CircleF(rawObject.Shape.center, 3);
+                    outputImage.Draw(circle, Rgbs.Green, 3);
                 }
+
+                outputImage.Draw(string.Format("Angle {0}", rawObject.Shape.angle), ref EmguFont, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
             }
 
             grayImage.Dispose();

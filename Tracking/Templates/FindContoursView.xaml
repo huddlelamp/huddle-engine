@@ -3,14 +3,21 @@
                     xmlns:processor="clr-namespace:Tools.FlockingDevice.Tracking.Processor.OpenCv">
     <DataTemplate x:Key="FindContours" DataType="processor:FindContours">
         <StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="5">
-                <GroupBox Header="Pre Processed Image">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
                     <Image Source="{Binding Path=PreProcessImage}" />
                 </GroupBox>
-                <GroupBox Header="Post Processed Image">
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
                     <Image Source="{Binding Path=PostProcessImage}" />
                 </GroupBox>
-            </StackPanel>
+            </Grid>
 
             <CheckBox Content="Fill Contours" IsChecked="{Binding Path=IsFillContours}" />
             <CheckBox Content="Draw Contours" IsChecked="{Binding Path=IsDrawContours}" />

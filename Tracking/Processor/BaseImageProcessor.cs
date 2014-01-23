@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Media.Imaging;
@@ -142,58 +143,14 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
-        #region Messages
-
-        /// <summary>
-        /// The <see cref="Messages" /> property's name.
-        /// </summary>
-        public const string MessagesPropertyName = "Messages";
-
-        private ObservableCollection<string> _messages = new ObservableCollection<string>();
-
-        /// <summary>
-        /// Sets and gets the Messages property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        [XmlIgnore]
-        public ObservableCollection<string> Messages
+        protected override IData Process(IData data)
         {
-            get
-            {
-                return _messages;
-            }
+            var imageData = data as ImageData<TColor, TDepth>;
 
-            set
-            {
-                if (_messages == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(MessagesPropertyName);
-                _messages = value;
-                RaisePropertyChanged(MessagesPropertyName);
-            }
+            return imageData != null ? Process(imageData) : data;
         }
 
-        #endregion
-
-        public IData[] Process(IData[] data)
-        {
-            foreach (var d in data)
-            {
-                var imageData = d as ImageData<TColor, TDepth>;
-
-                if (imageData == null)
-                    continue;
-
-                Process(imageData);
-            }
-
-            return data;
-        }
-
-        protected IData Process(ImageData<TColor, TDepth> data)
+        private IData Process(ImageData<TColor, TDepth> data)
         {
             var image = data.Image;
 
@@ -252,17 +209,6 @@ namespace Tools.FlockingDevice.Tracking.Processor
         protected virtual void DrawDebug(Image<TColor, TDepth> image)
         {
             // empty
-        }
-
-        protected void Log(string format, params object[] args)
-        {
-            DispatcherHelper.RunAsync(() =>
-            {
-                if (Messages.Count > 100)
-                    Messages.RemoveAt(100);
-
-                Messages.Insert(0, string.Format(format, args));
-            });
         }
     }
 }

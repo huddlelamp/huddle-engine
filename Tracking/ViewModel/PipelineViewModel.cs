@@ -340,7 +340,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
             //_colorImageTask = Task.Factory.StartNew(() =>
             //{
-            var allColorData = new IData[]
+            var allColorData = new List<IData>
             {
                 new RgbImageData(e.ColorImage) 
             };
@@ -369,7 +369,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
             //_depthImageTask = Task.Factory.StartNew(() =>
             //{
-            var allDepthData = new IData[]
+            var allDepthData = new List<IData>
             {
                 new RgbImageData(e.DepthImage) 
             };

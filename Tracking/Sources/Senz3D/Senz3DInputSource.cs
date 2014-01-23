@@ -232,16 +232,16 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
                 if (pp.IsDisconnected()) break;
 
                 /* Display images */
-                PXCMImage color = pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_COLOR);
-                PXCMImage depth = pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_DEPTH);
+                var color = pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_COLOR);
+                var depth = pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_DEPTH);
 
                 var colorBitmap = GetRgb32Pixels(color);
                 var depthBitmap = GetRgb32Pixels(depth);
 
                 pp.ReleaseFrame();
 
-                Image<Rgb, byte> colorImage = new Image<Rgb, byte>(colorBitmap);
-                Image<Rgb, byte> depthImage = new Image<Rgb, byte>(depthBitmap);
+                var colorImage = new Image<Rgb, byte>(colorBitmap);
+                var depthImage = new Image<Rgb, byte>(depthBitmap);
 
                 if (ImageReady != null)
                     ImageReady(this, new ImageEventArgs(colorImage, depthImage, diffImageFrameTime));
