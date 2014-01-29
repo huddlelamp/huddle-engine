@@ -318,13 +318,8 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
             var SATURATION = (int)prop;
 
             PXCMImage.ImageData cdata;
-            byte[] cpixels;
             if (image.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH, out cdata) >= pxcmStatus.PXCM_STATUS_NO_ERROR)
             {
-                cpixels = cdata.ToByteArray(0, cwidth * cheight * 4);
-
-
-
                 for (int y = 0; y < inputHeight; y++)
                 {
                     for (int x = 0; x < inputWidth; x++)
