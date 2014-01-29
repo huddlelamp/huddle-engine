@@ -23,6 +23,12 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
+        #region AllData
+
+        protected List<IData> AllData { get; private set; }
+
+        #endregion
+
         #region Messages
 
         /// <summary>
@@ -63,7 +69,11 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         public virtual List<IData> Process(List<IData> allData)
         {
+            AllData = allData;
+
             allData.RemoveAll(d => Process(d) == null);
+
+            AllData = null;
 
             return allData;
         }

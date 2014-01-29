@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using System.Xml;
@@ -20,6 +21,7 @@ using Tools.FlockingDevice.Tracking.Sources;
 using Application = System.Windows.Application;
 using DragDropEffects = System.Windows.DragDropEffects;
 using DragEventArgs = System.Windows.DragEventArgs;
+using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
 {
@@ -340,12 +342,15 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
             //_colorImageTask = Task.Factory.StartNew(() =>
             //{
+
+            var colorImage = e.Images["color"];
+
             var allColorData = new List<IData>
             {
-                new RgbImageData(e.ColorImage) 
+                new RgbImageData("color", colorImage) 
             };
 
-            var colorImageCopy = e.ColorImage.Copy();
+            var colorImageCopy = colorImage.Copy();
             DispatcherHelper.RunAsync(() =>
             {
                 ColorImage = colorImageCopy.ToBitmapSource();
@@ -369,12 +374,17 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
             //_depthImageTask = Task.Factory.StartNew(() =>
             //{
+
+            var depthImage = e.Images["depth"];
+            var confidenceImage = e.Images["confidence"];
+
             var allDepthData = new List<IData>
             {
-                new RgbImageData(e.DepthImage) 
+                new RgbImageData("depth", depthImage),
+                new RgbImageData("confidence", confidenceImage)
             };
 
-            var depthImageCopy = e.DepthImage.Copy();
+            var depthImageCopy = confidenceImage.Copy();
             DispatcherHelper.RunAsync(() =>
             {
                 DepthImage = depthImageCopy.ToBitmapSource();

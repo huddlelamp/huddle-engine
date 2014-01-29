@@ -161,6 +161,7 @@
     <Compile Include="Controls\RemovableExpander.xaml.cs">
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Data\BaseData.cs" />
     <Compile Include="Data\IData.cs" />
     <Compile Include="Data\ImageData.cs" />
     <Compile Include="Data\RgbImageData.cs" />

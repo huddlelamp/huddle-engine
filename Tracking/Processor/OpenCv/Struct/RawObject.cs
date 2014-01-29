@@ -6,11 +6,55 @@ using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV.Structure;
 using GalaSoft.MvvmLight;
+using Tools.FlockingDevice.Tracking.Processor.OpenCv.Filter;
 
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv.Struct
 {
     public class RawObject : ObservableObject
     {
+        #region private fields
+
+        private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
+
+        #endregion
+
+        #region properties
+
+        #region Id
+
+        /// <summary>
+        /// The <see cref="Id" /> property's name.
+        /// </summary>
+        public const string IdPropertyName = "Id";
+
+        private long _id = -1;
+
+        /// <summary>
+        /// Sets and gets the Id property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public long Id
+        {
+            get
+            {
+                return _id;
+            }
+
+            set
+            {
+                if (_id == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IdPropertyName);
+                _id = value;
+                RaisePropertyChanged(IdPropertyName);
+            }
+        }
+
+        #endregion
+
         #region LastUpdate
 
         /// <summary>
@@ -41,6 +85,41 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv.Struct
                 RaisePropertyChanging(LastUpdatePropertyName);
                 _lastUpdate = value;
                 RaisePropertyChanged(LastUpdatePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Center
+
+        /// <summary>
+        /// The <see cref="Center" /> property's name.
+        /// </summary>
+        public const string CenterPropertyName = "Center";
+
+        private Point _center = Point.Empty;
+
+        /// <summary>
+        /// Sets and gets the Center property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Point Center
+        {
+            get
+            {
+                return _center;
+            }
+
+            set
+            {
+                if (_center == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(CenterPropertyName);
+                _center = value;
+                RaisePropertyChanged(CenterPropertyName);
             }
         }
 
@@ -146,6 +225,32 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv.Struct
                 RaisePropertyChanging(PointsPropertyName);
                 _points = value;
                 RaisePropertyChanged(PointsPropertyName);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region PredictedCenter
+
+        public Point PredictedCenter
+        {
+            get
+            {
+                return _kalmanFilter.GetPredictedPoint(Center);
+            }
+        }
+
+        #endregion
+
+        #region EstimatedCenter
+
+        public Point EstimatedCenter
+        {
+            get
+            {
+                return _kalmanFilter.GetEstimatedPoint(Center);
             }
         }
 

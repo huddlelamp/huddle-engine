@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Tools.FlockingDevice.Tracking.Data
+﻿namespace Tools.FlockingDevice.Tracking.Data
 {
     public interface IData
     {
+        string Key { get; }
     }
 }

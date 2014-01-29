@@ -1,11 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using System.Windows.Forms.VisualStyles;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
+using Emgu.CV.Flann;
+using Emgu.CV.GPU;
 using Emgu.CV.Structure;
+using Emgu.Util.TypeEnum;
+using GalaSoft.MvvmLight.Threading;
+using Tools.FlockingDevice.Tracking.Data;
 using Tools.FlockingDevice.Tracking.Processor.OpenCv.Filter;
 using Tools.FlockingDevice.Tracking.Processor.OpenCv.Struct;
 using Tools.FlockingDevice.Tracking.Properties;
@@ -19,9 +29,9 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
     {
         #region private fields
 
-        private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
+        private static long _id = 0;
 
-        private List<RawObject> _objects = new List<RawObject>();
+        private readonly List<RawObject> _objects = new List<RawObject>();
 
         #endregion
 
@@ -273,13 +283,182 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
         #endregion
 
+        #region MaxDistanceRestoreId
+
+        /// <summary>
+        /// The <see cref="MaxDistanceRestoreId" /> property's name.
+        /// </summary>
+        public const string MaxDistanceRestoreIdPropertyName = "MaxDistanceRestoreId";
+
+        private double _maxDistanceRestoreId = 10.0;
+
+        /// <summary>
+        /// Sets and gets the MaxDistanceRestoreId property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double MaxDistanceRestoreId
+        {
+            get
+            {
+                return _maxDistanceRestoreId;
+            }
+
+            set
+            {
+                if (_maxDistanceRestoreId == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(MaxDistanceRestoreIdPropertyName);
+                _maxDistanceRestoreId = value;
+                RaisePropertyChanged(MaxDistanceRestoreIdPropertyName);
+            }
+        }
+
         #endregion
+
+        #region IsSubtractConfidenceImage
+
+        /// <summary>
+        /// The <see cref="IsSubtractConfidenceImage" /> property's name.
+        /// </summary>
+        public const string IsSubtractConfidenceImagePropertyName = "IsSubtractConfidenceImage";
+
+        private bool _isSubtractConfidenceImage = false;
+
+        /// <summary>
+        /// Sets and gets the IsSubtractConfidenceImage property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsSubtractConfidenceImage
+        {
+            get
+            {
+                return _isSubtractConfidenceImage;
+            }
+
+            set
+            {
+                if (_isSubtractConfidenceImage == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsSubtractConfidenceImagePropertyName);
+                _isSubtractConfidenceImage = value;
+                RaisePropertyChanged(IsSubtractConfidenceImagePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region ConfidenceImage
+
+        /// <summary>
+        /// The <see cref="ConfidenceImage" /> property's name.
+        /// </summary>
+        public const string ConfidenceImagePropertyName = "ConfidenceImage";
+
+        private BitmapSource _confidenceImage;
+
+        /// <summary>
+        /// Sets and gets the ConfidenceImage property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlIgnore]
+        public BitmapSource ConfidenceImage
+        {
+            get
+            {
+                return _confidenceImage;
+            }
+
+            set
+            {
+                if (_confidenceImage == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ConfidenceImagePropertyName);
+                _confidenceImage = value;
+                RaisePropertyChanged(ConfidenceImagePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region SubtractImage
+
+        /// <summary>
+        /// The <see cref="SubtractImage" /> property's name.
+        /// </summary>
+        public const string SubtractImagePropertyName = "SubtractImage";
+
+        private BitmapSource _subtractImage;
+
+        /// <summary>
+        /// Sets and gets the SubtractImage property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlIgnore]
+        public BitmapSource SubtractImage
+        {
+            get
+            {
+                return _subtractImage;
+            }
+
+            set
+            {
+                if (_subtractImage == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(SubtractImagePropertyName);
+                _subtractImage = value;
+                RaisePropertyChanged(SubtractImagePropertyName);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        protected override IData Process(IData data)
+        {
+            if (Equals("confidence", data.Key))
+                return data;
+
+            return base.Process(data);
+        }
 
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
         {
             var now = DateTime.Now;
 
             _objects.RemoveAll(o => (now - o.LastUpdate).TotalMilliseconds > Timeout);
+
+            var confidenceImage = AllData.First(d => Equals(d.Key, "confidence")) as RgbImageData;
+
+            if (confidenceImage != null)
+            {
+                //Console.WriteLine(confidenceImage);
+
+                var subtractImage = image.Sub(confidenceImage.Image);
+                image.Dispose();
+                image = subtractImage;
+
+                var subtractImageCopy = subtractImage.Copy();
+                DispatcherHelper.RunAsync(() =>
+                {
+                    ConfidenceImage = confidenceImage.Image.ToBitmapSource();
+                    SubtractImage = subtractImageCopy.ToBitmapSource();
+                    subtractImageCopy.Dispose();
+                });
+            }
 
             var outputImage = new Image<Rgb, byte>(image.Size.Width, image.Size.Height, Rgbs.Black);
 
@@ -330,15 +509,49 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
                             if (isRectangle)
                             {
-                                _objects.RemoveAll(o => currentContour.BoundingRectangle.IntersectsWith(o.Bounds));
+                                bool updated = false;
 
-                                _objects.Add(new RawObject
+                                foreach (var o in _objects)
                                 {
-                                    LastUpdate = DateTime.Now,
-                                    Bounds = currentContour.BoundingRectangle,
-                                    Shape = currentContour.GetMinAreaRect(),
-                                    Points = pts
-                                });
+                                    var oCenter = o.Shape.center;
+                                    var cCenter = currentContour.GetMinAreaRect().center;
+
+                                    //var distance = currentContour.Distance(shapeCenter);
+
+                                    var distance2 = Math.Sqrt(Math.Pow(oCenter.X - cCenter.X, 2) + Math.Pow(oCenter.Y - cCenter.Y, 2));
+
+                                    Log("Distance {0}", distance2);
+
+                                    if (distance2 < MaxDistanceRestoreId)
+                                    //if (currentContour.BoundingRectangle.IntersectsWith(o.Bounds))
+                                    {
+
+                                        o.LastUpdate = DateTime.Now;
+                                        o.Center = new Point((int) cCenter.X, (int) cCenter.Y);
+                                        o.Bounds = currentContour.BoundingRectangle;
+                                        o.Shape = currentContour.GetMinAreaRect();
+                                        o.Points = pts;
+
+                                        updated = true;
+                                    }
+                                }
+
+                                //_objects.RemoveAll(o => currentContour.BoundingRectangle.IntersectsWith(o.Bounds));
+
+                                if (!updated)
+                                {
+                                    var minAreaRect = currentContour.GetMinAreaRect();
+
+                                    _objects.Add(new RawObject
+                                    {
+                                        Id = GetNextId(),
+                                        LastUpdate = DateTime.Now,
+                                        Center = new Point((int)minAreaRect.center.X, (int)minAreaRect.center.Y),
+                                        Bounds = currentContour.BoundingRectangle,
+                                        Shape = minAreaRect,
+                                        Points = pts
+                                    });
+                                }
                             }
                         }
                     }
@@ -362,16 +575,31 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
                 if (IsDrawCenter)
                 {
-                    var circle = new CircleF(rawObject.Shape.center, 3);
+                    var circle = new CircleF(rawObject.Center, 3);
                     outputImage.Draw(circle, Rgbs.Green, 3);
                 }
 
-                outputImage.Draw(string.Format("Angle {0}", rawObject.Shape.angle), ref EmguFont, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
+                if (IsDrawCenter)
+                {
+                    var circle = new CircleF(rawObject.EstimatedCenter, 3);
+                    outputImage.Draw(circle, Rgbs.Blue, 3);
+                }
+
+                //outputImage.Draw(string.Format("Angle {0}", rawObject.Shape.angle), ref EmguFont, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
+
+
+
+                outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFontBig, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
             }
 
             grayImage.Dispose();
 
             return outputImage;
+        }
+
+        private static long GetNextId()
+        {
+            return ++_id;
         }
     }
 }

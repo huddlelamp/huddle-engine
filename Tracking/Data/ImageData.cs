@@ -2,7 +2,7 @@
 
 namespace Tools.FlockingDevice.Tracking.Data
 {
-    public abstract class ImageData<TColor, TDepth> : IData
+    public abstract class ImageData<TColor, TDepth> : BaseData
         where TColor : struct, IColor
         where TDepth : new()
     {
@@ -34,7 +34,8 @@ namespace Tools.FlockingDevice.Tracking.Data
 
         #region ctor
 
-        protected ImageData(Image<TColor, TDepth> image)
+        protected ImageData(string key, Image<TColor, TDepth> image)
+            : base(key)
         {
             Image = image;
         }

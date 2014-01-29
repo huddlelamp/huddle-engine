@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using Emgu.CV;
+﻿using Emgu.CV;
 using Emgu.CV.Structure;
 
 namespace Tools.FlockingDevice.Tracking.Data
@@ -11,8 +10,8 @@ namespace Tools.FlockingDevice.Tracking.Data
         #endregion
 
         #region ctor
-        public RgbImageData(Image<Rgb, byte> image)
-            : base(image)
+        public RgbImageData(string key, Image<Rgb, byte> image)
+            : base(key, image)
         {
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Emgu.CV;
 using Emgu.CV.Structure;
 
@@ -8,9 +9,7 @@ namespace Tools.FlockingDevice.Tracking.Sources
     {
         #region properties
 
-        public Image<Rgb, byte> ColorImage { get; private set; }
-
-        public Image<Rgb, byte> DepthImage { get; private set; }
+        public Dictionary<string, Image<Rgb, byte>> Images = new Dictionary<string, Image<Rgb, byte>>();
 
         public long ElapsedTime { get; private set; }
 
@@ -26,10 +25,9 @@ namespace Tools.FlockingDevice.Tracking.Sources
 
         #region ctor
 
-        public ImageEventArgs(Image<Rgb, byte> colorImage, Image<Rgb, byte> depthImage, long elapsedTime)
+        public ImageEventArgs(Dictionary<string, Image<Rgb, byte>> images, long elapsedTime)
         {
-            ColorImage = colorImage;
-            DepthImage = depthImage;
+            Images = images;
             ElapsedTime = elapsedTime;
         }
 

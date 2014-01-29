@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -38,7 +39,8 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
 
         #region FriendlyName
 
-        public override string FriendlyName {
+        public override string FriendlyName
+        {
             get
             {
                 return "Senz3D Input Source";
@@ -237,6 +239,7 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
 
                 var colorBitmap = GetRgb32Pixels(color);
                 var depthBitmap = GetRgb32Pixels(depth);
+                var depthConfidenceBitmap = GetDepthConfidencePixels(depth);
 
                 pp.ReleaseFrame();
 
@@ -244,7 +247,14 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
                 var depthImage = new Image<Rgb, byte>(depthBitmap);
 
                 if (ImageReady != null)
-                    ImageReady(this, new ImageEventArgs(colorImage, depthImage, diffImageFrameTime));
+                {
+                    ImageReady(this, new ImageEventArgs(new Dictionary<string, Image<Rgb, byte>>
+                                                                                         {
+                                                                                            {"color", colorImage},
+                                                                                            {"depth", depthImage},
+                                                                                            {"confidence", depthConfidenceBitmap}
+                                                                                         }, diffImageFrameTime));
+                }
             }
 
             pp.Close();
@@ -288,11 +298,71 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
             return bitmap;
         }
 
-        private PXCMCapture.VideoStream.ProfileInfo GetConfiguration(PXCMImage.ColorFormat format)
-        {
-            PXCMCapture.VideoStream.ProfileInfo pinfo = new PXCMCapture.VideoStream.ProfileInfo();
-            pinfo.imageInfo.format = format;
+        double minDepth = Double.MaxValue;
+        double maxDepth = -1.0;
 
+        private Image<Rgb, byte> GetDepthConfidencePixels(PXCMImage image)
+        {
+            var cwidth = Align16(image.info.width); /* aligned width */
+            var cheight = (int)image.info.height;
+
+            var inputWidth = (int)image.info.width;
+            var inputHeight = (int)image.info.height;
+
+            var confidencePixels = new Image<Rgb, byte>(inputWidth, inputHeight);
+
+            float prop;
+            pp.QueryCapture().QueryDevice().QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_LOW_CONFIDENCE_VALUE, out prop);
+            var LOW_CONFIDENCE = (int)prop;
+            pp.QueryCapture().QueryDevice().QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_SATURATION_VALUE, out prop);
+            var SATURATION = (int)prop;
+
+            PXCMImage.ImageData cdata;
+            byte[] cpixels;
+            if (image.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH, out cdata) >= pxcmStatus.PXCM_STATUS_NO_ERROR)
+            {
+                cpixels = cdata.ToByteArray(0, cwidth * cheight * 4);
+
+
+
+                for (int y = 0; y < inputHeight; y++)
+                {
+                    for (int x = 0; x < inputWidth; x++)
+                    {
+                        // read Depth
+                        var pData = cdata.buffer.planes[0] + (y * inputWidth + x) * 2;
+                        double depth = Marshal.ReadInt16(pData, 0);
+
+                        if (depth == LOW_CONFIDENCE) // low confidence
+                        {
+                            confidencePixels[y, x] = new Rgb(255, 255, 255);
+                        }
+                        else
+                        {
+                            if (depth == SATURATION) // saturated
+                            {
+                                confidencePixels[y, x] = new Rgb(255, 0, 0);
+                            }
+                            else
+                            {
+                                confidencePixels[y, x] = new Rgb(0, depth / 32768.0 * 255.0, 0);
+
+                                if (depth < minDepth) minDepth = depth;
+                                if (depth > maxDepth) maxDepth = depth;
+                            }
+                        }
+                    }
+                }
+
+                image.ReleaseAccess(ref cdata);
+            }
+
+            return confidencePixels;
+        }
+
+        private static PXCMCapture.VideoStream.ProfileInfo GetConfiguration(PXCMImage.ColorFormat format)
+        {
+            var pinfo = new PXCMCapture.VideoStream.ProfileInfo { imageInfo = { format = format } };
 
             if (((int)format & (int)PXCMImage.ImageType.IMAGE_TYPE_COLOR) != 0)
             {

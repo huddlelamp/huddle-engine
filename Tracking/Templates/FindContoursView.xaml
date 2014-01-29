@@ -19,9 +19,26 @@
                 </GroupBox>
             </Grid>
 
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Confidence Image"
+                          Grid.Column="0">
+                    <Image Source="{Binding Path=ConfidenceImage}" />
+                </GroupBox>
+                <GroupBox Header="Subtract Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=SubtractImage}" />
+                </GroupBox>
+            </Grid>
+
             <CheckBox Content="Fill Contours" IsChecked="{Binding Path=IsFillContours}" />
             <CheckBox Content="Draw Contours" IsChecked="{Binding Path=IsDrawContours}" />
             <CheckBox Content="Draw Center" IsChecked="{Binding Path=IsDrawCenter}" />
+            <CheckBox Content="Subract Confidence Image" IsChecked="{Binding Path=IsSubtractConfidenceImage}" />
 
             <StackPanel>
                 <Label Content="Min Contour Area"/>
