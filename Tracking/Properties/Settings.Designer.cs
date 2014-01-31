@@ -169,5 +169,14 @@ namespace Tools.FlockingDevice.Tracking.Properties {
                 this["PipelineFilename"] = value;
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool TryHarder {
+            get {
+                return ((bool)(this["TryHarder"]));
+            }
+        }
     }
 }

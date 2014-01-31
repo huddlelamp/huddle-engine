@@ -321,7 +321,7 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
             byte[] cpixels;
             if (image.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH, out cdata) >= pxcmStatus.PXCM_STATUS_NO_ERROR)
             {
-                cpixels = cdata.ToByteArray(0, cwidth * cheight * 4);
+                //cpixels = cdata.ToByteArray(0, cwidth * cheight * 4);
 
 
 

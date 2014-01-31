@@ -9,6 +9,7 @@ using Emgu.CV;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Tools.FlockingDevice.Tracking.Processor.OpenCv;
+using Tools.FlockingDevice.Tracking.Processor.QRCodes;
 
 namespace Tools.FlockingDevice.Tracking.Processor
 {
@@ -17,6 +18,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
     [XmlInclude(typeof(CannyEdges))]
     [XmlInclude(typeof(ErodeDilate))]
     [XmlInclude(typeof(FindContours))]
+    [XmlInclude(typeof(QRCodeDecoder))]
     public abstract class RgbProcessor : BaseImageProcessor<Rgb, byte>
     {
         #region private fields
