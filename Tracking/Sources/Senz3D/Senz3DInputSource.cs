@@ -147,7 +147,8 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
 
         public override void Start()
         {
-            var thread = new Thread(DoRendering);
+            var ctx = SynchronizationContext.Current;
+            var thread = new Thread(() => DoRendering(ctx));
             thread.Start();
             Thread.Sleep(5);
         }
@@ -174,7 +175,7 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
 
         #region private methods
 
-        private void DoRendering()
+        private void DoRendering(SynchronizationContext ctx)
         {
             _isRunning = true;
 
@@ -215,7 +216,7 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
 
             /* Initialization */
             if (!pp.Init())
-                throw new Exception("Could not initialize Senz3D hardware");
+                ctx.Send(state => ThrowException("Could not initialize Senz3D hardware"), null);
 
             _device = pp.capture.device;
             pp.capture.device.SetProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_CONFIDENCE_THRESHOLD, DepthConfidenceThreshold);
@@ -259,6 +260,11 @@ namespace Tools.FlockingDevice.Tracking.Sources.Senz3D
 
             pp.Close();
             pp.Dispose();
+        }
+
+        private static void ThrowException(string message)
+        {
+            throw new Exception(message);
         }
 
         private static int Align16(uint width)

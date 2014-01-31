@@ -271,7 +271,14 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
             StartDataSourceCommand = new RelayCommand(() =>
             {
-                if (Pipeline != null) Pipeline.Start();
+                if (Pipeline != null) try
+                    {
+                        Pipeline.Start();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
             });
             StopDataSourceCommand = new RelayCommand(() =>
             {

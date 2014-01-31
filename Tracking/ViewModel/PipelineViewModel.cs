@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using System.Xml;
 using System.Xml.Serialization;
+using Emgu.CV;
 using Emgu.CV.External.Extensions;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
@@ -38,6 +39,12 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         public RelayCommand<DragEventArgs> DropTargetColorCommand { get; private set; }
 
         public RelayCommand<DragEventArgs> DropTargetDepthCommand { get; private set; }
+
+        #endregion
+
+        #region private fields
+
+        private readonly VideoWriter _videoWriter;
 
         #endregion
 
@@ -154,6 +161,15 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public PipelineViewModel()
         {
+            var capture = new Capture("myfile.avi");
+            var img = capture.QueryFrame();
+
+            ColorImage = img.ToBitmapSource();
+
+            return;
+
+            _videoWriter = new VideoWriter("myfile.avi", 0, 320, 240, true);
+
             // exit hook to stop input source
             Application.Current.Exit += (s, e) => Stop();
 
@@ -333,6 +349,9 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         private void OnImageReady(object sender, ImageEventArgs e)
         {
+            
+            _videoWriter.WriteFrame(e.Images["depth"]);
+
             //Console.WriteLine("OnImageReady");
 
             #region Color Image Handling

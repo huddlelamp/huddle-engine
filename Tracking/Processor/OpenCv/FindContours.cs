@@ -353,6 +353,111 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
         #endregion
 
+        #region Sobel
+
+        /// <summary>
+        /// The <see cref="Sobel" /> property's name.
+        /// </summary>
+        public const string SobelPropertyName = "Sobel";
+
+        private int _sobel = 3;
+
+        /// <summary>
+        /// Sets and gets the Sobel property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int Sobel
+        {
+            get
+            {
+                return _sobel;
+            }
+
+            set
+            {
+                if (_sobel == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(SobelPropertyName);
+                _sobel = value;
+                RaisePropertyChanged(SobelPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region BlockSize
+
+        /// <summary>
+        /// The <see cref="BlockSize" /> property's name.
+        /// </summary>
+        public const string BlockSizePropertyName = "BlockSize";
+
+        private int _blockSize = 3;
+
+        /// <summary>
+        /// Sets and gets the BlockSize property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int BlockSize
+        {
+            get
+            {
+                return _blockSize;
+            }
+
+            set
+            {
+                if (_blockSize == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(BlockSizePropertyName);
+                _blockSize = value;
+                RaisePropertyChanged(BlockSizePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region K
+
+        /// <summary>
+        /// The <see cref="K" /> property's name.
+        /// </summary>
+        public const string KPropertyName = "K";
+
+        private double _k = 0.01;
+
+        /// <summary>
+        /// Sets and gets the K property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double K
+        {
+            get
+            {
+                return _k;
+            }
+
+            set
+            {
+                if (_k == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(KPropertyName);
+                _k = value;
+                RaisePropertyChanged(KPropertyName);
+            }
+        }
+
+        #endregion
+
         #region ConfidenceImage
 
         /// <summary>
@@ -437,13 +542,23 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
         {
+            // create corner strength image and do Harris
+            var m_CornerImage = new Image<Gray, float>(image.Size);
+            CvInvoke.cvCornerHarris(image.Convert<Gray, float>(), m_CornerImage, BlockSize, Sobel, K);
+
+            DispatcherHelper.RunAsync(() =>
+            {
+                ConfidenceImage = m_CornerImage.ToBitmapSource();
+                m_CornerImage.Dispose();
+            });
+
             var now = DateTime.Now;
 
             _objects.RemoveAll(o => (now - o.LastUpdate).TotalMilliseconds > Timeout);
 
             var confidenceImage = AllData.First(d => Equals(d.Key, "confidence")) as RgbImageData;
 
-            if (confidenceImage != null)
+            if (false && confidenceImage != null)
             {
                 //Console.WriteLine(confidenceImage);
 
