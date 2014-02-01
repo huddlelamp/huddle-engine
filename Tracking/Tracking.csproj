@@ -105,16 +105,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Emgu.CV">
-      <HintPath>..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.9.0.1922\bin\Emgu.CV.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.9.0.1922\bin\Emgu.CV.dll</HintPath>
     </Reference>
     <Reference Include="Emgu.CV.GPU">
-      <HintPath>..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.9.0.1922\bin\Emgu.CV.GPU.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.9.0.1922\bin\Emgu.CV.GPU.dll</HintPath>
     </Reference>
     <Reference Include="Emgu.CV.UI">
-      <HintPath>..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.9.0.1922\bin\Emgu.CV.UI.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.9.0.1922\bin\Emgu.CV.UI.dll</HintPath>
     </Reference>
     <Reference Include="Emgu.Util">
-      <HintPath>..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.9.0.1922\bin\Emgu.Util.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.9.0.1922\bin\Emgu.Util.dll</HintPath>
     </Reference>
     <Reference Include="FirstFloor.ModernUI">
       <HintPath>..\packages\ModernUI.WPF.1.0.5\lib\net45\FirstFloor.ModernUI.dll</HintPath>
@@ -149,6 +149,12 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="zxing">
+      <HintPath>..\packages\ZXing.Net.0.12.0.0\lib\net40\zxing.dll</HintPath>
+    </Reference>
+    <Reference Include="zxing.presentation">
+      <HintPath>..\packages\ZXing.Net.0.12.0.0\lib\net40\zxing.presentation.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -168,6 +174,10 @@
     <Compile Include="Pages\PipelinePage.xaml.cs">
       <DependentUpon>PipelinePage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Processor\BarCodes\QRCodeDecoder.cs" />
+    <Compile Include="Processor\BarCodes\ZXingHelper\BarcodeReaderImage.cs" />
+    <Compile Include="Processor\BarCodes\ZXingHelper\IBarcodeReaderImage.cs" />
+    <Compile Include="Processor\BarCodes\ZXingHelper\ImageLuminanceSource.cs" />
     <Compile Include="Processor\BaseProcessor.cs" />
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
     <Compile Include="Processor\OpenCv\Filter\KalmanFilter.cs" />
@@ -249,6 +259,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Templates\BasicsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Templates\QRCodeDecoderView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

@@ -174,7 +174,14 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
             try
             {
-                data.Image = ProcessAndView(image);
+                try
+                {
+                    data.Image = ProcessAndView(image);
+                }
+                catch (Exception e)
+                {
+                    Log("Exception occured in ProcessAndView:{0}{1}{2}", e.Message, Environment.NewLine, e.StackTrace);
+                }
             }
             catch (Exception e)
             {

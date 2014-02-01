@@ -70,6 +70,7 @@
                                   Header="Logs">
                             <ScrollViewer Height="200">
                                 <ItemsControl ItemsSource="{Binding Path=Messages}"
+                                              FontFamily="Courier New"
                                               Background="White">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>

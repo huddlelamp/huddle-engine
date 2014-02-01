@@ -161,12 +161,12 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public PipelineViewModel()
         {
-            var capture = new Capture("myfile.avi");
-            var img = capture.QueryFrame();
+            //var capture = new Capture("myfile.avi");
+            //var img = capture.QueryFrame();
 
-            ColorImage = img.ToBitmapSource();
+            //ColorImage = img.ToBitmapSource();
 
-            return;
+            //return;
 
             _videoWriter = new VideoWriter("myfile.avi", 0, 320, 240, true);
 

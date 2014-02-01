@@ -19,6 +19,7 @@
                 <ResourceDictionary Source="Templates/ErodeDilateView.xaml"/>
                 <ResourceDictionary Source="Templates/FindContoursView.xaml"/>
                 <ResourceDictionary Source="Templates/BlobTrackerView.xaml"/>
+                <ResourceDictionary Source="Templates/QRCodeDecoderView.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
