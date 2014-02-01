@@ -323,7 +323,8 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
                     var inputSourceModel = Activator.CreateInstance(inputSourceType) as InputSource;
 
-                    Pipeline.Model = new Pipeline { InputSource = inputSourceModel };
+                    Pipeline.Model = new Pipeline();
+                    Pipeline.Model.InputSource = inputSourceModel;
 
                     //// pass in the root grid since its adorner layer was used to add ListBoxItems adorners to
                     //RemoveAdorner(_listBoxItem, _topLevelGrid);

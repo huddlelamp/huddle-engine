@@ -315,7 +315,11 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 }
 
                 var bakFilename = string.Format("{0}.bak", Settings.Default.PipelineFilename);
-                File.Replace(tempFilename, filename, bakFilename);
+
+                if (File.Exists(filename))
+                    File.Replace(tempFilename, filename, bakFilename);
+                else
+                    File.Move(tempFilename, filename);
             }
             catch (Exception e)
             {
