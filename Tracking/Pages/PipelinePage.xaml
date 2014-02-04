@@ -8,11 +8,11 @@
              xmlns:util="clr-namespace:Tools.FlockingDevice.Tracking.Util"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:controls="clr-namespace:Tools.FlockingDevice.Tracking.Controls"
-             xmlns:processor="clr-namespace:Tools.FlockingDevice.Tracking.Processor"
              xmlns:viewModel="clr-namespace:Tools.FlockingDevice.Tracking.ViewModel"
              mc:Ignorable="d" 
-             d:DesignHeight="1080" d:DesignWidth="1920"
-             DataContext="{Binding Source={StaticResource ResourceKey=Locator}, Path=Main}">
+             d:DesignWidth="1920"
+             d:DesignHeight="1080"
+             DataContext="{Binding Source={StaticResource ResourceKey=Locator}, Path=Main.Pipeline}">
     <UserControl.Resources>
         <util:ProcessorTemplateSelector x:Key="ProcessorViewTemplateSelector" />
 
@@ -39,156 +39,83 @@
             <Setter Property="Background" Value="DeepPink" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="0" />
-            <Setter Property="Margin" Value="10" />
+            <Setter Property="Margin" Value="0" />
         </Style>
 
         <Style x:Key="ContainerRemoveableBoxStyle" TargetType="{x:Type controls:RemovableExpander}">
             <!--<Setter Property="FontFamily" Value="SegoeUI" />-->
             <!--<Setter Property="FontSize" Value="18" />-->
-            <Setter Property="Margin" Value="10" />
+            <Setter Property="Margin" Value="0" />
         </Style>
 
-        <DataTemplate x:Key="ProcessorTemplate" DataType="processor:RgbProcessor">
+        <DataTemplate x:Key="ProcessorTemplate" DataType="viewModel:ProcessorViewModel">
             <Border Style="{StaticResource ResourceKey=ContainerStyle}">
-                <controls:RemovableExpander Header="{Binding Path=FriendlyName}" IsExpanded="{Binding Path=IsRenderImages}"
+                <StackPanel>
+                    <controls:RemovableExpander Header="{Binding Path=Model.FriendlyName}" IsExpanded="{Binding Path=Model.IsRenderContent}"
                                             Style="{StaticResource ResourceKey=ContainerRemoveableBoxStyle}">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Remove">
-                            <command:EventToCommand Command="{Binding Path=Main.Pipeline.RemoveProcessorCommand, Mode=OneWay, Source={StaticResource ResourceKey=Locator}}" CommandParameter="{Binding}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                    <Grid Margin="10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Remove">
+                                <command:EventToCommand Command="{Binding Path=RemoveCommand, Mode=OneWay}" CommandParameter="{Binding Path=Model}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <Grid Margin="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-                        <ContentPresenter Grid.Row="0" Content="{Binding}"
-                                          ContentTemplateSelector="{StaticResource ResourceKey=ProcessorViewTemplateSelector}" />
+                            <ContentPresenter Grid.Row="0" Content="{Binding Path=Model}"
+                                              ContentTemplateSelector="{StaticResource ResourceKey=ProcessorViewTemplateSelector}" />
 
-                        <Expander Grid.Row="1"
-                                  Header="Logs">
-                            <ScrollViewer Height="200">
-                                <ItemsControl ItemsSource="{Binding Path=Messages}"
+                            <Expander Header="Logs"
+                                  Grid.Row="1">
+                                <ScrollViewer Height="200">
+                                    <ItemsControl ItemsSource="{Binding Path=Logs}"
                                               FontFamily="Courier New"
                                               Background="White">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel>
-                                                <Label Content="{Binding}" />
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </ScrollViewer>
-                        </Expander>
-                    </Grid>
-                </controls:RemovableExpander>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel>
+                                                    <Label Content="{Binding}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Expander>
+
+                            <controls:DropHereZone Grid.Row="1"
+                                               DropInfo="Drop processor here">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="DragOver">
+                                        <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="Drop">
+                                        <command:EventToCommand Command="{Binding Path=DropTargetCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </controls:DropHereZone>
+                        </Grid>
+                    </controls:RemovableExpander>
+
+                    <ItemsControl ItemsSource="{Binding Path=ChildProcessors}"
+                                  ItemTemplate="{DynamicResource ResourceKey=ProcessorTemplate}"
+                                  Visibility="{Binding Path=ChildProcessors, Converter={util:NotNullAndNotEmptyToVisibilityConverter}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
             </Border>
-        </DataTemplate>
-
-        <DataTemplate x:Key="InputSourceTemplate" DataType="viewModel:PipelineViewModel">
-            <Grid>
-                <ScrollViewer>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0">
-                            <Border Style="{StaticResource ResourceKey=ContainerStyle}">
-                                <controls:RemovableExpander Header="Color Image" IsExpanded="{Binding Path=Model.InputSource.IsRenderColorImage}"
-                                      Style="{StaticResource ResourceKey=ContainerRemoveableBoxStyle}">
-                                    <StackPanel>
-                                        <Image Source="{Binding Path=ColorImage}"
-                                       MinHeight="200" MinWidth="200" />
-                                    </StackPanel>
-                                </controls:RemovableExpander>
-                            </Border>
-
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-
-                                <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Model.ColorImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Vertical" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                </ItemsControl>
-
-                                <controls:DropHereZone Grid.Row="1"
-                                                   DropInfo="Drop processor here">
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="DragOver">
-                                            <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
-                                        </i:EventTrigger>
-                                        <i:EventTrigger EventName="Drop">
-                                            <command:EventToCommand Command="{Binding Path=DropTargetColorCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
-                                </controls:DropHereZone>
-                            </Grid>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1">
-                            <Border Style="{StaticResource ResourceKey=ContainerStyle}">
-                                <controls:RemovableExpander Header="Depth Image" IsExpanded="{Binding Path=Model.InputSource.IsRenderDepthImage}"
-                                      Style="{StaticResource ResourceKey=ContainerRemoveableBoxStyle}">
-                                    <StackPanel>
-                                        <Image Source="{Binding Path=DepthImage}"
-                                       MinHeight="200" MinWidth="200"  />
-                                        <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=Model.InputSource.DepthSmoothing}" />
-                                        <StackPanel Orientation="Horizontal">
-                                            <Label Content="Depth Confidence Threshold"/>
-                                            <Slider Width="340" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=Model.InputSource.DepthConfidenceThreshold}" />
-                                            <TextBlock Text="{Binding Path=Model.InputSource.DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </controls:RemovableExpander>
-                            </Border>
-
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-
-                                <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Model.DepthImageProcessors}" ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Vertical" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                </ItemsControl>
-
-                                <controls:DropHereZone Grid.Row="1"
-                                                   DropInfo="Drop processor here">
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="DragOver">
-                                            <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
-                                        </i:EventTrigger>
-                                        <i:EventTrigger EventName="Drop">
-                                            <command:EventToCommand Command="{Binding Path=DropTargetDepthCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
-                                </controls:DropHereZone>
-                            </Grid>
-                        </StackPanel>
-                    </Grid>
-                </ScrollViewer>
-            </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="ListViewTemplate" DataType="{x:Type system:Type}">
             <Grid>
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                        <command:EventToCommand Command="{Binding Path=Main.DragInitiateCommand, Source={StaticResource ResourceKey=Locator}, Mode=OneWay}" PassEventArgsToCommand="True" />
+                        <command:EventToCommand Command="{Binding Path=Main.Pipeline.DragInitiateCommand, Source={StaticResource ResourceKey=Locator}, Mode=OneWay}" PassEventArgsToCommand="True" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
 
@@ -208,7 +135,6 @@
     </UserControl.Resources>
 
     <Grid>
-
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -217,38 +143,38 @@
         <StackPanel Orientation="Horizontal"
                     Background="DeepSkyBlue"
                     Grid.Row="0">
-            <Button Content="Start" IsEnabled="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Start" IsEnabled="{Binding Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
-                        <command:EventToCommand Command="{Binding Path=StartDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                        <command:EventToCommand Command="{Binding Path=StartCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
-            <Button Content="Stop" IsEnabled="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Stop" IsEnabled="{Binding Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
-                        <command:EventToCommand Command="{Binding Path=StopDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                        <command:EventToCommand Command="{Binding Path=StopCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
-            <Button Content="Pause" IsEnabled="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Pause" IsEnabled="{Binding Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
-                        <command:EventToCommand Command="{Binding Path=PauseDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                        <command:EventToCommand Command="{Binding Path=PauseCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
-            <Button Content="Resume" IsEnabled="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Resume" IsEnabled="{Binding Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
-                        <command:EventToCommand Command="{Binding Path=ResumeDataSourceCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                        <command:EventToCommand Command="{Binding Path=ResumeCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
-            <Button Content="Save Pipeline" IsEnabled="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NullToBoolConverter}}">
+            <Button Content="Save Pipeline" IsEnabled="{Binding Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
-                        <command:EventToCommand Command="{Binding Path=SavePipelineCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                        <command:EventToCommand Command="{Binding Path=SaveCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Button>
@@ -261,21 +187,15 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0">
-                <Label Content="Input Sources" Style="{StaticResource ResourceKey=ListItemHeaderStyle}" />
-                <ListView ItemsSource="{Binding Path=InputSourceTypes}"
-                          ItemTemplate="{StaticResource ResourceKey=ListViewTemplate}"
-                          Margin="10" />
-
                 <Label Content="Processors" Style="{StaticResource ResourceKey=ListItemHeaderStyle}" />
                 <ListView ItemsSource="{Binding Path=ProcessorTypes}"
                           ItemTemplate="{StaticResource ResourceKey=ListViewTemplate}"
-                          Margin="10" />
+                          Margin="0" />
             </StackPanel>
 
             <Grid Grid.Column="1">
-
                 <controls:DropHereZone DropInfo="Drop source here"
-                                       Visibility="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NotNullToVisibilityConverter}}">
+                                       Visibility="{Binding Path=Processors, Mode=OneWay, Converter={util:NullOrEmptyToVisibilityConverter}}">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="DragOver">
                             <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
@@ -286,26 +206,17 @@
                     </i:Interaction.Triggers>
                 </controls:DropHereZone>
 
-                <ContentControl Content="{Binding Path=Pipeline, Mode=OneWay}"
-                                ContentTemplate="{StaticResource ResourceKey=InputSourceTemplate}"
-                                Visibility="{Binding Path=Pipeline.Model, Mode=OneWay, Converter={util:NullToVisibilityConverter}}"/>
-
-                <!--<ItemsControl ItemsSource="{Binding Path=Devices}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Vertical" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="{Binding Path=Id}" />
-                                <Label Content="{Binding Path=X}" />
-                                <Label Content="{Binding Path=Y}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>-->
+                <ScrollViewer>
+                    <ItemsControl ItemsSource="{Binding Path=Processors}"
+                              ItemTemplate="{DynamicResource ResourceKey=ProcessorTemplate}"
+                              Visibility="{Binding Path=Processors, Converter={util:NotNullAndNotEmptyToVisibilityConverter}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </ScrollViewer>
             </Grid>
         </Grid>
     </Grid>

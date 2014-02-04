@@ -1,126 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Schema;
 using System.Xml.Serialization;
 using GalaSoft.MvvmLight;
 using Tools.FlockingDevice.Tracking.Processor;
-using Tools.FlockingDevice.Tracking.Sources;
 
 namespace Tools.FlockingDevice.Tracking.Model
 {
     [XmlRoot]
     public class Pipeline : ObservableObject
     {
-        #region InputSource
+        #region Processors
 
         /// <summary>
-        /// The <see cref="InputSource" /> property's name.
+        /// The <see cref="Processors" /> property's name.
         /// </summary>
-        public const string InputSourcePropertyName = "InputSource";
+        public const string ProcessorsPropertyName = "Processors";
 
-        private InputSource _inputSource;
+        private List<BaseProcessor> _processors = new List<BaseProcessor>();
 
         /// <summary>
-        /// Sets and gets the InputSource property.
+        /// Sets and gets the Processors property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [XmlElement]
-        public InputSource InputSource
-        {
-            get
-            {
-                return _inputSource;
-            }
-
-            set
-            {
-                if (_inputSource == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(InputSourcePropertyName);
-                _inputSource = value;
-                RaisePropertyChanged(InputSourcePropertyName);
-            }
-        }
-
-        #endregion
-
-        #region ColorImageProcessors
-
-        /// <summary>
-        /// The <see cref="ColorImageProcessors" /> property's name.
-        /// </summary>
-        public const string ColorImageProcessorsPropertyName = "ColorImageProcessors";
-
-        private ObservableCollection<RgbProcessor> _colorImageProcessors = new ObservableCollection<RgbProcessor>();
-
-        /// <summary>
-        /// Sets and gets the ColorImageProcessors property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        [XmlArray("ColorImageProcessors")]
+        [XmlArray("Processors")]
         [XmlArrayItem("Processor")]
-        public ObservableCollection<RgbProcessor> ColorImageProcessors
+        public List<BaseProcessor> Processors
         {
             get
             {
-                return _colorImageProcessors;
+                return _processors;
             }
 
             set
             {
-                if (_colorImageProcessors == value)
+                if (_processors == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(ColorImageProcessorsPropertyName);
-                _colorImageProcessors = value;
-                RaisePropertyChanged(ColorImageProcessorsPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region DepthImageProcessors
-
-        /// <summary>
-        /// The <see cref="DepthImageProcessors" /> property's name.
-        /// </summary>
-        public const string DepthImageProcessorsPropertyName = "DepthImageProcessors";
-
-        private ObservableCollection<RgbProcessor> _depthImageProcessors = new ObservableCollection<RgbProcessor>();
-
-        /// <summary>
-        /// Sets and gets the DepthImageProcessors property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        [XmlArray("DepthImageProcessors")]
-        [XmlArrayItem("Processor")]
-        public ObservableCollection<RgbProcessor> DepthImageProcessors
-        {
-            get
-            {
-                return _depthImageProcessors;
-            }
-
-            set
-            {
-                if (_depthImageProcessors == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(DepthImageProcessorsPropertyName);
-                _depthImageProcessors = value;
-                RaisePropertyChanged(DepthImageProcessorsPropertyName);
+                RaisePropertyChanging(ProcessorsPropertyName);
+                _processors = value;
+                RaisePropertyChanged(ProcessorsPropertyName);
             }
         }
 

@@ -20,5 +20,9 @@
         }
 
         #endregion
+
+        public abstract IData Copy();
+
+        public abstract void Dispose();
     }
 }

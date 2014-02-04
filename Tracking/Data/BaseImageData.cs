@@ -1,8 +1,9 @@
-﻿using Emgu.CV;
+﻿using System;
+using Emgu.CV;
 
 namespace Tools.FlockingDevice.Tracking.Data
 {
-    public abstract class ImageData<TColor, TDepth> : BaseData
+    public abstract class BaseImageData<TColor, TDepth> : BaseData
         where TColor : struct, IColor
         where TDepth : new()
     {
@@ -34,12 +35,24 @@ namespace Tools.FlockingDevice.Tracking.Data
 
         #region ctor
 
-        protected ImageData(string key, Image<TColor, TDepth> image)
+        protected BaseImageData(string key, Image<TColor, TDepth> image)
             : base(key)
         {
             Image = image;
         }
 
         #endregion
+
+        //public override IData Copy()
+        //{
+        //    var type = GetType();
+        //    var copy = Activator.CreateInstance(type, Key, Image.Copy()) as BaseImageData<TColor, TDepth>;
+        //    return copy;
+        //}
+
+        public override void Dispose()
+        {
+            Image.Dispose();
+        }
     }
 }

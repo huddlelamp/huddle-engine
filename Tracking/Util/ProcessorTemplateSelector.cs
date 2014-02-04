@@ -19,12 +19,19 @@ namespace Tools.FlockingDevice.Tracking.Util
 
                     var viewAttribute = type.GetCustomAttribute<ViewTemplateAttribute>();
 
-                    return element.FindResource(viewAttribute.TemplateName) as DataTemplate;
+                    try
+                    {
+                        return element.FindResource(viewAttribute.TemplateName) as DataTemplate;
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine(@"DataTemplate not found for {0}. Add template to App.xaml.", viewAttribute.TemplateName);
+                    }
                 }
             }
             catch
             {
-                // empty
+                Console.WriteLine(@"DataTemplate not found for {0}. Add template to App.xaml.", item.GetType().Name);
             }
             return base.SelectTemplate(item, container);
         }

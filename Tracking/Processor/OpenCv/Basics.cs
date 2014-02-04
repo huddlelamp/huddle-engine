@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -166,14 +167,21 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
         {
             // mirror image
-            Image<Rgb, byte> res = image.Copy(ROI);                       
-            
-            if (FlipHorizontal)
-                res = res.Flip(FLIP.HORIZONTAL);
-            if (FlipVertical)
-                res = res.Flip(FLIP.VERTICAL);
+            try
+            {
+                var imageCopy = image.Copy(ROI);
 
-            return res;
+                if (FlipHorizontal)
+                    imageCopy = imageCopy.Flip(FLIP.HORIZONTAL);
+                if (FlipVertical)
+                    imageCopy = imageCopy.Flip(FLIP.VERTICAL);
+
+                return imageCopy;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

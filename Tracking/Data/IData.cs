@@ -1,7 +1,11 @@
-﻿namespace Tools.FlockingDevice.Tracking.Data
+﻿using System;
+
+namespace Tools.FlockingDevice.Tracking.Data
 {
-    public interface IData
+    public interface IData : IDisposable
     {
         string Key { get; }
+
+        IData Copy();
     }
 }

@@ -108,7 +108,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.BarCodes
             {
                 results = _barcodeReader.DecodeMultiple(image);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // sometimes there are some less important exceptions about the version of the QR codes
                 return outputImage;

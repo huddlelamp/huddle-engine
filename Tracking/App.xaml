@@ -20,6 +20,7 @@
                 <ResourceDictionary Source="Templates/FindContoursView.xaml"/>
                 <ResourceDictionary Source="Templates/BlobTrackerView.xaml"/>
                 <ResourceDictionary Source="Templates/QRCodeDecoderView.xaml"/>
+                <ResourceDictionary Source="Templates/Senz3D.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

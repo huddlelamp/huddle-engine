@@ -3,153 +3,116 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Media.Imaging;
+using System.Windows.Input;
 using System.Xml;
 using System.Xml.Serialization;
-using Emgu.CV;
-using Emgu.CV.External.Extensions;
-using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-using GalaSoft.MvvmLight.Threading;
-using Tools.FlockingDevice.Tracking.Data;
+using Tools.FlockingDevice.Tracking.Controls;
+using Tools.FlockingDevice.Tracking.Extensions;
 using Tools.FlockingDevice.Tracking.Model;
 using Tools.FlockingDevice.Tracking.Processor;
+using Tools.FlockingDevice.Tracking.Processor.OpenCv;
 using Tools.FlockingDevice.Tracking.Properties;
-using Tools.FlockingDevice.Tracking.Sources;
 using Application = System.Windows.Application;
-using DragDropEffects = System.Windows.DragDropEffects;
-using DragEventArgs = System.Windows.DragEventArgs;
+using DataObject = System.Windows.Forms.DataObject;
+using DragDropEffects = System.Windows.Forms.DragDropEffects;
 using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
 {
-    public class PipelineViewModel : ViewModelBase
+    public class PipelineViewModel : ProcessorViewModelBase<BaseProcessor>
     {
         #region commands
 
-        public RelayCommand<RgbProcessor> RemoveProcessorCommand { get; private set; }
+        #region control commands
 
-        public RelayCommand<DragEventArgs> DragOverCommand { get; private set; }
-
-        public RelayCommand<DragEventArgs> DropSourceCommand { get; private set; }
-
-        public RelayCommand<DragEventArgs> DropTargetColorCommand { get; private set; }
-
-        public RelayCommand<DragEventArgs> DropTargetDepthCommand { get; private set; }
+        public RelayCommand StartCommand { get; private set; }
+        public RelayCommand StopCommand { get; private set; }
+        public RelayCommand PauseCommand { get; private set; }
+        public RelayCommand ResumeCommand { get; private set; }
+        public RelayCommand SaveCommand { get; private set; }
+        public RelayCommand LoadCommand { get; private set; }
 
         #endregion
 
-        #region private fields
+        #region Drag & Drop commands
 
-        private readonly VideoWriter _videoWriter;
+        public RelayCommand<MouseButtonEventArgs> DragInitiateCommand { get; private set; }
+
+        #endregion
 
         #endregion
 
         #region properties
 
-        #region Model
+        #region ProcessorTypes
 
         /// <summary>
-        /// The <see cref="Model" /> property's name.
+        /// The <see cref="ProcessorTypes" /> property's name.
         /// </summary>
-        public const string ModelPropertyName = "Model";
+        public const string ProcessorTypesPropertyName = "ProcessorTypes";
 
-        private Pipeline _model;
+        private ObservableCollection<Type> _processorTypes = new ObservableCollection<Type>();
 
         /// <summary>
-        /// Sets and gets the Model property.
+        /// Sets and gets the ProcessorTypes property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public Pipeline Model
+        public ObservableCollection<Type> ProcessorTypes
         {
             get
             {
-                return _model;
+                return _processorTypes;
             }
 
             set
             {
-                if (_model == value)
+                if (_processorTypes == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(ModelPropertyName);
-                _model = value;
-                RaisePropertyChanged(ModelPropertyName);
+                RaisePropertyChanging(ProcessorTypesPropertyName);
+                _processorTypes = value;
+                RaisePropertyChanged(ProcessorTypesPropertyName);
             }
         }
 
         #endregion
 
-        #region ColorImage
+        #region Processors
 
         /// <summary>
-        /// The <see cref="ColorImage" /> property's name.
+        /// The <see cref="Processors" /> property's name.
         /// </summary>
-        public const string ColorImagePropertyName = "ColorImage";
+        public const string ProcessorsPropertyName = "Processors";
 
-        private BitmapSource _colorImage;
+        private ObservableCollection<ProcessorViewModel> _processors = new ObservableCollection<ProcessorViewModel>();
 
         /// <summary>
-        /// Sets and gets the ColorImage property.
+        /// Sets and gets the Processors property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public BitmapSource ColorImage
+        public ObservableCollection<ProcessorViewModel> Processors
         {
             get
             {
-                return _colorImage;
+                return _processors;
             }
 
             set
             {
-                if (_colorImage == value)
+                if (_processors == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(ColorImagePropertyName);
-                _colorImage = value;
-                RaisePropertyChanged(ColorImagePropertyName);
-            }
-        }
-
-        #endregion
-
-        #region DepthImage
-
-        /// <summary>
-        /// The <see cref="DepthImage" /> property's name.
-        /// </summary>
-        public const string DepthImagePropertyName = "DepthImage";
-
-        private BitmapSource _depthImage;
-
-        /// <summary>
-        /// Sets and gets the DepthImage property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public BitmapSource DepthImage
-        {
-            get
-            {
-                return _depthImage;
-            }
-
-            set
-            {
-                if (_depthImage == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(DepthImagePropertyName);
-                _depthImage = value;
-                RaisePropertyChanged(DepthImagePropertyName);
+                RaisePropertyChanging(ProcessorsPropertyName);
+                _processors = value;
+                RaisePropertyChanged(ProcessorsPropertyName);
             }
         }
 
@@ -161,149 +124,79 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public PipelineViewModel()
         {
-            //var capture = new Capture("myfile.avi");
-            //var img = capture.QueryFrame();
-
-            //ColorImage = img.ToBitmapSource();
-
-            //return;
-
-            _videoWriter = new VideoWriter("myfile.avi", 0, 320, 240, true);
+            if (IsInDesignMode)
+            {
+                // Code runs in Blend --> create design time data.
+                ProcessorTypes.Add(typeof(Basics));
+                ProcessorTypes.Add(typeof(CannyEdges));
+                ProcessorTypes.Add(typeof(FindContours));
+                ProcessorTypes.Add(typeof(BlobTracker));
+            }
+            else
+            {
+                ProcessorTypes = new ObservableCollection<Type>(GetTypes<BaseProcessor>());
+            }
 
             // exit hook to stop input source
-            Application.Current.Exit += (s, e) => Stop();
-
-            PropertyChanged += (_s, _e) =>
+            Application.Current.Exit += (s, e) =>
             {
-                if (Equals(ModelPropertyName, _e.PropertyName))
-                {
-                    Model.PropertyChanging += (s, e) =>
-                    {
-                        if (Model.InputSource == null) return;
-
-                        switch (e.PropertyName)
-                        {
-                            case Pipeline.InputSourcePropertyName:
-                                Model.InputSource.Stop();
-                                Model.InputSource.ImageReady -= OnImageReady;
-                                break;
-                        }
-                    };
-
-                    Model.PropertyChanged += (s, e) =>
-                    {
-                        if (Model.InputSource == null) return;
-
-                        switch (e.PropertyName)
-                        {
-                            case Pipeline.InputSourcePropertyName:
-                                Model.InputSource.ImageReady += OnImageReady;
-                                break;
-                        }
-                    };
-                }
+                Stop();
+                Save();
             };
 
-            RemoveProcessorCommand = new RelayCommand<RgbProcessor>(processor =>
-            {
-                if (Model == null) return;
 
-                Model.ColorImageProcessors.Remove(processor);
-                Model.DepthImageProcessors.Remove(processor);
-            });
+            StartCommand = new RelayCommand(Start);
+            StopCommand = new RelayCommand(Stop);
+            PauseCommand = new RelayCommand(Pause);
+            ResumeCommand = new RelayCommand(Resume);
+            SaveCommand = new RelayCommand(Save);
+            LoadCommand = new RelayCommand(Load);
 
-            #region Drag & Drop
+            DragInitiateCommand = new RelayCommand<MouseButtonEventArgs>(OnDragInitiate);
 
-            DragOverCommand = new RelayCommand<DragEventArgs>(
-                e =>
-                {
-                    if (!e.Data.GetFormats().Any(f => Equals(typeof(RgbProcessor).Name, f)) &&
-                        !e.Data.GetFormats().Any(f => Equals(typeof(IInputSource).Name, f)))
-                    {
-                        e.Effects = DragDropEffects.None;
-                    }
-
-                    //var currentMousePosition = e.GetPosition(_topLevelGrid);
-
-                    //if (_topLevelGrid != null && _draggedAdorner != null)
-                    //    _draggedAdorner.UpdateAdornerPosition(_topLevelGrid, currentMousePosition);
-                });
-
-            DropTargetColorCommand = new RelayCommand<DragEventArgs>(OnDropTargetColor);
-            DropTargetDepthCommand = new RelayCommand<DragEventArgs>(OnDropTargetDepth);
-
-            // if dropping on the source list, remove the adorner
-            DropSourceCommand = new RelayCommand<DragEventArgs>(e =>
-            {
-                //RemoveAdorner(_listBoxItem, _topLevelGrid)
-            });
-
-            #endregion
-        }
-
-        private void OnDropTargetColor(DragEventArgs e)
-        {
-            OnDropTarget(Model.ColorImageProcessors, e);
-        }
-
-        private void OnDropTargetDepth(DragEventArgs e)
-        {
-            OnDropTarget(Model.DepthImageProcessors, e);
-        }
-
-        private void OnDropTarget(ICollection<RgbProcessor> toTarget, DragEventArgs e)
-        {
-            if (!e.Data.GetFormats().Any(f => Equals(typeof(RgbProcessor).Name, f))) return;
-            var processorType = e.Data.GetData(typeof(RgbProcessor).Name) as Type;
-
-            if (processorType == null)
-                return;
-
-            RgbProcessor processor;
-            try
-            {
-                processor = Activator.CreateInstance(processorType) as RgbProcessor;
-            }
-            catch (Exception)
-            {
-                processor = Activator.CreateInstance(processorType, Model.InputSource) as RgbProcessor;
-            }
-
-            toTarget.Add(processor); // add to new collection
+            Load();
         }
 
         #endregion
 
-        #region public methods
+        protected override void OnAdd(BaseProcessor processor)
+        {
+            Processors.Add(new ProcessorViewModel { Model = processor });
+        }
+
+        protected override void OnRemove(BaseProcessor processor)
+        {
+            Processors.RemoveAll(vm => Equals(processor, vm.Model));
+        }
 
         public void Start()
         {
-            if (Model != null && Model.InputSource != null)
-                Model.InputSource.Start();
+            foreach (var processor in Processors)
+                processor.Start();
         }
 
         public void Stop()
         {
-            if (Model != null && Model.InputSource != null)
-                Model.InputSource.Stop();
+            foreach (var processor in Processors)
+                processor.Stop();
         }
 
         public void Pause()
         {
-            if (Model != null && Model.InputSource != null)
-                Model.InputSource.Pause();
+            throw new NotImplementedException();
         }
 
         public void Resume()
         {
-            if (Model != null && Model.InputSource != null)
-                Model.InputSource.Resume();
+            throw new NotImplementedException();
         }
 
-        public void Save()
+        #region private methods
+
+        private void Save()
         {
             var filename = Settings.Default.PipelineFilename;
-            var tempFilename = string.Format("{0}.tmp", filename);
+            var tempFilename = String.Format("{0}.tmp", filename);
 
             try
             {
@@ -311,116 +204,85 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 using (var stream = new FileStream(tempFilename, FileMode.Create))
                 {
                     var xmlTextWriter = XmlWriter.Create(stream, new XmlWriterSettings { NewLineChars = Environment.NewLine, Indent = true });
-                    serializer.Serialize(xmlTextWriter, Model);
+                    serializer.Serialize(xmlTextWriter, new Pipeline
+                    {
+                        Processors = new List<BaseProcessor>(Processors.Select(vm => vm.Model))
+                    });
                 }
 
-                var bakFilename = string.Format("{0}.bak", Settings.Default.PipelineFilename);
+                var bakFilename = String.Format("{0}.bak", Settings.Default.PipelineFilename);
                 File.Replace(tempFilename, filename, bakFilename);
             }
             catch (Exception e)
             {
-                MessageBox.Show(string.Format(@"Could not save pipeline.{0}Exception Message: {1}", Environment.NewLine, e.Message), @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ExceptionMessageBox.ShowException(e, String.Format(@"Could not save pipeline.{0}Exception Message: {1}", Environment.NewLine, e.Message));
             }
         }
 
-        public void Load()
+        private void Load()
         {
             try
             {
                 var serializer = new XmlSerializer(typeof(Pipeline));
                 using (var stream = new FileStream(Settings.Default.PipelineFilename, FileMode.Open))
                 {
-                    Model = serializer.Deserialize(stream) as Pipeline;
-                }
+                    var pipeline = serializer.Deserialize(stream) as Pipeline;
 
-                if (Model != null)
-                    Model.InputSource.ImageReady += OnImageReady;
+                    if (pipeline == null)
+                        throw new Exception(@"Could not load pipeline");
+
+                    foreach (var processor in pipeline.Processors)
+                    {
+                        Processors.Add(BuildRecursiveViewModel(processor));
+                    }
+                }
             }
             catch (Exception e)
             {
-                MessageBox.Show(string.Format("Could not load pipeline. {0}.", e.Message), @"Pipeline Error",
+                MessageBox.Show(String.Format("Could not load pipeline. {0}.", e.Message), @"Pipeline Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        #endregion
-
-        #region Image Source
-
-        private void OnImageReady(object sender, ImageEventArgs e)
+        private static ProcessorViewModel BuildRecursiveViewModel(BaseProcessor processor)
         {
-            
-            _videoWriter.WriteFrame(e.Images["depth"]);
+            var processorViewModel = new ProcessorViewModel { Model = processor };
 
-            //Console.WriteLine("OnImageReady");
-
-            #region Color Image Handling
-
-            //if (_colorImageTask != null)
-            //    _colorImageTask.Wait();
-
-            //_colorImageTask = Task.Factory.StartNew(() =>
-            //{
-
-            var colorImage = e.Images["color"];
-
-            var allColorData = new List<IData>
+            foreach (var child in processor.Children)
             {
-                new RgbImageData("color", colorImage) 
-            };
+                var childViewModel = BuildRecursiveViewModel(child);
+                childViewModel.ParentProcessor = processorViewModel;
+                processorViewModel.ChildProcessors.Add(childViewModel);
+            }
 
-            var colorImageCopy = colorImage.Copy();
-            DispatcherHelper.RunAsync(() =>
-            {
-                ColorImage = colorImageCopy.ToBitmapSource();
-                colorImageCopy.Dispose();
-            });
+            return processorViewModel;
+        }
 
-            if (Model.ColorImageProcessors.Any())
-                foreach (var colorProcessor in Model.ColorImageProcessors.ToArray())
-                {
-                    allColorData = colorProcessor.Process(allColorData);
-                    //image.Dispose();
-                }
-            //});
+        private void OnDragInitiate(MouseButtonEventArgs e)
+        {
+            var element = e.Source as FrameworkElement;
 
-            #endregion
+            if (element == null) return;
 
-            #region Depth Image Handling
+            var type = (Type)element.DataContext;
 
-            //if (_depthImageTask != null)
-            //    _depthImageTask.Wait();
+            if (type == null) return;
 
-            //_depthImageTask = Task.Factory.StartNew(() =>
-            //{
+            // Initialize the drag & drop operation
+            var format = typeof(BaseProcessor).IsAssignableFrom(type)
+                ? typeof(BaseProcessor).Name
+                : null;
 
-            var depthImage = e.Images["depth"];
-            var confidenceImage = e.Images["confidence"];
+            var dragData = new System.Windows.DataObject(format, type);
 
-            var allDepthData = new List<IData>
-            {
-                new RgbImageData("depth", depthImage),
-                new RgbImageData("confidence", confidenceImage)
-            };
+            DragDrop.DoDragDrop(element, dragData, System.Windows.DragDropEffects.Copy);
+        }
 
-            var depthImageCopy = confidenceImage.Copy();
-            DispatcherHelper.RunAsync(() =>
-            {
-                DepthImage = depthImageCopy.ToBitmapSource();
-                depthImageCopy.Dispose();
-            });
-
-            if (Model.DepthImageProcessors.Any())
-                foreach (var depthProcessor in Model.DepthImageProcessors.ToArray())
-                {
-                    allDepthData = depthProcessor.Process(allDepthData);
-                    //image.Dispose();
-                }
-            //});
-
-            #endregion
-
-            Thread.Sleep(25);
+        private static IEnumerable<Type> GetTypes<T>()
+        {
+            return from t in Assembly.GetExecutingAssembly().GetTypes()
+                   where typeof(T).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface
+                   select t;
         }
 
         #endregion

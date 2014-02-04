@@ -532,7 +532,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
         #endregion
 
-        protected override IData Process(IData data)
+        public override IData Process(IData data)
         {
             if (Equals("confidence", data.Key))
                 return data;

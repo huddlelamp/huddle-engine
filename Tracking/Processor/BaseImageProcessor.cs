@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 using Emgu.CV;
@@ -26,11 +23,47 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #region FiendlyName
 
-        public virtual string FriendlyName
+        public override string FriendlyName
         {
             get
             {
                 return GetType().Name;
+            }
+        }
+
+        #endregion
+
+        #region ImageKey
+
+        /// <summary>
+        /// The <see cref="ImageKey" /> property's name.
+        /// </summary>
+        public const string ImageKeyPropertyName = "ImageKey";
+
+        private string _imageKey = string.Empty;
+
+        /// <summary>
+        /// Sets and gets the ImageKey property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlAttribute]
+        public string ImageKey
+        {
+            get
+            {
+                return _imageKey;
+            }
+
+            set
+            {
+                if (_imageKey == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ImageKeyPropertyName);
+                _imageKey = value;
+                RaisePropertyChanged(ImageKeyPropertyName);
             }
         }
 
@@ -144,14 +177,17 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
-        protected override IData Process(IData data)
+        public override IData Process(IData data)
         {
-            var imageData = data as ImageData<TColor, TDepth>;
+            if (!string.IsNullOrWhiteSpace(ImageKey) && !Equals(ImageKey, data.Key))
+                return data;
+
+            var imageData = data as BaseImageData<TColor, TDepth>;
 
             return imageData != null ? Process(imageData) : data;
         }
 
-        private IData Process(ImageData<TColor, TDepth> data)
+        private IData Process(BaseImageData<TColor, TDepth> data)
         {
             var image = data.Image;
 
@@ -176,19 +212,23 @@ namespace Tools.FlockingDevice.Tracking.Processor
             {
                 try
                 {
-                    data.Image = ProcessAndView(image);
+                    var processedImage = ProcessAndView(image);
+
+                    if (processedImage == null) return null;
+
+                    data.Image = processedImage;
                 }
                 catch (Exception e)
                 {
                     Log("Exception occured in ProcessAndView:{0}{1}{2}", e.Message, Environment.NewLine, e.StackTrace);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 DispatcherHelper.RunAsync(() =>
                 {
-                    if (!Messages.Any(m => Equals(e.Message, m)))
-                        Log(e.Message);
+                    //if (!Messages.Any(m => Equals(e.Message, m)))
+                    //    Log(e.Message);
                 });
                 return data;
             }

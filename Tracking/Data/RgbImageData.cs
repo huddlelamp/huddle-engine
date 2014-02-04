@@ -3,7 +3,7 @@ using Emgu.CV.Structure;
 
 namespace Tools.FlockingDevice.Tracking.Data
 {
-    public class RgbImageData : ImageData<Rgb, byte>
+    public class RgbImageData : BaseImageData<Rgb, byte>
     {
         #region properties
 
@@ -16,5 +16,10 @@ namespace Tools.FlockingDevice.Tracking.Data
         }
 
         #endregion
+
+        public override IData Copy()
+        {
+            return new RgbImageData(Key, Image.Copy());
+        }
     }
 }

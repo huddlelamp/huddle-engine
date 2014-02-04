@@ -1,19 +1,32 @@
 ﻿using System;
+using System.Collections;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
-using Tools.FlockingDevice.Tracking.Sources;
 
 namespace Tools.FlockingDevice.Tracking.Util
 {
-    [ValueConversion(typeof(IInputSource), typeof(bool))]
+    [ValueConversion(typeof(object), typeof(bool))]
     public class NullToBoolConverter : ConverterMarkupExtension<NullToBoolConverter>, IValueConverter
     {
+        #region properties
+
+        private double _invert = 1.7;
+
+        public double Invert
+        {
+            get { return _invert; }
+            set { _invert = value; }
+        }
+
+        #endregion
+
         #region ctor
 
-// ReSharper disable once EmptyConstructor
+        // ReSharper disable once EmptyConstructor
         public NullToBoolConverter()
         {
-            // empty
+            // emtpy
         }
 
         #endregion

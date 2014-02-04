@@ -168,9 +168,15 @@
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\BaseData.cs" />
+    <Compile Include="Data\DataContainer.cs" />
     <Compile Include="Data\IData.cs" />
-    <Compile Include="Data\ImageData.cs" />
+    <Compile Include="Data\IDataContainer.cs" />
+    <Compile Include="Data\BaseImageData.cs" />
     <Compile Include="Data\RgbImageData.cs" />
+    <Compile Include="Controls\ExceptionMessageBox.xaml.cs">
+      <DependentUpon>ExceptionMessageBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
     <Compile Include="Pages\PipelinePage.xaml.cs">
       <DependentUpon>PipelinePage.xaml</DependentUpon>
     </Compile>
@@ -183,10 +189,7 @@
     <Compile Include="Processor\OpenCv\Filter\KalmanFilter.cs" />
     <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
     <Compile Include="Processor\OpenCv\Struct\RawObject.cs" />
-    <Compile Include="Sources\IInputSource.cs" />
-    <Compile Include="Sources\ImageEventArgs.cs" />
-    <Compile Include="Sources\InputSource.cs" />
-    <Compile Include="Sources\Senz3D\Senz3DInputSource.cs" />
+    <Compile Include="Processor\Sensors\Senz3D.cs" />
     <Compile Include="Domain\AbstractDevice.cs" />
     <Compile Include="Domain\DeviceEventArgs.cs" />
     <Compile Include="Domain\Smartphone.cs" />
@@ -206,19 +209,25 @@
     <Compile Include="Util\ConverterMarkupExtension.cs" />
     <Compile Include="Util\MVVMUtil.cs" />
     <Compile Include="Util\NullToBoolConverter.cs" />
-    <Compile Include="Util\NotNullToVisibilityConverter.cs" />
+    <Compile Include="Util\NullOrEmptyToVisibilityConverter.cs" />
+    <Compile Include="Util\NotNullAndNotEmptyToVisibilityConverter.cs" />
     <Compile Include="Util\ProcessorTemplateSelector.cs" />
     <Compile Include="Util\RoutedEventHelper.cs" />
-    <Compile Include="Util\NullToVisibilityConverter.cs" />
     <Compile Include="Util\StringToRectangleConverter.cs" />
+    <Compile Include="ViewModel\ProcessorViewModelBase.cs" />
     <Compile Include="ViewModel\PipelineViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="ViewModel\ProcessorViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="Controls\DropHereZone.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\RemovableExpander.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ExceptionMessageBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -237,6 +246,10 @@
     <Page Include="Pages\PipelinePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Templates\Senz3D.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Templates\ErodeDilateView.xaml">
       <Generator>MSBuild:Compile</Generator>

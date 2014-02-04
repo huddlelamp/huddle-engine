@@ -13,14 +13,11 @@
         <i:EventTrigger EventName="Closing">
             <command:EventToCommand Command="{Binding Source={StaticResource ResourceKey=Locator}, Path=ShutdownCommand}" PassEventArgsToCommand="False" />
         </i:EventTrigger>
-        <i:EventTrigger EventName="Closing">
-            <command:EventToCommand Command="{Binding Path=ClosingCommand}" PassEventArgsToCommand="False" />
-        </i:EventTrigger>
     </i:Interaction.Triggers>
     <mui:ModernWindow.MenuLinkGroups>
         <mui:LinkGroup DisplayName="Tracking" >
             <mui:LinkGroup.Links>
-                <mui:Link DisplayName="Pipeline" Source="/Pages/PipelinePage.xaml" />
+                <mui:Link DisplayName="Pipeline" Source="/Pages/PipelinePage.xaml"  />
                 <mui:Link DisplayName="Server" />
                 <mui:Link DisplayName="Credits" />
             </mui:LinkGroup.Links>
