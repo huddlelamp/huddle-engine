@@ -21,6 +21,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
     [XmlInclude(typeof(ErodeDilate))]
     [XmlInclude(typeof(FindContours))]
     [XmlInclude(typeof(QRCodeDecoder))]
+    [XmlInclude(typeof(VideoRecordAndPlay))]
     public abstract class BaseProcessor : ObservableObject, IProcessor
     {
         #region private fields
@@ -28,7 +29,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         private Thread _processingThread;
 
         // A bounded collection. It can hold no more than 100 items at once.
-        private readonly BlockingCollection<IDataContainer> _dataQueue = new BlockingCollection<IDataContainer>(100);
+        private BlockingCollection<IDataContainer> _dataQueue = new BlockingCollection<IDataContainer>(100);
 
         private bool _processing;
 
@@ -122,6 +123,8 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         public virtual void Start()
         {
+            _dataQueue = new BlockingCollection<IDataContainer>(100);
+
             // Start sub-processor
             foreach (var processor in Children)
             {
@@ -182,8 +185,8 @@ namespace Tools.FlockingDevice.Tracking.Processor
             // Notify processing thread about completion.
             _dataQueue.CompleteAdding();
 
-            if (_processingThread != null)
-                _processingThread.Join();
+            //if (_processingThread != null)
+            //    _processingThread.Join();
 
             // Stop sub-processor
             foreach (var processor in Children)

@@ -206,6 +206,7 @@
     <Compile Include="Processor\RgbProcessor.cs" />
     <Compile Include="Processor\OpenCv\FindContours.cs" />
     <Compile Include="IO\WrappingStream.cs" />
+    <Compile Include="Processor\VideoRecordAndPlay.cs" />
     <Compile Include="Util\ConverterMarkupExtension.cs" />
     <Compile Include="Util\MVVMUtil.cs" />
     <Compile Include="Util\NullToBoolConverter.cs" />
@@ -247,7 +248,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Templates\Senz3D.xaml">
+    <Page Include="Templates\VideoRecordAndPlayView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Templates\Senz3DView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
