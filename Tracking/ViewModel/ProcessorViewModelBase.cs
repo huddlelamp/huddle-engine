@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -10,7 +11,7 @@ using Tools.FlockingDevice.Tracking.Processor;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
 {
-    public class ProcessorViewModelBase<T> : ViewModelBase
+    public class ProcessorViewModelBase<T> : ViewModelBase, IDisposable
         where T : BaseProcessor
     {
         #region commands
@@ -34,6 +35,41 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         #endregion
 
         #region properties
+
+        #region IgnoreCollectionChanges
+
+        /// <summary>
+        /// The <see cref="IgnoreCollectionChanges" /> property's name.
+        /// </summary>
+        public const string IgnoreCollectionChangesPropertyName = "IgnoreCollectionChanges";
+
+        private bool _ignoreCollectionChanges = false;
+
+        /// <summary>
+        /// Sets and gets the IgnoreCollectionChanges property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IgnoreCollectionChanges
+        {
+            get
+            {
+                return _ignoreCollectionChanges;
+            }
+
+            set
+            {
+                if (_ignoreCollectionChanges == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IgnoreCollectionChangesPropertyName);
+                _ignoreCollectionChanges = value;
+                RaisePropertyChanged(IgnoreCollectionChangesPropertyName);
+            }
+        }
+
+        #endregion
 
         #region Model
 
@@ -70,71 +106,71 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #endregion
 
-        #region ParentProcessor
+        #region Sources
 
         /// <summary>
-        /// The <see cref="ParentProcessor" /> property's name.
+        /// The <see cref="Sources" /> property's name.
         /// </summary>
-        public const string ParentProcessorPropertyName = "ParentProcessor";
+        public const string SourcesPropertyName = "Sources";
 
-        private ProcessorViewModelBase<T> _parentProcessor;
+        private ObservableCollection<ProcessorViewModelBase<T>> _sources = new ObservableCollection<ProcessorViewModelBase<T>>();
 
         /// <summary>
-        /// Sets and gets the ParentProcessor property.
+        /// Sets and gets the Sources property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public ProcessorViewModelBase<T> ParentProcessor
+        public ObservableCollection<ProcessorViewModelBase<T>> Sources
         {
             get
             {
-                return _parentProcessor;
+                return _sources;
             }
 
             set
             {
-                if (_parentProcessor == value)
+                if (_sources == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(ParentProcessorPropertyName);
-                _parentProcessor = value;
-                RaisePropertyChanged(ParentProcessorPropertyName);
+                RaisePropertyChanging(SourcesPropertyName);
+                _sources = value;
+                RaisePropertyChanged(SourcesPropertyName);
             }
         }
 
         #endregion
 
-        #region Children
+        #region Targets
 
         /// <summary>
-        /// The <see cref="Children" /> property's name.
+        /// The <see cref="Targets" /> property's name.
         /// </summary>
-        public const string ChildProcessorsPropertyName = "Children";
+        public const string TargetsPropertyName = "Targets";
 
-        private ObservableCollection<ProcessorViewModelBase<T>> _children = new ObservableCollection<ProcessorViewModelBase<T>>();
+        private ObservableCollection<ProcessorViewModelBase<T>> _targets = new ObservableCollection<ProcessorViewModelBase<T>>();
 
         /// <summary>
-        /// Sets and gets the Children property.
+        /// Sets and gets the Targets property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public ObservableCollection<ProcessorViewModelBase<T>> Children
+        public ObservableCollection<ProcessorViewModelBase<T>> Targets
         {
             get
             {
-                return _children;
+                return _targets;
             }
 
             set
             {
-                if (_children == value)
+                if (_targets == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(ChildProcessorsPropertyName);
-                _children = value;
-                RaisePropertyChanged(ChildProcessorsPropertyName);
+                RaisePropertyChanging(TargetsPropertyName);
+                _targets = value;
+                RaisePropertyChanged(TargetsPropertyName);
             }
         }
 
@@ -248,7 +284,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 if (sourceProcessor == null)
                     return;
 
-                OnAdd(sourceProcessor);
+                ConnectToSource(sourceProcessor);
 
                 IsDragOver = false;
 
@@ -258,6 +294,82 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             #endregion
 
             RemoveCommand = new RelayCommand(OnRemove);
+
+            #region Register for ViewModel Changes
+
+            PropertyChanging += (s, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case SourcesPropertyName:
+                        Sources.CollectionChanged -= SourcesOnCollectionChanged;
+                        break;
+                    case TargetsPropertyName:
+                        Targets.CollectionChanged -= TargetsOnCollectionChanged;
+                        break;
+                }
+            };
+
+            PropertyChanged += (s, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case SourcesPropertyName:
+                        Sources.CollectionChanged += SourcesOnCollectionChanged;
+                        break;
+                    case TargetsPropertyName:
+                        Targets.CollectionChanged += TargetsOnCollectionChanged;
+                        break;
+                }
+            };
+
+            if (Sources != null)
+                Sources.CollectionChanged += SourcesOnCollectionChanged;
+
+            if (Targets != null)
+                Targets.CollectionChanged += TargetsOnCollectionChanged;
+
+            #endregion
+        }
+
+        #endregion
+
+        #region Model Changes
+
+        private void SourcesOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            // Used because of DataContractSerializer
+            if (IgnoreCollectionChanges) return;
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (var item in e.NewItems.OfType<ProcessorViewModelBase<T>>())
+                        Model.Sources.Add(item.Model);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (var item in e.NewItems.OfType<ProcessorViewModelBase<T>>())
+                        Model.Sources.Remove(item.Model);
+                    break;
+            }
+        }
+
+        private void TargetsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            // Used because of DataContractSerializer
+            if (IgnoreCollectionChanges) return;
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (var item in e.NewItems.OfType<ProcessorViewModelBase<T>>())
+                        Model.Targets.Add(item.Model);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (var item in e.NewItems.OfType<ProcessorViewModelBase<T>>())
+                        Model.Targets.Remove(item.Model);
+                    break;
+            }
         }
 
         #endregion
@@ -277,34 +389,25 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             DragDrop.DoDragDrop(element, dragData, DragDropEffects.Copy);
         }
 
-        protected virtual void OnAdd(ProcessorViewModelBase<T> processorViewModel)
+        protected virtual void ConnectToSource(ProcessorViewModelBase<T> source)
         {
-            processorViewModel.ParentProcessor = this;
-            processorViewModel.Model.Children.Add(Model);
+            source.Targets.Add(this);
+            Sources.Add(source);
         }
 
         protected virtual void OnRemove()
         {
+            // Stop processing (ViewModel and Model)
             Stop();
 
-            // Relocate child processors
-            foreach (var childProcessor in Children)
-            {
-                childProcessor.Stop();
+            // Relocate incoming and outgoing connections
+            RelocateSources();
+            RelocateTargets();
 
-                childProcessor.ParentProcessor = ParentProcessor;
-                ParentProcessor.Children.Add(childProcessor);
+            // Update UI
+            //Sources.RaisePropertyChanged(TargetsPropertyName);
 
-                if (ParentProcessor.Model != null)
-                    ParentProcessor.Model.Children.Add(childProcessor.Model);
-            }
-
-            if (ParentProcessor.Model != null)
-                ParentProcessor.Model.Children.Remove(Model);
-
-            ParentProcessor.Children.Remove(this);
-
-            ParentProcessor.RaisePropertyChanged(ChildProcessorsPropertyName);
+            Dispose();
         }
 
         public virtual void Start()
@@ -317,6 +420,42 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         {
             if (Model != null)
                 Model.Stop();
+        }
+
+        #region Relocate Sources/Targets
+
+        private void RelocateSources()
+        {
+            // Relocate child processors
+            foreach (var source in Sources)
+            {
+                // Connect parent processor to target
+                foreach (var target in Targets)
+                {
+                    source.Targets.Add(target);
+                }
+            }
+        }
+
+        private void RelocateTargets()
+        {
+            // Relocate child processors
+            foreach (var target in Targets)
+            {
+                // Connect parent processor to target
+                foreach (var source in Sources)
+                {
+                    target.Sources.Add(source);
+                }
+            }
+        }
+
+        #endregion
+
+        public void Dispose()
+        {
+            Sources.Clear();
+            Targets.Clear();
         }
     }
 }

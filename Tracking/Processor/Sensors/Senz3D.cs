@@ -288,7 +288,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.Sensors
         public override void Start()
         {
             // Start sub-processor
-            foreach (var processor in Children)
+            foreach (var processor in Targets)
                 processor.Start();
 
             var ctx = SynchronizationContext.Current;
@@ -302,7 +302,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.Sensors
             _isRunning = false;
 
             // Start sub-processor
-            foreach (var processor in Children)
+            foreach (var processor in Targets)
                 processor.Stop();
         }
 

@@ -246,7 +246,7 @@
                 </ScrollViewer>-->
 
                 <ScrollViewer>
-                    <ItemsControl ItemsSource="{Binding Path=Children, Mode=OneWay}"
+                    <ItemsControl ItemsSource="{Binding Path=Targets, Mode=OneWay}"
                               ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}"
                               ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
                         <ItemsControl.ItemsPanel>

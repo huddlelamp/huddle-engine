@@ -202,16 +202,76 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
-        #region Children
+        #region Sources
 
-        private ObservableCollection<BaseProcessor> _children = new ObservableCollection<BaseProcessor>();
+        /// <summary>
+        /// The <see cref="Sources" /> property's name.
+        /// </summary>
+        public const string SourcesPropertyName = "Sources";
 
-        [XmlArray("Children")]
+        private ObservableCollection<BaseProcessor> _sources = new ObservableCollection<BaseProcessor>();
+
+        /// <summary>
+        /// Sets and gets the Sources property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlArray("Sources")]
         [XmlArrayItem("Processor")]
-        public ObservableCollection<BaseProcessor> Children
+        public ObservableCollection<BaseProcessor> Sources
         {
-            get { return _children; }
-            set { _children = value; }
+            get
+            {
+                return _sources;
+            }
+
+            set
+            {
+                if (_sources == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(SourcesPropertyName);
+                _sources = value;
+                RaisePropertyChanged(SourcesPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Targets
+
+        /// <summary>
+        /// The <see cref="Targets" /> property's name.
+        /// </summary>
+        public const string TargetsPropertyName = "Targets";
+
+        private ObservableCollection<BaseProcessor> _targets = new ObservableCollection<BaseProcessor>();
+
+        /// <summary>
+        /// Sets and gets the Targets property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlArray("Targets")]
+        [XmlArrayItem("Processor")]
+        public ObservableCollection<BaseProcessor> Targets
+        {
+            get
+            {
+                return _targets;
+            }
+
+            set
+            {
+                if (_targets == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(TargetsPropertyName);
+                _targets = value;
+                RaisePropertyChanged(TargetsPropertyName);
+            }
         }
 
         #endregion
@@ -238,7 +298,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
             _dataQueue = new BlockingCollection<IDataContainer>(100);
 
             // Start sub-processor
-            foreach (var processor in Children)
+            foreach (var processor in Targets)
             {
                 processor.Start();
             }
@@ -298,19 +358,19 @@ namespace Tools.FlockingDevice.Tracking.Processor
             //    _processingThread.Join();
 
             // Stop sub-processor
-            foreach (var processor in Children)
+            foreach (var processor in Targets)
                 processor.Stop();
         }
 
         public void Publish(IDataContainer dataContainer)
         {
-            if (!Children.Any())
+            if (!Targets.Any())
             {
                 dataContainer.Dispose();
                 return;
             }
 
-            for (var i = 0; i < Children.Count - 1; i++)
+            for (var i = 0; i < Targets.Count - 1; i++)
             {
                 var container = dataContainer;
                 if (dataContainer.Count > 1)
@@ -318,9 +378,9 @@ namespace Tools.FlockingDevice.Tracking.Processor
                     container = dataContainer.Copy();
                 }
 
-                Children[i].Process(container);
+                Targets[i].Process(container);
             }
-            Children[Children.Count - 1].Process(dataContainer);
+            Targets[Targets.Count - 1].Process(dataContainer);
         }
 
         /// <summary>

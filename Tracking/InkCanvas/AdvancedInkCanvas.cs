@@ -403,13 +403,13 @@ namespace Tools.FlockingDevice.Tracking.InkCanvas
 
         public void Add(StrokeVisual sv)
         {
-            //_strokeVisualCanvas.Children.Add(sv);
+            //_strokeVisualCanvas.Targets.Add(sv);
             _visuals.Add(sv);
         }
 
         public void Remove(StrokeVisual sv)
         {
-            //_strokeVisualCanvas.Children.Remove(sv);
+            //_strokeVisualCanvas.Targets.Remove(sv);
             _visuals.Remove(sv);
         }
 

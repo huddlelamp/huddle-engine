@@ -9,7 +9,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
     {
         #region public properties
 
-        ObservableCollection<BaseProcessor> Children { get; set; }
+        ObservableCollection<BaseProcessor> Targets { get; set; }
 
         #endregion
 

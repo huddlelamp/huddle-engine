@@ -197,6 +197,8 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             {
                 var args = e.OriginalEventArgs as DragEventArgs;
 
+                if (args == null) return;
+
                 if (!args.Data.GetFormats().Any(f => Equals(typeof(BaseProcessor).Name, f))) return;
                 var type = args.Data.GetData(typeof(BaseProcessor).Name) as Type;
 
@@ -219,10 +221,10 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                     Model = processor,
                 };
 
-                Model.Children.Add(processor);
-                Children.Add(processorViewModel);
+                Targets.Add(processorViewModel);
+                processorViewModel.Sources.Add(this);
 
-                RaisePropertyChanged(ChildProcessorsPropertyName);
+                RaisePropertyChanged(TargetsPropertyName);
 
                 IsDragOver = false;
             });
@@ -234,7 +236,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public override void Start()
         {
-            foreach (var processorViewModel in Children)
+            foreach (var processorViewModel in Targets)
                 processorViewModel.Start();
 
             Mode = PipelineMode.Started;
@@ -242,7 +244,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public override void Stop()
         {
-            foreach (var processor in Children)
+            foreach (var processor in Targets)
                 processor.Stop();
 
             Mode = PipelineMode.Stopped;
@@ -338,11 +340,11 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 {
                     Model = _serializer.ReadObject(stream) as Pipeline ?? new Pipeline();
 
-                    foreach (var processor in Model.Children)
+                    foreach (var target in Model.Targets)
                     {
-                        var processorViewModel = BuildRecursiveViewModel(processor);
-                        processorViewModel.ParentProcessor = this;
-                        Children.Add(processorViewModel);
+                        var processorViewModel = BuildRecursiveViewModel(target);
+                        processorViewModel.Sources.Add(this);
+                        Targets.Add(processorViewModel);
                     }
                 }
             }
@@ -355,14 +357,26 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         private static ProcessorViewModelBase<BaseProcessor> BuildRecursiveViewModel(BaseProcessor processor)
         {
-            var processorViewModel = new ProcessorViewModelBase<BaseProcessor> { Model = processor };
-
-            foreach (var child in processor.Children)
+            var processorViewModel = new ProcessorViewModelBase<BaseProcessor>
             {
-                var childViewModel = BuildRecursiveViewModel(child);
-                childViewModel.ParentProcessor = processorViewModel;
-                processorViewModel.Children.Add(childViewModel);
+                IgnoreCollectionChanges = true,
+                Model = processor
+            };
+
+            foreach (var target in processor.Targets)
+            {
+                var childViewModel = BuildRecursiveViewModel(target);
+
+                childViewModel.Sources.Add(processorViewModel);
+                processorViewModel.Targets.Add(childViewModel);
             }
+
+            foreach (var source in processor.Sources)
+            {
+                
+            }
+
+            processorViewModel.IgnoreCollectionChanges = false;
 
             return processorViewModel;
         }
