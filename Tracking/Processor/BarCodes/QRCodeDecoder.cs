@@ -14,7 +14,7 @@ using Tools.FlockingDevice.Tracking.Util;
 namespace Tools.FlockingDevice.Tracking.Processor.BarCodes
 {
     [XmlType]
-    [ViewTemplate("QRCodeDecoder")]
+    [ViewTemplate("QRCode Decoder", "QRCodeDecoder", "/FlockingDevice.Tracking;component/Resources/qrcode.png")]
     public class QRCodeDecoder : RgbProcessor
     {
         #region private fields
@@ -25,18 +25,6 @@ namespace Tools.FlockingDevice.Tracking.Processor.BarCodes
         #endregion
 
         #region public properties
-
-        #region FriendlyName
-
-        public override string FriendlyName
-        {
-            get
-            {
-                return "QR Code Decoder";
-            }
-        }
-
-        #endregion
 
         #region TryHarder
 

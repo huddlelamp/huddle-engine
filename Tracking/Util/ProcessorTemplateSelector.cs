@@ -21,11 +21,11 @@ namespace Tools.FlockingDevice.Tracking.Util
 
                     try
                     {
-                        return element.FindResource(viewAttribute.TemplateName) as DataTemplate;
+                        return element.FindResource(viewAttribute.Template) as DataTemplate;
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine(@"DataTemplate not found for {0}. Add template to App.xaml.", viewAttribute.TemplateName);
+                        Console.WriteLine(@"DataTemplate not found for {0}. Add template to App.xaml.", viewAttribute.Template);
                     }
                 }
             }

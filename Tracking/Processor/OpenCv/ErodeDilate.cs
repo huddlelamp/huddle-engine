@@ -7,7 +7,7 @@ using Tools.FlockingDevice.Tracking.Util;
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
     [XmlType]
-    [ViewTemplate("ErodeDilate")]
+    [ViewTemplate("Erode Dilate", "ErodeDilate")]
     public class ErodeDilate : RgbProcessor
     {
         #region properties

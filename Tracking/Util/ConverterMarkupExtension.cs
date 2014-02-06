@@ -13,7 +13,8 @@ namespace Tools.FlockingDevice.Tracking.Util
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            return _converter ?? (_converter = new T());
+            //return _converter ?? (_converter = new T());
+            return this;
         }
     }
 

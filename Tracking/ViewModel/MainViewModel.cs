@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
@@ -17,7 +18,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
     /// See http://www.galasoft.ch/mvvm
     /// </para>
     /// </summary>
-    public class MainViewModel : ProcessorViewModel
+    public class MainViewModel : ViewModelBase
     {
         #region private fields
 

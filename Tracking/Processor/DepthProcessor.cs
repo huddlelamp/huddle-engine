@@ -10,7 +10,8 @@ using Tools.FlockingDevice.Tracking.Util;
 
 namespace Tools.FlockingDevice.Tracking.Processor
 {
-    [ViewTemplate("DepthProcessor")]
+    [XmlType]
+    [ViewTemplate("Depth Processor", "DepthProcessor")]
     public class DepthProcessor : RgbProcessor
     {
         #region properties

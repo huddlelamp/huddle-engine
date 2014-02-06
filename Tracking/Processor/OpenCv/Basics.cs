@@ -11,22 +11,10 @@ using Tools.FlockingDevice.Tracking.Util;
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
     [XmlType]
-    [ViewTemplate("Basics")]
+    [ViewTemplate("Basics", "Basics")]
     public class Basics : RgbProcessor
     {
         #region public properties
-
-        #region FriendlyName
-
-        public override string FriendlyName
-        {
-            get
-            {
-                return "Basic Processor";
-            }
-        }
-
-        #endregion
 
         #region ROI
 

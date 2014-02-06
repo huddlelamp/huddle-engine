@@ -16,7 +16,7 @@ using Tools.FlockingDevice.Tracking.Util;
 namespace Tools.FlockingDevice.Tracking.Processor.Sensors
 {
     [XmlType]
-    [ViewTemplate("Senz3D")]
+    [ViewTemplate("Senz3D", "Senz3D", "/FlockingDevice.Tracking;component/Resources/kinect.png")]
     public class Senz3D : BaseProcessor
     {
         #region private fields
@@ -35,18 +35,6 @@ namespace Tools.FlockingDevice.Tracking.Processor.Sensors
         #endregion
 
         #region properties
-
-        #region FriendlyName
-
-        public override string FriendlyName
-        {
-            get
-            {
-                return "Senz3D Input Source";
-            }
-        }
-
-        #endregion
 
         #region ColorImageSource
 
@@ -232,7 +220,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.Sensors
         /// </summary>
         public const string FpsPropertyName = "Fps";
 
-        private int _fps = 10;
+        private int _fps = 30;
 
         /// <summary>
         /// Sets and gets the Fps property.

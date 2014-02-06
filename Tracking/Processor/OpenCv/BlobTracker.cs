@@ -15,7 +15,7 @@ using Tools.FlockingDevice.Tracking.Util;
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
     [XmlType]
-    [ViewTemplate("BlobTracker")]
+    [ViewTemplate("Blob Tracker", "BlobTracker")]
     public class BlobTracker : RgbProcessor
     {
         #region events

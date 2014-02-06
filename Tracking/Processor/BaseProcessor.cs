@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows;
 using GalaSoft.MvvmLight;
@@ -11,6 +12,7 @@ using System.Xml.Serialization;
 using Tools.FlockingDevice.Tracking.Processor.BarCodes;
 using Tools.FlockingDevice.Tracking.Processor.OpenCv;
 using Tools.FlockingDevice.Tracking.Processor.Sensors;
+using Tools.FlockingDevice.Tracking.Util;
 
 namespace Tools.FlockingDevice.Tracking.Processor
 {
@@ -22,6 +24,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
     [XmlInclude(typeof(FindContours))]
     [XmlInclude(typeof(QRCodeDecoder))]
     [XmlInclude(typeof(VideoRecordAndPlay))]
+    [XmlInclude(typeof(DataTypeFilter))]
     public abstract class BaseProcessor : ObservableObject, IProcessor
     {
         #region private fields
@@ -37,16 +40,22 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #region properties
 
-        #region FiendlyName
+        #region Name
 
-        [XmlIgnore]
-        public virtual string FriendlyName
+        private ViewTemplateAttribute _metadata;
+
+        public ViewTemplateAttribute Metadata
         {
             get
             {
-                return GetType().Name;
+                if (_metadata != null) return _metadata;
+                var type = GetType();
+                var attribute = type.GetCustomAttribute<ViewTemplateAttribute>();
+                return _metadata = attribute;
             }
         }
+
+        #endregion
 
         #region IsRenderContent
 
@@ -98,12 +107,6 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
-        #endregion
-
-        #region
-
-        #endregion
-
         #region AllData
 
         protected List<IData> AllData { get; private set; }
@@ -145,13 +148,10 @@ namespace Tools.FlockingDevice.Tracking.Processor
                     {
                         dataContainer = _dataQueue.Take();
                     }
-                    catch (InvalidOperationException e)
+                    catch (InvalidOperationException)
                     {
-                        MessageBox.Show(e.Message, "Error while processing");
                         continue;
                     }
-
-                    Console.WriteLine(@"Queue {0}", _dataQueue.Count);
 
                     if (dataContainer == null)
                         throw new Exception("Empty data container has been queued");
@@ -169,7 +169,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
                 }
             })
             {
-                Name = string.Format(@"{0}{1}", FriendlyName, NextThreadNumber())
+                Name = string.Format(@"{0}{1}", GetType().Name, NextThreadNumber())
             };
             _processingThread.Start();
         }

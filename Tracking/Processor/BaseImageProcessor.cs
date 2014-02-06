@@ -10,7 +10,7 @@ using Tools.FlockingDevice.Tracking.Data;
 
 namespace Tools.FlockingDevice.Tracking.Processor
 {
-    public abstract class BaseImageProcessor<TColor, TDepth> : BaseProcessor, IProcessor
+    public abstract class BaseImageProcessor<TColor, TDepth> : BaseProcessor
         where TColor : struct, IColor
         where TDepth : new()
     {
@@ -18,54 +18,6 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         public static MCvFont EmguFont = new MCvFont(FONT.CV_FONT_HERSHEY_SIMPLEX, 0.3, 0.3);
         public static MCvFont EmguFontBig = new MCvFont(FONT.CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0);
-
-        #endregion
-
-        #region FiendlyName
-
-        public override string FriendlyName
-        {
-            get
-            {
-                return GetType().Name;
-            }
-        }
-
-        #endregion
-
-        #region ImageKey
-
-        /// <summary>
-        /// The <see cref="ImageKey" /> property's name.
-        /// </summary>
-        public const string ImageKeyPropertyName = "ImageKey";
-
-        private string _imageKey = string.Empty;
-
-        /// <summary>
-        /// Sets and gets the ImageKey property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        [XmlAttribute]
-        public string ImageKey
-        {
-            get
-            {
-                return _imageKey;
-            }
-
-            set
-            {
-                if (_imageKey == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(ImageKeyPropertyName);
-                _imageKey = value;
-                RaisePropertyChanged(ImageKeyPropertyName);
-            }
-        }
 
         #endregion
 
@@ -179,9 +131,6 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         public override IData Process(IData data)
         {
-            if (!string.IsNullOrWhiteSpace(ImageKey) && !Equals(ImageKey, data.Key))
-                return data;
-
             var imageData = data as BaseImageData<TColor, TDepth>;
 
             return imageData != null ? Process(imageData) : data;

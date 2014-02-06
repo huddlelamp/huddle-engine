@@ -14,12 +14,12 @@ using Tools.FlockingDevice.Tracking.Util;
 namespace Tools.FlockingDevice.Tracking.Processor
 {
     [XmlType]
-    [ViewTemplate("VideoRecordAndPlay")]
+    [ViewTemplate("Video Record / Play", "VideoRecordAndPlay", "/FlockingDevice.Tracking;component/Resources/film2.png")]
     public class VideoRecordAndPlay : RgbProcessor
     {
         #region private fields
 
-        private Dictionary<string, VideoWriter> _recorders = new Dictionary<string, VideoWriter>();
+        private readonly Dictionary<string, VideoWriter> _recorders = new Dictionary<string, VideoWriter>();
         private Capture _player;
 
         #endregion
@@ -56,6 +56,41 @@ namespace Tools.FlockingDevice.Tracking.Processor
                 RaisePropertyChanging(FilenamePropertyName);
                 _filename = value;
                 RaisePropertyChanged(FilenamePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Fps
+
+        /// <summary>
+        /// The <see cref="Fps" /> property's name.
+        /// </summary>
+        public const string FpsPropertyName = "Fps";
+
+        private int _fps = 30;
+
+        /// <summary>
+        /// Sets and gets the Fps property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int Fps
+        {
+            get
+            {
+                return _fps;
+            }
+
+            set
+            {
+                if (_fps == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(FpsPropertyName);
+                _fps = value;
+                RaisePropertyChanged(FpsPropertyName);
             }
         }
 
@@ -143,13 +178,14 @@ namespace Tools.FlockingDevice.Tracking.Processor
                     Image<Bgr, byte> image;
                     while ((image = _player.QueryFrame()) != null)
                     {
+                        var imageCopy = image.Copy();
                         Publish(new DataContainer(++frameId, DateTime.Now)
                         {
-                            new RgbImageData("depth", image.Convert<Rgb, byte>())
+                            new RgbImageData("depth", imageCopy.Convert<Rgb, byte>())
                         });
-                        image.Dispose();
+                        //image.Dispose();
 
-                        Thread.Sleep(1000 / 1);
+                        Thread.Sleep(1000 / Fps);
                     }
                 }).Start();
             }
@@ -157,9 +193,6 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         public override IData Process(IData data)
         {
-            if (!string.IsNullOrWhiteSpace(ImageKey) && !Equals(ImageKey, data.Key))
-                return base.Process(data);
-
             var imageData = data as RgbImageData;
 
             if (imageData != null)
@@ -179,9 +212,8 @@ namespace Tools.FlockingDevice.Tracking.Processor
             {
                 var width = imageData.Image.Width;
                 var height = imageData.Image.Height;
-                const int fps = 30;
-                var filename = string.Format("{0}_{1}_{2}x{3}_{4}.avi", Filename, imageData.Key, width, height, fps);
-                _recorders.Add(imageData.Key, new VideoWriter(filename, fps, width, height, true));
+                var filename = string.Format("{0}_{1}_{2}x{3}_{4}.avi", Filename, imageData.Key, width, height, Fps);
+                _recorders.Add(imageData.Key, new VideoWriter(filename, Fps, width, height, true));
             }
 
             var recorder = _recorders[imageData.Key];

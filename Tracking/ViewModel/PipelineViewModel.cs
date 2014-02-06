@@ -11,14 +11,12 @@ using System.Xml;
 using System.Xml.Serialization;
 using GalaSoft.MvvmLight.Command;
 using Tools.FlockingDevice.Tracking.Controls;
-using Tools.FlockingDevice.Tracking.Extensions;
 using Tools.FlockingDevice.Tracking.Model;
 using Tools.FlockingDevice.Tracking.Processor;
 using Tools.FlockingDevice.Tracking.Processor.OpenCv;
 using Tools.FlockingDevice.Tracking.Properties;
+using Tools.FlockingDevice.Tracking.Util;
 using Application = System.Windows.Application;
-using DataObject = System.Windows.Forms.DataObject;
-using DragDropEffects = System.Windows.Forms.DragDropEffects;
 using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
@@ -48,6 +46,41 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #region properties
 
+        #region Mode
+
+        /// <summary>
+        /// The <see cref="Mode" /> property's name.
+        /// </summary>
+        public const string ModePropertyName = "Mode";
+
+        private PipelineMode _mode = PipelineMode.Stopped;
+
+        /// <summary>
+        /// Sets and gets the Mode property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public PipelineMode Mode
+        {
+            get
+            {
+                return _mode;
+            }
+
+            set
+            {
+                if (_mode == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ModePropertyName);
+                _mode = value;
+                RaisePropertyChanged(ModePropertyName);
+            }
+        }
+
+        #endregion
+
         #region ProcessorTypes
 
         /// <summary>
@@ -55,13 +88,13 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         /// </summary>
         public const string ProcessorTypesPropertyName = "ProcessorTypes";
 
-        private ObservableCollection<Type> _processorTypes = new ObservableCollection<Type>();
+        private ObservableCollection<ViewTemplateAttribute> _processorTypes = new ObservableCollection<ViewTemplateAttribute>();
 
         /// <summary>
         /// Sets and gets the ProcessorTypes property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public ObservableCollection<Type> ProcessorTypes
+        public ObservableCollection<ViewTemplateAttribute> ProcessorTypes
         {
             get
             {
@@ -83,41 +116,6 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #endregion
 
-        #region Processors
-
-        /// <summary>
-        /// The <see cref="Processors" /> property's name.
-        /// </summary>
-        public const string ProcessorsPropertyName = "Processors";
-
-        private ObservableCollection<ProcessorViewModel> _processors = new ObservableCollection<ProcessorViewModel>();
-
-        /// <summary>
-        /// Sets and gets the Processors property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public ObservableCollection<ProcessorViewModel> Processors
-        {
-            get
-            {
-                return _processors;
-            }
-
-            set
-            {
-                if (_processors == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(ProcessorsPropertyName);
-                _processors = value;
-                RaisePropertyChanged(ProcessorsPropertyName);
-            }
-        }
-
-        #endregion
-
         #endregion
 
         #region ctor
@@ -127,14 +125,16 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             if (IsInDesignMode)
             {
                 // Code runs in Blend --> create design time data.
-                ProcessorTypes.Add(typeof(Basics));
-                ProcessorTypes.Add(typeof(CannyEdges));
-                ProcessorTypes.Add(typeof(FindContours));
-                ProcessorTypes.Add(typeof(BlobTracker));
+                //ProcessorTypes.Add(typeof(Basics));
+                //ProcessorTypes.Add(typeof(CannyEdges));
+                //ProcessorTypes.Add(typeof(FindContours));
+                //ProcessorTypes.Add(typeof(BlobTracker));
             }
             else
             {
-                ProcessorTypes = new ObservableCollection<Type>(GetTypes<BaseProcessor>());
+                var types = GetAttributesFromType<ViewTemplateAttribute, BaseProcessor>().ToArray();
+
+                ProcessorTypes = new ObservableCollection<ViewTemplateAttribute>(types);
             }
 
             // exit hook to stop input source
@@ -159,35 +159,33 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #endregion
 
-        protected override void OnAdd(BaseProcessor processor)
+        public override void Start()
         {
-            Processors.Add(new ProcessorViewModel { Model = processor });
-        }
-
-        protected override void OnRemove(BaseProcessor processor)
-        {
-            Processors.RemoveAll(vm => Equals(processor, vm.Model));
-        }
-
-        public void Start()
-        {
-            foreach (var processor in Processors)
+            foreach (var processor in ChildProcessors)
                 processor.Start();
+
+            Mode = PipelineMode.Started;
         }
 
-        public void Stop()
+        public override void Stop()
         {
-            foreach (var processor in Processors)
+            foreach (var processor in ChildProcessors)
                 processor.Stop();
+
+            Mode = PipelineMode.Stopped;
         }
 
         public void Pause()
         {
+            Mode = PipelineMode.Paused;
+
             throw new NotImplementedException();
         }
 
         public void Resume()
         {
+            Start();
+
             throw new NotImplementedException();
         }
 
@@ -206,7 +204,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                     var xmlTextWriter = XmlWriter.Create(stream, new XmlWriterSettings { NewLineChars = Environment.NewLine, Indent = true });
                     serializer.Serialize(xmlTextWriter, new Pipeline
                     {
-                        Processors = new List<BaseProcessor>(Processors.Select(vm => vm.Model))
+                        Processors = new List<BaseProcessor>(ChildProcessors.Select(vm => vm.Model))
                     });
                 }
 
@@ -233,7 +231,9 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
                     foreach (var processor in pipeline.Processors)
                     {
-                        Processors.Add(BuildRecursiveViewModel(processor));
+                        var processorViewModel = BuildRecursiveViewModel(processor);
+                        processorViewModel.ParentProcessor = this;
+                        ChildProcessors.Add(processorViewModel);
                     }
                 }
             }
@@ -244,9 +244,9 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             }
         }
 
-        private static ProcessorViewModel BuildRecursiveViewModel(BaseProcessor processor)
+        private static ProcessorViewModelBase<BaseProcessor> BuildRecursiveViewModel(BaseProcessor processor)
         {
-            var processorViewModel = new ProcessorViewModel { Model = processor };
+            var processorViewModel = new ProcessorViewModelBase<BaseProcessor> { Model = processor };
 
             foreach (var child in processor.Children)
             {
@@ -264,25 +264,37 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
             if (element == null) return;
 
-            var type = (Type)element.DataContext;
+            var viewTemplate = (ViewTemplateAttribute)element.DataContext;
 
-            if (type == null) return;
+            if (viewTemplate == null) return;
 
             // Initialize the drag & drop operation
-            var format = typeof(BaseProcessor).IsAssignableFrom(type)
+            var format = typeof(BaseProcessor).IsAssignableFrom(viewTemplate.Type)
                 ? typeof(BaseProcessor).Name
                 : null;
 
-            var dragData = new System.Windows.DataObject(format, type);
+            var dragData = new System.Windows.DataObject(format, viewTemplate.Type);
 
             DragDrop.DoDragDrop(element, dragData, System.Windows.DragDropEffects.Copy);
         }
 
-        private static IEnumerable<Type> GetTypes<T>()
+        private static IEnumerable<TA> GetAttributesFromType<TA, T>()
+            where TA : ViewTemplateAttribute
         {
-            return from t in Assembly.GetExecutingAssembly().GetTypes()
-                   where typeof(T).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface
-                   select t;
+            var types = from t in Assembly.GetExecutingAssembly().GetTypes()
+                        where typeof(T).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface
+                        select t;
+
+            foreach (var type in types)
+            {
+                var attr = type.GetCustomAttribute<TA>();
+
+                if (attr != null)
+                {
+                    attr.Type = type;
+                    yield return attr;
+                }
+            }
         }
 
         #endregion

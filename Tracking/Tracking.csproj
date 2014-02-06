@@ -185,10 +185,12 @@
     <Compile Include="Processor\BarCodes\ZXingHelper\IBarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\ImageLuminanceSource.cs" />
     <Compile Include="Processor\BaseProcessor.cs" />
+    <Compile Include="Processor\DataTypeFilter.cs" />
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
     <Compile Include="Processor\OpenCv\Filter\KalmanFilter.cs" />
     <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
     <Compile Include="Processor\OpenCv\Struct\RawObject.cs" />
+    <Compile Include="Processor\PipelineMode.cs" />
     <Compile Include="Processor\Sensors\Senz3D.cs" />
     <Compile Include="Domain\AbstractDevice.cs" />
     <Compile Include="Domain\DeviceEventArgs.cs" />
@@ -208,7 +210,9 @@
     <Compile Include="IO\WrappingStream.cs" />
     <Compile Include="Processor\VideoRecordAndPlay.cs" />
     <Compile Include="Util\ConverterMarkupExtension.cs" />
-    <Compile Include="Util\MVVMUtil.cs" />
+    <Compile Include="Util\BoolToVisibilityConverter.cs" />
+    <Compile Include="Util\PipelineModeToBoolConverter.cs" />
+    <Compile Include="Util\ViewTemplateAttribute.cs" />
     <Compile Include="Util\NullToBoolConverter.cs" />
     <Compile Include="Util\NullOrEmptyToVisibilityConverter.cs" />
     <Compile Include="Util\NotNullAndNotEmptyToVisibilityConverter.cs" />
@@ -218,7 +222,6 @@
     <Compile Include="ViewModel\ProcessorViewModelBase.cs" />
     <Compile Include="ViewModel\PipelineViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
-    <Compile Include="ViewModel\ProcessorViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="Controls\DropHereZone.xaml">
       <SubType>Designer</SubType>
@@ -247,6 +250,10 @@
     <Page Include="Pages\PipelinePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Templates\DataTypeFilter.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Templates\VideoRecordAndPlayView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -350,6 +357,35 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\drag-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\play.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\end.png" />
+    <Resource Include="Resources\left.png" />
+    <Resource Include="Resources\pause.png" />
+    <Resource Include="Resources\record.png" />
+    <Resource Include="Resources\rewind.png" />
+    <Resource Include="Resources\right.png" />
+    <Resource Include="Resources\stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\save_as.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\camcoder_pro.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\barcode.png" />
+    <Resource Include="Resources\film.png" />
+    <Resource Include="Resources\film2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\kinect.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\qrcode.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

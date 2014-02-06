@@ -22,6 +22,7 @@
                 <ResourceDictionary Source="Templates/QRCodeDecoderView.xaml"/>
                 <ResourceDictionary Source="Templates/Senz3DView.xaml"/>
                 <ResourceDictionary Source="Templates/VideoRecordAndPlayView.xaml"/>
+                <ResourceDictionary Source="Templates/DataTypeFilter.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

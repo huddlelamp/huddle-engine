@@ -21,6 +21,12 @@
             </Grid>
 
             <StackPanel Orientation="Horizontal">
+                <Label Content="Fps"/>
+                <Slider Value="{Binding Path=Fps}" Width="340" Height="25" Minimum="0" Maximum="100" />
+                <TextBlock Text="{Binding Path=Fps}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
                 <Label Content="Mode"/>
                 <ComboBox ItemsSource="{Binding Path=Modes}"
                           SelectedValue="{Binding Path=Mode}" />
@@ -28,13 +34,7 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
-                <Label Content="Image Key"/>
-                <TextBox Width="100" Text="{Binding Path=ImageKey}" />
-                <Button Content="Apply" />
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Image Key"/>
+                <Label Content="Filename"/>
                 <TextBox Width="200" Text="{Binding Path=Filename}" />
                 <Button Content="Apply" />
             </StackPanel>

@@ -24,7 +24,7 @@ using Tools.FlockingDevice.Tracking.Util;
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
     [XmlType]
-    [ViewTemplate("FindContours")]
+    [ViewTemplate("Find Contours", "FindContours")]
     public class FindContours : RgbProcessor
     {
         #region private fields
