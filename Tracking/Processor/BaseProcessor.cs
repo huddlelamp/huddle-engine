@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Threading;
-using System.Windows;
 using GalaSoft.MvvmLight;
 using Tools.FlockingDevice.Tracking.Data;
 using System.Xml.Serialization;
+using Tools.FlockingDevice.Tracking.Model;
 using Tools.FlockingDevice.Tracking.Processor.BarCodes;
 using Tools.FlockingDevice.Tracking.Processor.OpenCv;
 using Tools.FlockingDevice.Tracking.Processor.Sensors;
@@ -16,15 +17,15 @@ using Tools.FlockingDevice.Tracking.Util;
 
 namespace Tools.FlockingDevice.Tracking.Processor
 {
-    [XmlInclude(typeof(Senz3D))]
-    [XmlInclude(typeof(Basics))]
-    [XmlInclude(typeof(BlobTracker))]
-    [XmlInclude(typeof(CannyEdges))]
-    [XmlInclude(typeof(ErodeDilate))]
-    [XmlInclude(typeof(FindContours))]
-    [XmlInclude(typeof(QRCodeDecoder))]
-    [XmlInclude(typeof(VideoRecordAndPlay))]
-    [XmlInclude(typeof(DataTypeFilter))]
+    [KnownType(typeof(Senz3D))]
+    [KnownType(typeof(Basics))]
+    [KnownType(typeof(BlobTracker))]
+    [KnownType(typeof(CannyEdges))]
+    [KnownType(typeof(ErodeDilate))]
+    [KnownType(typeof(FindContours))]
+    [KnownType(typeof(QRCodeDecoder))]
+    [KnownType(typeof(VideoRecordAndPlay))]
+    [KnownType(typeof(DataTypeFilter))]
     public abstract class BaseProcessor : ObservableObject, IProcessor
     {
         #region private fields
@@ -39,6 +40,114 @@ namespace Tools.FlockingDevice.Tracking.Processor
         #endregion
 
         #region properties
+
+        #region X
+
+        /// <summary>
+        /// The <see cref="X" /> property's name.
+        /// </summary>
+        public const string XPropertyName = "X";
+
+        private double _x = 0.0;
+
+        /// <summary>
+        /// Sets and gets the X property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlAttribute]
+        public double X
+        {
+            get
+            {
+                return _x;
+            }
+
+            set
+            {
+                if (_x == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(XPropertyName);
+                _x = value;
+                RaisePropertyChanged(XPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Y
+
+        /// <summary>
+        /// The <see cref="Y" /> property's name.
+        /// </summary>
+        public const string YPropertyName = "Y";
+
+        private double _y = 0.0;
+
+        /// <summary>
+        /// Sets and gets the Y property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlAttribute]
+        public double Y
+        {
+            get
+            {
+                return _y;
+            }
+
+            set
+            {
+                if (_y == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(YPropertyName);
+                _y = value;
+                RaisePropertyChanged(YPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Angle
+
+        /// <summary>
+        /// The <see cref="Angle" /> property's name.
+        /// </summary>
+        public const string AnglePropertyName = "Angle";
+
+        private double _angle = 0.0;
+
+        /// <summary>
+        /// Sets and gets the Angle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlAttribute]
+        public double Angle
+        {
+            get
+            {
+                return _angle;
+            }
+
+            set
+            {
+                if (_angle == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(AnglePropertyName);
+                _angle = value;
+                RaisePropertyChanged(AnglePropertyName);
+            }
+        }
+
+        #endregion
 
         #region Name
 
@@ -190,9 +299,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
             // Stop sub-processor
             foreach (var processor in Children)
-            {
                 processor.Stop();
-            }
         }
 
         public void Publish(IDataContainer dataContainer)
@@ -234,7 +341,14 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
             // Add data container to processing queue.
             if (!_dataQueue.IsCompleted)
-                _dataQueue.Add(dataContainer);
+                try
+                {
+                    _dataQueue.Add(dataContainer);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
         }
 
         private IDataContainer ProcessInternal(IDataContainer dataContainer)

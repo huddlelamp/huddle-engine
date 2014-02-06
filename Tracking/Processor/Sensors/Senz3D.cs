@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
@@ -49,6 +50,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.Sensors
         /// Sets and gets the ColorImageSource property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [IgnoreDataMember]
         public BitmapSource ColorImageSource
         {
             get
@@ -84,6 +86,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.Sensors
         /// Sets and gets the DepthImageSource property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [IgnoreDataMember]
         public BitmapSource DepthImageSource
         {
             get
@@ -119,6 +122,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.Sensors
         /// Sets and gets the ConfidenceMapImageSource property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [IgnoreDataMember]
         public BitmapSource ConfidenceMapImageSource
         {
             get
@@ -154,7 +158,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.Sensors
         /// Sets and gets the DepthConfidenceThreshold property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [XmlAttribute]
+        [IgnoreDataMember]
         public float DepthConfidenceThreshold
         {
             get

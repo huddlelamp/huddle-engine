@@ -20,12 +20,6 @@
                 </GroupBox>
             </Grid>
 
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Image Key"/>
-                <TextBox Width="100" Text="{Binding Path=ImageKey}" />
-                <Button Content="Apply" />
-            </StackPanel>
-
             <CheckBox Content="Flip Vertical" VerticalAlignment="Center" IsChecked="{Binding Path=FlipVertical}" />
             <CheckBox Content="Flip Horizontal" VerticalAlignment="Center" IsChecked="{Binding Path=FlipHorizontal}" />
 

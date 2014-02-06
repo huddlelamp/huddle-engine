@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -29,7 +30,6 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
         /// Sets and gets the ROI property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [XmlIgnore]
         public Rectangle ROI
         {
             get
@@ -47,23 +47,6 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
                 RaisePropertyChanging(ROIPropertyName);
                 _roi = value;
                 RaisePropertyChanged(ROIPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region ROIString
-
-        private readonly RectangleConverter _doiConverter = new RectangleConverter();
-
-        [XmlAttribute(ROIPropertyName)]
-        public string ROIString
-        {
-            get { return (string)_doiConverter.ConvertTo(ROI, typeof(string)); }
-            set
-            {
-                var newROI = _doiConverter.ConvertFrom(value);
-                if (newROI != null) ROI = (Rectangle)newROI;
             }
         }
 

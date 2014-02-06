@@ -23,9 +23,9 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public RelayCommand<DragEventArgs> DragLeaveCommand { get; private set; }
 
-        public RelayCommand<DragEventArgs> DropSourceCommand { get; private set; }
+        public RelayCommand<MouseButtonEventArgs> DragSourceInitiateCommand { get; private set; }
 
-        public RelayCommand<DragEventArgs> DropTargetCommand { get; private set; }
+        public RelayCommand<DragEventArgs> DropSourceCommand { get; private set; }
 
         #endregion
 
@@ -105,35 +105,35 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #endregion
 
-        #region ChildProcessors
+        #region Children
 
         /// <summary>
-        /// The <see cref="ChildProcessors" /> property's name.
+        /// The <see cref="Children" /> property's name.
         /// </summary>
-        public const string ChildProcessorsPropertyName = "ChildProcessors";
+        public const string ChildProcessorsPropertyName = "Children";
 
-        private ObservableCollection<ProcessorViewModelBase<T>> _childProcessors = new ObservableCollection<ProcessorViewModelBase<T>>();
+        private ObservableCollection<ProcessorViewModelBase<T>> _children = new ObservableCollection<ProcessorViewModelBase<T>>();
 
         /// <summary>
-        /// Sets and gets the ChildProcessors property.
+        /// Sets and gets the Children property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public ObservableCollection<ProcessorViewModelBase<T>> ChildProcessors
+        public ObservableCollection<ProcessorViewModelBase<T>> Children
         {
             get
             {
-                return _childProcessors;
+                return _children;
             }
 
             set
             {
-                if (_childProcessors == value)
+                if (_children == value)
                 {
                     return;
                 }
 
                 RaisePropertyChanging(ChildProcessorsPropertyName);
-                _childProcessors = value;
+                _children = value;
                 RaisePropertyChanged(ChildProcessorsPropertyName);
             }
         }
@@ -218,6 +218,8 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         {
             #region Drag & Drop
 
+            DragSourceInitiateCommand = new RelayCommand<MouseButtonEventArgs>(OnDragSourceInitiate);
+
             DragOverCommand = new RelayCommand<DragEventArgs>(
                 e =>
                 {
@@ -238,26 +240,19 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 e.Handled = true;
             });
 
-            DropTargetCommand = new RelayCommand<DragEventArgs>(e =>
+            DropSourceCommand = new RelayCommand<DragEventArgs>(e =>
             {
-                if (!e.Data.GetFormats().Any(f => Equals(typeof(T).Name, f))) return;
-                var type = e.Data.GetData(typeof(T).Name) as Type;
+                if (!e.Data.GetFormats().Any(f => Equals(typeof(ProcessorViewModelBase<T>).Name, f))) return;
+                var sourceProcessor = e.Data.GetData(typeof(ProcessorViewModelBase<T>).Name) as ProcessorViewModelBase<T>;
 
-                if (type == null)
+                if (sourceProcessor == null)
                     return;
 
-                T t;
-                try
-                {
-                    t = (T)Activator.CreateInstance(type);
-                }
-                catch (Exception)
-                {
-                    t = default(T);
-                }
-                OnAdd(t);
+                OnAdd(sourceProcessor);
 
                 IsDragOver = false;
+
+                e.Handled = true;
             });
 
             #endregion
@@ -267,41 +262,25 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #endregion
 
-        protected virtual void OnAdd(T processor)
+        private void OnDragSourceInitiate(MouseButtonEventArgs e)
         {
-            if (Model != null)
-                Model.Children.Add(processor);
+            var element = e.Source as FrameworkElement;
 
-            var childProcessor = new ProcessorViewModelBase<T>
-            {
-                Model = processor,
-                ParentProcessor = this
-            };
-            ChildProcessors.Add(childProcessor);
+            if (element == null) return;
 
-            RaisePropertyChanged(ChildProcessorsPropertyName);
+            var processorViewModel = element.DataContext as ProcessorViewModelBase<T>;
 
-            var parent = this;
-            while (!(parent is PipelineViewModel))
-            {
-                parent = parent.ParentProcessor;
-            }
+            if (processorViewModel == null) return;
 
-            if (parent != null)
-            {
-                var pipeline = parent as PipelineViewModel;
+            var dragData = new DataObject(typeof(ProcessorViewModelBase<T>).Name, processorViewModel);
 
-                if (pipeline != null)
-                    switch (pipeline.Mode)
-                    {
-                        case PipelineMode.Started:
-                            childProcessor.Start();
-                            break;
-                        //case PipelineMode.Paused:
-                        //    childProcessor.Pause();
-                        //    break;
-                    }
-            }
+            DragDrop.DoDragDrop(element, dragData, DragDropEffects.Copy);
+        }
+
+        protected virtual void OnAdd(ProcessorViewModelBase<T> processorViewModel)
+        {
+            processorViewModel.ParentProcessor = this;
+            processorViewModel.Model.Children.Add(Model);
         }
 
         protected virtual void OnRemove()
@@ -309,12 +288,12 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             Stop();
 
             // Relocate child processors
-            foreach (var childProcessor in ChildProcessors)
+            foreach (var childProcessor in Children)
             {
                 childProcessor.Stop();
 
                 childProcessor.ParentProcessor = ParentProcessor;
-                ParentProcessor.ChildProcessors.Add(childProcessor);
+                ParentProcessor.Children.Add(childProcessor);
 
                 if (ParentProcessor.Model != null)
                     ParentProcessor.Model.Children.Add(childProcessor.Model);
@@ -323,12 +302,9 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             if (ParentProcessor.Model != null)
                 ParentProcessor.Model.Children.Remove(Model);
 
-            ParentProcessor.ChildProcessors.Remove(this);
+            ParentProcessor.Children.Remove(this);
 
             ParentProcessor.RaisePropertyChanged(ChildProcessorsPropertyName);
-
-            foreach (var childProcessor in ParentProcessor.ChildProcessors)
-                childProcessor.Start();
         }
 
         public virtual void Start()

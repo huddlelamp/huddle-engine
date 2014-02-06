@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 using Emgu.CV;
@@ -70,7 +71,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the PreProcessImage property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [XmlIgnore]
+        [IgnoreDataMember]
         public BitmapSource PreProcessImage
         {
             get
@@ -106,7 +107,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the PostProcessImage property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [XmlIgnore]
+        [IgnoreDataMember]
         public BitmapSource PostProcessImage
         {
             get
