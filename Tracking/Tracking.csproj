@@ -134,6 +134,18 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Reactive.Core">
+      <HintPath>..\packages\Rx-Core.2.2.2\lib\net45\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces">
+      <HintPath>..\packages\Rx-Interfaces.2.2.2\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq">
+      <HintPath>..\packages\Rx-Linq.2.2.2\lib\net45\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices">
+      <HintPath>..\packages\Rx-PlatformServices.2.2.3\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -220,6 +232,8 @@
     <Compile Include="Processor\VideoRecordAndPlay.cs" />
     <Compile Include="Util\ConverterMarkupExtension.cs" />
     <Compile Include="Util\BoolToVisibilityConverter.cs" />
+    <Compile Include="Util\DoubleToPointConverter.cs" />
+    <Compile Include="Util\IntegerToBooleanConverter.cs" />
     <Compile Include="Util\PipelineModeToBoolConverter.cs" />
     <Compile Include="Util\ProcessorContainerStyleSelector.cs" />
     <Compile Include="Util\RoutedEventTrigger.cs" />
@@ -230,10 +244,14 @@
     <Compile Include="Util\ProcessorTemplateSelector.cs" />
     <Compile Include="Util\RoutedEventHelper.cs" />
     <Compile Include="Util\StringToRectangleConverter.cs" />
+    <Compile Include="ViewModel\PipeViewModel.cs" />
     <Compile Include="ViewModel\ProcessorViewModelBase.cs" />
     <Compile Include="ViewModel\PipelineViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="View\Pipe.xaml.cs">
+      <DependentUpon>Pipe.xaml</DependentUpon>
+    </Compile>
     <Page Include="Controls\DropHereZone.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -307,6 +325,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Themes\Plain.Themes.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Pipe.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

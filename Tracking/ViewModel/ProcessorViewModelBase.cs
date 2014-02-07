@@ -342,14 +342,14 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public virtual void Start()
         {
-            if (Model != null)
-                Model.Start();
+            Model.Start();
+
+            // Set green border to indicate running state...
         }
 
         public virtual void Stop()
         {
-            if (Model != null)
-                Model.Stop();
+            Model.Stop();
         }
 
         #region Relocate Sources/Targets

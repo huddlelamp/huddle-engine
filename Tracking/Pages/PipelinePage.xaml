@@ -10,20 +10,31 @@
              xmlns:viewModel="clr-namespace:Tools.FlockingDevice.Tracking.ViewModel"
              xmlns:inkCanvas="clr-namespace:Tools.FlockingDevice.Tracking.InkCanvas"
              xmlns:behaviors="clr-namespace:Tools.FlockingDevice.Tracking.Behaviors"
+             xmlns:view="clr-namespace:Tools.FlockingDevice.Tracking.View"
              mc:Ignorable="d" 
              d:DesignWidth="1920"
              d:DesignHeight="1080"
              DataContext="{Binding Source={StaticResource ResourceKey=Locator}, Path=Main.Pipeline}">
     <UserControl.Resources>
+
+        <DataTemplate DataType="{x:Type viewModel:PipeViewModel}">
+            <view:Pipe DataContext="{Binding}" />
+        </DataTemplate>
+
         <util:ProcessorTemplateSelector x:Key="ProcessorViewTemplateSelector" />
 
         <util:ProcessorContainerStyleSelector x:Key="ProcessorViewContainerStyleSelector">
-            <util:ProcessorContainerStyleSelector.BaseProcessorStyle>
+            <util:ProcessorContainerStyleSelector.FilterStyle>
                 <Style TargetType="ContentPresenter">
                     <Setter Property="Canvas.Left" Value="{Binding Path=Model.X}" />
                     <Setter Property="Canvas.Top" Value="{Binding Path=Model.Y}" />
                 </Style>
-            </util:ProcessorContainerStyleSelector.BaseProcessorStyle>
+            </util:ProcessorContainerStyleSelector.FilterStyle>
+            <util:ProcessorContainerStyleSelector.PipeStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Panel.ZIndex" Value="1" />
+                </Style>
+            </util:ProcessorContainerStyleSelector.PipeStyle>
         </util:ProcessorContainerStyleSelector>
 
         <Style TargetType="{x:Type Slider}">
@@ -246,25 +257,36 @@
                 </ScrollViewer>-->
 
                 <ScrollViewer>
-                    <ItemsControl ItemsSource="{Binding Path=Processors, Mode=OneWay}"
+                    <Grid>
+                        <ItemsControl ItemsSource="{Binding Path=Pipes, Mode=OneWay}"
+                                  ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas Background="DarkTurquoise" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+
+                        <ItemsControl ItemsSource="{Binding Path=Processors, Mode=OneWay}"
                               ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}"
                               ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <inkCanvas:AdvancedInkCanvas x:Name="InkCanvas" Background="BlueViolet" IsDrawingEnabled="True" IsMouseEnabled="True"
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <inkCanvas:AdvancedInkCanvas x:Name="InkCanvas" Background="Transparent" IsDrawingEnabled="True" IsMouseEnabled="True"
                                                          AllowDrop="True">
-                                    <i:Interaction.Triggers>
-                                        <util:EventTriggerAdvanced EventName="StrokeCollected">
-                                            <command:EventToCommand Command="{Binding StrokeCollectedCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
-                                        </util:EventTriggerAdvanced>
-                                        <util:EventTriggerAdvanced EventName="Drop">
-                                            <command:EventToCommand Command="{Binding Path=DropProcessorCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
-                                        </util:EventTriggerAdvanced>
-                                    </i:Interaction.Triggers>
-                                </inkCanvas:AdvancedInkCanvas>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
+                                        <i:Interaction.Triggers>
+                                            <util:EventTriggerAdvanced EventName="StrokeCollected">
+                                                <command:EventToCommand Command="{Binding StrokeCollectedCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                            </util:EventTriggerAdvanced>
+                                            <util:EventTriggerAdvanced EventName="Drop">
+                                                <command:EventToCommand Command="{Binding Path=DropProcessorCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                            </util:EventTriggerAdvanced>
+                                        </i:Interaction.Triggers>
+                                    </inkCanvas:AdvancedInkCanvas>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </Grid>
                 </ScrollViewer>
             </Grid>
         </Grid>

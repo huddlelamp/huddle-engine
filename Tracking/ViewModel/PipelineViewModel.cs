@@ -169,6 +169,41 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #endregion
 
+        #region Pipes
+
+        /// <summary>
+        /// The <see cref="Pipes" /> property's name.
+        /// </summary>
+        public const string PipesPropertyName = "Pipes";
+
+        private ObservableCollection<PipeViewModel> _pipes = new ObservableCollection<PipeViewModel>();
+
+        /// <summary>
+        /// Sets and gets the Pipes property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public ObservableCollection<PipeViewModel> Pipes
+        {
+            get
+            {
+                return _pipes;
+            }
+
+            set
+            {
+                if (_pipes == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(PipesPropertyName);
+                _pipes = value;
+                RaisePropertyChanged(PipesPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -271,14 +306,16 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public override void Start()
         {
-            base.Start();
+            foreach (var processor in Processors)
+                processor.Start();
 
             Mode = PipelineMode.Started;
         }
 
         public override void Stop()
         {
-            base.Stop();
+            foreach (var processor in Processors)
+                processor.Stop();
 
             Mode = PipelineMode.Stopped;
         }
@@ -381,12 +418,28 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                         };
                         Processors.Add(processorViewModel);
                     }
+
+                    foreach (var pipeViewModel in BuildPipeViewModels(Model as Pipeline))
+                    {
+                        Pipes.Add(pipeViewModel);
+                    }
                 }
             }
             catch (Exception e)
             {
                 MessageBox.Show(String.Format("Could not load pipeline. {0}.", e.Message), @"Pipeline Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private static IEnumerable<PipeViewModel> BuildPipeViewModels(Pipeline pipeline)
+        {
+            foreach (var source in pipeline.Targets)
+            {
+                foreach (var target in source.Targets)
+                {
+                    yield return new PipeViewModel(source, target);
+                }
             }
         }
 

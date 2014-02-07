@@ -297,12 +297,6 @@ namespace Tools.FlockingDevice.Tracking.Processor
         {
             _dataQueue = new BlockingCollection<IDataContainer>(100);
 
-            // Start sub-processor
-            foreach (var processor in Targets)
-            {
-                processor.Start();
-            }
-
             if (_processing)
                 return;
 
@@ -319,7 +313,8 @@ namespace Tools.FlockingDevice.Tracking.Processor
                     }
                     catch (InvalidOperationException)
                     {
-                        continue;
+                        _processing = false;
+                        break;
                     }
 
                     if (dataContainer == null)
@@ -345,6 +340,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         public virtual void Stop()
         {
+
             // If it is not processing just return.
             if (!_processing)
                 return;
@@ -356,10 +352,6 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
             //if (_processingThread != null)
             //    _processingThread.Join();
-
-            // Stop sub-processor
-            foreach (var processor in Targets)
-                processor.Stop();
         }
 
         public void Publish(IDataContainer dataContainer)

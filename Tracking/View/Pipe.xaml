@@ -1,0 +1,110 @@
+﻿<UserControl x:Class="Tools.FlockingDevice.Tracking.View.Pipe"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:util="clr-namespace:Tools.FlockingDevice.Tracking.Util"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <Path x:Name="visualPath" StrokeThickness="{Binding LinkWidth}">
+            <Path.Data>
+                <GeometryGroup>
+                    <LineGeometry x:Name="lineGeometry">
+                        <LineGeometry.StartPoint>
+                            <MultiBinding Converter="{util:DoubleToPointConverter}">
+                                <Binding Path="Source.X"/>
+                                <Binding Path="Source.Y"/>
+                            </MultiBinding>
+                        </LineGeometry.StartPoint>
+                        <LineGeometry.EndPoint>
+                            <MultiBinding Converter="{util:DoubleToPointConverter}">
+                                <Binding Path="Destination.X"/>
+                                <Binding Path="Destination.Y"/>
+                            </MultiBinding>
+                        </LineGeometry.EndPoint>
+                    </LineGeometry>
+                    <LineGeometry x:Name="arrowDash1Geometry" StartPoint="{Binding ArrowDash1StartPoint}" EndPoint="{Binding ArrowDash1EndPoint}"></LineGeometry>
+                    <LineGeometry x:Name="arrowDash2Geometry" StartPoint="{Binding ArrowDash2StartPoint}" EndPoint="{Binding ArrowDash2EndPoint}"></LineGeometry>
+                </GeometryGroup>
+            </Path.Data>
+            <Path.Style>
+                <Style TargetType="{x:Type Path}">
+                    <Style.Setters>
+                        <Setter Property="Stroke">
+                            <Setter.Value>
+                                <SolidColorBrush Color="LightGray"/>
+                            </Setter.Value>
+                        </Setter>
+                    </Style.Setters>
+                    <Style.Triggers>
+
+                        <DataTrigger Binding="{Binding QueryCount, Converter={util:IntegerToBooleanConverter}}" Value="False">
+                            <Setter Property="Stroke">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="Red"/>
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+
+                        <DataTrigger Binding="{Binding ConnectionTargetCount, Converter={util:IntegerToBooleanConverter}}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation To="DeepPink" Storyboard.TargetProperty="Stroke.Color" Duration="0:0:0.5">
+
+                                        </ColorAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation To="LightGray" Storyboard.TargetProperty="Stroke.Color" Duration="0:0:0.5">
+
+                                        </ColorAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding QueryCount, Converter={util:IntegerToBooleanConverter}}" Value="False"></Condition>
+                                <Condition Binding="{Binding ConnectionTargetCount, Converter={util:IntegerToBooleanConverter}}" Value="True"></Condition>
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation To="DeepPink" Storyboard.TargetProperty="Stroke.Color" Duration="0:0:0.5">
+
+                                        </ColorAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiDataTrigger.EnterActions>
+                            <MultiDataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation To="Red" Storyboard.TargetProperty="Stroke.Color" Duration="0:0:0.5">
+
+                                        </ColorAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiDataTrigger.ExitActions>
+                        </MultiDataTrigger>
+
+                    </Style.Triggers>
+                </Style>
+            </Path.Style>
+        </Path>
+        <Line x:Name="hitTestPath"
+              X1="{Binding Source.X}" 
+              Y1="{Binding Source.Y}" 
+              X2="{Binding Destination.X}" 
+              Y2="{Binding Destination.Y}"  
+              Stroke="Transparent" 
+              StrokeThickness="30"
+              >
+        </Line>
+    </Grid>
+</UserControl>

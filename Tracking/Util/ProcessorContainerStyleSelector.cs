@@ -15,11 +15,15 @@ namespace Tools.FlockingDevice.Tracking.Util
         public override Style SelectStyle(object item, DependencyObject container)
         {
             if (item is ProcessorViewModelBase<BaseProcessor>)
-                return BaseProcessorStyle;
+                return FilterStyle;
+            else if (item is PipeViewModel)
+                return PipeStyle;
 
             return null;
         }
 
-        public Style BaseProcessorStyle { get; set; }
+        public Style FilterStyle { get; set; }
+
+        public Style PipeStyle { get; set; }
     }
 }

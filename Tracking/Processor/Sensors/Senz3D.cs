@@ -287,10 +287,6 @@ namespace Tools.FlockingDevice.Tracking.Processor.Sensors
 
         public override void Start()
         {
-            // Start sub-processor
-            foreach (var processor in Targets)
-                processor.Start();
-
             var ctx = SynchronizationContext.Current;
             var thread = new Thread(() => DoRendering(ctx));
             thread.Start();
@@ -300,10 +296,6 @@ namespace Tools.FlockingDevice.Tracking.Processor.Sensors
         public override void Stop()
         {
             _isRunning = false;
-
-            // Start sub-processor
-            foreach (var processor in Targets)
-                processor.Stop();
         }
 
         #endregion

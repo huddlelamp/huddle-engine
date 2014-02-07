@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -98,6 +99,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #region Mode
 
+        [IgnoreDataMember]
         public static string[] Modes { get { return new[] { "Recorder", "Player" }; } }
 
         /// <summary>
