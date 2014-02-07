@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight;
+using Tools.FlockingDevice.Tracking.Data;
 
 namespace Tools.FlockingDevice.Tracking.Domain
 {
-    public abstract class AbstractDevice : ObservableObject, IDevice
+    public abstract class AbstractDevice : BaseData, IDevice
     {
         #region properties
 
@@ -150,6 +151,15 @@ namespace Tools.FlockingDevice.Tracking.Domain
         }
 
         #endregion
+
+        #endregion
+
+        #region ctor
+
+        protected AbstractDevice(string key)
+            : base(key)
+        {
+        }
 
         #endregion
     }

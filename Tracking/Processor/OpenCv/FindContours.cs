@@ -1,24 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Windows.Forms.VisualStyles;
+using System.Runtime.Serialization;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
-using Emgu.CV.Flann;
-using Emgu.CV.GPU;
 using Emgu.CV.Structure;
-using Emgu.Util.TypeEnum;
 using GalaSoft.MvvmLight.Threading;
 using Tools.FlockingDevice.Tracking.Data;
-using Tools.FlockingDevice.Tracking.Processor.OpenCv.Filter;
+using Tools.FlockingDevice.Tracking.Domain;
 using Tools.FlockingDevice.Tracking.Processor.OpenCv.Struct;
-using Tools.FlockingDevice.Tracking.Properties;
 using Tools.FlockingDevice.Tracking.Util;
 
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
@@ -471,7 +465,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
         /// Sets and gets the ConfidenceImage property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [XmlIgnore]
+        [IgnoreDataMember]
         public BitmapSource ConfidenceImage
         {
             get
@@ -507,7 +501,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
         /// Sets and gets the SubtractImage property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [XmlIgnore]
+        [IgnoreDataMember]
         public BitmapSource SubtractImage
         {
             get
@@ -532,14 +526,6 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
         #endregion
 
-        public override IData Process(IData data)
-        {
-            if (Equals("confidence", data.Key))
-                return data;
-
-            return base.Process(data);
-        }
-
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
         {
             // create corner strength image and do Harris
@@ -556,24 +542,24 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
             _objects.RemoveAll(o => (now - o.LastUpdate).TotalMilliseconds > Timeout);
 
-            var confidenceImage = AllData.First(d => Equals(d.Key, "confidence")) as RgbImageData;
+            //var confidenceImage = AllData.First(d => Equals(d.Key, "confidence")) as RgbImageData;
 
-            if (false && confidenceImage != null)
-            {
-                //Console.WriteLine(confidenceImage);
+            //if (false && confidenceImage != null)
+            //{
+            //    //Console.WriteLine(confidenceImage);
 
-                var subtractImage = image.Sub(confidenceImage.Image);
-                image.Dispose();
-                image = subtractImage;
+            //    var subtractImage = image.Sub(confidenceImage.Image);
+            //    image.Dispose();
+            //    image = subtractImage;
 
-                var subtractImageCopy = subtractImage.Copy();
-                DispatcherHelper.RunAsync(() =>
-                {
-                    ConfidenceImage = confidenceImage.Image.ToBitmapSource();
-                    SubtractImage = subtractImageCopy.ToBitmapSource();
-                    subtractImageCopy.Dispose();
-                });
-            }
+            //    var subtractImageCopy = subtractImage.Copy();
+            //    DispatcherHelper.RunAsync(() =>
+            //    {
+            //        ConfidenceImage = confidenceImage.Image.ToBitmapSource();
+            //        SubtractImage = subtractImageCopy.ToBitmapSource();
+            //        subtractImageCopy.Dispose();
+            //    });
+            //}
 
             var outputImage = new Image<Rgb, byte>(image.Size.Width, image.Size.Height, Rgbs.Black);
 
@@ -673,6 +659,8 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
                 }
             }
 
+            var container = new DataContainer(0, DateTime.Now);
+
             foreach (var rawObject in _objects)
             {
                 //var orig = currentContour.BoundingRectangle.Location;
@@ -702,10 +690,18 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
                 //outputImage.Draw(string.Format("Angle {0}", rawObject.Shape.angle), ref EmguFont, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
 
-
-
                 outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFontBig, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
+
+                container.Add(new Tablet(string.Format("{0}", rawObject.Id))
+                {
+                    X = rawObject.Shape.center.X,
+                    Y = rawObject.Shape.center.Y,
+                    Angle = rawObject.Shape.angle,
+                });
             }
+
+            //if (container.Count > 0)
+            //    Publish(container);
 
             grayImage.Dispose();
 

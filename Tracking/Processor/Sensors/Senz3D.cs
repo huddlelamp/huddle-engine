@@ -158,7 +158,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.Sensors
         /// Sets and gets the DepthConfidenceThreshold property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [IgnoreDataMember]
+        [XmlAttribute]
         public float DepthConfidenceThreshold
         {
             get

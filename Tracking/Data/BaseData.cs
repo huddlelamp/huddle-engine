@@ -1,6 +1,8 @@
-﻿namespace Tools.FlockingDevice.Tracking.Data
+﻿using GalaSoft.MvvmLight;
+
+namespace Tools.FlockingDevice.Tracking.Data
 {
-    public abstract class BaseData : IData
+    public abstract class BaseData : ObservableObject, IData
     {
         #region properties
 

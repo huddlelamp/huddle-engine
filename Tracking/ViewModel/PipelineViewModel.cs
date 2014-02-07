@@ -26,7 +26,7 @@ using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
 {
-    public class PipelineViewModel : ProcessorViewModelBase<BaseProcessor>
+    public class PipelineViewModel : ProcessorViewModelBase<Pipeline>
     {
         #region prviate fields
 

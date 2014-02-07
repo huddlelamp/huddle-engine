@@ -11,6 +11,7 @@
              xmlns:inkCanvas="clr-namespace:Tools.FlockingDevice.Tracking.InkCanvas"
              xmlns:behaviors="clr-namespace:Tools.FlockingDevice.Tracking.Behaviors"
              xmlns:view="clr-namespace:Tools.FlockingDevice.Tracking.View"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignWidth="1920"
              d:DesignHeight="1080"
@@ -104,7 +105,8 @@
                         </Rectangle>
                         <Rectangle Grid.Column="1" Fill="LawnGreen">
                             <i:Interaction.Behaviors>
-                                <behaviors:DragDropBehavior X="{Binding Path=Model.X, Mode=TwoWay}"  Y="{Binding Path=Model.Y, Mode=TwoWay}" />
+                                <behaviors:DragDropBehavior X="{Binding Path=Model.X, Mode=TwoWay}"  Y="{Binding Path=Model.Y, Mode=TwoWay}"
+                                                            Scale="{Binding Path=Pipeline.Model.Scale, Mode=OneWay}"/>
                             </i:Interaction.Behaviors>
                         </Rectangle>
                         <Rectangle Grid.Column="1" Fill="Yellow"
@@ -242,13 +244,21 @@
             </StackPanel>
 
             <Grid Grid.Column="1">
-                <ScrollViewer>
-                    <Grid>
+                <xctk:Zoombox x:Name="ZoomCanvas" Background="Yellow"
+                              Scale="{Binding Path=Model.Scale, Mode=TwoWay}"
+                              AutoWrapContentWithViewbox="True">
+                    <xctk:Zoombox.ViewStack>
+                        <xctk:ZoomboxView>Fit</xctk:ZoomboxView>
+                    </xctk:Zoombox.ViewStack>
+                    <Grid Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
+                          Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}">
                         <ItemsControl ItemsSource="{Binding Path=Pipes, Mode=OneWay}"
-                                  ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}">
+                                      ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <Canvas Background="DarkTurquoise" />
+                                    <Canvas Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
+                                            Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}"
+                                            Background="DarkTurquoise" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
@@ -259,7 +269,9 @@
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <inkCanvas:AdvancedInkCanvas x:Name="InkCanvas" Background="Transparent" IsDrawingEnabled="True" IsMouseEnabled="True"
-                                                         AllowDrop="True">
+                                                                 AllowDrop="True"
+                                                                 Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
+                                                                 Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}">
                                         <i:Interaction.Triggers>
                                             <util:EventTriggerAdvanced EventName="StrokeCollected">
                                                 <command:EventToCommand Command="{Binding Path=StrokeCollectedCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
@@ -273,7 +285,7 @@
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
                     </Grid>
-                </ScrollViewer>
+                </xctk:Zoombox>
             </Grid>
         </Grid>
     </Grid>

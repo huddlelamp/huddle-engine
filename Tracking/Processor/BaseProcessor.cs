@@ -400,7 +400,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
                     _dataQueue.Add(dataContainer);
 
 #if DEBUG
-                    Console.WriteLine("QUEUE: {0}, IsProcessing: {1} Name: {2}", _dataQueue.Count, _processing, GetType().Name);
+                    //Console.WriteLine("QUEUE: {0}, IsProcessing: {1} Name: {2}", _dataQueue.Count, _processing, GetType().Name);
 #endif
                 }
                 catch (Exception e)

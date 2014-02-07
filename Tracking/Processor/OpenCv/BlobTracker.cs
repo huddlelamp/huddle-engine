@@ -144,7 +144,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
                 if (_devices.All(d => d.Id != blob.ID))
                 {
-                    var device = new Smartphone
+                    var device = new Smartphone("")
                     {
                         Id = blob.ID,
                         X = blob.Center.X,

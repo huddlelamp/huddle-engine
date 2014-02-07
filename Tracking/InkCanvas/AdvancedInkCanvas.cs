@@ -302,7 +302,7 @@ namespace Tools.FlockingDevice.Tracking.InkCanvas
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Released)
+            if (e.LeftButton == MouseButtonState.Released || (Keyboard.Modifiers > 0))
                 return;
 
             _mouseStrokeVisual = new StrokeVisual(e.GetPosition(this), Colors.Black);

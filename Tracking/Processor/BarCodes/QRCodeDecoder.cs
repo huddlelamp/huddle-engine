@@ -19,7 +19,8 @@ namespace Tools.FlockingDevice.Tracking.Processor.BarCodes
     {
         #region private fields
 
-        private IBarcodeReaderImage _barcodeReader;
+        private readonly IBarcodeReaderImage _barcodeReader;
+
         private readonly Rgb[] _colors = { Rgbs.Red, Rgbs.Green, Rgbs.Blue, Rgbs.Yellow };
 
         #endregion

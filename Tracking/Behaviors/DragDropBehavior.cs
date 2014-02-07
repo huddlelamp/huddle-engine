@@ -79,11 +79,22 @@ namespace Tools.FlockingDevice.Tracking.Behaviors
         #region IsRotationEnabled
 
         private bool _isRotationEnabled = true;
+        public static readonly DependencyProperty ScaleProperty = DependencyProperty.Register("Scale", typeof (double), typeof (DragDropBehavior), new PropertyMetadata(default(double)));
 
         public bool IsRotationEnabled
         {
             get { return _isRotationEnabled; }
             set { _isRotationEnabled = value; }
+        }
+
+        #endregion
+
+        #region Scale
+
+        public double Scale
+        {
+            get { return (double)GetValue(ScaleProperty); }
+            set { SetValue(ScaleProperty, value); }
         }
 
         #endregion
@@ -145,8 +156,8 @@ namespace Tools.FlockingDevice.Tracking.Behaviors
             var currentPosition = e.GetPosition(null);
             var delta = currentPosition - _position;
 
-            X += delta.X;
-            Y += delta.Y;
+            X += (delta.X / Scale);
+            Y += (delta.Y / Scale);
 
             _position = currentPosition;
 
