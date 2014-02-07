@@ -134,6 +134,41 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #endregion
 
+        #region Processors
+
+        /// <summary>
+        /// The <see cref="Processors" /> property's name.
+        /// </summary>
+        public const string ProcessorsPropertyName = "Processors";
+
+        private ObservableCollection<ProcessorViewModelBase<BaseProcessor>> _processors = new ObservableCollection<ProcessorViewModelBase<BaseProcessor>>();
+
+        /// <summary>
+        /// Sets and gets the Processors property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public ObservableCollection<ProcessorViewModelBase<BaseProcessor>> Processors
+        {
+            get
+            {
+                return _processors;
+            }
+
+            set
+            {
+                if (_processors == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ProcessorsPropertyName);
+                _processors = value;
+                RaisePropertyChanged(ProcessorsPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -216,15 +251,15 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                     processor.Y = position.Y;
                 }
 
+                Model.Targets.Add(processor);
                 var processorViewModel = new ProcessorViewModelBase<BaseProcessor>
                 {
                     Model = processor,
                 };
 
-                Targets.Add(processorViewModel);
-                processorViewModel.Sources.Add(this);
+                Processors.Add(processorViewModel);
 
-                RaisePropertyChanged(TargetsPropertyName);
+                RaisePropertyChanged(ProcessorsPropertyName);
 
                 IsDragOver = false;
             });
@@ -236,16 +271,14 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public override void Start()
         {
-            foreach (var processorViewModel in Targets)
-                processorViewModel.Start();
+            base.Start();
 
             Mode = PipelineMode.Started;
         }
 
         public override void Stop()
         {
-            foreach (var processor in Targets)
-                processor.Stop();
+            base.Stop();
 
             Mode = PipelineMode.Stopped;
         }
@@ -342,9 +375,11 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
                     foreach (var target in Model.Targets)
                     {
-                        var processorViewModel = BuildRecursiveViewModel(target);
-                        processorViewModel.Sources.Add(this);
-                        Targets.Add(processorViewModel);
+                        var processorViewModel = new ProcessorViewModelBase<BaseProcessor>
+                        {
+                            Model = target
+                        };
+                        Processors.Add(processorViewModel);
                     }
                 }
             }
@@ -355,31 +390,31 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             }
         }
 
-        private static ProcessorViewModelBase<BaseProcessor> BuildRecursiveViewModel(BaseProcessor processor)
-        {
-            var processorViewModel = new ProcessorViewModelBase<BaseProcessor>
-            {
-                IgnoreCollectionChanges = true,
-                Model = processor
-            };
+        //private static ProcessorViewModelBase<BaseProcessor> BuildRecursiveViewModel(BaseProcessor processor)
+        //{
+        //    var processorViewModel = new ProcessorViewModelBase<BaseProcessor>
+        //    {
+        //        IgnoreCollectionChanges = true,
+        //        Model = processor
+        //    };
 
-            foreach (var target in processor.Targets)
-            {
-                var childViewModel = BuildRecursiveViewModel(target);
+        //    foreach (var target in processor.Targets)
+        //    {
+        //        var childViewModel = BuildRecursiveViewModel(target);
 
-                childViewModel.Sources.Add(processorViewModel);
-                processorViewModel.Targets.Add(childViewModel);
-            }
+        //        childViewModel.Sources.Add(processorViewModel);
+        //        processorViewModel.Targets.Add(childViewModel);
+        //    }
 
-            foreach (var source in processor.Sources)
-            {
+        //    foreach (var source in processor.Sources)
+        //    {
                 
-            }
+        //    }
 
-            processorViewModel.IgnoreCollectionChanges = false;
+        //    processorViewModel.IgnoreCollectionChanges = false;
 
-            return processorViewModel;
-        }
+        //    return processorViewModel;
+        //}
 
         private static IEnumerable<TA> GetAttributesFromType<TA, T>()
             where TA : ViewTemplateAttribute
