@@ -143,19 +143,28 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
             if (IsRenderImages)
             {
-                // the copy is required in order to not influence processing that happens later
-                var preProcessImage = PreProcess(image.Copy());
-
-                // draw debug information on image -> TODO might worth be worth it to bind that information to the data template directly
-                DrawDebug(preProcessImage);
-
-                DispatcherHelper.RunAsync(() =>
+                Image<TColor, TDepth> preProcessImage = null;
+                try
                 {
-                    if (preProcessImage == null) return;
+                    // the copy is required in order to not influence processing that happens later
+                    preProcessImage = PreProcess(image.Copy());
 
-                    PreProcessImage = preProcessImage.ToBitmapSource();
-                    preProcessImage.Dispose();
-                });
+                    // draw debug information on image -> TODO might worth be worth it to bind that information to the data template directly
+                    DrawDebug(preProcessImage);
+
+                    DispatcherHelper.RunAsync(() =>
+                    {
+                        if (preProcessImage == null) return;
+
+                        PreProcessImage = preProcessImage.ToBitmapSource();
+                        preProcessImage.Dispose();
+                    });
+                }
+                catch (Exception)
+                {
+                    if (preProcessImage != null)
+                        preProcessImage.Dispose();
+                }
             }
 
             try

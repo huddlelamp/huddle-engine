@@ -197,6 +197,8 @@
     </Compile>
     <Compile Include="InkCanvas\StrokeEventArgs.cs" />
     <Compile Include="InkCanvas\StrokeVisual.cs" />
+    <Compile Include="Model\DragLocator.cs" />
+    <Compile Include="Model\ILocator.cs" />
     <Compile Include="Model\Test.cs" />
     <Compile Include="Pages\PipelinePage.xaml.cs">
       <DependentUpon>PipelinePage.xaml</DependentUpon>
@@ -244,6 +246,7 @@
     <Compile Include="Util\ProcessorTemplateSelector.cs" />
     <Compile Include="Util\RoutedEventHelper.cs" />
     <Compile Include="Util\StringToRectangleConverter.cs" />
+    <Compile Include="ViewModel\NodeViewModel.cs" />
     <Compile Include="ViewModel\PipeViewModel.cs" />
     <Compile Include="ViewModel\ProcessorViewModelBase.cs" />
     <Compile Include="ViewModel\PipelineViewModel.cs" />

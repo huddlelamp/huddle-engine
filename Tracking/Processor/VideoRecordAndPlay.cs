@@ -219,10 +219,22 @@ namespace Tools.FlockingDevice.Tracking.Processor
             }
 
             var recorder = _recorders[imageData.Key];
-                
+
             //_recorder = new VideoWriter(Filename, 10, 320, 240, true);
             if (recorder != null)
-                recorder.WriteFrame(imageData.Image.Convert<Bgr, byte>());
+            {
+                Image<Rgb, byte> imageCopy = null;
+                try
+                {
+                    imageCopy = imageData.Image;
+                    recorder.WriteFrame(imageCopy.Convert<Bgr, byte>());
+                }
+                finally
+                {
+                    if (imageCopy != null)
+                        imageCopy.Dispose();
+                }
+            }
         }
 
         public override void Stop()

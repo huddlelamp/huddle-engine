@@ -54,14 +54,14 @@ namespace Tools.FlockingDevice.Tracking.Processor
         #region Type
 
         [IgnoreDataMember]
-        public static Type[] Types
+        public static string[] Types
         {
             get
             {
                 return new[]
                 {
-                    typeof(RgbImageData),
-                    typeof(BaseData)
+                    typeof(RgbImageData).FullName,
+                    typeof(BaseData).FullName
                 };
             }
         }
@@ -71,13 +71,13 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// </summary>
         public const string TypePropertyName = "Type";
 
-        private Type _type = null;
+        private string _type;
 
         /// <summary>
         /// Sets and gets the Type property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public Type Type
+        public string Type
         {
             get
             {
@@ -103,7 +103,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         public override IData Process(IData data)
         {
-            if (Type != null && !(Type == data.GetType()))
+            if (Type != null && !Equals(Type, data.GetType().FullName))
                 return null;
 
             if (!string.IsNullOrWhiteSpace(Key) && !Equals(Key, data.Key))

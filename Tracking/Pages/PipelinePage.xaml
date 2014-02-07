@@ -69,7 +69,7 @@
             <Setter Property="Margin" Value="0" />
         </Style>
 
-        <DataTemplate x:Key="ProcessorTemplate" DataType="viewModel:ProcessorViewModelBase">
+        <DataTemplate x:Key="ProcessorTemplate" DataType="viewModel:NodeViewModel">
             <Border Style="{StaticResource ResourceKey=ContainerStyle}"
                     AllowDrop="True">
                 <i:Interaction.Triggers>
@@ -78,6 +78,9 @@
                     </i:EventTrigger>
                     <i:EventTrigger EventName="DragLeave">
                         <command:EventToCommand Command="{Binding Path=DragLeaveCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="DragOver">
+                        <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
                 <StackPanel>
@@ -109,9 +112,15 @@
                         </Rectangle>
                         <Rectangle Grid.Column="2" Fill="Orange">
                             <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                                    <command:EventToCommand Command="{Binding Path=DragSourceInitiateCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
-                                </i:EventTrigger>
+                                <util:EventTriggerAdvanced EventName="MouseDown">
+                                    <command:EventToCommand Command="{Binding Path=DragSourceStartCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </util:EventTriggerAdvanced>
+                                <util:EventTriggerAdvanced EventName="MouseMove">
+                                    <command:EventToCommand Command="{Binding Path=DragSourceMoveCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </util:EventTriggerAdvanced>
+                                <util:EventTriggerAdvanced EventName="PreviewMouseUp">
+                                    <command:EventToCommand Command="{Binding Path=DragSourceEndCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </util:EventTriggerAdvanced>
                             </i:Interaction.Triggers>
                         </Rectangle>
                     </Grid>
@@ -233,29 +242,6 @@
             </StackPanel>
 
             <Grid Grid.Column="1">
-                <!--<controls:DropHereZone DropInfo="Drop source here"
-                                       Visibility="{Binding Path=ChildProcessors, Mode=OneWay, Converter={util:NullOrEmptyToVisibilityConverter}}">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="DragOver">
-                            <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
-                        </i:EventTrigger>
-                        <i:EventTrigger EventName="Drop">
-                            <command:EventToCommand Command="{Binding Path=DropTargetCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </controls:DropHereZone>
-
-                <ScrollViewer Visibility="{Binding Path=ChildProcessors, Converter={util:NotNullAndNotEmptyToVisibilityConverter}}">
-                    <ItemsControl ItemsSource="{Binding Path=ChildProcessors}"
-                                  ItemTemplate="{DynamicResource ResourceKey=ProcessorTemplate}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
-                </ScrollViewer>-->
-
                 <ScrollViewer>
                     <Grid>
                         <ItemsControl ItemsSource="{Binding Path=Pipes, Mode=OneWay}"
@@ -276,7 +262,7 @@
                                                          AllowDrop="True">
                                         <i:Interaction.Triggers>
                                             <util:EventTriggerAdvanced EventName="StrokeCollected">
-                                                <command:EventToCommand Command="{Binding StrokeCollectedCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                                <command:EventToCommand Command="{Binding Path=StrokeCollectedCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
                                             </util:EventTriggerAdvanced>
                                             <util:EventTriggerAdvanced EventName="Drop">
                                                 <command:EventToCommand Command="{Binding Path=DropProcessorCommand, Mode=OneWay}" PassEventArgsToCommand="True" />

@@ -9,7 +9,7 @@ namespace Tools.FlockingDevice.Tracking.Util
     [MarkupExtensionReturnType(typeof(IValueConverter))]
     public abstract class ConverterMarkupExtension<T> : MarkupExtension where T : class, IValueConverter, new()
     {
-        private static T _converter;
+        //private static T _converter;
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {

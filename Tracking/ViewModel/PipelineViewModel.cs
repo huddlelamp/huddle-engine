@@ -278,7 +278,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 var processor = (BaseProcessor)Activator.CreateInstance(type);
 
                 // drop position
-                var sender = e.Sender as FrameworkElement;
+                var sender = e.Sender as IInputElement;
                 if (sender != null)
                 {
                     var position = args.GetPosition(sender);
@@ -286,15 +286,9 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                     processor.Y = position.Y;
                 }
 
-                Model.Targets.Add(processor);
-                var processorViewModel = new ProcessorViewModelBase<BaseProcessor>
-                {
-                    Model = processor,
-                };
+                AddNode(processor);
 
-                Processors.Add(processorViewModel);
-
-                RaisePropertyChanged(ProcessorsPropertyName);
+                //RaisePropertyChanged(ProcessorsPropertyName);
 
                 IsDragOver = false;
             });
@@ -412,17 +406,10 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
                     foreach (var target in Model.Targets)
                     {
-                        var processorViewModel = new ProcessorViewModelBase<BaseProcessor>
-                        {
-                            Model = target
-                        };
-                        Processors.Add(processorViewModel);
+                        AddNode(target);
                     }
 
-                    foreach (var pipeViewModel in BuildPipeViewModels(Model as Pipeline))
-                    {
-                        Pipes.Add(pipeViewModel);
-                    }
+                    BuildPipeViewModels(Model as Pipeline);
                 }
             }
             catch (Exception e)
@@ -432,13 +419,13 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             }
         }
 
-        private static IEnumerable<PipeViewModel> BuildPipeViewModels(Pipeline pipeline)
+        private void BuildPipeViewModels(Pipeline pipeline)
         {
             foreach (var source in pipeline.Targets)
             {
                 foreach (var target in source.Targets)
                 {
-                    yield return new PipeViewModel(source, target);
+                    Pipes.Add(new PipeViewModel(source, target));
                 }
             }
         }
@@ -461,7 +448,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         //    foreach (var source in processor.Sources)
         //    {
-                
+
         //    }
 
         //    processorViewModel.IgnoreCollectionChanges = false;
@@ -486,6 +473,41 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                     yield return attr;
                 }
             }
+        }
+
+        #endregion
+
+        #region private methods
+
+        private void AddNode(BaseProcessor node)
+        {
+            if (!Model.Targets.Contains(node))
+                Model.Targets.Add(node);
+
+            var nodeViewModel = new NodeViewModel
+            {
+                Model = node,
+                Pipeline = this
+            };
+            Processors.Add(nodeViewModel);
+
+            if (Equals(Mode, PipelineMode.Started))
+                nodeViewModel.Start();
+        }
+
+        internal void AddPipe(BaseProcessor source, BaseProcessor target)
+        {
+            var sourceHasTarget = source.Targets.Any(t => Equals(t, target));
+            var targetHasSource = target.Sources.Any(s => Equals(s, source));
+
+            // Do not pipe only once
+            if (sourceHasTarget && targetHasSource)
+                return;
+
+            source.Targets.Add(target);
+            target.Sources.Add(source);
+
+            Pipes.Add(new PipeViewModel(source, target));
         }
 
         #endregion

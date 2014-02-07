@@ -6,14 +6,23 @@ using System.Windows;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using Tools.FlockingDevice.Tracking.Extensions;
 using Tools.FlockingDevice.Tracking.Model;
 using Tools.FlockingDevice.Tracking.Processor;
+using Tools.FlockingDevice.Tracking.Util;
+using Tools.FlockingDevice.Tracking.View;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
 {
-    public class ProcessorViewModelBase<T> : ViewModelBase//, IDisposable
+    public abstract class ProcessorViewModelBase<T> : ViewModelBase//, IDisposable
         where T : BaseProcessor
     {
+        #region private fields
+
+        private ILocator _dragLocator;
+
+        #endregion
+
         #region commands
 
         #region Drag & Drop commands
@@ -24,7 +33,11 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public RelayCommand<DragEventArgs> DragLeaveCommand { get; private set; }
 
-        public RelayCommand<MouseButtonEventArgs> DragSourceInitiateCommand { get; private set; }
+        public RelayCommand<SenderAwareEventArgs> DragSourceStartCommand { get; private set; }
+
+        public RelayCommand<SenderAwareEventArgs> DragSourceMoveCommand { get; private set; }
+
+        public RelayCommand<SenderAwareEventArgs> DragSourceEndCommand { get; private set; }
 
         public RelayCommand<DragEventArgs> DropSourceCommand { get; private set; }
 
@@ -101,6 +114,41 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 RaisePropertyChanging(ModelPropertyName);
                 _model = value;
                 RaisePropertyChanged(ModelPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Pipeline
+
+        /// <summary>
+        /// The <see cref="Pipeline" /> property's name.
+        /// </summary>
+        public const string PipelinePropertyName = "Pipeline";
+
+        private PipelineViewModel _pipeline;
+
+        /// <summary>
+        /// Sets and gets the Pipeline property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public PipelineViewModel Pipeline
+        {
+            get
+            {
+                return _pipeline;
+            }
+
+            set
+            {
+                if (_pipeline == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(PipelinePropertyName);
+                _pipeline = value;
+                RaisePropertyChanged(PipelinePropertyName);
             }
         }
 
@@ -184,27 +232,129 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         {
             #region Drag & Drop
 
-            DragSourceInitiateCommand = new RelayCommand<MouseButtonEventArgs>(OnDragSourceInitiate);
+            #region DragSourceStartCommand
+
+            DragSourceStartCommand = new RelayCommand<SenderAwareEventArgs>(args =>
+            {
+                var sender = args.Sender as IInputElement;
+                var e = args.OriginalEventArgs as MouseEventArgs;
+
+                if (e == null) return;
+
+                //e.MouseDevice.Capture(sender);
+
+                var element = e.Source as FrameworkElement;
+
+                if (element == null) return;
+
+                var processorViewModel = element.DataContext as ProcessorViewModelBase<T>;
+
+                if (processorViewModel == null) return;
+
+                var dragData = new DataObject(typeof(ProcessorViewModelBase<T>).Name, processorViewModel);
+
+                var position = e.GetPosition(sender);
+
+                DragDrop.DoDragDrop(element, dragData, DragDropEffects.Copy);
+
+                //_dragLocator = new DragLocator
+                //{
+                //    X = position.X,
+                //    Y = position.Y
+                //};
+
+                //Pipeline.Pipes.Add(new PipeViewModel(Model, _dragLocator));
+
+                //e.Handled = true;
+            });
+
+            #endregion
+
+            #region DragSourceMoveCommand
+
+            DragSourceMoveCommand = new RelayCommand<SenderAwareEventArgs>(args =>
+            {
+                var e = args.OriginalEventArgs as MouseEventArgs;
+
+                if (e == null) return;
+
+                if (_dragLocator == null)
+                    return;
+
+                var sender = args.Sender as IInputElement;
+                
+                var position = e.GetPosition(sender);
+
+                if (_dragLocator == null) return;
+
+                _dragLocator.X = position.X;
+                _dragLocator.Y = position.Y;
+            });
+
+            #endregion
+
+            #region DragSourceEndCommand
+
+            DragSourceEndCommand = new RelayCommand<SenderAwareEventArgs>(args =>
+            {
+                Console.WriteLine("echo");
+
+                var sender = args.Sender as IInputElement;
+
+                if (sender == null) return;
+
+                Pipeline.Pipes.RemoveAll(p => Equals(p.Source, Model));
+                _dragLocator = null;
+
+                sender.ReleaseMouseCapture();
+            });
+
+            #endregion
+
+            #region DragOverCommand
 
             DragOverCommand = new RelayCommand<DragEventArgs>(
                 e =>
                 {
                     if (!e.Data.GetFormats().Any(f => Equals(typeof(T).Name, f)))
-                    {
                         e.Effects = DragDropEffects.None;
-                    }
+
+                    if (!e.Data.GetFormats().Any(f => Equals(typeof(ProcessorViewModelBase<T>).Name, f))) return;
+                    var sourceProcessor = e.Data.GetData(typeof(ProcessorViewModelBase<T>).Name) as ProcessorViewModelBase<T>;
+
+                    if (sourceProcessor != null && !Equals(Model, sourceProcessor.Model))
+                        e.Effects = DragDropEffects.Copy;
+                    else
+                        e.Effects = DragDropEffects.None;
                 });
+
+            #endregion
+
+            #region DragEnterCommand
 
             DragEnterCommand = new RelayCommand<DragEventArgs>(e =>
             {
+                if (!e.Data.GetFormats().Any(f => Equals(typeof(ProcessorViewModelBase<T>).Name, f))) return;
+                var sourceProcessor = e.Data.GetData(typeof(ProcessorViewModelBase<T>).Name) as ProcessorViewModelBase<T>;
+
+                if (sourceProcessor == null || Equals(Model, sourceProcessor.Model))
+                    return;
+
                 IsDragOver = true;
-                e.Handled = true;
             });
+
+            #endregion
+
+            #region DragLeaveCommand
+
             DragLeaveCommand = new RelayCommand<DragEventArgs>(e =>
             {
                 IsDragOver = false;
-                e.Handled = true;
             });
+
+            #endregion
+
+            #region DropSourceCommand
 
             DropSourceCommand = new RelayCommand<DragEventArgs>(e =>
             {
@@ -220,6 +370,8 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
                 e.Handled = true;
             });
+
+            #endregion
 
             #endregion
 
@@ -304,25 +456,9 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #endregion
 
-        private void OnDragSourceInitiate(MouseButtonEventArgs e)
-        {
-            var element = e.Source as FrameworkElement;
-
-            if (element == null) return;
-
-            var processorViewModel = element.DataContext as ProcessorViewModelBase<T>;
-
-            if (processorViewModel == null) return;
-
-            var dragData = new DataObject(typeof(ProcessorViewModelBase<T>).Name, processorViewModel);
-
-            DragDrop.DoDragDrop(element, dragData, DragDropEffects.Copy);
-        }
-
         protected virtual void ConnectToSource(ProcessorViewModelBase<T> source)
         {
-            source.Model.Targets.Add(Model);
-            Model.Sources.Add(source.Model);
+            Pipeline.AddPipe(source.Model, Model);
         }
 
         protected virtual void OnRemove()
@@ -334,8 +470,20 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             RelocateSources();
             RelocateTargets();
 
-            // Update UI
-            //Sources.RaisePropertyChanged(TargetsPropertyName);
+            Pipeline.Model.Targets.Remove(Model);
+            Pipeline.Processors.RemoveAll(p => Equals(p.Model, Model));
+            Pipeline.Pipes.RemoveAll(pvm => Equals(pvm.Source, Model) || Equals(pvm.Target, Model));
+
+            // Remove this processor target from all sources
+            foreach (var source in Model.Sources)
+                source.Targets.Remove(Model);
+
+            // Remove this processor source from all targets
+            foreach (var target in Model.Targets)
+                target.Sources.Remove(Model);
+
+            Model.Sources.Clear();
+            Model.Targets.Clear();
 
             //Dispose();
         }

@@ -26,7 +26,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
     [KnownType(typeof(QRCodeDecoder))]
     [KnownType(typeof(VideoRecordAndPlay))]
     [KnownType(typeof(DataTypeFilter))]
-    public abstract class BaseProcessor : ObservableObject, IProcessor
+    public abstract class BaseProcessor : ObservableObject, IProcessor, ILocator
     {
         #region private fields
 
@@ -340,7 +340,6 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         public virtual void Stop()
         {
-
             // If it is not processing just return.
             if (!_processing)
                 return;
@@ -389,13 +388,20 @@ namespace Tools.FlockingDevice.Tracking.Processor
         {
             // Pipe data through if processing is turned off
             if (!_processing)
+            { 
                 Publish(dataContainer);
+                return;
+            }
 
             // Add data container to processing queue.
             if (!_dataQueue.IsCompleted)
                 try
                 {
                     _dataQueue.Add(dataContainer);
+
+#if DEBUG
+                    Console.WriteLine("QUEUE: {0}, IsProcessing: {1} Name: {2}", _dataQueue.Count, _processing, GetType().Name);
+#endif
                 }
                 catch (Exception e)
                 {

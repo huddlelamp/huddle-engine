@@ -4,13 +4,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:util="clr-namespace:Tools.FlockingDevice.Tracking.Util"
+             xmlns:viewModel="clr-namespace:Tools.FlockingDevice.Tracking.ViewModel"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300"
+             d:DataContext="{viewModel:PipeViewModel}">
     <Grid>
-        <Path x:Name="visualPath" StrokeThickness="{Binding LinkWidth}">
+        <Path x:Name="VisualPath" StrokeThickness="{Binding Path=LinkWidth}">
             <Path.Data>
                 <GeometryGroup>
-                    <LineGeometry x:Name="lineGeometry">
+                    <LineGeometry x:Name="LineGeometry">
                         <LineGeometry.StartPoint>
                             <MultiBinding Converter="{util:DoubleToPointConverter}">
                                 <Binding Path="Source.X"/>
@@ -19,13 +21,13 @@
                         </LineGeometry.StartPoint>
                         <LineGeometry.EndPoint>
                             <MultiBinding Converter="{util:DoubleToPointConverter}">
-                                <Binding Path="Destination.X"/>
-                                <Binding Path="Destination.Y"/>
+                                <Binding Path="Target.X"/>
+                                <Binding Path="Target.Y"/>
                             </MultiBinding>
                         </LineGeometry.EndPoint>
                     </LineGeometry>
-                    <LineGeometry x:Name="arrowDash1Geometry" StartPoint="{Binding ArrowDash1StartPoint}" EndPoint="{Binding ArrowDash1EndPoint}"></LineGeometry>
-                    <LineGeometry x:Name="arrowDash2Geometry" StartPoint="{Binding ArrowDash2StartPoint}" EndPoint="{Binding ArrowDash2EndPoint}"></LineGeometry>
+                    <LineGeometry x:Name="ArrowDash1Geometry" StartPoint="{Binding ArrowDash1StartPoint}" EndPoint="{Binding ArrowDash1EndPoint}"></LineGeometry>
+                    <LineGeometry x:Name="ArrowDash2Geometry" StartPoint="{Binding ArrowDash2StartPoint}" EndPoint="{Binding ArrowDash2EndPoint}"></LineGeometry>
                 </GeometryGroup>
             </Path.Data>
             <Path.Style>
@@ -70,8 +72,8 @@
 
                         <MultiDataTrigger>
                             <MultiDataTrigger.Conditions>
-                                <Condition Binding="{Binding QueryCount, Converter={util:IntegerToBooleanConverter}}" Value="False"></Condition>
-                                <Condition Binding="{Binding ConnectionTargetCount, Converter={util:IntegerToBooleanConverter}}" Value="True"></Condition>
+                                <Condition Binding="{Binding Path=QueryCount, Converter={util:IntegerToBooleanConverter}}" Value="False"></Condition>
+                                <Condition Binding="{Binding Path=ConnectionTargetCount, Converter={util:IntegerToBooleanConverter}}" Value="True"></Condition>
                             </MultiDataTrigger.Conditions>
                             <MultiDataTrigger.EnterActions>
                                 <BeginStoryboard>
@@ -97,11 +99,11 @@
                 </Style>
             </Path.Style>
         </Path>
-        <Line x:Name="hitTestPath"
-              X1="{Binding Source.X}" 
-              Y1="{Binding Source.Y}" 
-              X2="{Binding Destination.X}" 
-              Y2="{Binding Destination.Y}"  
+        <Line x:Name="HitTestPath"
+              X1="{Binding Path=Source.X}" 
+              Y1="{Binding Path=Source.Y}" 
+              X2="{Binding Path=Target.X}" 
+              Y2="{Binding Path=Target.Y}"  
               Stroke="Transparent" 
               StrokeThickness="30"
               >

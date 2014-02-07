@@ -24,5 +24,21 @@ namespace Tools.FlockingDevice.Tracking.Pages
         {
             InitializeComponent();
         }
+
+        private void UIElement_OnMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            Console.WriteLine();
+
+            e.Handled = true;
+        }
+
+        private void UIElement_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            Console.WriteLine();
+
+            e.MouseDevice.Capture(sender as IInputElement);
+
+            e.Handled = true;
+        }
     }
 }
