@@ -13,16 +13,9 @@
                 <ResourceDictionary Source="/FirstFloor.ModernUI;component/Assets/ModernUI.xaml" />
                 <ResourceDictionary Source="/FirstFloor.ModernUI;component/Assets/ModernUI.Light.xaml"/>
                 <ResourceDictionary Source="/Themes/Plain.Themes.xaml"/>
-                <ResourceDictionary Source="Templates/BasicsView.xaml"/>
-                <ResourceDictionary Source="Templates/DepthProcessorView.xaml"/>
-                <ResourceDictionary Source="Templates/CannyEdgesView.xaml"/>
-                <ResourceDictionary Source="Templates/ErodeDilateView.xaml"/>
-                <ResourceDictionary Source="Templates/FindContoursView.xaml"/>
-                <ResourceDictionary Source="Templates/BlobTrackerView.xaml"/>
-                <ResourceDictionary Source="Templates/QRCodeDecoderView.xaml"/>
-                <ResourceDictionary Source="Templates/Senz3DView.xaml"/>
-                <ResourceDictionary Source="Templates/VideoRecordAndPlayView.xaml"/>
-                <ResourceDictionary Source="Templates/DataTypeFilter.xaml"/>
+                <ResourceDictionary Source="Templates/BasicTemplates.xaml"/>
+                <ResourceDictionary Source="Templates/OpenCvTemplates.xaml"/>
+                <ResourceDictionary Source="Templates/SensorTemplates.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

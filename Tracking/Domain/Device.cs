@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight;
-using Tools.FlockingDevice.Tracking.Data;
 
 namespace Tools.FlockingDevice.Tracking.Domain
 {
-    public abstract class AbstractDevice : BaseData, IDevice
+    public class Device : ObservableObject
     {
         #region properties
 
@@ -19,13 +18,13 @@ namespace Tools.FlockingDevice.Tracking.Domain
         /// </summary>
         public const string IdPropertyName = "Id";
 
-        private int _id = -1;
+        private long _id;
 
         /// <summary>
         /// Sets and gets the Id property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public int Id
+        public long Id
         {
             get
             {
@@ -42,6 +41,41 @@ namespace Tools.FlockingDevice.Tracking.Domain
                 RaisePropertyChanging(IdPropertyName);
                 _id = value;
                 RaisePropertyChanged(IdPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Key
+
+        /// <summary>
+        /// The <see cref="Key" /> property's name.
+        /// </summary>
+        public const string KeyPropertyName = "Key";
+
+        private string _key = string.Empty;
+
+        /// <summary>
+        /// Sets and gets the Key property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Key
+        {
+            get
+            {
+                return _key;
+            }
+
+            set
+            {
+                if (_key == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(KeyPropertyName);
+                _key = value;
+                RaisePropertyChanged(KeyPropertyName);
             }
         }
 
@@ -151,15 +185,6 @@ namespace Tools.FlockingDevice.Tracking.Domain
         }
 
         #endregion
-
-        #endregion
-
-        #region ctor
-
-        protected AbstractDevice(string key)
-            : base(key)
-        {
-        }
 
         #endregion
     }

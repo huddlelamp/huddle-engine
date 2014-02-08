@@ -5,6 +5,7 @@ using System.Windows.Documents;
 using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
+using Tools.FlockingDevice.Tracking.Extensions;
 
 namespace Tools.FlockingDevice.Tracking.InkCanvas
 {
@@ -99,6 +100,16 @@ namespace Tools.FlockingDevice.Tracking.InkCanvas
         /// </summary>
         protected virtual void OnIsMouseEnabledChanged(bool oldIsMouseEnabled, bool newIsMouseEnabled)
         {
+        }
+
+        #endregion
+
+        #region Scale
+
+        public double Scale
+        {
+            get { return (double)GetValue(ScaleProperty); }
+            set { SetValue(ScaleProperty, value); }
         }
 
         #endregion
@@ -350,6 +361,7 @@ namespace Tools.FlockingDevice.Tracking.InkCanvas
         #region static
 
         private static readonly object StrokeVisualKey = new Object();
+        public static readonly DependencyProperty ScaleProperty = DependencyProperty.Register("Scale", typeof (double), typeof (AdvancedInkCanvas), new PropertyMetadata(default(double)));
 
         #endregion static
     }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -11,7 +10,6 @@ using Tools.FlockingDevice.Tracking.Util;
 
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
-    [XmlType]
     [ViewTemplate("Basics", "Basics")]
     public class Basics : RgbProcessor
     {

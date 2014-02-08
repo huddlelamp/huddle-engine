@@ -200,15 +200,19 @@
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\BaseData.cs" />
+    <Compile Include="Data\BlobData.cs" />
     <Compile Include="Data\DataContainer.cs" />
     <Compile Include="Data\IData.cs" />
     <Compile Include="Data\IDataContainer.cs" />
     <Compile Include="Data\BaseImageData.cs" />
+    <Compile Include="Data\LocationData.cs" />
     <Compile Include="Data\RgbImageData.cs" />
     <Compile Include="Controls\ExceptionMessageBox.xaml.cs">
       <DependentUpon>ExceptionMessageBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Domain\Device.cs" />
     <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
+    <Compile Include="Extensions\PointExtensions.cs" />
     <Compile Include="InkCanvas\AdvancedInkCanvas.cs" />
     <Compile Include="InkCanvas\GestureHelpControl.xaml.cs">
       <DependentUpon>GestureHelpControl.xaml</DependentUpon>
@@ -227,24 +231,20 @@
     <Compile Include="Processor\BarCodes\ZXingHelper\ImageLuminanceSource.cs" />
     <Compile Include="Processor\BaseProcessor.cs" />
     <Compile Include="Processor\DataTypeFilter.cs" />
+    <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
     <Compile Include="Processor\OpenCv\Filter\KalmanFilter.cs" />
     <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
     <Compile Include="Processor\OpenCv\Struct\RawObject.cs" />
     <Compile Include="Processor\PipelineMode.cs" />
     <Compile Include="Processor\Sensors\Senz3D.cs" />
-    <Compile Include="Domain\AbstractDevice.cs" />
-    <Compile Include="Domain\DeviceEventArgs.cs" />
-    <Compile Include="Domain\Smartphone.cs" />
-    <Compile Include="Domain\Tablet.cs" />
-    <Compile Include="Domain\IDevice.cs" />
     <Compile Include="Extensions\DependencyObjectExtensions.cs" />
     <Compile Include="Model\Pipeline.cs" />
     <Compile Include="Processor\OpenCv\CannyEdges.cs" />
     <Compile Include="Processor\BaseImageProcessor.cs" />
     <Compile Include="Processor\OpenCv\Basics.cs" />
     <Compile Include="Processor\OpenCv\BlobTracker.cs" />
-    <Compile Include="Processor\DepthProcessor.cs" />
+    <Compile Include="Processor\OpenCv\DepthProcessor.cs" />
     <Compile Include="Processor\IProcessor.cs" />
     <Compile Include="Processor\RgbProcessor.cs" />
     <Compile Include="Processor\OpenCv\FindContours.cs" />
@@ -253,10 +253,13 @@
     <Compile Include="Util\ConverterMarkupExtension.cs" />
     <Compile Include="Util\BoolToVisibilityConverter.cs" />
     <Compile Include="Util\DoubleToPointConverter.cs" />
+    <Compile Include="Util\HitTestHelper.cs" />
     <Compile Include="Util\IntegerToBooleanConverter.cs" />
+    <Compile Include="Util\ProcessorTypesProvider.cs" />
     <Compile Include="Util\PipelineModeToBoolConverter.cs" />
     <Compile Include="Util\ProcessorContainerStyleSelector.cs" />
     <Compile Include="Util\RoutedEventTrigger.cs" />
+    <Compile Include="Util\TreeHelper.cs" />
     <Compile Include="Util\ViewTemplateAttribute.cs" />
     <Compile Include="Util\NullToBoolConverter.cs" />
     <Compile Include="Util\NullOrEmptyToVisibilityConverter.cs" />
@@ -305,43 +308,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Templates\DataTypeFilter.xaml">
+    <Page Include="Templates\BasicTemplates.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Templates\VideoRecordAndPlayView.xaml">
+    <Page Include="Templates\SensorTemplates.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Templates\Senz3DView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\ErodeDilateView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\CannyEdgesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\FindContoursView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\DepthProcessorView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\BlobTrackerView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\BasicsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Templates\QRCodeDecoderView.xaml">
+    <Page Include="Templates\OpenCvTemplates.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

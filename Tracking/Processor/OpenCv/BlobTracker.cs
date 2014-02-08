@@ -8,33 +8,18 @@ using Emgu.CV;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Emgu.CV.VideoSurveillance;
-using Tools.FlockingDevice.Tracking.Domain;
 using Tools.FlockingDevice.Tracking.Properties;
-using Tools.FlockingDevice.Tracking.Util;
 
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
-    [XmlType]
-    [ViewTemplate("Blob Tracker", "BlobTracker")]
+    //[ViewTemplate("Blob Tracker", "BlobTracker")]
     public class BlobTracker : RgbProcessor
     {
-        #region events
-
-        public event EventHandler<DeviceEventArgs> DeviceEnter;
-
-        public event EventHandler<DeviceEventArgs> DeviceLeave;
-
-        public event EventHandler<DeviceEventArgs> DeviceMove;
-
-        #endregion
-
         #region private fields
 
         private static MCvFont _font = new MCvFont(Emgu.CV.CvEnum.FONT.CV_FONT_HERSHEY_SIMPLEX, 0.3, 0.3);
 
         private readonly BlobTrackerAuto<Rgb> _blobTracker;
-
-        private readonly List<IDevice> _devices = new List<IDevice>();
 
         #endregion
 
@@ -131,7 +116,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
             _blobTracker.Process(image, mask);
 
-            var currentDevices = new List<IDevice>();
+            //var currentDevices = new List<IDevice>();
 
             foreach (var blob in _blobTracker)
             {
@@ -142,49 +127,49 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
                 outputImage.Draw(blob.ID.ToString(CultureInfo.InvariantCulture), ref _font, Point.Round(blob.Center), Rgbs.Green);
 
-                if (_devices.All(d => d.Id != blob.ID))
-                {
-                    var device = new Smartphone("")
-                    {
-                        Id = blob.ID,
-                        X = blob.Center.X,
-                        Y = blob.Center.Y
-                    };
+                //if (_devices.All(d => d.Id != blob.ID))
+                //{
+                //    var device = new Smartphone("")
+                //    {
+                //        Id = blob.ID,
+                //        X = blob.Center.X,
+                //        Y = blob.Center.Y
+                //    };
 
-                    _devices.Add(device);
-                    currentDevices.Add(device);
-                    if (DeviceEnter != null)
-                        DeviceEnter(this, new DeviceEventArgs(device));
-                }
-                else
-                {
-                    var device = _devices.Single(d => d.Id == blob.ID);
-                    device.X = blob.Center.X;
-                    device.Y = blob.Center.Y;
+                //    _devices.Add(device);
+                //    currentDevices.Add(device);
+                //    if (DeviceEnter != null)
+                //        DeviceEnter(this, new DeviceEventArgs(device));
+                //}
+                //else
+                //{
+                //    var device = _devices.Single(d => d.Id == blob.ID);
+                //    device.X = blob.Center.X;
+                //    device.Y = blob.Center.Y;
 
-                    currentDevices.Add(device);
-                    if (DeviceMove != null)
-                        DeviceMove(this, new DeviceEventArgs(device));
-                }
+                //    currentDevices.Add(device);
+                //    if (DeviceMove != null)
+                //        DeviceMove(this, new DeviceEventArgs(device));
+                //}
             }
 
-            if (_devices.Any() && currentDevices.Any())
-                foreach (var device in _devices.Except(currentDevices).ToList())
-                {
-                    if (DeviceLeave != null)
-                        DeviceLeave(this, new DeviceEventArgs(device));
+            //if (_devices.Any() && currentDevices.Any())
+            //    foreach (var device in _devices.Except(currentDevices).ToList())
+            //    {
+            //        if (DeviceLeave != null)
+            //            DeviceLeave(this, new DeviceEventArgs(device));
 
-                    _devices.Remove(device);
-                }
-            else if (!currentDevices.Any())
-            {
-                foreach (var device in _devices.Except(currentDevices).ToList())
-                {
-                    if (DeviceLeave != null)
-                        DeviceLeave(this, new DeviceEventArgs(device));
-                }
-                _devices.Clear();
-            }
+            //        _devices.Remove(device);
+            //    }
+            //else if (!currentDevices.Any())
+            //{
+            //    foreach (var device in _devices.Except(currentDevices).ToList())
+            //    {
+            //        if (DeviceLeave != null)
+            //            DeviceLeave(this, new DeviceEventArgs(device));
+            //    }
+            //    _devices.Clear();
+            //}
 
             return outputImage;
         }

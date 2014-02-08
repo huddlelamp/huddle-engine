@@ -5,7 +5,6 @@ using Tools.FlockingDevice.Tracking.Util;
 
 namespace Tools.FlockingDevice.Tracking.Processor
 {
-    [XmlType]
     [ViewTemplate("Data Type Filter", "DataTypeFilter")]
     public class DataTypeFilter : BaseProcessor
     {
@@ -55,8 +54,10 @@ namespace Tools.FlockingDevice.Tracking.Processor
             {
                 return new[]
                 {
+                    typeof(BaseData).FullName,
                     typeof(RgbImageData).FullName,
-                    typeof(BaseData).FullName
+                    typeof(BlobData).FullName,
+                    typeof(LocationData).FullName
                 };
             }
         }

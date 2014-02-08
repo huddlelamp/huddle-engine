@@ -7,7 +7,6 @@ using Tools.FlockingDevice.Tracking.Util;
 
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
-    [XmlType]
     [ViewTemplate("Canny Edges", "CannyEdges")]
     public class CannyEdges : RgbProcessor
     {

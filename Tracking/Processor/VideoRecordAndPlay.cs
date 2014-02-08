@@ -14,7 +14,6 @@ using Tools.FlockingDevice.Tracking.Util;
 
 namespace Tools.FlockingDevice.Tracking.Processor
 {
-    [XmlType]
     [ViewTemplate("Video Record / Play", "VideoRecordAndPlay", "/FlockingDevice.Tracking;component/Resources/film2.png")]
     public class VideoRecordAndPlay : RgbProcessor
     {

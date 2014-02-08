@@ -14,6 +14,7 @@ namespace Tools.FlockingDevice.Tracking.Extensions
             foreach (var item in items)
                 collection.Add(item);
         }
+
         public static int RemoveAll<T>(this ObservableCollection<T> collection, Func<T, bool> condition)
         {
             var itemsToRemove = collection.Where(condition).ToList();
@@ -22,6 +23,12 @@ namespace Tools.FlockingDevice.Tracking.Extensions
                 collection.Remove(itemToRemove);
 
             return itemsToRemove.Count;
+        }
+
+        public static void RemoveAll<T>(this ObservableCollection<T> collection, IEnumerable<T> itemsToRemove)
+        {
+            foreach (var itemToRemove in itemsToRemove)
+                collection.Remove(itemToRemove);
         }
     }
 }

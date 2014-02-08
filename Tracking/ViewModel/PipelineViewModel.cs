@@ -1,28 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Windows;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml;
-using System.Xml.Serialization;
 using GalaSoft.MvvmLight.Command;
 using Tools.FlockingDevice.Tracking.Controls;
 using Tools.FlockingDevice.Tracking.InkCanvas;
 using Tools.FlockingDevice.Tracking.Model;
 using Tools.FlockingDevice.Tracking.Processor;
-using Tools.FlockingDevice.Tracking.Processor.OpenCv;
 using Tools.FlockingDevice.Tracking.Properties;
 using Tools.FlockingDevice.Tracking.Util;
+using Tools.FlockingDevice.Tracking.View;
 using Application = System.Windows.Application;
 using DragEventArgs = System.Windows.DragEventArgs;
-using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace Tools.FlockingDevice.Tracking.ViewModel
 {
@@ -337,6 +333,8 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
             var pg = PathGeometry.CreateFromGeometry(eventArgs.Stroke.GetGeometry());
 
+            pg.Transform = new ScaleTransform(Model.Scale, Model.Scale);
+
             //if (eventArgs.Device == Device.Stylus)
             //{
             //    //throw new Exception("Analyze text");
@@ -358,18 +356,25 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             //    }
             //}
 
-            //var linksToDelete = HitTestHelper.GetElementsInGeometry<UserControl>(pg, inkCanvas)
-            //    .Select(view => view.DataContext)
-            //    .OfType<QueryCanvasLinkViewModel>().ToArray();
+            var elementsInGeometry = HitTestHelper.GetElementsInGeometry<Pipe>(pg, inkCanvas);
+
+            var linksToDelete = elementsInGeometry.Select(view => view.DataContext)
+                .OfType<PipeViewModel>().ToArray();
 
             ////TODO: add method to model, which is capable of deleting more than one link safely
-            //foreach (var vm in linksToDelete)
-            //{
-            //    var link = vm.Model as QueryCanvasLink;
-            //    Debug.Assert(link != null, "link != null");
+            foreach (var vm in linksToDelete)
+            {
+                var source = vm.Source as BaseProcessor;
+                var target = vm.Target as BaseProcessor;
 
-            //    Model.DeleteLink(link);
-            //}
+                if (source != null)
+                    source.Targets.Remove(target);
+
+                if (target != null)
+                    target.Sources.Remove(source);
+                
+                Pipes.Remove(vm);
+            }
         }
 
         private void Save()
@@ -414,8 +419,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             }
             catch (Exception e)
             {
-                MessageBox.Show(String.Format("Could not load pipeline. {0}.", e.Message), @"Pipeline Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ExceptionMessageBox.ShowException(e, String.Format("Could not load pipeline. {0}.", e.Message));
             }
         }
 

@@ -16,7 +16,6 @@ using Tools.FlockingDevice.Tracking.Util;
 
 namespace Tools.FlockingDevice.Tracking.Processor.Sensors
 {
-    [XmlType]
     [ViewTemplate("Senz3D", "Senz3D", "/FlockingDevice.Tracking;component/Resources/kinect.png")]
     public class Senz3D : BaseProcessor
     {

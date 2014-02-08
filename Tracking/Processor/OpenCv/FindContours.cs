@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Runtime.Serialization;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 using Emgu.CV;
@@ -11,13 +11,12 @@ using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using GalaSoft.MvvmLight.Threading;
 using Tools.FlockingDevice.Tracking.Data;
-using Tools.FlockingDevice.Tracking.Domain;
 using Tools.FlockingDevice.Tracking.Processor.OpenCv.Struct;
 using Tools.FlockingDevice.Tracking.Util;
+using Point = System.Drawing.Point;
 
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
-    [XmlType]
     [ViewTemplate("Find Contours", "FindContours")]
     public class FindContours : RgbProcessor
     {
@@ -692,16 +691,24 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
                 outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFontBig, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
 
-                container.Add(new Tablet(string.Format("{0}", rawObject.Id))
+                container.Add(new BlobData(string.Format("FindContours Id{0}", rawObject.Id))
                 {
-                    X = rawObject.Shape.center.X,
-                    Y = rawObject.Shape.center.Y,
+                    Id = rawObject.Id,
+                    X = (rawObject.Shape.center.X) / image.Width,
+                    Y = (rawObject.Shape.center.Y) / image.Height,
                     Angle = rawObject.Shape.angle,
+                    Area = new Rect
+                    {
+                        X = rawObject.Bounds.X / (double)image.Width,
+                        Y = rawObject.Bounds.X / (double)image.Height,
+                        Width = rawObject.Bounds.X / (double)image.Width,
+                        Height = rawObject.Bounds.X / (double)image.Height,
+                    }
                 });
             }
 
-            //if (container.Count > 0)
-            //    Publish(container);
+            if (container.Count > 0)
+                Publish(container);
 
             grayImage.Dispose();
 

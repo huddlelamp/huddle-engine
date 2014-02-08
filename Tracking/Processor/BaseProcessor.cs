@@ -10,22 +10,11 @@ using GalaSoft.MvvmLight;
 using Tools.FlockingDevice.Tracking.Data;
 using System.Xml.Serialization;
 using Tools.FlockingDevice.Tracking.Model;
-using Tools.FlockingDevice.Tracking.Processor.BarCodes;
-using Tools.FlockingDevice.Tracking.Processor.OpenCv;
-using Tools.FlockingDevice.Tracking.Processor.Sensors;
 using Tools.FlockingDevice.Tracking.Util;
 
 namespace Tools.FlockingDevice.Tracking.Processor
 {
-    [KnownType(typeof(Senz3D))]
-    [KnownType(typeof(Basics))]
-    [KnownType(typeof(BlobTracker))]
-    [KnownType(typeof(CannyEdges))]
-    [KnownType(typeof(ErodeDilate))]
-    [KnownType(typeof(FindContours))]
-    [KnownType(typeof(QRCodeDecoder))]
-    [KnownType(typeof(VideoRecordAndPlay))]
-    [KnownType(typeof(DataTypeFilter))]
+    [KnownType("GetKnownTypes")]
     public abstract class BaseProcessor : ObservableObject, IProcessor, ILocator
     {
         #region private fields
@@ -36,6 +25,12 @@ namespace Tools.FlockingDevice.Tracking.Processor
         private BlockingCollection<IDataContainer> _dataQueue = new BlockingCollection<IDataContainer>(100);
 
         private bool _processing;
+
+        private readonly object _stagedDataLock = new object();
+
+        private readonly List<IData> _stagedData = new List<IData>();
+
+        private long _frameId = 0;
 
         #endregion
 
@@ -441,6 +436,34 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         public abstract IData Process(IData data);
 
+        protected void Stage(IData data)
+        {
+            lock (_stagedDataLock)
+            {
+                _stagedData.Add(data);
+            }
+        }
+
+        protected void Push()
+        {
+            // Do not publish if staged data is empty
+            lock (_stagedDataLock)
+            {
+                if (!_stagedData.Any())
+                    return;
+            }
+
+            var container = new DataContainer(++_frameId, DateTime.Now);
+
+            lock (_stagedDataLock)
+            {
+                container.AddRange(_stagedData);
+                _stagedData.Clear();
+            }
+            
+            Publish(container);
+        }
+
         #endregion
 
         protected void Log(string format, params object[] args)
@@ -452,6 +475,11 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
             //    Messages.Insert(0, string.Format(format, args));
             //});
+        }
+
+        public static IEnumerable<Type> GetKnownTypes()
+        {
+            return ProcessorTypesProvider.GetProcessorTypes<BaseProcessor>();
         }
     }
 }

@@ -270,6 +270,7 @@
                                 <ItemsPanelTemplate>
                                     <inkCanvas:AdvancedInkCanvas x:Name="InkCanvas" Background="Transparent" IsDrawingEnabled="True" IsMouseEnabled="True"
                                                                  AllowDrop="True"
+                                                                 Scale="{Binding Path=Model.Scale, Mode=OneWay}"
                                                                  Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
                                                                  Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}">
                                         <i:Interaction.Triggers>

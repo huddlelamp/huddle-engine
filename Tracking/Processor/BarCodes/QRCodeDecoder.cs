@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
+using Tools.FlockingDevice.Tracking.Data;
 using Tools.FlockingDevice.Tracking.Processor.QRCodes;
 using Tools.FlockingDevice.Tracking.Properties;
 using Tools.FlockingDevice.Tracking.Util;
 
 namespace Tools.FlockingDevice.Tracking.Processor.BarCodes
 {
-    [XmlType]
     [ViewTemplate("QRCode Decoder", "QRCodeDecoder", "/FlockingDevice.Tracking;component/Resources/qrcode.png")]
     public class QRCodeDecoder : RgbProcessor
     {
@@ -103,11 +104,11 @@ namespace Tools.FlockingDevice.Tracking.Processor.BarCodes
                 return outputImage;
             }
 
-            var num_QRs = 0;
+            var numQRs = 0;
             if (results != null)
             {
-                num_QRs = results.Length;
-                Log("Found {0} QR tags", num_QRs);
+                numQRs = results.Length;
+                Log("Found {0} QR tags", numQRs);
             }
             else
             {
@@ -118,13 +119,21 @@ namespace Tools.FlockingDevice.Tracking.Processor.BarCodes
 
             // Process found QR codes
 
-            for (int i = 0; i < num_QRs; i++)
+            if (!results.Any())
+                return outputImage;
+
+            for (var i = 0; i < numQRs; i++)
             {
                 // Get content of tag from results[i].Text
                 var qrText = results[i].Text;
 
                 // Get corner points of tag from results[i].ResultPoints
                 var qrPoints = results[i].ResultPoints;
+
+                var minX = qrPoints.Min(p => p.X);
+                var minY = qrPoints.Min(p => p.Y);
+                var maxX = qrPoints.Max(p => p.X);
+                var maxY = qrPoints.Max(p => p.Y);
 
                 var colorEnumerator = _colors.GetEnumerator();
 
@@ -135,6 +144,8 @@ namespace Tools.FlockingDevice.Tracking.Processor.BarCodes
                         colorEnumerator.Reset();
                         colorEnumerator.MoveNext();
                     }
+
+                    
 
                     outputImage.Draw(new CircleF(new PointF(point.X, point.Y), 5), (Rgb)colorEnumerator.Current, 3);
                 }
@@ -149,7 +160,18 @@ namespace Tools.FlockingDevice.Tracking.Processor.BarCodes
                 var qrOrientation = Math.Atan2(dy, dx) / Math.PI * 180 + 90;
 
                 Log("Text={0} | Orientation={1}°", qrText, qrOrientation);
+
+                // Stage data for later push
+                Stage(new LocationData(string.Format("QrCode{0}", results[i].Text))
+                {
+                    X = (minX + (maxX - minX) / 2) / image.Width,
+                    Y = (minY + (maxY - minY) / 2) / image.Height,
+                    Angle = qrOrientation
+                });
             }
+
+            // Push staged data
+            Push();
 
             //base.DrawDebug(image);
             return outputImage;

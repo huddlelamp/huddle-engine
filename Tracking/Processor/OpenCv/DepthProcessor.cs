@@ -1,16 +1,12 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Xml.Serialization;
 using Emgu.CV;
-using Emgu.CV.External.Extensions;
 using Emgu.CV.Structure;
-using GalaSoft.MvvmLight.Threading;
 using Tools.FlockingDevice.Tracking.Properties;
 using Tools.FlockingDevice.Tracking.Util;
 
-namespace Tools.FlockingDevice.Tracking.Processor
+namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
-    [XmlType]
     [ViewTemplate("Depth Processor", "DepthProcessor")]
     public class DepthProcessor : RgbProcessor
     {
