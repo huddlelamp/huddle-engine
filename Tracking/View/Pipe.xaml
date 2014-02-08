@@ -26,8 +26,8 @@
                             </MultiBinding>
                         </LineGeometry.EndPoint>
                     </LineGeometry>
-                    <LineGeometry x:Name="ArrowDash1Geometry" StartPoint="{Binding ArrowDash1StartPoint}" EndPoint="{Binding ArrowDash1EndPoint}"></LineGeometry>
-                    <LineGeometry x:Name="ArrowDash2Geometry" StartPoint="{Binding ArrowDash2StartPoint}" EndPoint="{Binding ArrowDash2EndPoint}"></LineGeometry>
+                    <LineGeometry x:Name="ArrowDash1Geometry" StartPoint="{Binding Path=ArrowDash1StartPoint}" EndPoint="{Binding Path=ArrowDash1EndPoint}" />
+                    <LineGeometry x:Name="ArrowDash2Geometry" StartPoint="{Binding Path=ArrowDash2StartPoint}" EndPoint="{Binding Path=ArrowDash2EndPoint}" />
                 </GeometryGroup>
             </Path.Data>
             <Path.Style>
@@ -40,61 +40,22 @@
                         </Setter>
                     </Style.Setters>
                     <Style.Triggers>
-
-                        <DataTrigger Binding="{Binding QueryCount, Converter={util:IntegerToBooleanConverter}}" Value="False">
-                            <Setter Property="Stroke">
-                                <Setter.Value>
-                                    <SolidColorBrush Color="Red"/>
-                                </Setter.Value>
-                            </Setter>
-                        </DataTrigger>
-
-                        <DataTrigger Binding="{Binding ConnectionTargetCount, Converter={util:IntegerToBooleanConverter}}" Value="True">
-                            <DataTrigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <ColorAnimation To="DeepPink" Storyboard.TargetProperty="Stroke.Color" Duration="0:0:0.5">
-
-                                        </ColorAnimation>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </DataTrigger.EnterActions>
-                            <DataTrigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <ColorAnimation To="LightGray" Storyboard.TargetProperty="Stroke.Color" Duration="0:0:0.5">
-
-                                        </ColorAnimation>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </DataTrigger.ExitActions>
-                        </DataTrigger>
-
                         <MultiDataTrigger>
-                            <MultiDataTrigger.Conditions>
-                                <Condition Binding="{Binding Path=QueryCount, Converter={util:IntegerToBooleanConverter}}" Value="False"></Condition>
-                                <Condition Binding="{Binding Path=ConnectionTargetCount, Converter={util:IntegerToBooleanConverter}}" Value="True"></Condition>
-                            </MultiDataTrigger.Conditions>
                             <MultiDataTrigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation To="DeepPink" Storyboard.TargetProperty="Stroke.Color" Duration="0:0:0.5">
-
-                                        </ColorAnimation>
+                                        <ColorAnimation To="DeepPink" Storyboard.TargetProperty="Stroke.Color" Duration="0:0:0.5" />
                                     </Storyboard>
                                 </BeginStoryboard>
                             </MultiDataTrigger.EnterActions>
                             <MultiDataTrigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation To="Red" Storyboard.TargetProperty="Stroke.Color" Duration="0:0:0.5">
-
-                                        </ColorAnimation>
+                                        <ColorAnimation To="Red" Storyboard.TargetProperty="Stroke.Color" Duration="0:0:0.5" />
                                     </Storyboard>
                                 </BeginStoryboard>
                             </MultiDataTrigger.ExitActions>
                         </MultiDataTrigger>
-
                     </Style.Triggers>
                 </Style>
             </Path.Style>
@@ -105,8 +66,6 @@
               X2="{Binding Path=Target.X}" 
               Y2="{Binding Path=Target.Y}"  
               Stroke="Transparent" 
-              StrokeThickness="30"
-              >
-        </Line>
+              StrokeThickness="30" />
     </Grid>
 </UserControl>

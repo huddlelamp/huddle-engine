@@ -145,7 +145,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.BarCodes
                         colorEnumerator.MoveNext();
                     }
 
-                    
+
 
                     outputImage.Draw(new CircleF(new PointF(point.X, point.Y), 5), (Rgb)colorEnumerator.Current, 3);
                 }
@@ -161,11 +161,17 @@ namespace Tools.FlockingDevice.Tracking.Processor.BarCodes
 
                 Log("Text={0} | Orientation={1}°", qrText, qrOrientation);
 
+                var centerX = (minX + (maxX - minX) / 2);
+                var centerY = (minY + (maxY - minY) / 2);
+
+                // center point
+                outputImage.Draw(new CircleF(new PointF(centerX, centerY), 5), Rgbs.TangerineTango, 3);
+
                 // Stage data for later push
                 Stage(new LocationData(string.Format("QrCode{0}", results[i].Text))
                 {
-                    X = (minX + (maxX - minX) / 2) / image.Width,
-                    Y = (minY + (maxY - minY) / 2) / image.Height,
+                    X = centerX / image.Width,
+                    Y = centerY / image.Height,
                     Angle = qrOrientation
                 });
             }

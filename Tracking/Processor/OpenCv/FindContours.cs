@@ -694,8 +694,8 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
                 container.Add(new BlobData(string.Format("FindContours Id{0}", rawObject.Id))
                 {
                     Id = rawObject.Id,
-                    X = (rawObject.Shape.center.X) / image.Width,
-                    Y = (rawObject.Shape.center.Y) / image.Height,
+                    X = (rawObject.EstimatedCenter.X) / (double) image.Width,
+                    Y = (rawObject.EstimatedCenter.Y) / (double) image.Height,
                     Angle = rawObject.Shape.angle,
                     Area = new Rect
                     {
