@@ -63,7 +63,7 @@ A property is a standard .NET property and works with any MVVM framework such as
 
 __IMPORTANT:__ The current <code>DataContractSerializer</code> uses an opt-in method to serialize properties. Please consult the [MSDN Xml serialization website](http://msdn.microsoft.com/en-us/library/system.runtime.serialization.datacontractserializer(v=vs.110).aspx) for further information. Therefore, the following is important in order to avoid exception during serialization (e.g., save or load a pipeline):
 
-1. Add a <code>IgnoreDataMemberAttribute</code> to each property that should not be serialized. 
+Add a <code>IgnoreDataMemberAttribute</code> to each property that should not be serialized. 
 
     #region PreProcessImage
 
