@@ -4,15 +4,14 @@ This section addresses the development a new processor and its integration into 
 
 ## Processor Logic - Create a new Processor
 
-A new processor can be integrated into the tracking framework by deriving it from <code>RgbProcessor</code>. The <code>RgbProcessor</code> is an abstract base class that handles basic functions such as rendering pre-process and post-process images into <code>BitmapSource</code> objects. The <code>BitmapSource</code> object can be used later to visualize images apriori and posteriori manipulation. The ProcessAndView method provides access to the image stream of either an <code>InputSource</code> or another processor.
+A new processor can be integrated into the tracking framework by deriving it from <code>BaseProcessor</code> or <code>RgbProcessor</code>. The <code>RgbProcessor</code> is an abstract base class for image processing that handles basic functions such as rendering pre-process and post-process images into <code>BitmapSource</code> objects. The <code>BitmapSource</code> object can be used later to visualize images apriori and posteriori manipulation. The ProcessAndView method provides access to the image stream of either an <code>InputSource</code> or another processor. For more information on the usage of the <code>BaseProcessor</code> see <code>MergeProcessor</code>.
 
-For the UI a <code>ViewTemplateAttribute</code> with a template name is required. Usually, the template name is the class name. The tracking framework uses the template name to search for the corresponding <code>DataTemplate</code> key within the assembly. A data binding between a processor's properties and its <code>DataTemplate</code> is possible. Adding properties to a processor class is explained below.
+For the UI a <code>ViewTemplateAttribute</code> with a processor name and a view template name is required. The tracking framework uses the template name to search for the corresponding <code>DataTemplate</code> key within the assembly. A data binding between a processor's properties and its <code>DataTemplate</code> is possible. Adding properties to a processor class is explained below.
 
     /// <summary>
     /// 
     /// </summary>
-    [XmlType]
-    [ViewTemplate("MyProcessor")]
+    [ViewTemplate("MyProcessor", "MyViewTemplateName")]
     public class MyProcessor : RgbProcessor
     {
 		public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
@@ -21,20 +20,6 @@ For the UI a <code>ViewTemplateAttribute</code> with a template name is required
 
         	return image;
         }
-    }
-
-__IMPORTANT:__ In order to allow serialization (e.g., save or load a pipeline):
-
-1.The new processor class needs a <code>XmlTypeAttribute</code>.
-
-2.Include the new processor class in the abstract base class <code>RgbProcessor</code> using the <code>XmlIncludeAttribute</code>.
-
-    [XmlInclude(typeof(Basics))]
-    [XmlInclude(typeof(BlobTracker))]
-    [XmlInclude(typeof(CannyEdges))]
-    [XmlInclude(typeof(MyProcessor))]
-    public abstract class RgbProcessor : GenericProcessor<Rgb, byte>
-    {
     }
 
 ## Processor Properties - Add Properties to a Processor
@@ -54,7 +39,6 @@ A property is a standard .NET property. If it needs to be serialized, the proper
     /// Sets and gets the FlipHorizontal property.
     /// Changes to that property's value raise the PropertyChanged event. 
     /// </summary>
-    [XmlAttribute]
     public bool FlipHorizontal
     {
         get
@@ -77,6 +61,46 @@ A property is a standard .NET property. If it needs to be serialized, the proper
 
     #endregion
 
+__IMPORTANT:__ The current <code>DataContractSerializer</code> uses an opt-out method to serialize properties. Therefore, the following is important in order to avoid exception during serialization (e.g., save or load a pipeline):
+
+1. Add a <code>IgnoreDataMemberAttribute</code> to each property that should not be serialized. 
+
+    #region PreProcessImage
+
+    /// <summary>
+    /// The <see cref="PreProcessImage" /> property's name.
+    /// </summary>
+    public const string PreProcessImagePropertyName = "PreProcessImage";
+
+    private BitmapSource _preProcessImage;
+
+    /// <summary>
+    /// Sets and gets the PreProcessImage property.
+    /// Changes to that property's value raise the PropertyChanged event. 
+    /// </summary>
+    [IgnoreDataMember]
+    public BitmapSource PreProcessImage
+    {
+        get
+        {
+            return _preProcessImage;
+        }
+
+        set
+        {
+            if (_preProcessImage == value)
+            {
+                return;
+            }
+
+            RaisePropertyChanging(PreProcessImagePropertyName);
+            _preProcessImage = value;
+            RaisePropertyChanged(PreProcessImagePropertyName);
+        }
+    }
+
+    #endregion
+
 ## Processor User Interface (UI) - Create UI for a Processor
 
 Create a new <code>ResourceDictionary</code> or use an existing dictionary and add a new <code>DataTemplate</code> to the dictionary. A processor has a <code>PreProcessImage</code> and a <code>PostProcessImage</code> property by default. Each can be bound to an <code>Image</code> component's source.
@@ -87,7 +111,7 @@ Additional properties like the <code>FlipHorizontal</code> property can be bound
 	                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	                    xmlns:util="clr-namespace:Tools.FlockingDevice.Tracking.Util"
 	                    xmlns:processor="clr-namespace:Tools.FlockingDevice.Tracking.Processor">
-	    <DataTemplate x:Key="MyProcessor" DataType="processor:MyProcessor">
+	    <DataTemplate x:Key="MyViewTemplateName" DataType="processor:MyProcessor">
 	        <StackPanel>
 	            <StackPanel Orientation="Horizontal" Margin="5">
 	                <GroupBox Header="Pre Processed Image">
