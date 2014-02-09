@@ -24,7 +24,7 @@ For the UI a <code>ViewTemplateAttribute</code> with a processor name and a view
 
 ## Processor Properties - Add Properties to a Processor
 
-A property is a standard .NET property. If it needs to be serialized, the property requires a <code>XmlAttributeAttribute</code>. Please consult the [MSDN Xml serialization website](http://msdn.microsoft.com/en-us/library/System.Xml(v=vs.110).aspx) for further information. To enable data binding, a property needs to raise property change events (see <code>INotifyPropertyChanged</code>).
+A property is a standard .NET property and works with any MVVM framework such as [MVVM Light](https://mvvmlight.codeplex.com/). To enable data binding, a property needs to raise property change events (see <code>INotifyPropertyChanged</code>).
 
     #region FlipHorizontal
 
@@ -61,7 +61,7 @@ A property is a standard .NET property. If it needs to be serialized, the proper
 
     #endregion
 
-__IMPORTANT:__ The current <code>DataContractSerializer</code> uses an opt-out method to serialize properties. Therefore, the following is important in order to avoid exception during serialization (e.g., save or load a pipeline):
+__IMPORTANT:__ The current <code>DataContractSerializer</code> uses an opt-in method to serialize properties. Please consult the [MSDN Xml serialization website](http://msdn.microsoft.com/en-us/library/system.runtime.serialization.datacontractserializer(v=vs.110).aspx) for further information. Therefore, the following is important in order to avoid exception during serialization (e.g., save or load a pipeline):
 
 1. Add a <code>IgnoreDataMemberAttribute</code> to each property that should not be serialized. 
 
