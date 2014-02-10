@@ -145,7 +145,7 @@
                             <Expander Header="Logs"
                                   Grid.Row="1">
                                 <ScrollViewer Height="200">
-                                    <ItemsControl ItemsSource="{Binding Path=Logs}"
+                                    <ItemsControl ItemsSource="{Binding Path=Model.Logs}"
                                               FontFamily="Courier New"
                                               Background="White">
                                         <ItemsControl.ItemTemplate>

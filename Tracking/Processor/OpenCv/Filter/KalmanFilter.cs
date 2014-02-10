@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using Emgu.CV;
 
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv.Filter
 {
@@ -7,7 +6,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv.Filter
     {
         #region private properties
 
-        private Kalman _kalman;
+        private Emgu.CV.Kalman _kalman;
         private SyntheticData _syntheticData;
 
         #endregion
@@ -31,7 +30,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv.Filter
         private void InitializeKalman(float strengthTMatrix, double processNoise, double measurementNoise)
         {
             _syntheticData = new SyntheticData(strengthTMatrix, processNoise, measurementNoise);
-            _kalman = new Kalman(_syntheticData.State, _syntheticData.TransitionMatrix, _syntheticData.MeasurementMatrix, _syntheticData.ProcessNoise, _syntheticData.MeasurementNoise)
+            _kalman = new Emgu.CV.Kalman(_syntheticData.State, _syntheticData.TransitionMatrix, _syntheticData.MeasurementMatrix, _syntheticData.ProcessNoise, _syntheticData.MeasurementNoise)
             {
                 ErrorCovariancePost = _syntheticData.ErrorCovariancePost
             };

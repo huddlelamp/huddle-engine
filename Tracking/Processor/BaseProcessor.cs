@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading;
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Threading;
 using Tools.FlockingDevice.Tracking.Data;
 using System.Xml.Serialization;
 using Tools.FlockingDevice.Tracking.Model;
@@ -30,7 +31,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         private readonly List<IData> _stagedData = new List<IData>();
 
-        private long _frameId = 0;
+        private long _frameId;
 
         #endregion
 
@@ -43,7 +44,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// </summary>
         public const string XPropertyName = "X";
 
-        private double _x = 0.0;
+        private double _x;
 
         /// <summary>
         /// Sets and gets the X property.
@@ -79,7 +80,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// </summary>
         public const string YPropertyName = "Y";
 
-        private double _y = 0.0;
+        private double _y;
 
         /// <summary>
         /// Sets and gets the Y property.
@@ -115,7 +116,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// </summary>
         public const string AnglePropertyName = "Angle";
 
-        private double _angle = 0.0;
+        private double _angle;
 
         /// <summary>
         /// Sets and gets the Angle property.
@@ -271,9 +272,39 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
-        #region AllData
+        #region Logs
 
-        protected List<IData> AllData { get; private set; }
+        /// <summary>
+        /// The <see cref="Logs" /> property's name.
+        /// </summary>
+        public const string LogsPropertyName = "Logs";
+
+        private ObservableCollection<string> _logs = new ObservableCollection<string>();
+
+        /// <summary>
+        /// Sets and gets the Logs property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public ObservableCollection<string> Logs
+        {
+            get
+            {
+                return _logs;
+            }
+
+            set
+            {
+                if (_logs == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(LogsPropertyName);
+                _logs = value;
+                RaisePropertyChanged(LogsPropertyName);
+            }
+        }
 
         #endregion
 
@@ -413,7 +444,15 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
             foreach (var data in allData)
             {
-                var processedData = Process(data);
+                IData processedData = null;
+                try
+                {
+                     processedData = Process(data);
+                }
+                catch (Exception e)
+                {
+                    Log("Processing error {0}", e.ToString());
+                }
 
                 if (processedData == null)
                     continue;
@@ -468,13 +507,13 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         protected void Log(string format, params object[] args)
         {
-            //DispatcherHelper.RunAsync(() =>
-            //{
-            //    if (Messages.Count > 100)
-            //        Messages.RemoveAt(100);
+            DispatcherHelper.RunAsync(() =>
+            {
+                if (Logs.Count > 100)
+                    Logs.RemoveAt(100);
 
-            //    Messages.Insert(0, string.Format(format, args));
-            //});
+                Logs.Insert(0, string.Format(format, args));
+            });
         }
 
         public static IEnumerable<Type> GetKnownTypes()

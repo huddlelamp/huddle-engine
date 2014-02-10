@@ -88,8 +88,9 @@ namespace Tools.FlockingDevice.Tracking.Data
             //if (Trail != null && Trail.Any())
             //    Trail.Clear();
 
-            foreach (var data in this)
-                data.Dispose();
+            if (Count > 0)
+                foreach (var data in this)
+                    data.Dispose();
         }
     }
 }
