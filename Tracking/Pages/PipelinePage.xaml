@@ -246,18 +246,29 @@
             <Grid Grid.Column="1">
                 <xctk:Zoombox x:Name="ZoomCanvas" Background="Yellow"
                               Scale="{Binding Path=Model.Scale, Mode=TwoWay}"
-                              AutoWrapContentWithViewbox="True">
+                              AutoWrapContentWithViewbox="True"
+                              AllowDrop="True"
+                              MaxScale="5"
+                              MinScale="0.1">
+                    <i:Interaction.Triggers>
+                        <util:EventTriggerAdvanced EventName="MouseWheel">
+                            <command:EventToCommand Command="{Binding Path=ZoomCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                        </util:EventTriggerAdvanced>
+                        <util:EventTriggerAdvanced EventName="Drop">
+                            <command:EventToCommand Command="{Binding Path=DropProcessorCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                        </util:EventTriggerAdvanced>
+                    </i:Interaction.Triggers>
                     <xctk:Zoombox.ViewStack>
                         <xctk:ZoomboxView>Fit</xctk:ZoomboxView>
                     </xctk:Zoombox.ViewStack>
-                    <Grid Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
-                          Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}">
+                    <Grid Width="{Binding ElementName=ZoomCanvas, Path=Width}"
+                          Height="{Binding ElementName=ZoomCanvas, Path=Height}">
                         <ItemsControl ItemsSource="{Binding Path=Pipes, Mode=OneWay}"
                                       ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <Canvas Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
-                                            Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}"
+                                    <Canvas Width="{Binding ElementName=ZoomCanvas, Path=Width}"
+                                            Height="{Binding ElementName=ZoomCanvas, Path=Height}"
                                             Background="DarkTurquoise" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
@@ -269,16 +280,12 @@
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <inkCanvas:AdvancedInkCanvas x:Name="InkCanvas" Background="Transparent" IsDrawingEnabled="True" IsMouseEnabled="True"
-                                                                 AllowDrop="True"
                                                                  Scale="{Binding Path=Model.Scale, Mode=OneWay}"
                                                                  Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
                                                                  Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}">
                                         <i:Interaction.Triggers>
                                             <util:EventTriggerAdvanced EventName="StrokeCollected">
                                                 <command:EventToCommand Command="{Binding Path=StrokeCollectedCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
-                                            </util:EventTriggerAdvanced>
-                                            <util:EventTriggerAdvanced EventName="Drop">
-                                                <command:EventToCommand Command="{Binding Path=DropProcessorCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
                                             </util:EventTriggerAdvanced>
                                         </i:Interaction.Triggers>
                                     </inkCanvas:AdvancedInkCanvas>

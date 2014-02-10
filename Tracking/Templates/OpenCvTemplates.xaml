@@ -1,8 +1,10 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:openCv="clr-namespace:Tools.FlockingDevice.Tracking.Processor.OpenCv"
-                    xmlns:util="clr-namespace:Tools.FlockingDevice.Tracking.Util">
-    
+                    xmlns:util="clr-namespace:Tools.FlockingDevice.Tracking.Util"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:command="http://www.galasoft.ch/mvvmlight">
+
     <DataTemplate x:Key="Basics" DataType="openCv:Basics">
         <StackPanel>
             <Grid>
@@ -13,7 +15,30 @@
 
                 <GroupBox Header="Pre Processed Image"
                           Grid.Column="0">
-                    <Image Source="{Binding Path=PreProcessImage}" />
+                    <Grid>
+                        <Image x:Name="PreProcessImage" Source="{Binding Path=PreProcessImage}">
+                            <i:Interaction.Triggers>
+                                <util:EventTriggerAdvanced EventName="MouseDown">
+                                    <command:EventToCommand Command="{Binding Path=MouseDownCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </util:EventTriggerAdvanced>
+                                <util:EventTriggerAdvanced EventName="MouseMove">
+                                    <command:EventToCommand Command="{Binding Path=MouseMoveCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </util:EventTriggerAdvanced>
+                                <util:EventTriggerAdvanced EventName="MouseUp">
+                                    <command:EventToCommand Command="{Binding Path=MouseUpCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </util:EventTriggerAdvanced>
+                            </i:Interaction.Triggers>
+                        </Image>
+                        <Canvas Width="{Binding ElementName=PreProcessImage, Path=ActualWidth}"
+                                Height="{Binding ElementName=PreProcessImage, Path=ActualHeight}"
+                                Visibility="{Binding Path=PreProcessImage, Converter={util:NullToVisibilityConverter}}">
+                            <Rectangle Stroke="Red" StrokeThickness="3"
+                                       Canvas.Left="{Binding Path=ROITemp, Converter={util:ObjectPropertyConverter Path=X}}"
+                                       Canvas.Top="{Binding Path=ROITemp, Converter={util:ObjectPropertyConverter Path=Y}}"
+                                       Width="{Binding Path=ROITemp, Converter={util:ObjectPropertyConverter Path=Width}}"
+                                       Height="{Binding Path=ROITemp, Converter={util:ObjectPropertyConverter Path=Height}}" />
+                        </Canvas>
+                    </Grid>
                 </GroupBox>
                 <GroupBox Header="Post Processed Image"
                           Grid.Column="1">
@@ -61,7 +86,7 @@
                 <Slider Value="{Binding Path=ThresholdLinking}" Width="340" Height="25" Minimum="0" Maximum="300" />
                 <TextBlock Text="{Binding Path=ThresholdLinking, StringFormat={}{0:#}}"/>
             </StackPanel>
-            
+
             <CheckBox Content="Gaussian Pyramid Down/Up Composition" IsChecked="{Binding Path=GaussianPyramidDownUpDecomposition}" />
 
         </StackPanel>
@@ -99,7 +124,7 @@
 
         </StackPanel>
     </DataTemplate>
-    
+
     <DataTemplate x:Key="FindContours" DataType="openCv:FindContours">
         <StackPanel>
             <Grid>

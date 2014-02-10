@@ -250,12 +250,15 @@
     <Compile Include="Processor\RgbProcessor.cs" />
     <Compile Include="Processor\OpenCv\FindContours.cs" />
     <Compile Include="IO\WrappingStream.cs" />
+    <Compile Include="Processor\Sensors\VideoCapture.cs" />
     <Compile Include="Processor\VideoRecordAndPlay.cs" />
     <Compile Include="Util\ConverterMarkupExtension.cs" />
     <Compile Include="Util\BoolToVisibilityConverter.cs" />
     <Compile Include="Util\DoubleToPointConverter.cs" />
     <Compile Include="Util\HitTestHelper.cs" />
     <Compile Include="Util\IntegerToBooleanConverter.cs" />
+    <Compile Include="Util\ObjectPropertyConverter.cs" />
+    <Compile Include="Util\NullToVisibilityConverter.cs" />
     <Compile Include="Util\ProcessorTypesProvider.cs" />
     <Compile Include="Util\PipelineModeToBoolConverter.cs" />
     <Compile Include="Util\ProcessorContainerStyleSelector.cs" />

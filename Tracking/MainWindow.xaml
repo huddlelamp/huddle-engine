@@ -6,6 +6,7 @@
                   xmlns:command="http://www.galasoft.ch/mvvmlight"
                   Title="Flocking Device - Tracking"
                   Width="1920" Height="1080"
+                  WindowState="Maximized"
                   x:Name="Self"
                   ContentSource="/Pages/PipelinePage.xaml"
                   DataContext="{Binding Source={StaticResource ResourceKey=Locator}, Path=Main}">

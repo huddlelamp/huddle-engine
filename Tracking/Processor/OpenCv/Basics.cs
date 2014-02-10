@@ -1,18 +1,38 @@
 ﻿using System;
 using System.Drawing;
+using System.Windows;
+using System.Windows.Input;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
+using GalaSoft.MvvmLight.Command;
 using Tools.FlockingDevice.Tracking.Properties;
 using Tools.FlockingDevice.Tracking.Util;
+using Xceed.Wpf.DataGrid.FilterCriteria;
+using Point = System.Windows.Point;
 
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
     [ViewTemplate("Basics", "Basics")]
     public class Basics : RgbProcessor
     {
+        #region private fields
+
+        private bool _mouseDown;
+        private Point _mousePoint;
+
+        #endregion
+
+        #region commands
+
+        public RelayCommand<SenderAwareEventArgs> MouseDownCommand { get; private set; }
+        public RelayCommand<SenderAwareEventArgs> MouseMoveCommand { get; private set; }
+        public RelayCommand<SenderAwareEventArgs> MouseUpCommand { get; private set; }
+
+        #endregion
+
         #region public properties
 
         #region ROI
@@ -45,6 +65,41 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
                 RaisePropertyChanging(ROIPropertyName);
                 _roi = value;
                 RaisePropertyChanged(ROIPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region ROITemp
+
+        /// <summary>
+        /// The <see cref="ROITemp" /> property's name.
+        /// </summary>
+        public const string ROITempPropertyName = "ROITemp";
+
+        private Rectangle _roiTemp = Rectangle.Empty;
+
+        /// <summary>
+        /// Sets and gets the ROITemp property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Rectangle ROITemp
+        {
+            get
+            {
+                return _roiTemp;
+            }
+
+            set
+            {
+                if (_roiTemp == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ROITempPropertyName);
+                _roiTemp = value;
+                RaisePropertyChanged(ROITempPropertyName);
             }
         }
 
@@ -118,6 +173,65 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
                 _flipHorizontal = value;
                 RaisePropertyChanged(FlipHorizontalPropertyName);
             }
+        }
+
+        #endregion
+
+        #region ctor
+
+        public Basics()
+        {
+            MouseDownCommand = new RelayCommand<SenderAwareEventArgs>(args =>
+            {
+                var sender = args.Sender as IInputElement;
+                var e = args.OriginalEventArgs as MouseEventArgs;
+
+                if (sender == null || e == null) return;
+
+                _mouseDown = true;
+
+                sender.CaptureMouse();
+
+                _mousePoint = e.GetPosition(sender);
+
+                e.Handled = true;
+            });
+
+            MouseMoveCommand = new RelayCommand<SenderAwareEventArgs>(args =>
+            {
+                var sender = args.Sender as FrameworkElement;
+                var e = args.OriginalEventArgs as MouseEventArgs;
+
+                if (sender == null || e == null || !_mouseDown) return;
+
+                var position = e.GetPosition(sender);
+                var diff = position - _mousePoint;
+
+                var x = Math.Min(_mousePoint.X, position.X);
+                var y = Math.Min(_mousePoint.Y, position.Y);
+                var width = Math.Abs(diff.X);
+                var height = Math.Abs(diff.Y);
+
+                ROITemp = new Rectangle((int)x, (int)y, (int)width, (int)height);
+
+                e.Handled = true;
+            });
+
+            MouseUpCommand = new RelayCommand<SenderAwareEventArgs>(args =>
+            {
+                var sender = args.Sender as IInputElement;
+                var e = args.OriginalEventArgs as MouseEventArgs;
+
+                if (sender == null || e == null || !_mouseDown) return;
+
+                ROI = ROITemp;
+                ROITemp = Rectangle.Empty;
+
+                sender.ReleaseMouseCapture();
+
+                _mouseDown = false;
+                e.Handled = true;
+            });
         }
 
         #endregion

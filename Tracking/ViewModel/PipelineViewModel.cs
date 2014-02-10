@@ -17,6 +17,7 @@ using Tools.FlockingDevice.Tracking.Processor;
 using Tools.FlockingDevice.Tracking.Properties;
 using Tools.FlockingDevice.Tracking.Util;
 using Tools.FlockingDevice.Tracking.View;
+using Xceed.Wpf.Toolkit.Zoombox;
 using Application = System.Windows.Application;
 using DragEventArgs = System.Windows.DragEventArgs;
 
@@ -53,6 +54,12 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         public RelayCommand<MouseButtonEventArgs> DragInitiateCommand { get; private set; }
         public RelayCommand<SenderAwareEventArgs> DropProcessorCommand { get; private set; }
+
+        #endregion
+
+        #region Zoombox commands
+
+        public RelayCommand<SenderAwareEventArgs> ZoomCommand { get; private set; } 
 
         #endregion
 
@@ -287,6 +294,18 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 //RaisePropertyChanged(ProcessorsPropertyName);
 
                 IsDragOver = false;
+            });
+
+            ZoomCommand = new RelayCommand<SenderAwareEventArgs>(args =>
+            {
+                var sender = args.Sender as Zoombox;
+                var e = args.OriginalEventArgs as MouseWheelEventArgs;
+
+                if (sender == null || e == null) return;
+
+                var zoom = e.Delta/500.0;
+
+                sender.Zoom(zoom, e.GetPosition(sender));
             });
 
             Load();
