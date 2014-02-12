@@ -51,10 +51,6 @@ namespace Tools.FlockingDevice.Tracking.Util
     {
         protected override void OnEvent(EventArgs eventArgs)
         {
-            var e = eventArgs as MouseEventArgs;
-            if (e != null && e.MouseDevice.LeftButton == MouseButtonState.Released)
-                Console.WriteLine();
-
             base.OnEvent(new SenderAwareEventArgs() {Sender = Source, OriginalEventArgs = eventArgs});
         }
     }

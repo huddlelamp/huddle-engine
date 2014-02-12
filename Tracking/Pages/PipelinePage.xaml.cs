@@ -27,14 +27,14 @@ namespace Tools.FlockingDevice.Tracking.Pages
 
         private void UIElement_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
-            Console.WriteLine();
+            //Console.WriteLine();
 
             e.Handled = true;
         }
 
         private void UIElement_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            Console.WriteLine();
+            //Console.WriteLine();
 
             e.MouseDevice.Capture(sender as IInputElement);
 

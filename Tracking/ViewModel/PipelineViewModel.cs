@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml;
 using GalaSoft.MvvmLight.Command;
+using Microsoft.Win32;
 using Tools.FlockingDevice.Tracking.Controls;
 using Tools.FlockingDevice.Tracking.InkCanvas;
 using Tools.FlockingDevice.Tracking.Model;
@@ -43,8 +44,11 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         public RelayCommand StopCommand { get; private set; }
         public RelayCommand PauseCommand { get; private set; }
         public RelayCommand ResumeCommand { get; private set; }
+        public RelayCommand NewCommand { get; private set; }
+        public RelayCommand OpenCommand { get; private set; }
         public RelayCommand SaveCommand { get; private set; }
-        public RelayCommand LoadCommand { get; private set; }
+
+        public RelayCommand<ProcessorViewModelBase<BaseProcessor>> MoveZIndexUpCommand { get; private set; } 
 
         public RelayCommand<SenderAwareEventArgs> StrokeCollectedCommand { get; private set; }
 
@@ -232,7 +236,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             Application.Current.Exit += (s, e) =>
             {
                 Stop();
-                Save();
+                Save(Settings.Default.DefaultPipelineFileName);
             };
 
             Model = new Pipeline();
@@ -241,8 +245,17 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             StopCommand = new RelayCommand(Stop);
             PauseCommand = new RelayCommand(Pause);
             ResumeCommand = new RelayCommand(Resume);
-            SaveCommand = new RelayCommand(Save);
-            LoadCommand = new RelayCommand(Load);
+            NewCommand = new RelayCommand(OnNew);
+            OpenCommand = new RelayCommand(OnOpen);
+            SaveCommand = new RelayCommand(OnSave);
+
+            MoveZIndexUpCommand = new RelayCommand<ProcessorViewModelBase<BaseProcessor>>(p =>
+            {
+                foreach (var processor in Processors)
+                    processor.Model.ZIndex = 0;
+
+                p.Model.ZIndex = 1;
+            });
 
             StrokeCollectedCommand = new RelayCommand<SenderAwareEventArgs>(OnStrokeCollected);
 
@@ -308,7 +321,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 sender.Zoom(zoom, e.GetPosition(sender));
             });
 
-            Load();
+            Load(Settings.Default.DefaultPipelineFileName);
         }
 
         #endregion
@@ -396,10 +409,61 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             }
         }
 
-        private void Save()
+        private void OnNew()
         {
-            var filename = Settings.Default.PipelineFilename;
-            var tempFilename = String.Format("{0}.tmp", filename);
+            var defaultPipeline = MessageBox.Show("Do you want create an new pipeline?", "Default Pipeline", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (defaultPipeline != MessageBoxResult.Yes) return;
+
+            foreach (var processor in Processors)
+                processor.Stop();
+
+            Model.Stop();
+
+            Processors.Clear();
+            Pipes.Clear();
+            Model = new Pipeline();
+        }
+
+        private void OnOpen()
+        {
+            var openDialog = new OpenFileDialog
+            {
+                Filter = "Flocking Device Pipeline|*.xml.ppl",
+                Multiselect = false
+            };
+
+            var result = openDialog.ShowDialog(Application.Current.MainWindow);
+
+            if (!result.Value) return;
+
+            var fileName = openDialog.FileName;
+
+            AskForSaveAsDefaultPipeline(fileName);
+
+            Load(fileName);
+        }
+
+        private void OnSave()
+        {
+            var saveDialog = new SaveFileDialog
+            {
+                Filter = "Flocking Device Pipeline|*.xml.ppl"
+            };
+
+            var result = saveDialog.ShowDialog(Application.Current.MainWindow);
+
+            if (!result.Value) return;
+
+            var fileName = saveDialog.FileName;
+
+            AskForSaveAsDefaultPipeline(fileName);
+
+            Save(fileName);
+        }
+
+        private void Save(string fileName)
+        {
+            var tempFilename = String.Format("{0}.tmp", fileName);
 
             try
             {
@@ -410,8 +474,8 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                     //serializer.WriteObject(stream, new Test() { A = "ASDF" });
                 }
 
-                var bakFilename = String.Format("{0}.bak", Settings.Default.PipelineFilename);
-                File.Replace(tempFilename, filename, bakFilename);
+                var bakFilename = String.Format("{0}.bak", Settings.Default.DefaultPipelineFileName);
+                File.Replace(tempFilename, fileName, bakFilename);
             }
             catch (Exception e)
             {
@@ -419,12 +483,12 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
             }
         }
 
-        private void Load()
+        private void Load(string fileName)
         {
             try
             {
                 //var serializer = new XmlSerializer(typeof(Pipeline));
-                using (var stream = new FileStream(Settings.Default.PipelineFilename, FileMode.Open))
+                using (var stream = new FileStream(fileName, FileMode.Open))
                 {
                     Model = _serializer.ReadObject(stream) as Pipeline ?? new Pipeline();
 
@@ -433,13 +497,22 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                         AddNode(target);
                     }
 
-                    BuildPipeViewModels(Model as Pipeline);
+                    BuildPipeViewModels(Model);
                 }
             }
             catch (Exception e)
             {
                 ExceptionMessageBox.ShowException(e, String.Format("Could not load pipeline. {0}.", e.Message));
             }
+        }
+
+        private static void AskForSaveAsDefaultPipeline(string fileName)
+        {
+            var defaultPipeline = MessageBox.Show("Do you want to load this pipeline on next program start?", "Default Pipeline", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (defaultPipeline != MessageBoxResult.Yes) return;
+
+            Settings.Default.DefaultPipelineFileName = fileName;
+            Settings.Default.Save();
         }
 
         private void BuildPipeViewModels(Pipeline pipeline)
@@ -497,10 +570,6 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 }
             }
         }
-
-        #endregion
-
-        #region private methods
 
         private void AddNode(BaseProcessor node)
         {

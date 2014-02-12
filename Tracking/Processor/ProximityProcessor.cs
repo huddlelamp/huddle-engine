@@ -6,26 +6,27 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml.Serialization;
+using FirstFloor.ModernUI.Presentation;
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Threading;
 using Tools.FlockingDevice.Tracking.Data;
 using Tools.FlockingDevice.Tracking.Domain;
 using Tools.FlockingDevice.Tracking.Extensions;
 using Tools.FlockingDevice.Tracking.Util;
-using Point = System.Windows.Point;
 
 namespace Tools.FlockingDevice.Tracking.Processor
 {
-    [ViewTemplate("Merge", "Merge")]
-    public class MergeProcessor : BaseProcessor
+    [ViewTemplate("Proximity Processor", "ProximityProcessorTemplate")]
+    public class ProximityProcessor : BaseProcessor
     {
-        #region private fields
+        #region commands
 
-        private readonly List<BlobData> _blobs = new List<BlobData>();
-
-        private DateTime _lastUpdate;
+        public RelayCommand<SenderAwareEventArgs> AddFakeDeviceCommand { get; private set; }
+        public RelayCommand<Device> RemoveFakeDeviceCommand { get; private set; }
 
         #endregion
 
@@ -44,6 +45,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// Sets and gets the Distance property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [XmlAttribute]
         public double Distance
         {
             get
@@ -179,14 +181,14 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// </summary>
         public const string DrawModelsPropertyName = "DrawModels";
 
-        private ObservableCollection<DrawModel> _drawModels = new ObservableCollection<DrawModel>();
+        private ObservableCollection<DrawModel2> _drawModels = new ObservableCollection<DrawModel2>();
 
         /// <summary>
         /// Sets and gets the DrawModels property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         [IgnoreDataMember]
-        public ObservableCollection<DrawModel> DrawModels
+        public ObservableCollection<DrawModel2> DrawModels
         {
             get
             {
@@ -210,113 +212,160 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
+        #region ctor
+
+        public ProximityProcessor()
+        {
+            AddFakeDeviceCommand = new RelayCommand<SenderAwareEventArgs>(args =>
+            {
+                var sender = args.Sender as IInputElement;
+                var e = args.OriginalEventArgs as MouseEventArgs;
+
+                if (sender == null || e == null) return;
+
+                var position = e.GetPosition(sender);
+
+                e.Handled = true;
+
+                Devices.Add(new Device
+                {
+                    Id = 999,
+                    Key = "FakeKey",
+                    X = position.X,
+                    Y = position.Y,
+                    Angle = 0//Math.PI
+                });
+            });
+
+            RemoveFakeDeviceCommand = new RelayCommand<Device>(d =>
+            {
+                Console.WriteLine();
+            });
+        }
+
+        #endregion
+
+        #region Data Processing
+
         public override IDataContainer PreProcess(IDataContainer dataContainer)
         {
-            if (dataContainer.Any(d => d is BlobData))
+            var blobs = dataContainer.OfType<BlobData>().ToList();
+            var qrCodes = dataContainer.OfType<LocationData>().ToList();
+
+            foreach (var blob in blobs)
+                qrCodes.Remove(blob);
+
+            #region Update DrawModels
+
+            ClearDrawModels();
+
+            foreach (var blob in blobs)
+                AddDrawModel(blob.X * Width, blob.Y * Height, Brushes.DeepPink, 1);
+
+            foreach (var code in qrCodes)
+                AddDrawModel(code.X * Width, code.Y * Height, Brushes.DeepSkyBlue, 2);
+
+            #endregion
+
+            // Remove all devices that are not present by a blob anymore
+            DispatcherHelper.RunAsync(() => Devices.RemoveAll(device => blobs.All(b => b.Id != device.Id)));
+
+            foreach (var blob in blobs)
             {
-                _lastUpdate = DateTime.Now;
-
-                _blobs.Clear();
-                DispatcherHelper.RunAsync(() => DrawModels.RemoveAll(m => m.Type == 1));
-
-                var blobs = dataContainer.OfType<BlobData>().ToList();
-                DispatcherHelper.RunAsync(() =>
+                // debug hook to check if update of devices works with blob only
+                if (Devices.Any(d => d.Id == blob.Id))
                 {
-                    var removed = Devices.RemoveAll(device => blobs.All(b => b.Id != device.Id));
-                    Console.WriteLine("Removed {0}", removed);
-                });
-            }
-            else if (dataContainer.Any(d => d is LocationData))
-            {
-                _lastUpdate = DateTime.Now;
-
-                DispatcherHelper.RunAsync(() => DrawModels.RemoveAll(m => m.Type == 2));
-            }
-            else
-            {
-                if (_lastUpdate != null)
-                {
-                    var diff = (DateTime.Now - _lastUpdate).TotalMilliseconds;
-
-                    if (diff > 1000)
-                    {
-                        DispatcherHelper.RunAsync(() =>
-                        {
-                            Devices.Clear();
-                            DrawModels.Clear();
-                        });
-                    }
+                    var device = Devices.Single(d => d.Id == blob.Id);
+                    device.X = blob.X * Width;
+                    device.Y = blob.Y * Height;
+                    continue;
                 }
+
+                var blobPoint = new Point(blob.X, blob.Y);
+
+                var codes = qrCodes.Where(c => (new Point(c.X, c.Y) - blobPoint).Length < Distance);
+
+                if (!codes.Any()) continue;
+
+                var code = codes.First();
+
+                AddDevice(blob, code);
             }
 
-            return base.PreProcess(dataContainer);
+            return dataContainer;
         }
 
         public override IData Process(IData data)
         {
-            if (data is BlobData)
+            return data;
+        }
+
+        public override IDataContainer PostProcess(IDataContainer dataContainer)
+        {
+            var devices = Devices.ToArray();
+            foreach (var device1 in devices)
             {
-                var blob = data as BlobData;
-
-                _blobs.Add(blob.Copy() as BlobData);
-
-                AddDrawModel(blob.X * Width, blob.Y * Height, Brushes.DeepPink, 1);
-
-                if (Devices.All(d => d.Id != blob.Id)) return null;
-
-                var device = Devices.Single(d => d.Id == blob.Id);
-                device.X = blob.X * Width;
-                device.Y = blob.Y * Height;
-            }
-            else if (data is LocationData)
-            {
-                var loc = data as LocationData;
-
-                var locPoint = new Point(loc.X, loc.Y);
-
-                AddDrawModel(loc.X * Width, loc.Y * Height, Brushes.DeepSkyBlue, 2);
-
-                foreach (var blob in _blobs)
+                foreach (var device2 in devices)
                 {
-                    // debug hook to check if update of devices works with blob only
-                    if (Devices.Any(d => d.Id == blob.Id))
-                    {
-                        var device = Devices.Single(d => d.Id == blob.Id);
-                        device.Angle = loc.Angle;
-                        continue;
-                    }
-                        
+                    if (Equals(device1, device2)) continue;
 
-                    //var contains = blob.Area.Contains(new Point(loc.X, loc.Y));
+                    var x = device2.X - device1.X;
+                    var y = device2.Y - device1.Y;
 
-                    var blobPoint = new Point(blob.X, blob.Y);
+                    // device2 to device1 angle
+                    var globalAngle = Math.Atan(y/x).RandianToDegree();
 
-                    var length = (locPoint - blobPoint).Length;
+                    if (x >= 0 && y < 0)
+                        globalAngle = 90 + globalAngle;
+                    else if (x >= 0 && y >= 0)
+                        globalAngle = 90 + globalAngle;
+                    else if (x < 0 && y >= 0)
+                        globalAngle = 270 + globalAngle;
+                    else if (x < 0 && y < 0)
+                        globalAngle = 270 + globalAngle;
 
-                    if (length < Distance)
-                    {
-                        var blob1 = blob;
-                        DispatcherHelper.RunAsync(() =>
-                            Devices.Add(new Device
-                            {
-                                Id = blob1.Id,
-                                Key = loc.Key,
-                                X = blob1.X * Width,
-                                Y = blob1.Y * Height,
-                                Angle = loc.Angle
-                            })
-                        );
-                    }
+                    // subtract own angle
+                    var localAngle = globalAngle + (360 - device1.Angle); // angle -= (device1.Angle % 180);
+                    localAngle %= 360;
+
+                    Log("Local Angle for {0} is {1} (Global Angle {2})", device1.Key, localAngle, globalAngle);
                 }
             }
+
             return null;
+        }
+
+        #endregion
+
+        private void AddDevice(BlobData blob, LocationData code)
+        {
+            Stage(new LocationData(string.Format("{0}{1}", code.Key, blob.Id))
+            {
+                X = blob.X,
+                Y = blob.Y,
+                Angle = code.Angle
+            });
+
+            DispatcherHelper.RunAsync(() => Devices.Add(new Device
+            {
+                Id = blob.Id,
+                Key = code.Key,
+                X = blob.X * Width,
+                Y = blob.Y * Height,
+                Angle = code.Angle
+            }));
+        }
+
+        private void ClearDrawModels()
+        {
+            DispatcherHelper.RunAsync(() => DrawModels.Clear());
         }
 
         private void AddDrawModel(double x, double y, Brush color, int type)
         {
             DispatcherHelper.RunAsync(() =>
             {
-                var model = new DrawModel
+                var model = new DrawModel2
                 {
                     X = x,
                     Y = y,
@@ -328,7 +377,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         }
     }
 
-    public class DrawModel : ObservableObject
+    public class DrawModel2 : ObservableObject
     {
         #region properties
 
