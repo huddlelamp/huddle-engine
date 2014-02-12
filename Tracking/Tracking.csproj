@@ -13,6 +13,10 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -23,14 +27,16 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
+    <ProductName>Tracking Engine</ProductName>
+    <SuiteName>Flocking Device</SuiteName>
+    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
+    <WebPage>index.html</WebPage>
+    <ApplicationRevision>4</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
+    <CreateDesktopShortcut>true</CreateDesktopShortcut>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -58,7 +64,7 @@
     <StartupObject>Tools.FlockingDevice.Tracking.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\radar.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\FlockingDevice.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
@@ -102,6 +108,18 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>16973148F11FAEE963139111D4E09162EFDC060F</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>Tracking_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Emgu.CV">
@@ -212,6 +230,7 @@
       <DependentUpon>ExceptionMessageBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Domain\Device.cs" />
+    <Compile Include="Extensions\NumericExtensions.cs" />
     <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
     <Compile Include="Extensions\PointExtensions.cs" />
     <Compile Include="InkCanvas\AdvancedInkCanvas.cs" />
@@ -250,6 +269,8 @@
     <Compile Include="Processor\RgbProcessor.cs" />
     <Compile Include="Processor\OpenCv\FindContours.cs" />
     <Compile Include="IO\WrappingStream.cs" />
+    <Compile Include="Processor\ProximityProcessor.cs" />
+    <Compile Include="Processor\UnsyncFusion.cs" />
     <Compile Include="Processor\VideoRecordAndPlay.cs" />
     <Compile Include="Util\ConverterMarkupExtension.cs" />
     <Compile Include="Util\BoolToVisibilityConverter.cs" />
@@ -354,13 +375,12 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="Tracking_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\radar.ico" />
-    <SplashScreen Include="Resources\SplashScreen.png" />
     <Resource Include="Resources\radar.png" />
   </ItemGroup>
   <ItemGroup>
@@ -405,9 +425,6 @@
     <Resource Include="Resources\stop.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\save_as.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\camcoder_pro.png" />
   </ItemGroup>
   <ItemGroup>
@@ -420,6 +437,40 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\qrcode.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\FlockingDevice.ico" />
+    <SplashScreen Include="Resources\FlockingDevice.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\ppl_256px.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <FileAssociation Include=".xml.ppl">
+      <Visible>False</Visible>
+      <Description>Flocking Device Pipeline</Description>
+      <Progid>xml/pipeline</Progid>
+      <DefaultIcon>Resources\256x256\ppl_256px.ico</DefaultIcon>
+    </FileAssociation>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\IconSource.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\32x32\add_file.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\32x32\add_folder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\32x32\folder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\32x32\save.png" />
+    <Resource Include="Resources\32x32\save_as.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\256x256\ppl_256px.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

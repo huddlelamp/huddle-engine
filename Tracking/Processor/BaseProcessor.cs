@@ -17,7 +17,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
     [KnownType("GetKnownTypes")]
     public abstract class BaseProcessor : ObservableObject, IProcessor, ILocator
     {
-        #region private fields
+        #region member fields
 
         private Thread _processingThread;
 
@@ -28,7 +28,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         private readonly object _stagedDataLock = new object();
 
-        private readonly List<IData> _stagedData = new List<IData>();
+        protected readonly List<IData> StagedData = new List<IData>();
 
         private long _frameId = 0;
 
@@ -144,6 +144,42 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
+        #region ZIndex
+
+        /// <summary>
+        /// The <see cref="ZIndex" /> property's name.
+        /// </summary>
+        public const string ZIndexPropertyName = "ZIndex";
+
+        private int _zIndex = 0;
+
+        /// <summary>
+        /// Sets and gets the ZIndex property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlAttribute]
+        public int ZIndex
+        {
+            get
+            {
+                return _zIndex;
+            }
+
+            set
+            {
+                if (_zIndex == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ZIndexPropertyName);
+                _zIndex = value;
+                RaisePropertyChanged(ZIndexPropertyName);
+            }
+        }
+
+        #endregion
+
         #region Name
 
         private ViewTemplateAttribute _metadata;
@@ -168,7 +204,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         /// </summary>
         public const string IsRenderContentPropertyName = "IsRenderContent";
 
-        private bool _isRenderContent = true;
+        private bool _isRenderContent = false;
 
         /// <summary>
         /// Sets and gets the IsRenderContent property.
@@ -440,7 +476,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         {
             lock (_stagedDataLock)
             {
-                _stagedData.Add(data);
+                StagedData.Add(data);
             }
         }
 
@@ -449,7 +485,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
             // Do not publish if staged data is empty
             lock (_stagedDataLock)
             {
-                if (!_stagedData.Any())
+                if (!StagedData.Any())
                     return;
             }
 
@@ -457,8 +493,8 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
             lock (_stagedDataLock)
             {
-                container.AddRange(_stagedData);
-                _stagedData.Clear();
+                container.AddRange(StagedData);
+                StagedData.Clear();
             }
             
             Publish(container);

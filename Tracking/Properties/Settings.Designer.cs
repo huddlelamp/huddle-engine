@@ -160,13 +160,13 @@ namespace Tools.FlockingDevice.Tracking.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Pipeline.xml")]
-        public string PipelineFilename {
+        [global::System.Configuration.DefaultSettingValueAttribute("Pipeline.xml.ppl")]
+        public string DefaultPipelineFileName {
             get {
-                return ((string)(this["PipelineFilename"]));
+                return ((string)(this["DefaultPipelineFileName"]));
             }
             set {
-                this["PipelineFilename"] = value;
+                this["DefaultPipelineFileName"] = value;
             }
         }
         

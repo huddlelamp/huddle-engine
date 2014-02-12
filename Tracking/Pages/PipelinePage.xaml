@@ -27,6 +27,7 @@
         <util:ProcessorContainerStyleSelector x:Key="ProcessorViewContainerStyleSelector">
             <util:ProcessorContainerStyleSelector.FilterStyle>
                 <Style TargetType="ContentPresenter">
+                    <Setter Property="Panel.ZIndex" Value="{Binding Path=Model.ZIndex}" />
                     <Setter Property="Canvas.Left" Value="{Binding Path=Model.X}" />
                     <Setter Property="Canvas.Top" Value="{Binding Path=Model.Y}" />
                 </Style>
@@ -72,8 +73,12 @@
 
         <DataTemplate x:Key="ProcessorTemplate" DataType="viewModel:NodeViewModel">
             <Border Style="{StaticResource ResourceKey=ContainerStyle}"
+                    MinWidth="100" MinHeight="100"
                     AllowDrop="True">
                 <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="PreviewMouseDown">
+                        <command:EventToCommand Command="{Binding Path=Pipeline.MoveZIndexUpCommand, Mode=OneWay}" CommandParameter="{Binding}" />
+                    </i:EventTrigger>
                     <i:EventTrigger EventName="DragEnter">
                         <command:EventToCommand Command="{Binding Path=DragEnterCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
                     </i:EventTrigger>
@@ -220,13 +225,29 @@
                 </i:Interaction.Triggers>
                 <Image Source="/FlockingDevice.Tracking;component/Resources/pause.png" />
             </Button>-->
+            <Button IsEnabled="{Binding Path=Mode, Mode=OneWay, Converter={util:PipelineModeToBoolConverter Mode=Stopped}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=NewCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <Image Source="/FlockingDevice.Tracking;component/Resources/32x32/add_file.png" />
+            </Button>
+            <Button>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=OpenCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <Image Source="/FlockingDevice.Tracking;component/Resources/32x32/folder.png" />
+            </Button>
             <Button IsEnabled="{Binding Mode=OneWay, Converter={util:NullToBoolConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Click">
                         <command:EventToCommand Command="{Binding Path=SaveCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
-                <Image Source="/FlockingDevice.Tracking;component/Resources/save_as.png" />
+                <Image Source="/FlockingDevice.Tracking;component/Resources/32x32/save_as.png" />
             </Button>
         </StackPanel>
 
@@ -244,24 +265,15 @@
             </StackPanel>
 
             <Grid Grid.Column="1">
-                <xctk:Zoombox x:Name="ZoomCanvas" Background="Yellow"
+                <xctk:Zoombox x:Name="ZoomCanvas" Background="Transparent"
                               Scale="{Binding Path=Model.Scale, Mode=TwoWay}"
                               AutoWrapContentWithViewbox="True">
                     <xctk:Zoombox.ViewStack>
                         <xctk:ZoomboxView>Fit</xctk:ZoomboxView>
                     </xctk:Zoombox.ViewStack>
+
                     <Grid Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
                           Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}">
-                        <ItemsControl ItemsSource="{Binding Path=Pipes, Mode=OneWay}"
-                                      ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
-                                            Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}"
-                                            Background="DarkTurquoise" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
 
                         <ItemsControl ItemsSource="{Binding Path=Processors, Mode=OneWay}"
                               ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}"
@@ -282,6 +294,17 @@
                                             </util:EventTriggerAdvanced>
                                         </i:Interaction.Triggers>
                                     </inkCanvas:AdvancedInkCanvas>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+
+                        <ItemsControl ItemsSource="{Binding Path=Pipes, Mode=OneWay}"
+                                      ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
+                                            Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}"
+                                            Background="{x:Null}" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
