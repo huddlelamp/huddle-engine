@@ -581,7 +581,8 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
                     if (currentContour.Area > MinContourArea) //only consider contours with area greater than 250
                     {
-                        outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.White, 2);
+                        //outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.White, 2);
+                        outputImage.FillConvexPoly(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE).ToArray(), Rgbs.White);
                     }
                 }
             }
