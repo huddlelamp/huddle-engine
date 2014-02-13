@@ -1,0 +1,31 @@
+#qrcode-container {
+	top: 0px;
+	left: 0px;
+	position: relative;
+	background-color: white;
+	vertical-align: bottom;
+	margin-left:auto;
+	margin-right:auto;
+	width: 100%;
+	height: 100%;
+	display: none;
+}
+
+#qrcode {
+	vertical-align: middle;
+	margin-left:20px;
+	margin-right:20px;
+}
+
+#peephole-canvas {
+	width: 3840px;
+	height: 2160px;
+// debug positions
+//	top: -200px;
+//	left: -600px;
+	clear: both;
+	position: absolute;
+	background-image: url('background.png');
+	background-repeat: no-repeat;
+	background-size: 100%;
+}

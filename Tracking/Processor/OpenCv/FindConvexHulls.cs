@@ -17,8 +17,8 @@ using Point = System.Drawing.Point;
 
 namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 {
-    [ViewTemplate("Find Contours", "FindContours")]
-    public class FindContours : RgbProcessor
+    [ViewTemplate("Find Convex Hulls", "FindConvexHullsTemplate")]
+    public class FindConvexHulls : RgbProcessor
     {
         #region private fields
 
@@ -271,41 +271,6 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
                 RaisePropertyChanging(IsDrawCenterPropertyName);
                 _isDrawCenter = value;
                 RaisePropertyChanged(IsDrawCenterPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region MinDetectRightAngles
-
-        /// <summary>
-        /// The <see cref="MinDetectRightAngles" /> property's name.
-        /// </summary>
-        public const string MinDetectRightAnglesPropertyName = "MinDetectRightAngles";
-
-        private int _minDetectRightAngles = 3;
-
-        /// <summary>
-        /// Sets and gets the MinDetectRightAngles property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public int MinDetectRightAngles
-        {
-            get
-            {
-                return _minDetectRightAngles;
-            }
-
-            set
-            {
-                if (_minDetectRightAngles == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(MinDetectRightAnglesPropertyName);
-                _minDetectRightAngles = value;
-                RaisePropertyChanged(MinDetectRightAnglesPropertyName);
             }
         }
 
@@ -616,95 +581,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
                     if (currentContour.Area > MinContourArea) //only consider contours with area greater than 250
                     {
-                        outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
-
-                        //if (currentContour.Total == 3) //The contour has 3 vertices, it is a triangle
-                        //{
-                        //    //Point[] pts = currentContour.ToArray();
-                        //    //triangleList.Add(new Triangle2DF(
-                        //    //   pts[0],
-                        //    //   pts[1],
-                        //    //   pts[2]
-                        //    //   ));
-                        //}
-                        if (currentContour.Total >= 4) //The contour has 4 vertices.
-                        {
-                            #region determine if all the angles in the contour are within [80, 100] degree
-                            bool isRectangle = true;
-                            Point[] pts = currentContour.ToArray();
-                            LineSegment2D[] edges = PointCollection.PolyLine(pts, true);
-
-                            var rightAngle = 0;
-                            for (int i = 0; i < edges.Length; i++)
-                            {
-                                var angle = Math.Abs(edges[(i + 1) % edges.Length].GetExteriorAngleDegree(edges[i]));
-
-
-                                if (angle < MinAngle || angle > MaxAngle)
-                                {
-                                    //isRectangle = false;
-                                    break;
-                                }
-                                else
-                                {
-                                    rightAngle++;
-                                }
-                            }
-
-                            if (rightAngle < MinDetectRightAngles)
-                                isRectangle = false;
-
-                            #endregion
-
-                            //Log("Is Rectangle: {0}", isRectangle);
-
-                            if (isRectangle)
-                            {
-                                bool updated = false;
-
-                                foreach (var o in _objects)
-                                {
-                                    var oCenter = o.Shape.center;
-                                    var cCenter = currentContour.GetMinAreaRect().center;
-
-                                    //var distance = currentContour.Distance(shapeCenter);
-
-                                    var distance2 = Math.Sqrt(Math.Pow(oCenter.X - cCenter.X, 2) + Math.Pow(oCenter.Y - cCenter.Y, 2));
-
-                                    Log("Distance {0}", distance2);
-
-                                    if (distance2 < MaxDistanceRestoreId)
-                                    //if (currentContour.BoundingRectangle.IntersectsWith(o.Bounds))
-                                    {
-
-                                        o.LastUpdate = DateTime.Now;
-                                        o.Center = new Point((int) cCenter.X, (int) cCenter.Y);
-                                        o.Bounds = currentContour.BoundingRectangle;
-                                        o.Shape = currentContour.GetMinAreaRect();
-                                        o.Points = pts;
-
-                                        updated = true;
-                                    }
-                                }
-
-                                //_objects.RemoveAll(o => currentContour.BoundingRectangle.IntersectsWith(o.Bounds));
-
-                                if (!updated)
-                                {
-                                    var minAreaRect = currentContour.GetMinAreaRect();
-
-                                    _objects.Add(new RawObject
-                                    {
-                                        Id = GetNextId(),
-                                        LastUpdate = DateTime.Now,
-                                        Center = new Point((int)minAreaRect.center.X, (int)minAreaRect.center.Y),
-                                        Bounds = currentContour.BoundingRectangle,
-                                        Shape = minAreaRect,
-                                        Points = pts
-                                    });
-                                }
-                            }
-                        }
+                        outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.White, 2);
                     }
                 }
             }
@@ -756,7 +633,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
                 });
             }
 
-            Push();
+            //Push();
 
             grayImage.Dispose();
 

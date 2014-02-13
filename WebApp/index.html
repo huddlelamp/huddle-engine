@@ -1,0 +1,168 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Flocking Devices Demo</title>
+    <meta charset="utf-8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <script type="text/javascript" src="jquery-2.1.0.min.js"></script>
+    <script type="text/javascript" src="jquery.qrcode.min.js"></script>
+    <script type="text/javascript">
+
+        var defaultDeviceId = 1;
+        var deviceId = defaultDeviceId;
+
+        var reconnectTimeout;
+
+        var dimension = {
+            "width": 1024,
+            "height": 768
+        };
+
+        jQuery.fn.rotate = function(degrees) {
+            $(this).css({'-webkit-transform' : 'rotate('+ degrees +'deg)',
+                         '-moz-transform' : 'rotate('+ degrees +'deg)',
+                         '-ms-transform' : 'rotate('+ degrees +'deg)',
+                         'transform' : 'rotate('+ degrees +'deg)'});
+        };
+
+        function getParameterByName(name) {
+            name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+            return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+
+        function processProximity(data)
+        {
+            var location = data.Location.split(",");
+            var x = location[0];
+            var y = location[1];
+            var angle = data.Orientation;
+
+            //console.log(x + "/" + y);
+
+            var width = $('#peephole-canvas').width(); // 3840
+            var height = $('#peephole-canvas').height(); // 2160
+
+            //console.log(width + " / " + height);
+
+            var offsetLeft = width * x - (dimension['width'] / 2);
+            var offsetTop = height * y - (dimension['height'] / 2);
+
+            $('#peephole-canvas').css('left', -offsetLeft + "px");
+            $('#peephole-canvas').css('top', -offsetTop + "px");
+            //$('#peephole-canvas').rotate(parseInt(angle));
+        }
+
+        function openConnection() {
+
+            //alert("connect");
+
+            //var $ = jQuery;
+
+            // uses global 'conn' object
+            if (conn.readyState === undefined || conn.readyState > 1) {
+
+                conn = new WebSocket('ws://192.168.1.206:4711');
+
+                conn.onopen = function () {
+
+                    if (reconnectTimeout != null)
+                        clearTimeout(reconnectTimeout);
+
+                    conn.send(deviceId);
+                };
+
+                conn.onmessage = function (event) {
+                    if (!event || !event.data) return;
+
+                    var json = JSON.parse(event.data);
+
+                    if (!json) return;
+
+                    switch (json.DataType) {
+                        case 'Proximity':
+                            processProximity(json.Data);
+                            break;
+                        case 'Digital':
+                            if (json.Data.Value)
+                                $('#qrcode-container').show();
+                            else
+                                $('#qrcode-container').hide();
+                            break;
+                    }
+
+                    console.log(JSON.stringify(json));
+                };
+
+                conn.onerror = function (event) {
+                    console.log("Web Socket Error");
+
+                    if (reconnectTimeout != null)
+                        clearTimeout(reconnectTimeout);
+
+                    reconnectTimeout = setTimeout(function() {
+                        openConnection();
+                    }, 1000);
+                };
+
+
+                conn.onclose = function (event) {
+                    console.log("Web Socket Closed");
+
+                    if (reconnectTimeout != null)
+                        clearTimeout(reconnectTimeout);
+
+                    reconnectTimeout = setTimeout(function() {
+                        openConnection();
+                    }, 1000);
+                };
+            }
+        }
+
+        $(document).ready(function () {
+            
+            var id = getParameterByName("id");
+            if (id)
+                deviceId = id;
+
+            // disable touch to avoid moving scroll view
+            document.ontouchstart = function(e){ 
+                e.preventDefault(); 
+            }
+
+            conn = {}, window.WebSocket = window.WebSocket || window.MozWebSocket;
+            openConnection();
+
+            var windowWidth = $(window).width();
+            var windowHeight = $(window).height();
+            
+            var qrcodeSize = windowWidth > windowHeight ? windowHeight : windowWidth;
+
+            $('#qrcode').qrcode({
+                width: qrcodeSize - 40,
+                height: qrcodeSize - 40,
+                text: deviceId
+            });
+
+            $('#qrcode-container').width(windowWidth);
+            $('#qrcode-container').height(windowHeight);
+
+            //$('#device-viewport').width(windowWidth);
+            //$('#device-viewport').height(windowHeight);
+        });
+    </script>
+    <link rel="stylesheet" type="text/css" href="peephole.css">
+</head>
+<body>
+    <div id="peephole-canvas">
+        <!--<iframe width="3840" height="2160" src="//www.youtube.com/embed/wHYZoqRie8Q" frameborder="0"></iframe>-->
+    </div>
+    <div id="qrcode-container">
+        <div id="qrcode"></div>
+    </div>
+    <div id="debug"></div>
+</body>
+</html>
