@@ -254,13 +254,15 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
+        private bool _thresholdThreadRunning = false;
         private DateTime _lastUpdateTime;
 
         public override void Start()
         {
+            _thresholdThreadRunning = true;
             new Thread(() =>
             {
-                while (true)
+                while (_thresholdThreadRunning)
                 {
                     var timeDiff = (DateTime.Now - _lastUpdateTime).TotalMilliseconds;
                     if (timeDiff > 1000)
@@ -280,6 +282,13 @@ namespace Tools.FlockingDevice.Tracking.Processor
             }.Start();
 
             base.Start();
+        }
+
+        public override void Stop()
+        {
+            base.Stop();
+
+            _thresholdThreadRunning = false;
         }
 
         #region Data Processing
@@ -309,8 +318,6 @@ namespace Tools.FlockingDevice.Tracking.Processor
             // Remove all devices that are not present by a blob anymore
             DispatcherHelper.RunAsync(() => Devices.RemoveAll(device => blobs.All(b => b.Id != device.Id)));
 
-            var notForDevices = Devices.Select(d => d.DeviceId).ToList();
-
             foreach (var blob in blobs)
             {
                 // debug hook to check if update of devices works with blob only
@@ -319,34 +326,22 @@ namespace Tools.FlockingDevice.Tracking.Processor
                     var device = Devices.Single(d => d.Id == blob.Id);
                     device.X = blob.X * Width;
                     device.Y = blob.Y * Height;
+                    Stage(new Digital("ShowQrCode") { Value = false });
                     continue;
                 }
 
                 var blobPoint = new Point(blob.X, blob.Y);
 
-                var codes = qrCodes.Where(c => (new Point(c.X, c.Y) - blobPoint).Length < Distance);
+                var codes = qrCodes.Where(c => (new Point(c.X, c.Y) - blobPoint).Length < Distance).ToArray();
 
-                if (!codes.Any())
+                Stage(new Digital("ShowQrCode") { Value = !codes.Any() });
+
+                if (codes.Any())
                 {
-                    Stage(new Digital("ShowQrCode")
-                    {
-                        NotFor = notForDevices,
-                        Value = true
-                    });
-                    Push();
-                    continue;
+                    var code = codes.First();
+                    AddDevice(blob, code);
                 }
-
-                var code = codes.First();
-
-                Stage(new Digital("ShowQrCode")
-                {
-                    Id = code.Id,
-                    Value = false
-                });
                 Push();
-
-                AddDevice(blob, code);
             }
 
             return dataContainer;

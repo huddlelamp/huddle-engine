@@ -23,8 +23,6 @@ namespace Tools.FlockingDevice.Tracking.Processor.Network
         //private readonly ConcurrentDictionary<string, string> _clientIdToAddress = new ConcurrentDictionary<string, string>(); 
         private readonly ConcurrentDictionary<string, Client> _connectedClients = new ConcurrentDictionary<string, Client>();
 
-        private readonly ConcurrentDictionary<string, Client> _identifiedClients = new ConcurrentDictionary<string, Client>(); 
-
         #endregion
 
         #region ctor
@@ -59,14 +57,14 @@ namespace Tools.FlockingDevice.Tracking.Processor.Network
 
             _webSocketServer.OnReceive += context =>
             {
-                var address = context.ClientAddress.ToString();
-                var deviceId = context.DataFrame.ToString();
+                //var address = context.ClientAddress.ToString();
+                //var deviceId = context.DataFrame.ToString();
 
-                Client client;
-                _connectedClients.TryRemove(address, out client);
-                _identifiedClients.TryAdd(deviceId, client);
+                //Client client;
+                //_connectedClients.TryRemove(address, out client);
+                //_identifiedClients.TryAdd(deviceId, client);
 
-                Log("Identified {0} as {1}", address, deviceId);
+                //Log("Identified {0} as {1}", address, deviceId);
             };
             //_webSocketServer.OnSend += context => Log("Send {0}", context);
 
@@ -89,6 +87,11 @@ namespace Tools.FlockingDevice.Tracking.Processor.Network
                 _webSocketServer.Stop();
         }
 
+        public override IDataContainer PreProcess(IDataContainer dataContainer)
+        {
+            return base.PreProcess(dataContainer);
+        }
+
         public override IData Process(IData data)
         {
             var dataSerial = JsonConvert.SerializeObject(data);
@@ -96,21 +99,21 @@ namespace Tools.FlockingDevice.Tracking.Processor.Network
             // inject the data type
             var serial = string.Format("{{\"DataType\":\"{0}\",\"Data\":{1}}}", data.GetType().Name, dataSerial);
 
-            var proxemity = data as Proximity;
-            if (proxemity != null)
-            {
-                if (_identifiedClients.ContainsKey(proxemity.Identity))
-                {
-                    var client = _identifiedClients[proxemity.Identity];
-                    client.Send(serial);
-                    return null;
-                }
-            }
+            //var proxemity = data as Proximity;
+            //if (proxemity != null)
+            //{
+            //    if (_identifiedClients.ContainsKey(proxemity.Identity))
+            //    {
+            //        var client = _identifiedClients[proxemity.Identity];
+            //        client.Send(serial);
+            //        return null;
+            //    }
+            //}
 
-            foreach (var client in _identifiedClients.Values)
-            {
-                client.Send(serial);
-            }
+            //foreach (var client in _identifiedClients.Values)
+            //{
+            //    client.Send(serial);
+            //}
 
             foreach (var client in _connectedClients.Values)
             {
