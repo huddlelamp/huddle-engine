@@ -239,7 +239,7 @@
                     </ItemsControl.ItemContainerStyle>
                 </ItemsControl>
             </Grid>
-            <ItemsControl ItemsSource="{Binding Path=Devices}">
+            <!--<ItemsControl ItemsSource="{Binding Path=Devices}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <GroupBox Header="{Binding Path=Key}">
@@ -252,7 +252,7 @@
                         </GroupBox>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            </ItemsControl>-->
         </StackPanel>
     </DataTemplate>
 </ResourceDictionary>

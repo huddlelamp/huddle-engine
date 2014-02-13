@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -532,7 +533,8 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
             lock (_stagedDataLock)
             {
-                container.AddRange(StagedData);
+                foreach (var data in StagedData)
+                    container.Add(data);
                 StagedData.Clear();
             }
             
@@ -548,7 +550,9 @@ namespace Tools.FlockingDevice.Tracking.Processor
                 if (Logs.Count > 100)
                     Logs.RemoveAt(100);
 
-                Logs.Insert(0, string.Format(format, args));
+                var message = string.Format(format, args);
+
+                Logs.Insert(0, string.Format("[{0}] {1}", DateTime.Now, message));
             });
         }
 

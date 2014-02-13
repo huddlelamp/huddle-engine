@@ -81,6 +81,41 @@ namespace Tools.FlockingDevice.Tracking.Domain
 
         #endregion
 
+        #region DeviceId
+
+        /// <summary>
+        /// The <see cref="DeviceId" /> property's name.
+        /// </summary>
+        public const string DeviceIdPropertyName = "DeviceId";
+
+        private string _deviceId = string.Empty;
+
+        /// <summary>
+        /// Sets and gets the DeviceId property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string DeviceId
+        {
+            get
+            {
+                return _deviceId;
+            }
+
+            set
+            {
+                if (_deviceId == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DeviceIdPropertyName);
+                _deviceId = value;
+                RaisePropertyChanged(DeviceIdPropertyName);
+            }
+        }
+
+        #endregion
+
         #region X
 
         /// <summary>

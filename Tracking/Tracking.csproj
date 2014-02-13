@@ -122,6 +122,9 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Alchemy">
+      <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
+    </Reference>
     <Reference Include="Emgu.CV">
       <HintPath>..\..\..\..\..\..\Emgu\emgucv-windows-universal-cuda 2.9.0.1922\bin\Emgu.CV.dll</HintPath>
     </Reference>
@@ -150,6 +153,10 @@
     <Reference Include="Microsoft.Practices.ServiceLocation">
       <HintPath>..\packages\CommonServiceLocator.1.0\lib\NET35\Microsoft.Practices.ServiceLocation.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -166,6 +173,7 @@
       <HintPath>..\packages\Rx-PlatformServices.2.2.3\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.4.2.30.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
@@ -221,10 +229,12 @@
     <Compile Include="Data\BaseData.cs" />
     <Compile Include="Data\BlobData.cs" />
     <Compile Include="Data\DataContainer.cs" />
+    <Compile Include="Data\Digital.cs" />
     <Compile Include="Data\IData.cs" />
     <Compile Include="Data\IDataContainer.cs" />
     <Compile Include="Data\BaseImageData.cs" />
     <Compile Include="Data\LocationData.cs" />
+    <Compile Include="Data\Proximity.cs" />
     <Compile Include="Data\RgbImageData.cs" />
     <Compile Include="Controls\ExceptionMessageBox.xaml.cs">
       <DependentUpon>ExceptionMessageBox.xaml</DependentUpon>
@@ -252,6 +262,7 @@
     <Compile Include="Processor\BaseProcessor.cs" />
     <Compile Include="Processor\DataTypeFilter.cs" />
     <Compile Include="Processor\MergeProcessor.cs" />
+    <Compile Include="Processor\Network\WebSocketServer.cs" />
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
     <Compile Include="Processor\OpenCv\Filter\KalmanFilter.cs" />
     <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
@@ -333,6 +344,10 @@
     <Page Include="Pages\PipelinePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Templates\NetworkTemplates.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Templates\BasicTemplates.xaml">
       <Generator>MSBuild:Compile</Generator>

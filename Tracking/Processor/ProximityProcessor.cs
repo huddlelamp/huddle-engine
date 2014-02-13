@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -23,6 +24,14 @@ namespace Tools.FlockingDevice.Tracking.Processor
     [ViewTemplate("Proximity Processor", "ProximityProcessorTemplate")]
     public class ProximityProcessor : BaseProcessor
     {
+        #region member fields
+
+        private const string FakeDevicePrefix = "FakeDevice";
+
+        private long _fakeDeviceId;
+
+        #endregion
+
         #region commands
 
         public RelayCommand<SenderAwareEventArgs> AddFakeDeviceCommand { get; private set; }
@@ -230,7 +239,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
                 Devices.Add(new Device
                 {
                     Id = 999,
-                    Key = "FakeKey",
+                    Key = string.Format("{0}{1}", FakeDevicePrefix, ++_fakeDeviceId),
                     X = position.X,
                     Y = position.Y,
                     Angle = 0//Math.PI
@@ -245,10 +254,40 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         #endregion
 
+        private DateTime _lastUpdateTime;
+
+        public override void Start()
+        {
+            new Thread(() =>
+            {
+                while (true)
+                {
+                    var timeDiff = (DateTime.Now - _lastUpdateTime).TotalMilliseconds;
+                    if (timeDiff > 1000)
+                    {
+                        DispatcherHelper.RunAsync(() => Devices.Clear());
+                        ClearDrawModels();
+                        Thread.Sleep(1000);
+                    }
+                    else
+                    {
+                        Thread.Sleep((int) (1000 - timeDiff));   
+                    }
+                }
+            })
+            {
+                IsBackground = true
+            }.Start();
+
+            base.Start();
+        }
+
         #region Data Processing
 
         public override IDataContainer PreProcess(IDataContainer dataContainer)
         {
+            _lastUpdateTime = DateTime.Now;
+
             var blobs = dataContainer.OfType<BlobData>().ToList();
             var qrCodes = dataContainer.OfType<LocationData>().ToList();
 
@@ -270,6 +309,8 @@ namespace Tools.FlockingDevice.Tracking.Processor
             // Remove all devices that are not present by a blob anymore
             DispatcherHelper.RunAsync(() => Devices.RemoveAll(device => blobs.All(b => b.Id != device.Id)));
 
+            var notForDevices = Devices.Select(d => d.DeviceId).ToList();
+
             foreach (var blob in blobs)
             {
                 // debug hook to check if update of devices works with blob only
@@ -285,9 +326,25 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
                 var codes = qrCodes.Where(c => (new Point(c.X, c.Y) - blobPoint).Length < Distance);
 
-                if (!codes.Any()) continue;
+                if (!codes.Any())
+                {
+                    Stage(new Digital("ShowQrCode")
+                    {
+                        NotFor = notForDevices,
+                        Value = true
+                    });
+                    Push();
+                    continue;
+                }
 
                 var code = codes.First();
+
+                Stage(new Digital("ShowQrCode")
+                {
+                    Id = code.Id,
+                    Value = false
+                });
+                Push();
 
                 AddDevice(blob, code);
             }
@@ -309,11 +366,15 @@ namespace Tools.FlockingDevice.Tracking.Processor
                 {
                     if (Equals(device1, device2)) continue;
 
+                    if (device1.Key.StartsWith(FakeDevicePrefix)) continue;
+
                     var x = device2.X - device1.X;
                     var y = device2.Y - device1.Y;
 
+                    var distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
+
                     // device2 to device1 angle
-                    var globalAngle = Math.Atan(y/x).RandianToDegree();
+                    var globalAngle = Math.Atan(y / x).RandianToDegree();
 
                     if (x >= 0 && y < 0)
                         globalAngle = 90 + globalAngle;
@@ -328,9 +389,40 @@ namespace Tools.FlockingDevice.Tracking.Processor
                     var localAngle = globalAngle + (360 - device1.Angle); // angle -= (device1.Angle % 180);
                     localAngle %= 360;
 
-                    Log("Local Angle for {0} is {1} (Global Angle {2})", device1.Key, localAngle, globalAngle);
+                    var log = new StringBuilder();
+
+                    if (localAngle >= 225 && localAngle < 315)
+                        log.AppendFormat("Device {0} is right of device {1}", device1.Key, device2.Key);
+                    else if (localAngle >= 45 && localAngle < 135)
+                        log.AppendFormat("Device {0} is left of device {1}", device1.Key, device2.Key);
+                    else if (localAngle >= 135 && localAngle < 225)
+                        log.AppendFormat("Device {0} is top of device {1}", device1.Key, device2.Key);
+                    else //
+                        log.AppendFormat("Device {0} is bottom of device {1}", device1.Key, device2.Key);
+
+                    log.AppendFormat(" in a distance of {0}", distance);
+
+                    log.AppendFormat(" and its local angle is {0} (Global Angle {1})", localAngle, globalAngle);
+
+                    Log(log.ToString());
+
+                    //Stage(new Proximity(device1.Key)
+                    //{
+                    //    Identity = device1.Key,
+                    //    Location = new Point(device1.X, device1.Y),
+                    //    Orientation = globalAngle
+                    //});
                 }
+
+                Stage(new Proximity(device1.Key)
+                {
+                    Identity = device1.DeviceId,
+                    Location = new Point(device1.X / Width, device1.Y / Height),
+                    Orientation = device1.Angle
+                });
             }
+
+            Push();
 
             return null;
         }
@@ -349,6 +441,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
             DispatcherHelper.RunAsync(() => Devices.Add(new Device
             {
                 Id = blob.Id,
+                DeviceId = code.Id,
                 Key = code.Key,
                 X = blob.X * Width,
                 Y = blob.Y * Height,

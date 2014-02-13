@@ -170,6 +170,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.BarCodes
                 // Stage data for later push
                 Stage(new LocationData(string.Format("QrCode{0}", results[i].Text))
                 {
+                    Id = results[i].Text,
                     X = centerX / image.Width,
                     Y = centerY / image.Height,
                     Angle = qrOrientation

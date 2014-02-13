@@ -5,7 +5,7 @@ using Tools.FlockingDevice.Tracking.Processor;
 
 namespace Tools.FlockingDevice.Tracking.Data
 {
-    public class DataContainer : List<IData>, IDataContainer
+    public class DataContainer : List<IData>, IDataContainer //SynchronizedCollection<IData>, IDataContainer
     {
         #region private fields
 

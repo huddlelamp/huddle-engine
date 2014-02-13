@@ -4,6 +4,41 @@
     {
         #region properties
 
+        #region Id
+
+        /// <summary>
+        /// The <see cref="Id" /> property's name.
+        /// </summary>
+        public const string IdPropertyName = "Id";
+
+        private string _id = string.Empty;
+
+        /// <summary>
+        /// Sets and gets the Id property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Id
+        {
+            get
+            {
+                return _id;
+            }
+
+            set
+            {
+                if (_id == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IdPropertyName);
+                _id = value;
+                RaisePropertyChanged(IdPropertyName);
+            }
+        }
+
+        #endregion
+
         #region X
 
         /// <summary>

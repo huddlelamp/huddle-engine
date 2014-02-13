@@ -58,8 +58,8 @@
         </Style>
 
         <Style x:Key="ContainerStyle" TargetType="{x:Type Border}">
-            <Setter Property="BorderBrush" Value="Gainsboro" />
-            <Setter Property="Background" Value="DeepPink" />
+            <Setter Property="BorderBrush" Value="DeepPink" />
+            <Setter Property="Background" Value="Gainsboro" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="0" />
             <Setter Property="Margin" Value="0" />
@@ -149,7 +149,10 @@
 
                             <Expander Header="Logs"
                                   Grid.Row="1">
-                                <ScrollViewer Height="200">
+                                <ScrollViewer Width="400"
+                                              Height="200"
+                                              HorizontalScrollBarVisibility="Visible"
+                                              VerticalScrollBarVisibility="Visible"> 
                                     <ItemsControl ItemsSource="{Binding Path=Model.Logs}"
                                               FontFamily="Courier New"
                                               Background="White">

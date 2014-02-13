@@ -657,9 +657,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
                     }
                 }
             }
-
-            var container = new DataContainer(0, DateTime.Now);
-
+            
             foreach (var rawObject in _objects)
             {
                 //var orig = currentContour.BoundingRectangle.Location;
@@ -691,7 +689,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
 
                 outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFontBig, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
 
-                container.Add(new BlobData(string.Format("FindContours Id{0}", rawObject.Id))
+                Stage(new BlobData(string.Format("FindContours Id{0}", rawObject.Id))
                 {
                     Id = rawObject.Id,
                     X = (rawObject.EstimatedCenter.X) / (double) image.Width,
@@ -707,8 +705,7 @@ namespace Tools.FlockingDevice.Tracking.Processor.OpenCv
                 });
             }
 
-            if (container.Count > 0)
-                Publish(container);
+            Push();
 
             grayImage.Dispose();
 

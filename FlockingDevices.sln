@@ -61,8 +61,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emgu.CV.External", "Emgu.CV
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{02658324-73EF-4645-8861-C7EDD2A4B257}"
 	ProjectSection(SolutionItems) = preProject
+		assassins_creed_IV.png = assassins_creed_IV.png
 		Tracking\bin\Debug\Pipeline.xml = Tracking\bin\Debug\Pipeline.xml
 		README.md = README.md
+		websockettest.html = websockettest.html
 	EndProjectSection
 EndProject
 Global
