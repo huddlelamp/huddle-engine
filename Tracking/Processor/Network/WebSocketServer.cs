@@ -1,11 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization.Json;
-using System.Text;
-using System.Threading.Tasks;
-using Alchemy;
 using Alchemy.Classes;
 using Newtonsoft.Json;
 using Tools.FlockingDevice.Tracking.Data;
@@ -84,7 +78,10 @@ namespace Tools.FlockingDevice.Tracking.Processor.Network
             }
 
             if (_webSocketServer != null)
+            { 
                 _webSocketServer.Stop();
+                _webSocketServer.Dispose();
+            }
         }
 
         public override IDataContainer PreProcess(IDataContainer dataContainer)

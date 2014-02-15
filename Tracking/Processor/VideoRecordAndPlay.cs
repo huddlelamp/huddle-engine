@@ -1,14 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.Compression;
+using System.IO.Packaging;
 using System.Linq;
+using System.Net.Mime;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media.Animation;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using GalaSoft.MvvmLight.Command;
+using Microsoft.Win32;
 using Tools.FlockingDevice.Tracking.Data;
 using Tools.FlockingDevice.Tracking.Util;
 
@@ -19,8 +26,22 @@ namespace Tools.FlockingDevice.Tracking.Processor
     {
         #region private fields
 
-        private readonly Dictionary<string, VideoWriter> _recorders = new Dictionary<string, VideoWriter>();
+        private readonly Dictionary<VideoMetadata, VideoWriter> _recorders = new Dictionary<VideoMetadata, VideoWriter>();
         private Capture _player;
+
+        private string _tempRecordingPath;
+
+        private bool _isRecording;
+
+        #endregion
+
+        #region commands
+
+        public RelayCommand PlayCommand { get; private set; }
+
+        public RelayCommand StopCommand { get; private set; }
+
+        public RelayCommand RecordCommand { get; private set; }
 
         #endregion
 
@@ -140,6 +161,66 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         public VideoRecordAndPlay()
         {
+            #region commands
+
+            PlayCommand = new RelayCommand(() =>
+            {
+
+            });
+
+            StopCommand = new RelayCommand(() =>
+            {
+                if (!_isRecording) return;
+
+                _isRecording = false;
+
+                var fileDialog = new SaveFileDialog { Filter = "Flocking Device Recording|.zip.fdr" };
+
+                var result = fileDialog.ShowDialog(Application.Current.MainWindow);
+
+                if (!result.Value) return;
+
+                var task = Task.Factory.StartNew(() =>
+                {
+                    // stop recorders, otherwise the video data cannot be stored in zip archive
+                    foreach (var recorder in _recorders.Values)
+                        recorder.Dispose();
+
+                    var metadata = new Metadata { Items = _recorders.Keys.ToList() };
+
+                    var serializer = new XmlSerializer(typeof(Metadata));
+                    using (var stream = new FileStream(GetTempFilePath(".metadata"), FileMode.Create))
+                        serializer.Serialize(stream, metadata);
+
+                    if (File.Exists(fileDialog.FileName))
+                        File.Delete(fileDialog.FileName);
+
+                    ZipFile.CreateFromDirectory(_tempRecordingPath, fileDialog.FileName, CompressionLevel.Optimal, false);
+
+                    // cleanup resources
+                    if (Directory.Exists(_tempRecordingPath))
+                        Directory.Delete(_tempRecordingPath, true);
+                });
+                task.ContinueWith(t =>
+                {
+                    MessageBox.Show("Video recording saved.", "Recordings");
+                });
+            });
+
+            RecordCommand = new RelayCommand(() =>
+            {
+                if (_isRecording) return;
+
+                _tempRecordingPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+                if (!Directory.Exists(_tempRecordingPath))
+                    Directory.CreateDirectory(_tempRecordingPath);
+
+                _isRecording = true;
+            });
+
+            #endregion
+
             PropertyChanged += (s, e) =>
             {
                 switch (e.PropertyName)
@@ -196,7 +277,7 @@ namespace Tools.FlockingDevice.Tracking.Processor
         {
             var imageData = data as RgbImageData;
 
-            if (imageData != null)
+            if (_isRecording && imageData != null)
                 Record(imageData);
 
             return data;
@@ -209,15 +290,32 @@ namespace Tools.FlockingDevice.Tracking.Processor
 
         public void Record(RgbImageData imageData)
         {
-            if (!_recorders.ContainsKey(imageData.Key))
+            if (!_recorders.Any(kvp => Equals(kvp.Key.Key, imageData.Key)))
             {
-                var width = imageData.Image.Width;
-                var height = imageData.Image.Height;
-                var filename = string.Format("{0}_{1}_{2}x{3}_{4}.avi", Filename, imageData.Key, width, height, Fps);
-                _recorders.Add(imageData.Key, new VideoWriter(filename, Fps, width, height, true));
+                //var width = imageData.Image.Width;
+                //var height = imageData.Image.Height;
+                //var filename = string.Format("{0}_{1}_{2}x{3}_{4}.avi", Filename, imageData.Key, width, height, Fps);
+
+                var videoMetadata = new VideoMetadata
+                {
+                    Key = imageData.Key,
+                    FileName = string.Format("{0}{1}", imageData.Key, ".avi"),
+                    Width = imageData.Image.Width,
+                    Height = imageData.Image.Height,
+                    Fps = Fps
+                };
+
+                _recorders.Add(videoMetadata, new VideoWriter(
+                    GetTempFilePath(videoMetadata.FileName),
+                    Fps,
+                    videoMetadata.Width,
+                    videoMetadata.Height,
+                    true)
+                );
             }
 
-            var recorder = _recorders[imageData.Key];
+            // TODO: The _recorders.Single may raise an exception if sequence is empty or multiple items in sequence match
+            var recorder = _recorders.Single(kvp => Equals(kvp.Key.Key, imageData.Key)).Value;
 
             //_recorder = new VideoWriter(Filename, 10, 320, 240, true);
             if (recorder != null)
@@ -251,5 +349,85 @@ namespace Tools.FlockingDevice.Tracking.Processor
             foreach (var recorder in _recorders.Values)
                 recorder.Dispose();
         }
+
+        public string GetTempFilePath(string fileName, string extension = null)
+        {
+            fileName = string.Format("{0}{1}", fileName, extension ?? "");
+            return Path.Combine(_tempRecordingPath, fileName);
+        }
+    }
+
+    [XmlRoot]
+    public class Metadata
+    {
+        #region properties
+
+        #region Items
+
+        [XmlArray]
+        [XmlArrayItem]
+        public List<VideoMetadata> Items { get; set; }
+
+        #endregion
+
+        #endregion
+    }
+
+    [XmlType]
+    public class VideoMetadata
+    {
+        #region properties
+
+        #region Key
+
+        [XmlAttribute]
+        public string Key { get; set; }
+
+        #endregion
+
+        #region FileName
+
+        [XmlAttribute]
+        public string FileName { get; set; }
+
+        #endregion
+
+        #region Width
+
+        [XmlElement]
+        public int Width { get; set; }
+
+        #endregion
+
+        #region Height
+
+        [XmlElement]
+        public int Height { get; set; }
+
+        #endregion
+
+        #region Fps
+
+        [XmlElement]
+        public int Fps { get; set; }
+
+        #endregion
+
+        #endregion
+
+        #region Override Equals and HashCode
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as VideoMetadata;
+            return other != null && Equals(Key, other.Key);
+        }
+
+        public override int GetHashCode()
+        {
+            return Key.GetHashCode();
+        }
+
+        #endregion
     }
 }

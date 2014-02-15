@@ -48,7 +48,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
         public RelayCommand OpenCommand { get; private set; }
         public RelayCommand SaveCommand { get; private set; }
 
-        public RelayCommand<ProcessorViewModelBase<BaseProcessor>> MoveZIndexUpCommand { get; private set; } 
+        public RelayCommand<ProcessorViewModelBase<BaseProcessor>> MoveZIndexUpCommand { get; private set; }
 
         public RelayCommand<SenderAwareEventArgs> StrokeCollectedCommand { get; private set; }
 
@@ -63,7 +63,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
         #region Zoombox commands
 
-        public RelayCommand<SenderAwareEventArgs> ZoomCommand { get; private set; } 
+        public RelayCommand<SenderAwareEventArgs> ZoomCommand { get; private set; }
 
         #endregion
 
@@ -316,7 +316,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
                 if (sender == null || e == null) return;
 
-                var zoom = e.Delta/500.0;
+                var zoom = e.Delta / 500.0;
 
                 sender.Zoom(zoom, e.GetPosition(sender));
             });
@@ -404,7 +404,7 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
 
                 if (target != null)
                     target.Sources.Remove(source);
-                
+
                 Pipes.Remove(vm);
             }
         }
@@ -475,7 +475,11 @@ namespace Tools.FlockingDevice.Tracking.ViewModel
                 }
 
                 var bakFilename = String.Format("{0}.bak", Settings.Default.DefaultPipelineFileName);
-                File.Replace(tempFilename, fileName, bakFilename);
+
+                if (File.Exists(fileName))
+                    File.Replace(tempFilename, fileName, bakFilename);
+                else
+                    File.Move(tempFilename, fileName);
             }
             catch (Exception e)
             {

@@ -46,42 +46,73 @@
     </DataTemplate>
 
     <DataTemplate x:Key="VideoRecordAndPlay" DataType="processor:VideoRecordAndPlay">
-        <StackPanel>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-                <GroupBox Header="Pre Processed Image"
-                          Grid.Column="0">
-                    <Image Source="{Binding Path=PreProcessImage}" />
-                </GroupBox>
-                <GroupBox Header="Post Processed Image"
-                          Grid.Column="1">
-                    <Image Source="{Binding Path=PostProcessImage}" />
-                </GroupBox>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Fps"/>
+                <Slider Grid.Column="1" Value="{Binding Path=Fps}"
+                        TickFrequency="5"
+                        TickPlacement="BottomRight"
+                        AutoToolTipPlacement="TopLeft"
+                        AutoToolTipPrecision="0"
+                        Minimum="0"
+                        Maximum="100" />
+                <TextBlock Grid.Column="2" Text="{Binding Path=Fps}"/>
             </Grid>
 
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Fps"/>
-                <Slider Value="{Binding Path=Fps}" Width="340" Height="25" Minimum="0" Maximum="100" />
-                <TextBlock Text="{Binding Path=Fps}"/>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
                 <Label Content="Mode"/>
                 <ComboBox ItemsSource="{Binding Path=Modes}"
                           SelectedValue="{Binding Path=Mode}" />
                 <Button Content="Apply" />
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Grid.Row="2" Orientation="Horizontal">
                 <Label Content="Filename"/>
                 <TextBox Width="200" Text="{Binding Path=Filename}" />
                 <Button Content="Apply" />
             </StackPanel>
-        </StackPanel>
+
+            <Grid Grid.Row="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0">
+                    <Image Source="/FlockingDevice.Tracking;component/Resources/record.png" />
+                </Button>
+                <Button Grid.Column="1">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <command:EventToCommand Command="{Binding Path=StopCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                    <Image Source="/FlockingDevice.Tracking;component/Resources/stop.png">
+                    </Image>
+                </Button>
+                <Button Grid.Column="2">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <command:EventToCommand Command="{Binding Path=RecordCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                    <Image Source="/FlockingDevice.Tracking;component/Resources/record.png" />
+                </Button>
+            </Grid>
+        </Grid>
     </DataTemplate>
 
     <DataTemplate x:Key="Merge" DataType="processor:MergeProcessor">
@@ -164,7 +195,7 @@
             </ItemsControl>
         </StackPanel>
     </DataTemplate>
-    
+
     <DataTemplate x:Key="ProximityProcessorTemplate" DataType="processor:ProximityProcessor">
         <StackPanel>
             <StackPanel Orientation="Horizontal">
