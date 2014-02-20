@@ -4,4 +4,4 @@ publish/
 packages/
 *.pfx
 *.suo
-*.DotSettings
+*.bak

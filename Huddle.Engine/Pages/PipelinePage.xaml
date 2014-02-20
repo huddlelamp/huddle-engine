@@ -1,0 +1,324 @@
+﻿<UserControl x:Class="Huddle.Engine.Pages.PipelinePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:command="http://www.galasoft.ch/mvvmlight"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:viewModel="clr-namespace:Huddle.Engine.ViewModel"
+             xmlns:view="clr-namespace:Huddle.Engine.View"
+             xmlns:util="clr-namespace:Huddle.Engine.Util"
+             xmlns:controls="clr-namespace:Huddle.Engine.Controls"
+             xmlns:behaviors="clr-namespace:Huddle.Engine.Behaviors"
+             xmlns:inkCanvas="clr-namespace:Huddle.Engine.InkCanvas"
+             mc:Ignorable="d" 
+             d:DesignWidth="1920"
+             d:DesignHeight="1080"
+             DataContext="{Binding Source={StaticResource ResourceKey=Locator}, Path=Main.Pipeline}">
+    <UserControl.Resources>
+
+        <DataTemplate DataType="{x:Type viewModel:PipeViewModel}">
+            <view:Pipe DataContext="{Binding}" />
+        </DataTemplate>
+
+        <util:ProcessorTemplateSelector x:Key="ProcessorViewTemplateSelector" />
+
+        <util:ProcessorContainerStyleSelector x:Key="ProcessorViewContainerStyleSelector">
+            <util:ProcessorContainerStyleSelector.FilterStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Panel.ZIndex" Value="{Binding Path=Model.ZIndex}" />
+                    <Setter Property="Canvas.Left" Value="{Binding Path=Model.X}" />
+                    <Setter Property="Canvas.Top" Value="{Binding Path=Model.Y}" />
+                </Style>
+            </util:ProcessorContainerStyleSelector.FilterStyle>
+            <util:ProcessorContainerStyleSelector.PipeStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Panel.ZIndex" Value="1" />
+                </Style>
+            </util:ProcessorContainerStyleSelector.PipeStyle>
+        </util:ProcessorContainerStyleSelector>
+
+        <Style TargetType="{x:Type Slider}">
+            <Setter Property="Margin" Value="5" />
+        </Style>
+        <Style TargetType="{x:Type Image}">
+            <Setter Property="Margin" Value="5" />
+        </Style>
+
+        <Style x:Key="ListItemHeaderStyle" TargetType="{x:Type Label}">
+            <!--<Setter Property="FontFamily" Value="SegoeUI" />-->
+            <!--<Setter Property="FontWeight" Value="Light" />-->
+            <!--<Setter Property="FontSize" Value="18" />-->
+        </Style>
+        <Style x:Key="ListItemStyle" TargetType="{x:Type Label}">
+            <!--<Setter Property="FontFamily" Value="SegoeUI" />-->
+            <!--<Setter Property="FontWeight" Value="Light" />-->
+            <!--<Setter Property="FontSize" Value="18" />-->
+        </Style>
+
+        <Style x:Key="ContainerStyle" TargetType="{x:Type Border}">
+            <Setter Property="BorderBrush" Value="DeepPink" />
+            <Setter Property="Background" Value="Gainsboro" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Margin" Value="0" />
+        </Style>
+
+        <Style x:Key="ContainerRemoveableBoxStyle" TargetType="{x:Type controls:RemovableExpander}">
+            <!--<Setter Property="FontFamily" Value="SegoeUI" />-->
+            <!--<Setter Property="FontSize" Value="18" />-->
+            <Setter Property="Margin" Value="0" />
+        </Style>
+
+        <DataTemplate x:Key="ProcessorTemplate" DataType="viewModel:NodeViewModel">
+            <Border Style="{StaticResource ResourceKey=ContainerStyle}"
+                    MinWidth="100" MinHeight="100"
+                    AllowDrop="True">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="PreviewMouseDown">
+                        <command:EventToCommand Command="{Binding Path=Pipeline.MoveZIndexUpCommand, Mode=OneWay}" CommandParameter="{Binding}" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="DragEnter">
+                        <command:EventToCommand Command="{Binding Path=DragEnterCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="DragLeave">
+                        <command:EventToCommand Command="{Binding Path=DragLeaveCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="DragOver">
+                        <command:EventToCommand Command="{Binding Path=DragOverCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30" />
+                        </Grid.RowDefinitions>
+
+                        <Rectangle Grid.Column="0" Fill="Red"
+                                   AllowDrop="True">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Drop">
+                                    <command:EventToCommand Command="{Binding Path=DropSourceCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Rectangle>
+                        <Rectangle Grid.Column="1" Fill="LawnGreen">
+                            <i:Interaction.Behaviors>
+                                <behaviors:DragDropBehavior X="{Binding Path=Model.X, Mode=TwoWay}"  Y="{Binding Path=Model.Y, Mode=TwoWay}"
+                                                            Scale="{Binding Path=Pipeline.Model.Scale, Mode=OneWay}"/>
+                            </i:Interaction.Behaviors>
+                        </Rectangle>
+                        <Rectangle Grid.Column="1" Fill="Yellow"
+                                   Visibility="{Binding Path=IsDragOver, Converter={util:BoolToVisibilityConverter}}">
+                        </Rectangle>
+                        <Rectangle Grid.Column="2" Fill="Orange">
+                            <i:Interaction.Triggers>
+                                <util:EventTriggerAdvanced EventName="MouseDown">
+                                    <command:EventToCommand Command="{Binding Path=DragSourceStartCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </util:EventTriggerAdvanced>
+                                <util:EventTriggerAdvanced EventName="MouseMove">
+                                    <command:EventToCommand Command="{Binding Path=DragSourceMoveCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </util:EventTriggerAdvanced>
+                                <util:EventTriggerAdvanced EventName="PreviewMouseUp">
+                                    <command:EventToCommand Command="{Binding Path=DragSourceEndCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </util:EventTriggerAdvanced>
+                            </i:Interaction.Triggers>
+                        </Rectangle>
+                    </Grid>
+                    <controls:RemovableExpander Header="{Binding Path=Model.Metadata.Name}" IsExpanded="{Binding Path=Model.IsRenderContent}"
+                                                Style="{StaticResource ResourceKey=ContainerRemoveableBoxStyle}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Remove">
+                                <command:EventToCommand Command="{Binding Path=RemoveCommand, Mode=OneWay}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <Grid Margin="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <ContentPresenter Grid.Row="0" Content="{Binding Path=Model}"
+                                              ContentTemplateSelector="{StaticResource ResourceKey=ProcessorViewTemplateSelector}" />
+
+                            <Expander Header="Logs"
+                                  Grid.Row="1">
+                                <ScrollViewer Width="400"
+                                              Height="200"
+                                              HorizontalScrollBarVisibility="Visible"
+                                              VerticalScrollBarVisibility="Visible"> 
+                                    <ItemsControl ItemsSource="{Binding Path=Model.Logs}"
+                                              FontFamily="Courier New"
+                                              Background="White">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel>
+                                                    <Label Content="{Binding}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Expander>
+                        </Grid>
+                    </controls:RemovableExpander>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ListViewTemplate" DataType="{x:Type util:ViewTemplateAttribute}">
+            <Grid>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                        <command:EventToCommand Command="{Binding Path=Main.Pipeline.DragInitiateCommand, Source={StaticResource ResourceKey=Locator}, Mode=OneWay}" PassEventArgsToCommand="True" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Image Source="{Binding Path=Icon}"
+                       Width="30" Height="30" />
+
+                <Label Grid.Column="1" Content="{Binding Path=Name}"
+                       Style="{StaticResource ResourceKey=ListItemStyle}">
+                </Label>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal"
+                    Background="DeepSkyBlue"
+                    Grid.Row="0">
+            <Button IsEnabled="{Binding Path=Mode, Mode=OneWay, Converter={util:PipelineModeToBoolConverter Mode=Stopped}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=StartCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <Image Source="/Huddle.Engine;component/Resources/play.png" />
+            </Button>
+            <Button IsEnabled="{Binding Path=Mode, Mode=OneWay, Converter={util:PipelineModeToBoolConverter Mode=Started}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=StopCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <Image Source="/Huddle.Engine;component/Resources/stop.png" />
+            </Button>
+            <!--<Button IsEnabled="{Binding Path=Mode, Mode=OneWay, Converter={util:PipelineModeToBoolConverter Mode=Started}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=PauseCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <Image Source="/Huddle.Engine;component/Resources/pause.png" />
+            </Button>-->
+            <Button IsEnabled="{Binding Path=Mode, Mode=OneWay, Converter={util:PipelineModeToBoolConverter Mode=Stopped}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=NewCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <Image Source="/Huddle.Engine;component/Resources/32x32/add_file.png" />
+            </Button>
+            <Button>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=OpenCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <Image Source="/Huddle.Engine;component/Resources/32x32/folder.png" />
+            </Button>
+            <Button IsEnabled="{Binding Mode=OneWay, Converter={util:NullToBoolConverter}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=SaveCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <Image Source="/Huddle.Engine;component/Resources/32x32/save_as.png" />
+            </Button>
+        </StackPanel>
+
+        <Grid Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <Label Content="Processors" Style="{StaticResource ResourceKey=ListItemHeaderStyle}" />
+                <ListView ItemsSource="{Binding Path=ProcessorTypes}"
+                          ItemTemplate="{StaticResource ResourceKey=ListViewTemplate}"
+                          Margin="0" />
+            </StackPanel>
+
+            <Grid Grid.Column="1">
+                <xctk:Zoombox x:Name="ZoomCanvas" Background="Transparent"
+                              Scale="{Binding Path=Model.Scale, Mode=TwoWay}"
+                              AutoWrapContentWithViewbox="True"
+                              AllowDrop="True"
+                              MaxScale="5"
+                              MinScale="0.1">
+                    <i:Interaction.Triggers>
+                        <util:EventTriggerAdvanced EventName="MouseWheel">
+                            <command:EventToCommand Command="{Binding Path=ZoomCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                        </util:EventTriggerAdvanced>
+                        <util:EventTriggerAdvanced EventName="Drop">
+                            <command:EventToCommand Command="{Binding Path=DropProcessorCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                        </util:EventTriggerAdvanced>
+                    </i:Interaction.Triggers>
+                    <xctk:Zoombox.ViewStack>
+                        <xctk:ZoomboxView>Fit</xctk:ZoomboxView>
+                    </xctk:Zoombox.ViewStack>
+                    <Grid Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
+                          Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}">
+                        <ItemsControl ItemsSource="{Binding Path=Pipes, Mode=OneWay}"
+                                      ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas Width="{Binding ElementName=ZoomCanvas, Path=Width}"
+                                            Height="{Binding ElementName=ZoomCanvas, Path=Height}"
+                                            Background="DarkTurquoise" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+
+                        <ItemsControl ItemsSource="{Binding Path=Processors, Mode=OneWay}"
+                              ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}"
+                              ItemTemplate="{StaticResource ResourceKey=ProcessorTemplate}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <inkCanvas:AdvancedInkCanvas x:Name="InkCanvas" Background="Transparent" IsDrawingEnabled="True" IsMouseEnabled="True"
+                                                                 Scale="{Binding Path=Model.Scale, Mode=OneWay}"
+                                                                 Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
+                                                                 Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}">
+                                        <i:Interaction.Triggers>
+                                            <util:EventTriggerAdvanced EventName="StrokeCollected">
+                                                <command:EventToCommand Command="{Binding Path=StrokeCollectedCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                            </util:EventTriggerAdvanced>
+                                        </i:Interaction.Triggers>
+                                    </inkCanvas:AdvancedInkCanvas>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </Grid>
+                </xctk:Zoombox>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
