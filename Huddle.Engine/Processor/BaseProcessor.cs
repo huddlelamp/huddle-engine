@@ -447,7 +447,7 @@ namespace Huddle.Engine.Processor
         {
             // Pipe data through if processing is turned off
             if (!_processing)
-            { 
+            {
                 Publish(dataContainer);
                 return;
             }
@@ -480,7 +480,7 @@ namespace Huddle.Engine.Processor
                 IData processedData = null;
                 try
                 {
-                     processedData = Process(data);
+                    processedData = Process(data);
                 }
                 catch (Exception e)
                 {
@@ -516,6 +516,14 @@ namespace Huddle.Engine.Processor
             }
         }
 
+        protected void Stage(params IData[] data)
+        {
+            foreach (var d in data)
+            {
+                Stage(d);
+            }
+        }
+
         protected void Push()
         {
             // Do not publish if staged data is empty
@@ -533,7 +541,7 @@ namespace Huddle.Engine.Processor
                     container.Add(data);
                 StagedData.Clear();
             }
-            
+
             Publish(container);
         }
 

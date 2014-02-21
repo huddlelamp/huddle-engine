@@ -218,7 +218,7 @@ namespace Huddle.Engine.Processor
                 var blobs = dataContainer.OfType<BlobData>().ToList();
                 DispatcherHelper.RunAsync(() =>
                 {
-                    var removed = Devices.RemoveAll(device => blobs.All(b => b.Id != device.Id));
+                    var removed = Devices.RemoveAll(device => blobs.All(b => b.Id != device.BlobId));
                     Console.WriteLine("Removed {0}", removed);
                 });
             }
@@ -258,9 +258,9 @@ namespace Huddle.Engine.Processor
 
                 AddDrawModel(blob.X * Width, blob.Y * Height, Brushes.DeepPink, 1);
 
-                if (Devices.All(d => d.Id != blob.Id)) return null;
+                if (Devices.All(d => d.BlobId != blob.Id)) return null;
 
-                var device = Devices.Single(d => d.Id == blob.Id);
+                var device = Devices.Single(d => d.BlobId == blob.Id);
                 device.X = blob.X * Width;
                 device.Y = blob.Y * Height;
             }
@@ -275,9 +275,9 @@ namespace Huddle.Engine.Processor
                 foreach (var blob in _blobs)
                 {
                     // debug hook to check if update of devices works with blob only
-                    if (Devices.Any(d => d.Id == blob.Id))
+                    if (Devices.Any(d => d.BlobId == blob.Id))
                     {
-                        var device = Devices.Single(d => d.Id == blob.Id);
+                        var device = Devices.Single(d => d.BlobId == blob.Id);
                         device.Angle = loc.Angle;
                         continue;
                     }
@@ -293,10 +293,9 @@ namespace Huddle.Engine.Processor
                     {
                         var blob1 = blob;
                         DispatcherHelper.RunAsync(() =>
-                            Devices.Add(new Device
+                            Devices.Add(new Device(loc.Key)
                             {
-                                Id = blob1.Id,
-                                Key = loc.Key,
+                                BlobId = blob1.Id,
                                 X = blob1.X * Width,
                                 Y = blob1.Y * Height,
                                 Angle = loc.Angle

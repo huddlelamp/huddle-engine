@@ -1,76 +1,42 @@
 ﻿using GalaSoft.MvvmLight;
+using Huddle.Engine.Data;
 
 namespace Huddle.Engine.Domain
 {
-    public class Device : ObservableObject
+    public class Device : BaseData
     {
         #region properties
 
-        #region Id
+        #region BlobId
 
         /// <summary>
-        /// The <see cref="Id" /> property's name.
+        /// The <see cref="BlobId" /> property's name.
         /// </summary>
-        public const string IdPropertyName = "Id";
+        public const string BlobIdPropertyName = "BlobId";
 
-        private long _id;
+        private long _blobId;
 
         /// <summary>
-        /// Sets and gets the Id property.
+        /// Sets and gets the BlobId property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public long Id
+        public long BlobId
         {
             get
             {
-                return _id;
+                return _blobId;
             }
 
             set
             {
-                if (_id == value)
+                if (_blobId == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(IdPropertyName);
-                _id = value;
-                RaisePropertyChanged(IdPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region Key
-
-        /// <summary>
-        /// The <see cref="Key" /> property's name.
-        /// </summary>
-        public const string KeyPropertyName = "Key";
-
-        private string _key = string.Empty;
-
-        /// <summary>
-        /// Sets and gets the Key property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string Key
-        {
-            get
-            {
-                return _key;
-            }
-
-            set
-            {
-                if (_key == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(KeyPropertyName);
-                _key = value;
-                RaisePropertyChanged(KeyPropertyName);
+                RaisePropertyChanging(BlobIdPropertyName);
+                _blobId = value;
+                RaisePropertyChanged(BlobIdPropertyName);
             }
         }
 
@@ -106,6 +72,41 @@ namespace Huddle.Engine.Domain
                 RaisePropertyChanging(DeviceIdPropertyName);
                 _deviceId = value;
                 RaisePropertyChanged(DeviceIdPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region IsIdentified
+
+        /// <summary>
+        /// The <see cref="IsIdentified" /> property's name.
+        /// </summary>
+        public const string IsIdentifiedPropertyName = "IsIdentified";
+
+        private bool _isIdentified = false;
+
+        /// <summary>
+        /// Sets and gets the IsIdentified property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsIdentified
+        {
+            get
+            {
+                return _isIdentified;
+            }
+
+            set
+            {
+                if (_isIdentified == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsIdentifiedPropertyName);
+                _isIdentified = value;
+                RaisePropertyChanged(IsIdentifiedPropertyName);
             }
         }
 
@@ -217,5 +218,32 @@ namespace Huddle.Engine.Domain
         #endregion
 
         #endregion
+
+        #region ctor
+
+        public Device(string key)
+            : base(key)
+        {
+        }
+
+        #endregion
+
+        public override IData Copy()
+        {
+            return new Device(Key)
+            {
+                Angle = Angle,
+                DeviceId = DeviceId,
+                BlobId = BlobId,
+                IsIdentified = IsIdentified,
+                X = X,
+                Y = Y
+            };
+        }
+
+        public override void Dispose()
+        {
+            
+        }
     }
 }

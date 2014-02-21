@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Windows;
+using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml.Serialization;
@@ -26,6 +29,9 @@ namespace Huddle.Engine.Processor
         private const string FakeDevicePrefix = "FakeDevice";
 
         private long _fakeDeviceId;
+
+        private readonly object _deviceLock = new object();
+        private readonly object _drawModelsLock = new object();
 
         #endregion
 
@@ -222,6 +228,10 @@ namespace Huddle.Engine.Processor
 
         public ProximityProcessor()
         {
+            // Make collection accessible in current processor thread => UI Thread
+            DispatcherHelper.CheckBeginInvokeOnUI(() => BindingOperations.EnableCollectionSynchronization(Devices, _deviceLock));
+            DispatcherHelper.CheckBeginInvokeOnUI(() => BindingOperations.EnableCollectionSynchronization(DrawModels, _drawModelsLock));
+
             AddFakeDeviceCommand = new RelayCommand<SenderAwareEventArgs>(args =>
             {
                 var sender = args.Sender as IInputElement;
@@ -233,10 +243,11 @@ namespace Huddle.Engine.Processor
 
                 e.Handled = true;
 
-                Devices.Add(new Device
+                Devices.Add(new Device(string.Format("{0}{1}", FakeDevicePrefix, ++_fakeDeviceId))
                 {
-                    Id = 999,
-                    Key = string.Format("{0}{1}", FakeDevicePrefix, ++_fakeDeviceId),
+                    BlobId = 999,
+                    DeviceId = "999",
+                    IsIdentified = true,
                     X = position.X,
                     Y = position.Y,
                     Angle = 0//Math.PI
@@ -256,6 +267,8 @@ namespace Huddle.Engine.Processor
 
         public override void Start()
         {
+            #region Timeout Handling
+
             _thresholdThreadRunning = true;
             new Thread(() =>
             {
@@ -264,19 +277,21 @@ namespace Huddle.Engine.Processor
                     var timeDiff = (DateTime.Now - _lastUpdateTime).TotalMilliseconds;
                     if (timeDiff > 1000)
                     {
-                        DispatcherHelper.RunAsync(() => Devices.Clear());
+                        Devices.Clear();
                         ClearDrawModels();
                         Thread.Sleep(1000);
                     }
                     else
                     {
-                        Thread.Sleep((int) (1000 - timeDiff));   
+                        Thread.Sleep((int)(1000 - timeDiff));
                     }
                 }
             })
             {
                 IsBackground = true
             }.Start();
+
+            #endregion
 
             base.Start();
         }
@@ -292,53 +307,60 @@ namespace Huddle.Engine.Processor
 
         public override IDataContainer PreProcess(IDataContainer dataContainer)
         {
+            // Update last update timer that will be used by timeout handling
             _lastUpdateTime = DateTime.Now;
 
             var blobs = dataContainer.OfType<BlobData>().ToList();
             var qrCodes = dataContainer.OfType<LocationData>().ToList();
 
-            foreach (var blob in blobs)
-                qrCodes.Remove(blob);
-
-            #region Update DrawModels
-
-            ClearDrawModels();
-
-            foreach (var blob in blobs)
-                AddDrawModel(blob.X * Width, blob.Y * Height, Brushes.DeepPink, 1);
-
-            foreach (var code in qrCodes)
-                AddDrawModel(code.X * Width, code.Y * Height, Brushes.DeepSkyBlue, 2);
-
-            #endregion
+            // Update view
+            UpdateView(blobs, qrCodes);
 
             // Remove all devices that are not present by a blob anymore
-            DispatcherHelper.RunAsync(() => Devices.RemoveAll(device => blobs.All(b => b.Id != device.Id)));
+            Devices.RemoveAll(device => blobs.All(b => b.Id != device.BlobId));
 
             foreach (var blob in blobs)
             {
                 // debug hook to check if update of devices works with blob only
-                if (Devices.Any(d => d.Id == blob.Id))
+                if (Devices.Any(d => d.BlobId == blob.Id))
                 {
-                    var device = Devices.Single(d => d.Id == blob.Id);
-                    device.X = blob.X * Width;
-                    device.Y = blob.Y * Height;
-                    Stage(new Digital("ShowQrCode") { Value = false });
+                    var device0 = Devices.Single(d => d.BlobId == blob.Id);
+                    device0.X = blob.X * Width;
+                    device0.Y = blob.Y * Height;
                     continue;
                 }
 
                 var blobPoint = new Point(blob.X, blob.Y);
 
+                // Find matching QrCode for current blob
                 var codes = qrCodes.Where(c => (new Point(c.X, c.Y) - blobPoint).Length < Distance).ToArray();
 
-                Stage(new Digital("ShowQrCode") { Value = !codes.Any() });
-
+                Device device;
                 if (codes.Any())
                 {
                     var code = codes.First();
-                    AddDevice(blob, code);
+
+                    device = new Device(code.Key)
+                    {
+                        BlobId = blob.Id,
+                        DeviceId = code.Id,
+                        IsIdentified = true,
+                        X = blob.X * Width,
+                        Y = blob.Y * Height,
+                        Angle = code.Angle
+                    };;
                 }
-                Push();
+                else
+                {
+                    device = new Device("not identified")
+                    {
+                        BlobId = blob.Id,
+                        IsIdentified = false,
+                        X = blob.X*Width,
+                        Y = blob.Y*Height,
+                    };
+                }
+                AddDevice(device);
             }
 
             return dataContainer;
@@ -352,8 +374,12 @@ namespace Huddle.Engine.Processor
         public override IDataContainer PostProcess(IDataContainer dataContainer)
         {
             var devices = Devices.ToArray();
-            foreach (var device1 in devices)
+
+            var identifiedDevices = devices.Where(d => d.IsIdentified);
+            foreach (var device1 in identifiedDevices)
             {
+                #region Calculate Proximities
+
                 foreach (var device2 in devices)
                 {
                     if (Equals(device1, device2)) continue;
@@ -406,6 +432,8 @@ namespace Huddle.Engine.Processor
                     //});
                 }
 
+                #endregion
+
                 Stage(new Proximity(device1.Key)
                 {
                     Identity = device1.DeviceId,
@@ -414,6 +442,8 @@ namespace Huddle.Engine.Processor
                 });
             }
 
+            Stage(devices.ToArray<IData>());
+
             Push();
 
             return null;
@@ -421,44 +451,41 @@ namespace Huddle.Engine.Processor
 
         #endregion
 
-        private void AddDevice(BlobData blob, LocationData code)
+        private void AddDevice(Device device)
         {
-            Stage(new LocationData(string.Format("{0}{1}", code.Key, blob.Id))
-            {
-                X = blob.X,
-                Y = blob.Y,
-                Angle = code.Angle
-            });
-
-            DispatcherHelper.RunAsync(() => Devices.Add(new Device
-            {
-                Id = blob.Id,
-                DeviceId = code.Id,
-                Key = code.Key,
-                X = blob.X * Width,
-                Y = blob.Y * Height,
-                Angle = code.Angle
-            }));
+            Devices.Add(device);
         }
 
         private void ClearDrawModels()
         {
-            DispatcherHelper.RunAsync(() => DrawModels.Clear());
+            DrawModels.Clear();
         }
 
         private void AddDrawModel(double x, double y, Brush color, int type)
         {
-            DispatcherHelper.RunAsync(() =>
+            var model = new DrawModel2
             {
-                var model = new DrawModel2
-                {
-                    X = x,
-                    Y = y,
-                    Color = color,
-                    Type = type
-                };
-                DrawModels.Add(model);
-            });
+                X = x,
+                Y = y,
+                Color = color,
+                Type = type
+            };
+            DrawModels.Add(model);
+        }
+
+        private void UpdateView(IEnumerable<BlobData> blobs, IEnumerable<LocationData> qrCodes)
+        {
+            #region Update DrawModels
+
+            ClearDrawModels();
+
+            foreach (var blob in blobs)
+                AddDrawModel(blob.X * Width, blob.Y * Height, Brushes.DeepPink, 1);
+
+            foreach (var code in qrCodes)
+                AddDrawModel(code.X * Width, code.Y * Height, Brushes.DeepSkyBlue, 2);
+
+            #endregion
         }
     }
 

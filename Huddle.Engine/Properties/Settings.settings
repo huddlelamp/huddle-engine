@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="DefaultPipelineFileName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Default.pipeline.huddle</Value>
+      <Value Profile="(Default)">Resources/Default.pipeline.huddle</Value>
     </Setting>
   </Settings>
 </SettingsFile>
