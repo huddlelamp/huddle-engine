@@ -423,17 +423,14 @@ namespace Huddle.Engine.Processor
                 return;
             }
 
-            for (var i = 0; i < Targets.Count - 1; i++)
-            {
-                var container = dataContainer;
-                if (dataContainer.Count > 1)
+            if (Targets.Count > 1)
+                for (var i = 0; i < Targets.Count - 1; i++)
                 {
-                    container = dataContainer.Copy();
+                    var dataContainerCopy = dataContainer.Copy();
+                    Targets[i].Process(dataContainerCopy);
                 }
 
-                Targets[i].Process(container);
-            }
-            Targets[Targets.Count - 1].Process(dataContainer);
+            Targets.Last().Process(dataContainer);
         }
 
         /// <summary>

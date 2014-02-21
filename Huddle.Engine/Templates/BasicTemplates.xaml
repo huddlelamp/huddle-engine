@@ -52,9 +52,26 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Image Source="{Binding Path=PreProcessImage}" />
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </Grid>
+
+            <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -66,25 +83,25 @@
                         TickPlacement="BottomRight"
                         AutoToolTipPlacement="TopLeft"
                         AutoToolTipPrecision="0"
-                        Minimum="0"
-                        Maximum="100" />
+                        Minimum="1"
+                        Maximum="120" />
                 <TextBlock Grid.Column="2" Text="{Binding Path=Fps}"/>
             </Grid>
 
-            <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <StackPanel Grid.Row="2" Orientation="Horizontal">
                 <Label Content="Mode"/>
                 <ComboBox ItemsSource="{Binding Path=Modes}"
                           SelectedValue="{Binding Path=Mode}" />
                 <Button Content="Apply" />
             </StackPanel>
 
-            <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <StackPanel Grid.Row="3" Orientation="Horizontal">
                 <Label Content="Filename"/>
                 <TextBox Width="200" Text="{Binding Path=Filename}" />
                 <Button Content="Apply" />
             </StackPanel>
 
-            <Grid Grid.Row="3">
+            <Grid Grid.Row="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
@@ -92,7 +109,13 @@
                 </Grid.ColumnDefinitions>
 
                 <Button Grid.Column="0">
-                    <Image Source="/Huddle.Engine;component/Resources/record.png" />
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <command:EventToCommand Command="{Binding Path=PlayCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                    <Image Source="/Huddle.Engine;component/Resources/play.png">
+                    </Image>
                 </Button>
                 <Button Grid.Column="1">
                     <i:Interaction.Triggers>

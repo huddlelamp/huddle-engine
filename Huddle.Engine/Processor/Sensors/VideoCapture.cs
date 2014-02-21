@@ -144,6 +144,11 @@ namespace Huddle.Engine.Processor.Sensors
             if (_capture != null)
                 _capture.Dispose();
 
+            DispatcherHelper.CheckBeginInvokeOnUI(() =>
+            {
+                ColorImageSource = null;
+            });
+
             base.Stop();
         }
     }
