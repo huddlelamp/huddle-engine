@@ -7,12 +7,13 @@ String.prototype.format = function () {
   });
 };
 
+window.WebSocket = window.WebSocket || window.MozWebSocket;
+
 function Huddle(id, ondata) {
     this.id = id;
     this.ondata = ondata;
     this.connected = false;
     this.reconnect = false;
-    this.huddle = this;
 };
 
 Huddle.prototype.connect = function(host, port) {
@@ -22,7 +23,9 @@ Huddle.prototype.connect = function(host, port) {
     this.doConnect();
 };
 
-Huddle.prototype.doConnect = function() {
+Huddle.prototype.doConnect = function () {
+    var huddle = this;
+
     this.wsUri = "ws://{0}".format(this.host);
     if (this.port)
         this.wsUri = "{0}:{1}".format(this.wsUri, this.port); 
@@ -40,7 +43,7 @@ Huddle.prototype.doConnect = function() {
 
         huddle.connected = true;
         
-        this.send("JavaScript Rocks and my ID is {0}!".format(huddle.id));
+        this.send("{0}".format(huddle.id));
     };
 
     this.socket.onmessage = function(event) {

@@ -1,52 +1,114 @@
-<!DOCTYPE html>
-<html>
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>huddle.js</title>
-	<script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
-	<script type="text/javascript" src="js/huddle.js"></script>
-	<script type="text/javascript">
-	var huddle = new Huddle(3, function(data) {
-		console.log(data);
+    <title>Huddle DemoApp</title>
+    <meta charset="utf-8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="style/demo.css">
+    <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
+    <script type="text/javascript" src="js/jquery.qrcode.min.js"></script>
+    <script type="text/javascript" src="js/huddle.js"></script>
+    <script type="text/javascript">
+        var defaultDeviceId = 0;
+        var deviceId = defaultDeviceId;
 
-		if (data.DataType)
-		{
-			switch (data.DataType) {
-	            case 'Proximity':
-	                processProximity(data.Data);
-	                break;
-	            case 'Digital':
-	                if (data.Data.Value)
-	                    $('#qrcode-container').show();
-	                else
-	                    $('#qrcode-container').hide();
-	                break;
-        	}
-		}
-	});
-	huddle.reconnect = true;
-	huddle.connect("echo.websocket2.org");
+        var dimension = {
+            "width": 1024,
+            "height": 768
+        };
 
-	var hostTestTimeout = setTimeout(function() {
-		clearTimeout(hostTestTimeout);
-		huddle.host = "echo.websocket.org";
-	}, 5000);
+        jQuery.fn.rotate = function (degrees) {
+            $(this).css({
+                '-webkit-transform': 'rotate(' + degrees + 'deg)',
+                '-moz-transform': 'rotate(' + degrees + 'deg)',
+                '-ms-transform': 'rotate(' + degrees + 'deg)',
+                'transform': 'rotate(' + degrees + 'deg)'
+            });
+        };
 
-	var interval = setInterval(function() {
-		if (huddle.connected) {
-			clearInterval(interval);
+        function getParameterByName(name) {
+            name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+            return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
 
-			huddle.socket.send("Rocks really!");
+        function processProximity(data) {
+            var location = data.Location.split(",");
+            var x = location[0];
+            var y = location[1];
+            var angle = data.Orientation;
 
-			var timeout = setTimeout(function() {
-				huddle.close();
-				clearTimeout(timeout);
-			}, 1000);
-		}
-	}, 1000);
+            //console.log(x + "/" + y);
 
-	</script>
+            var width = $('#peephole-canvas').width(); // 3840
+            var height = $('#peephole-canvas').height(); // 2160
+
+            //console.log(width + " / " + height);
+
+            var offsetLeft = width * x - (dimension['width'] / 2);
+            var offsetTop = height * y - (dimension['height'] / 2);
+
+            $('#peephole-canvas').css('left', -offsetLeft + "px");
+            $('#peephole-canvas').css('top', -offsetTop + "px");
+            //$('#peephole-canvas').rotate(parseInt(angle));
+        }
+
+        $(document).ready(function () {
+
+            var id = getParameterByName("id");
+            if (id)
+                deviceId = id;
+
+            var huddle = new Huddle(deviceId, function (data) {
+                console.log(data);
+
+                if (data.DataType) {
+                    switch (data.DataType) {
+                        case 'Proximity':
+                            processProximity(data.Data);
+                            break;
+                        case 'Digital':
+                            if (data.Data.Value)
+                                $('#qrcode-container').show();
+                            else
+                                $('#qrcode-container').hide();
+                            break;
+                    }
+                }
+            });
+            huddle.reconnect = true;
+            huddle.connect("192.168.1.206", 4711);
+
+            // disable touch to avoid moving scroll view
+            document.ontouchstart = function(e) {
+                e.preventDefault();
+            };
+
+            var windowWidth = $(window).width();
+            var windowHeight = $(window).height();
+
+            var qrcodeSize = windowWidth > windowHeight ? windowHeight : windowWidth;
+
+            $('#qrcode').qrcode({
+                width: qrcodeSize - 40,
+                height: qrcodeSize - 40,
+                text: deviceId
+            });
+
+            $('#qrcode-container').width(windowWidth);
+            $('#qrcode-container').height(windowHeight);
+        });
+    </script>
 </head>
 <body>
-
+    <div id="peephole-canvas">
+        <!--<iframe width="3840" height="2160" src="//www.youtube.com/embed/wHYZoqRie8Q" frameborder="0"></iframe>-->
+    </div>
+    <div id="qrcode-container">
+        <div id="qrcode"></div>
+    </div>
+    <div id="debug"></div>
 </body>
 </html>

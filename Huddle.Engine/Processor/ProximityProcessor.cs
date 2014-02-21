@@ -321,46 +321,26 @@ namespace Huddle.Engine.Processor
 
             foreach (var blob in blobs)
             {
-                // debug hook to check if update of devices works with blob only
-                if (Devices.Any(d => d.BlobId == blob.Id))
-                {
-                    var device0 = Devices.Single(d => d.BlobId == blob.Id);
-                    device0.X = blob.X * Width;
-                    device0.Y = blob.Y * Height;
-                    continue;
-                }
+                if (!DeviceExists(blob))
+                    CreateDevice(blob);
 
                 var blobPoint = new Point(blob.X, blob.Y);
 
                 // Find matching QrCode for current blob
                 var codes = qrCodes.Where(c => (new Point(c.X, c.Y) - blobPoint).Length < Distance).ToArray();
 
-                Device device;
                 if (codes.Any())
                 {
                     var code = codes.First();
 
-                    device = new Device(code.Key)
-                    {
-                        BlobId = blob.Id,
-                        DeviceId = code.Id,
-                        IsIdentified = true,
-                        X = blob.X * Width,
-                        Y = blob.Y * Height,
-                        Angle = code.Angle
-                    };;
+                    Console.WriteLine("Update device {0} with blob {1}", code.Id, blob.Id);
+                    UpdateDevice(blob, code);
                 }
                 else
                 {
-                    device = new Device("not identified")
-                    {
-                        BlobId = blob.Id,
-                        IsIdentified = false,
-                        X = blob.X*Width,
-                        Y = blob.Y*Height,
-                    };
+                    Console.WriteLine("Update blob {0}", blob.Id);
+                    UpdateDevice(blob);
                 }
-                AddDevice(device);
             }
 
             return dataContainer;
@@ -450,6 +430,42 @@ namespace Huddle.Engine.Processor
         }
 
         #endregion
+
+        private void CreateDevice(BlobData blob)
+        {
+            var device = new Device("not identified")
+            {
+                BlobId = blob.Id,
+                IsIdentified = false,
+                X = blob.X * Width,
+                Y = blob.Y * Height,
+            };
+            AddDevice(device);
+        }
+
+        private void UpdateDevice(BlobData blob, LocationData code = null)
+        {
+            var device = Devices.Single(d => d.BlobId == blob.Id);
+            device.Key = "identified";
+            device.BlobId = blob.Id;
+            device.X = blob.X * Width;
+            device.Y = blob.Y * Height;
+
+            if (code != null)
+            {
+                device.DeviceId = code.Id;
+                device.IsIdentified = true;
+                device.Angle = code.Angle;
+            }
+        }
+
+        private bool DeviceExists(BlobData blob, Func<Device, bool> whereFunc = null)
+        {
+            if (whereFunc != null)
+                return Devices.Where(whereFunc).Any(d => d.BlobId == blob.Id);
+
+            return Devices.Any(d => d.BlobId == blob.Id);
+        }
 
         private void AddDevice(Device device)
         {

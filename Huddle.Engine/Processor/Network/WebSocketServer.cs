@@ -106,6 +106,15 @@ namespace Huddle.Engine.Processor.Network
                 client.Send(digital);
             }
 
+            var digital2 = new Digital("Identify") { Value = false };
+            foreach (var client in _connectedClients.Values)
+            {
+                if (identifiedDevices.Any(d => Equals(d.DeviceId, client.DeviceId)))
+                {
+                    client.Send(digital2);
+                }
+            }
+
             #endregion
 
             #region Send proximity information to clients
