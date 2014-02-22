@@ -446,6 +446,7 @@ namespace Huddle.Engine.Processor
                 IsIdentified = false,
                 X = blob.X * Width,
                 Y = blob.Y * Height,
+                LastBlobAngle = blob.Angle
             };
             AddDevice(device);
         }
@@ -463,6 +464,16 @@ namespace Huddle.Engine.Processor
                 device.DeviceId = code.Id;
                 device.IsIdentified = true;
                 device.Angle = code.Angle;
+            }
+            else
+            {
+                var deltaAngle = blob.Angle - device.LastBlobAngle;
+
+                if (deltaAngle > 45)
+                    return;
+
+                device.LastBlobAngle = blob.Angle;
+                device.Angle += deltaAngle;
             }
         }
 

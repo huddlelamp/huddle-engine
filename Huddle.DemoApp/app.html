@@ -50,9 +50,13 @@
                 var $presence = $('#presence-' + id2);
 
                 if (!$presence.length) {
-                    $('<div id="presence-' + id2 + '">' + id2 + '</div>').appendTo($('#presences-container'));
+                    $('<div id="presence-' + id2 + '" class="huddle-presence">' + id2 + '</div>').appendTo($('#presences-container'));
                 } else {
                     $presence.html(JSON.stringify(presence));
+
+                    $presence.css('height', ($(window).height()) + "px");
+                    $presence.css('top', "-" + ($(window).height() / 2) + "px");
+                    $presence.rotate(presence.Orientation);
                 }
             });
 

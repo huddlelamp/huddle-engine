@@ -1,5 +1,6 @@
 ﻿using GalaSoft.MvvmLight;
 using Huddle.Engine.Data;
+using Newtonsoft.Json;
 
 namespace Huddle.Engine.Domain
 {
@@ -90,6 +91,7 @@ namespace Huddle.Engine.Domain
         /// Sets and gets the IsIdentified property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [JsonIgnore]
         public bool IsIdentified
         {
             get
@@ -212,6 +214,42 @@ namespace Huddle.Engine.Domain
                 RaisePropertyChanging(AnglePropertyName);
                 _angle = value;
                 RaisePropertyChanged(AnglePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region LastBlobAngle
+
+        /// <summary>
+        /// The <see cref="LastBlobAngle" /> property's name.
+        /// </summary>
+        public const string LastBlobAnglePropertyName = "LastBlobAngle";
+
+        private double _lastBlobAngle = 0.0;
+
+        /// <summary>
+        /// Sets and gets the LastBlobAngle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [JsonIgnore]
+        public double LastBlobAngle
+        {
+            get
+            {
+                return _lastBlobAngle;
+            }
+
+            set
+            {
+                if (_lastBlobAngle == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(LastBlobAnglePropertyName);
+                _lastBlobAngle = value;
+                RaisePropertyChanged(LastBlobAnglePropertyName);
             }
         }
 
