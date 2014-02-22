@@ -26,6 +26,13 @@ Huddle.prototype.connect = function(host, port) {
 Huddle.prototype.doConnect = function () {
     var huddle = this;
 
+    // send alive message every 10 seconds, otherwise web socket server closes connection
+    var aliveInterval = setInterval(function() {
+        if (huddle.connected) {
+            huddle.socket.send("alive");
+        }
+    }, 10000);
+
     this.wsUri = "ws://{0}".format(this.host);
     if (this.port)
         this.wsUri = "{0}:{1}".format(this.wsUri, this.port); 
@@ -47,7 +54,7 @@ Huddle.prototype.doConnect = function () {
     };
 
     this.socket.onmessage = function(event) {
-        console.log("Huddle Message {0}".format(event));
+        //console.log("Huddle Message {0}".format(event));
 
         if (!event || !event.data) return;
 
@@ -85,6 +92,8 @@ Huddle.prototype.doConnect = function () {
 
         huddle.connected = false;
     };
+
+
 };
 
 Huddle.prototype.close = function() {

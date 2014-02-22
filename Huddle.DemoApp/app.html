@@ -40,6 +40,22 @@
             var y = location[1];
             var angle = data.Orientation;
 
+            data.Presences.forEach(function(presence) {
+                var id2 = presence.Identity;
+                var location2 = presence.Location.split(",");
+                var x2 = location2[0];
+                var y2 = location2[1];
+                console.log("Identity=" + presence.Identity + "X=" + x2 + "|Y=" + y2 + "|Angle=" + presence.Orientation);
+
+                var $presence = $('#presence-' + id2);
+
+                if (!$presence.length) {
+                    $('<div id="presence-' + id2 + '">' + id2 + '</div>').appendTo($('#presences-container'));
+                } else {
+                    $presence.html(JSON.stringify(presence));
+                }
+            });
+
             //console.log(x + "/" + y);
 
             var width = $('#peephole-canvas').width(); // 3840
@@ -92,8 +108,8 @@
             var qrcodeSize = windowWidth > windowHeight ? windowHeight : windowWidth;
 
             $('#qrcode').qrcode({
-                width: qrcodeSize - 40,
-                height: qrcodeSize - 40,
+                width: qrcodeSize - 100,
+                height: qrcodeSize - 100,
                 text: deviceId
             });
 
@@ -105,6 +121,8 @@
 <body>
     <div id="peephole-canvas">
         <!--<iframe width="3840" height="2160" src="//www.youtube.com/embed/wHYZoqRie8Q" frameborder="0"></iframe>-->
+    </div>
+    <div id="presences-container">
     </div>
     <div id="qrcode-container">
         <div id="qrcode"></div>

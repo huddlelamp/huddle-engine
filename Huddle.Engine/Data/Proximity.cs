@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Documents;
+using Huddle.Engine.Domain;
 
 namespace Huddle.Engine.Data
 {
@@ -181,6 +184,41 @@ namespace Huddle.Engine.Data
 
         #endregion
 
+        #region Presences
+
+        /// <summary>
+        /// The <see cref="Presences" /> property's name.
+        /// </summary>
+        public const string PresencesPropertyName = "Presences";
+
+        private List<Proximity> _presences = new List<Proximity>();
+
+        /// <summary>
+        /// Sets and gets the Presences property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public List<Proximity> Presences
+        {
+            get
+            {
+                return _presences;
+            }
+
+            set
+            {
+                if (_presences == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(PresencesPropertyName);
+                _presences = value;
+                RaisePropertyChanged(PresencesPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         public Proximity(string key) : base(key)
@@ -195,7 +233,8 @@ namespace Huddle.Engine.Data
                 Identity = Identity,
                 Location = Location,
                 Movement = Movement,
-                Orientation = Orientation
+                Orientation = Orientation,
+                Presences = new List<Proximity>(Presences)
             };
         }
 

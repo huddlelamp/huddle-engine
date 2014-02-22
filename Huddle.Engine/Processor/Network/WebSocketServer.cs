@@ -62,10 +62,12 @@ namespace Huddle.Engine.Processor.Network
 
                 //Log("Identified {0} as {1}", address, deviceId);
 
-                var deviceId = context.DataFrame.ToString();
+                var message = context.DataFrame.ToString();
+
+                if (Equals("alive", message)) return;
 
                 var client = _connectedClients[context.ClientAddress.ToString()];
-                client.DeviceId = deviceId;
+                client.DeviceId = message;
             };
             //_webSocketServer.OnSend += context => Log("Send {0}", context);
 

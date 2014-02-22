@@ -333,12 +333,12 @@ namespace Huddle.Engine.Processor
                 {
                     var code = codes.First();
 
-                    Console.WriteLine("Update device {0} with blob {1}", code.Id, blob.Id);
+                    //Console.WriteLine("Update device {0} with blob {1}", code.Id, blob.Id);
                     UpdateDevice(blob, code);
                 }
                 else
                 {
-                    Console.WriteLine("Update blob {0}", blob.Id);
+                    //Console.WriteLine("Update blob {0}", blob.Id);
                     UpdateDevice(blob);
                 }
             }
@@ -355,12 +355,21 @@ namespace Huddle.Engine.Processor
         {
             var devices = Devices.ToArray();
 
-            var identifiedDevices = devices.Where(d => d.IsIdentified);
+            var identifiedDevices = devices.Where(d => d.IsIdentified).ToArray();
+            var identifiedDevices0 = devices.Where(d => d.IsIdentified).ToArray();
             foreach (var device1 in identifiedDevices)
             {
+                var p1 = new Point(device1.X / Width, device1.Y / Height);
+                var proximity = new Proximity(device1.Key)
+                {
+                    Identity = device1.DeviceId,
+                    Location = p1,
+                    Orientation = device1.Angle
+                };
+
                 #region Calculate Proximities
 
-                foreach (var device2 in devices)
+                foreach (var device2 in identifiedDevices0)
                 {
                     if (Equals(device1, device2)) continue;
 
@@ -404,22 +413,20 @@ namespace Huddle.Engine.Processor
 
                     Log(log.ToString());
 
-                    //Stage(new Proximity(device1.Key)
-                    //{
-                    //    Identity = device1.Key,
-                    //    Location = new Point(device1.X, device1.Y),
-                    //    Orientation = globalAngle
-                    //});
+                    var p2 = new Point(device2.X / Width, device2.Y / Height);
+
+                    proximity.Presences.Add(new Proximity(device2.Key)
+                    {
+                        Identity = device2.DeviceId,
+                        Location = p2,
+                        Distance = (p2 - p1).Length,
+                        Orientation = localAngle
+                    });
                 }
 
                 #endregion
 
-                Stage(new Proximity(device1.Key)
-                {
-                    Identity = device1.DeviceId,
-                    Location = new Point(device1.X / Width, device1.Y / Height),
-                    Orientation = device1.Angle
-                });
+                Stage(proximity);
             }
 
             Stage(devices.ToArray<IData>());
