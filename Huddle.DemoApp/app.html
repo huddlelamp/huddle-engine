@@ -4,14 +4,139 @@
     <title>Huddle DemoApp</title>
     <meta charset="utf-8" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+        html {
+            height: 100%;
+        }
+
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #map-canvas {
+            height: 100%;
+        }
+    </style>
     <link rel="stylesheet" type="text/css" href="style/demo.css">
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBjtVU9d89l5tYFTku6FB5kPyHUoYQ_ClA&sensor=false"></script>
+    <script type="text/javascript" src="js/google.map.extensions.js"></script>
+    <script type="text/javascript">
+        var map;
+        var centerLatLng = new google.maps.LatLng(47.6774887, 9.1642378);
+
+        var updateProximityValues = true;
+
+        function initialize() {
+            var startDrag;
+
+            var mapOptions = {
+                center: centerLatLng,
+                zoom: 13
+            };
+            map = new google.maps.Map(document.getElementById("map-canvas"),
+                mapOptions);
+
+            google.maps.event.addListener(map, 'dragstart', function () {
+                console.log('dragstart');
+
+                updateProximityValues = false;
+
+                var numTiles = 1 << map.getZoom();
+                var projection = new MercatorProjection();
+                var worldCoordinate = projection.fromLatLngToPoint(map.getCenter());
+                var pixelCoordinate = new google.maps.Point(
+                    worldCoordinate.x * numTiles,
+                    worldCoordinate.y * numTiles);
+
+                var tileCoordinate = new google.maps.Point(
+                    Math.floor(pixelCoordinate.x / TILE_SIZE),
+                    Math.floor(pixelCoordinate.y / TILE_SIZE));
+
+                //console.log("ASDF: " + pixelCoordinate);
+
+                startDrag = pixelCoordinate;
+
+                //console.log(pixelCoordinate);
+            });
+
+            google.maps.event.addListener(map, 'drag', function () {
+                //console.log('drag');
+
+                var numTiles = 1 << map.getZoom();
+                var projection = new MercatorProjection();
+                var worldCoordinate = projection.fromLatLngToPoint(map.getCenter());
+                var pixelCoordinate = new google.maps.Point(
+                    worldCoordinate.x * numTiles,
+                    worldCoordinate.y * numTiles);
+
+                var tileCoordinate = new google.maps.Point(
+                    Math.floor(pixelCoordinate.x / TILE_SIZE),
+                    Math.floor(pixelCoordinate.y / TILE_SIZE));
+
+                //console.log("ASDF2: " + pixelCoordinate);
+
+                var deltaX = pixelCoordinate.x - startDrag.x;
+                var deltaY = pixelCoordinate.y - startDrag.y;
+
+                //console.log("X: " + deltaX + " | Y: " + deltaY);
+
+                startDrag = pixelCoordinate;
+
+                var broadcast = '"panBy": {{"x": {0}, "y": {1}}}'.format(deltaX, deltaY);
+
+                //console.log(broadcast);
+
+                huddle.broadcast(broadcast);
+            });
+
+            google.maps.event.addListener(map, 'dragend', function () {
+                //console.log('dragend');
+
+                var numTiles = 1 << map.getZoom();
+                var projection = new MercatorProjection();
+                var worldCoordinate = projection.fromLatLngToPoint(map.getCenter());
+                var pixelCoordinate = new google.maps.Point(
+                    worldCoordinate.x * numTiles,
+                    worldCoordinate.y * numTiles);
+
+                var tileCoordinate = new google.maps.Point(
+                    Math.floor(pixelCoordinate.x / TILE_SIZE),
+                    Math.floor(pixelCoordinate.y / TILE_SIZE));
+
+                //console.log("dragend: " + pixelCoordinate);
+
+                var deltaX = pixelCoordinate.x - startDrag.x;
+                var deltaY = pixelCoordinate.y - startDrag.y;
+
+                //console.log("X: " + deltaX + " | Y: " + deltaY);
+
+                startDrag = pixelCoordinate;
+
+                //var broadcast = '"panBy": {{"x": {0}, "y": {1}}}'.format(deltaX, deltaY);
+
+                //console.log(broadcast);
+
+                //huddle.broadcast(broadcast);
+
+                centerLatLng = map.getCenter();
+
+                updateProximityValues = true;
+            });
+        }
+        google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
     <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
     <script type="text/javascript" src="js/jquery.qrcode.min.js"></script>
     <script type="text/javascript" src="js/huddle.js"></script>
     <script type="text/javascript">
+        var huddle;
         var defaultDeviceId = 0;
         var deviceId = defaultDeviceId;
+
+        var projection = new MercatorProjection();
 
         var dimension = {
             "width": 1024,
@@ -38,9 +163,26 @@
             var location = data.Location.split(",");
             var x = location[0];
             var y = location[1];
-            var angle = data.Orientation;
+            var angle = data.Orientation % 360;
 
-            data.Presences.forEach(function(presence) {
+            if (angle < 0)
+                angle += 360;
+
+            if (angle > 45 && angle < 135) {
+                $('#tool-palette-container').show();
+            }
+            else {
+                $('#tool-palette-container').hide();
+            }
+
+            if (angle > 215 && angle < 315) {
+                $('#note-container').show();
+            }
+            else {
+                $('#note-container').hide();
+            }
+
+            data.Presences.forEach(function (presence) {
                 var id2 = presence.Identity;
                 var location2 = presence.Location.split(",");
                 var x2 = location2[0];
@@ -67,12 +209,24 @@
 
             //console.log(width + " / " + height);
 
-            var offsetLeft = width * x - (dimension['width'] / 2);
-            var offsetTop = height * y - (dimension['height'] / 2);
+            //var offsetLeft = width * x - (dimension['width'] / 2);
+            //var offsetTop = height * y - (dimension['height'] / 2);
 
-            $('#peephole-canvas').css('left', -offsetLeft + "px");
-            $('#peephole-canvas').css('top', -offsetTop + "px");
+            //$('#peephole-canvas').css('left', -offsetLeft + "px");
+            //$('#peephole-canvas').css('top', -offsetTop + "px");
             //$('#peephole-canvas').rotate(parseInt(angle));
+
+            //var point = new google.maps.Point(x * -10, y * 100);
+
+            //var latLng = projection.fromPointToLatLng(point);
+
+            var offsetX = y / map.getZoom() * 8;
+            var offsetY = (1.0 - x) / map.getZoom() * 8;
+
+            var latLng2 = new google.maps.LatLng(centerLatLng.d - offsetX, centerLatLng.e - offsetY);
+
+            //map.panTo(latLng2);
+            map.setCenter(latLng2);
         }
 
         $(document).ready(function () {
@@ -81,13 +235,14 @@
             if (id)
                 deviceId = id;
 
-            var huddle = new Huddle(deviceId, function (data) {
-                console.log(data);
+            huddle = new Huddle(deviceId, function (data) {
+                //console.log(data);
 
-                if (data.DataType) {
-                    switch (data.DataType) {
+                if (data.Type) {
+                    switch (data.Type) {
                         case 'Proximity':
-                            processProximity(data.Data);
+                            if (updateProximityValues)
+                                processProximity(data.Data);
                             break;
                         case 'Digital':
                             if (data.Data.Value)
@@ -95,16 +250,27 @@
                             else
                                 $('#qrcode-container').hide();
                             break;
+                        case 'Broadcast':
+                            console.log("echo");
+
+                            var x = data.panBy.x;
+                            var y = data.panBy.y;
+
+                            //map.panBy(x, y);
+
+                            break;
                     }
+                } else {
+                    console.log("echo");
                 }
             });
             huddle.reconnect = true;
             huddle.connect("192.168.1.206", 4711);
 
             // disable touch to avoid moving scroll view
-            document.ontouchstart = function(e) {
-                e.preventDefault();
-            };
+            //document.ontouchstart = function(e) {
+            //    e.preventDefault();
+            //};
 
             var windowWidth = $(window).width();
             var windowHeight = $(window).height();
@@ -123,14 +289,18 @@
     </script>
 </head>
 <body>
-    <div id="peephole-canvas">
-        <!--<iframe width="3840" height="2160" src="//www.youtube.com/embed/wHYZoqRie8Q" frameborder="0"></iframe>-->
+    <div id="map-canvas"></div>
+
+    <div id="tool-palette-container" class="huddle-fullscreen">
+        <div style="font-size: 44px;">Tool Palette</div>
     </div>
-    <div id="presences-container">
+
+    <div id="note-container" class="huddle-fullscreen">
+        <div style="font-size: 44px;">Notes</div>
     </div>
-    <div id="qrcode-container">
+
+    <div id="qrcode-container" class="huddle-fullscreen">
         <div id="qrcode"></div>
     </div>
-    <div id="debug"></div>
 </body>
 </html>

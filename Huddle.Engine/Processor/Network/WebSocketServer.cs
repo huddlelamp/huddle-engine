@@ -53,21 +53,42 @@ namespace Huddle.Engine.Processor.Network
 
             _webSocketServer.OnReceive += context =>
             {
-                //var address = context.ClientAddress.ToString();
-                //var deviceId = context.DataFrame.ToString();
+                var data = context.DataFrame.ToString();
 
-                //Client client;
-                //_connectedClients.TryRemove(address, out client);
-                //_identifiedClients.TryAdd(deviceId, client);
+                try
+                {
+                    dynamic response = JsonConvert.DeserializeObject(data);
 
-                //Log("Identified {0} as {1}", address, deviceId);
+                    var type = response.Type.Value;
 
-                var message = context.DataFrame.ToString();
-
-                if (Equals("alive", message)) return;
-
-                var client = _connectedClients[context.ClientAddress.ToString()];
-                client.DeviceId = message;
+                    switch (type as string)
+                    {
+                        case "Handshake":
+                            var deviceId = response.DeviceId.Value;
+                            var client = _connectedClients[context.ClientAddress.ToString()];
+                            client.DeviceId = deviceId;
+                            break;
+                        case "Alive":
+                            return;
+                        case "Broadcast":
+                            foreach (var c in _connectedClients.Values)
+                            {
+                                if (Equals(context, c.Context))
+                                {
+                                    Console.WriteLine();
+                                }
+                                else
+                                {
+                                    c.Send(data);
+                                }
+                            }
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Could not deserialize Json response {0}", e.Message);
+                }
             };
             //_webSocketServer.OnSend += context => Log("Send {0}", context);
 
@@ -91,6 +112,11 @@ namespace Huddle.Engine.Processor.Network
                 _webSocketServer.Stop();
                 _webSocketServer.Dispose();
             }
+        }
+
+        public override IData Process(IData data)
+        {
+            return data;
         }
 
         public override IDataContainer PreProcess(IDataContainer dataContainer)
@@ -135,67 +161,6 @@ namespace Huddle.Engine.Processor.Network
 
             return null;
         }
-
-        public override IData Process(IData data)
-        {
-            var device = data as Device;
-            if (device != null)
-            {
-                if (!device.IsIdentified)
-                {
-                    // send message to unidentified clients
-                    Console.WriteLine();
-                }
-                else
-                {
-                    // send update to identified client
-                    Console.WriteLine("Identified");
-                }
-            }
-
-            //var proxemity = data as Proximity;
-            //if (proxemity != null)
-            //{
-            //    if (_identifiedClients.ContainsKey(proxemity.Identity))
-            //    {
-            //        var client = _identifiedClients[proxemity.Identity];
-            //        client.Send(serial);
-            //        return null;
-            //    }
-            //}
-
-            //foreach (var client in _identifiedClients.Values)
-            //{
-            //    client.Send(serial);
-            //}
-
-            foreach (var client in _connectedClients.Values)
-            {
-                //var digital = data as Digital;
-                //if (digital != null)
-                //{
-                //    if (_clientIdToAddress.ContainsKey(client.Context.ClientAddress.ToString()))
-                //    {
-                //        if (!digital.NotFor.Any())
-                //        {
-                //            var deviceId = _clientIdToAddress[client.Context.ClientAddress.ToString()];
-
-                //            if (!string.IsNullOrWhiteSpace(digital.Id) && digital.Id != deviceId)
-                //                continue;
-                //        }
-                //        else if (digital.NotFor.Contains(_clientIdToAddress[client.Context.ClientAddress.ToString()]))
-                //            continue;
-                //    }
-                //}
-
-                //Log("Send serial to {0}: {1}", client.Context.ClientAddress, serial);
-
-                client.Send(data);
-            }
-
-
-            return null;
-        }
     }
     public class Client
     {
@@ -217,6 +182,18 @@ namespace Huddle.Engine.Processor.Network
             Context = context;
         }
 
+        public void Send(string message)
+        {
+            try
+            {
+                Context.Send(message);
+            }
+            catch (Exception e)
+            {
+                Context.Send(e.Message);
+            }
+        }
+
         public void Send(IData data)
         {
             try
@@ -224,7 +201,7 @@ namespace Huddle.Engine.Processor.Network
                 var dataSerial = JsonConvert.SerializeObject(data);
 
                 // inject the data type
-                var serial = string.Format("{{\"DataType\":\"{0}\",\"Data\":{1}}}", data.GetType().Name, dataSerial);
+                var serial = string.Format("{{\"Type\":\"{0}\",\"Data\":{1}}}", data.GetType().Name, dataSerial);
 
                 Context.Send(serial);
             }

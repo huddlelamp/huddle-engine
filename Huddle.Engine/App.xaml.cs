@@ -13,11 +13,11 @@ namespace Huddle.Engine
         {
             DispatcherHelper.Initialize();
 
-            if (AppDomain.CurrentDomain.SetupInformation.ActivationArguments.ActivationData != null)
-                foreach (var commandLineFile in AppDomain.CurrentDomain.SetupInformation.ActivationArguments.ActivationData)
-                {
-                    MessageBox.Show(string.Format("Command Line File: {0}", commandLineFile));
-                }
+            //if (AppDomain.CurrentDomain.SetupInformation.ActivationArguments.ActivationData != null)
+            //    foreach (var commandLineFile in AppDomain.CurrentDomain.SetupInformation.ActivationArguments.ActivationData)
+            //    {
+            //        MessageBox.Show(string.Format("Command Line File: {0}", commandLineFile));
+            //    }
 
             DispatcherUnhandledException += App_DispatcherUnhandledException;
         }
