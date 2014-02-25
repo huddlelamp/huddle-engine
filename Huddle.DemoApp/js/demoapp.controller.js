@@ -1,5 +1,5 @@
 ﻿var DemoAppController = Class.create({
-    initialize: function(host, port, mapContainerSelector) {
+    initialize: function (host, port, mapContainerSelector) {
         this.mapContainerSelector = mapContainerSelector;
 
         this.deviceId = this.getParameterByName('id');
@@ -13,13 +13,17 @@
         };
         this.isUpdateProxemics = true;
 
+        this.activationAngle = 20;
+
         this.createQrCodeView();
         this.huddle = this.createHuddle(host, port);
         this.map = this.createMap();
+        this.worldMapCenter = this.map.getCenter();
+
         this.initializeListeners();
     },
 
-    createQrCodeView: function() {
+    createQrCodeView: function () {
         this.qrCodeContainer = $('<div id="qrcode-container" class="huddle-fullscreen"><div id="qrcode"></div></div>');
         $('body').append(this.qrCodeContainer);
 
@@ -42,8 +46,6 @@
         var controller = this;
 
         var huddle = new Huddle(this.deviceId, function (data) {
-            //console.log(data);
-
             if (data.Type) {
                 switch (data.Type) {
                     case 'Proximity':
@@ -63,6 +65,9 @@
 
                             controller.map.panBy(x, y);
                         }
+                        else if (data.mapTypeId) {
+                            controller.map.setMapTypeId(data.mapTypeId);
+                        }
                         else {
                             controller.isUpdateProxemics = data.isUpdateProxemics;
                         }
@@ -80,16 +85,36 @@
     },
 
     createMap: function () {
+
+        var latitude = this.getParameterByName('lat');
+        if (!latitude || latitude == 'undefined')
+            latitude = 47.7083395;
+
+        var longitude = this.getParameterByName('lng');
+        if (!longitude || longitude == 'undefined')
+            longitude = 9.1517065;
+
+        var zoom = this.getParameterByName('zoom');
+        if (!zoom || zoom == 'undefined')
+            zoom = 13;
+
         $('<div id="map-canvas"></div>').appendTo($(this.mapContainerSelector));
 
-        var centerLatLng = new google.maps.LatLng(47.6774887, 9.1642378);
+        var centerLatLng = new google.maps.LatLng(latitude, longitude);
         var mapOptions = {
             center: centerLatLng,
-            zoom: 13,
+            zoom: zoom,
             disableDefaultUI: true,
             draggable: false
         };
         return new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+    },
+
+    changeMapType: function (mapTypeId) {
+        this.map.setMapTypeId(mapTypeId);
+
+        var broadcast = '"mapTypeId": "{0}"'.format(mapTypeId);
+        this.huddle.broadcast(broadcast);
     },
 
     initializeListeners: function () {
@@ -139,6 +164,11 @@
         e.preventDefault();
 
         var controller = e.data.controller;
+
+        //controller.worldMapCenter = controller.map.getCenter();
+        //var broadcast = '"worldMapCenter": {{"lat": {0}, "lng": {1}}}'.format(controller.worldMapCenter.d, controller.worldMapCenter.e);
+        //controller.huddle.broadcast(broadcast);
+
         controller.isDragging = false;
     },
 
@@ -158,14 +188,14 @@
         if (angle < 0)
             angle += 360;
 
-        if (angle > 45 && angle < 135) {
+        if (angle > this.activationAngle && angle < this.activationAngle + 45) {
             $('#tool-palette-container').show();
         }
         else {
             $('#tool-palette-container').hide();
         }
 
-        if (angle > 215 && angle < 315) {
+        if (angle > (360 - this.activationAngle - 45) && angle < (360 - this.activationAngle)) {
             $('#note-container').show();
         }
         else {
@@ -183,7 +213,7 @@
         var offsetY = (1.0 - x) / zoom * 8;
 
         //var latLng2 = new google.maps.LatLng(centerLatLng.d - offsetX, centerLatLng.e - offsetY);
-        var latLng2 = new google.maps.LatLng(47.7083395 - offsetX, 9.1517065 - offsetY);
+        var latLng2 = new google.maps.LatLng(this.worldMapCenter.d - offsetX, this.worldMapCenter.e - offsetY);
 
         //map.panTo(latLng2);
         this.map.setCenter(latLng2);

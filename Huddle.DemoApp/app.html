@@ -26,6 +26,7 @@
     <script type="text/javascript" src="js/google.map.extensions.js"></script>
     <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
     <script type="text/javascript" src="js/jquery.qrcode.min.js"></script>
+    <script type="text/javascript" src="js/sketch.js"></script>
     <script type="text/javascript" src="js/huddle.js"></script>
     <script type="text/javascript" src="js/demoapp.controller.js"></script>
     <script type="text/javascript">
@@ -35,8 +36,64 @@
             document.ontouchstart = function (e) {
                 e.preventDefault();
             };
-            
+
             var controller = new DemoAppController("192.168.1.206", 4711, '#map-container');
+
+            var windowWidth = $(window).width();
+            var windowHeight = $(window).height();
+
+            var $notes = $('#note');
+            $notes.sketch();
+            $notes.get(0).setAttribute('width', windowWidth);
+            $notes.get(0).setAttribute('height', windowHeight);
+
+
+            //MapTypeId.ROADMAP displays the default road map view. This is the default map type.
+            //MapTypeId.SATELLITE displays Google Earth satellite images
+            //MapTypeId.HYBRID displays a mixture of normal and satellite views
+            //MapTypeId.TERRAIN
+
+            $('.toggle-button').on('mouseup', function (event) {
+                event.preventDefault();
+
+                var id = this.id;
+                //console.log(id);
+                switch (id) {
+                    case 'map-id-roadmap':
+                        controller.changeMapType(google.maps.MapTypeId.ROADMAP);
+                        break;
+                    case 'map-id-satellite':
+                        controller.changeMapType(google.maps.MapTypeId.SATELLITE);
+                        break;
+                    case 'map-id-hybrid':
+                        controller.changeMapType(google.maps.MapTypeId.HYBRID);
+                        break;
+                    case 'map-id-terrain':
+                        controller.changeMapType(google.maps.MapTypeId.TERRAIN);
+                        break;
+                }
+            });
+
+            $('.toggle-button').on('touchstart', function (event) {
+                event.preventDefault();
+
+                var id = this.id;
+                //console.log(id);
+                switch (id) {
+                    case 'map-id-roadmap':
+                        controller.changeMapType(google.maps.MapTypeId.ROADMAP);
+                        break;
+                    case 'map-id-satellite':
+                        controller.changeMapType(google.maps.MapTypeId.SATELLITE);
+                        break;
+                    case 'map-id-hybrid':
+                        controller.changeMapType(google.maps.MapTypeId.HYBRID);
+                        break;
+                    case 'map-id-terrain':
+                        controller.changeMapType(google.maps.MapTypeId.TERRAIN);
+                        break;
+                }
+            });
         });
     </script>
 </head>
@@ -44,11 +101,28 @@
     <div id="map-container" class="huddle-fullscreen"></div>
 
     <div id="tool-palette-container" class="huddle-fullscreen">
-        <div style="font-size: 44px;">Tool Palette</div>
+        <table>
+            <tr>
+                <td>
+                    <div id="map-id-roadmap" style="font-size: 44px;" class="toggle-button">ROADMAP</div>
+                </td>
+                <td>
+                    <div id="map-id-satellite" style="font-size: 44px;" class="toggle-button">SATELLITE</div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div id="map-id-hybrid" style="font-size: 44px;" class="toggle-button">HYBRID</div>
+                </td>
+                <td>
+                    <div id="map-id-terrain" style="font-size: 44px;" class="toggle-button">TERRAIN</div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div id="note-container" class="huddle-fullscreen">
-        <div style="font-size: 44px;">Notes</div>
+        <canvas id="note"></canvas>
     </div>
 </body>
 </html>

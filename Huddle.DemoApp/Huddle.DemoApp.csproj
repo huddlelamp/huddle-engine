@@ -67,6 +67,7 @@
     <Content Include="js\jquery-2.1.0.min.js" />
     <Content Include="js\jquery.qrcode.min.js" />
     <Content Include="js\prototype.js" />
+    <Content Include="js\sketch.js" />
     <Content Include="style\background.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
