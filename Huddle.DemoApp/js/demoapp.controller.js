@@ -19,6 +19,7 @@
         this.huddle = this.createHuddle(host, port);
         this.map = this.createMap();
         this.worldMapCenter = this.map.getCenter();
+        this.latestWorldMapCenter = this.map.getCenter();
 
         this.initializeListeners();
     },
@@ -67,6 +68,11 @@
                         }
                         else if (data.mapTypeId) {
                             controller.map.setMapTypeId(data.mapTypeId);
+                        }
+                        else if (data.worldMapCenter) {
+                            var wmc = data.worldMapCenter;
+
+                            controller.worldMapCenter = new google.maps.LatLng(wmc.lat, wmc.lng);
                         }
                         else {
                             controller.isUpdateProxemics = data.isUpdateProxemics;
@@ -165,11 +171,14 @@
 
         var controller = e.data.controller;
 
-        //controller.worldMapCenter = controller.map.getCenter();
-        //var broadcast = '"worldMapCenter": {{"lat": {0}, "lng": {1}}}'.format(controller.worldMapCenter.d, controller.worldMapCenter.e);
-        //controller.huddle.broadcast(broadcast);
+        //var broadcastWmc = '"worldMapCenter": {{"lat": {0}, "lng": {1}}}'.format(controller.latestWorldMapCenter.d, controller.latestWorldMapCenter.e);
+        //controller.huddle.broadcast(broadcastWmc);
 
         controller.isDragging = false;
+
+        //controller.isUpdateProxemics = true;
+        //var broadcast = '"isUpdateProxemics": true';
+        //controller.huddle.broadcast(broadcast);
     },
 
     getParameterByName: function (name) {
@@ -213,9 +222,9 @@
         var offsetY = (1.0 - x) / zoom * 8;
 
         //var latLng2 = new google.maps.LatLng(centerLatLng.d - offsetX, centerLatLng.e - offsetY);
-        var latLng2 = new google.maps.LatLng(this.worldMapCenter.d - offsetX, this.worldMapCenter.e - offsetY);
+        this.latestWorldMapCenter = new google.maps.LatLng(this.worldMapCenter.d - offsetX, this.worldMapCenter.e - offsetY);
 
         //map.panTo(latLng2);
-        this.map.setCenter(latLng2);
+        this.map.setCenter(this.latestWorldMapCenter);
     },
 });

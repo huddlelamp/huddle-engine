@@ -30,6 +30,18 @@
     <script type="text/javascript" src="js/huddle.js"></script>
     <script type="text/javascript" src="js/demoapp.controller.js"></script>
     <script type="text/javascript">
+        //var map;
+        //function initialize() {
+        //    var mapOptions = {
+        //        zoom: 8,
+        //        center: new google.maps.LatLng(-34.397, 150.644)
+        //    };
+        //    map = new google.maps.Map(document.getElementById('roadmap-map'),
+        //        mapOptions);
+        //}
+
+        //google.maps.event.addDomListener(window, 'load', initialize);
+
         $(document).ready(function () {
 
             // disable touch to avoid moving scroll view
@@ -42,11 +54,17 @@
             var windowWidth = $(window).width();
             var windowHeight = $(window).height();
 
+            $.each(['#f00', '#ff0', '#0f0', '#0ff', '#00f', '#f0f', '#000', '#fff'], function () {
+                $('#tools').append("<a href='#note' data-color='" + this + "' style='background: " + this + ";'></a> ");
+            });
+            $.each([3, 5, 10, 15], function () {
+                $('#tools').append("<a href='#note' data-size='" + this + "' style='background: #ccc'>" + this + "</a> ");
+            });
+
             var $notes = $('#note');
             $notes.sketch();
             $notes.get(0).setAttribute('width', windowWidth);
             $notes.get(0).setAttribute('height', windowHeight);
-
 
             //MapTypeId.ROADMAP displays the default road map view. This is the default map type.
             //MapTypeId.SATELLITE displays Google Earth satellite images
@@ -59,18 +77,18 @@
                 var id = this.id;
                 //console.log(id);
                 switch (id) {
-                    case 'map-id-roadmap':
-                        controller.changeMapType(google.maps.MapTypeId.ROADMAP);
-                        break;
-                    case 'map-id-satellite':
-                        controller.changeMapType(google.maps.MapTypeId.SATELLITE);
-                        break;
-                    case 'map-id-hybrid':
-                        controller.changeMapType(google.maps.MapTypeId.HYBRID);
-                        break;
-                    case 'map-id-terrain':
-                        controller.changeMapType(google.maps.MapTypeId.TERRAIN);
-                        break;
+                case 'map-id-roadmap':
+                    controller.changeMapType(google.maps.MapTypeId.ROADMAP);
+                    break;
+                case 'map-id-satellite':
+                    controller.changeMapType(google.maps.MapTypeId.SATELLITE);
+                    break;
+                case 'map-id-hybrid':
+                    controller.changeMapType(google.maps.MapTypeId.HYBRID);
+                    break;
+                case 'map-id-terrain':
+                    controller.changeMapType(google.maps.MapTypeId.TERRAIN);
+                    break;
                 }
             });
 
@@ -80,18 +98,18 @@
                 var id = this.id;
                 //console.log(id);
                 switch (id) {
-                    case 'map-id-roadmap':
-                        controller.changeMapType(google.maps.MapTypeId.ROADMAP);
-                        break;
-                    case 'map-id-satellite':
-                        controller.changeMapType(google.maps.MapTypeId.SATELLITE);
-                        break;
-                    case 'map-id-hybrid':
-                        controller.changeMapType(google.maps.MapTypeId.HYBRID);
-                        break;
-                    case 'map-id-terrain':
-                        controller.changeMapType(google.maps.MapTypeId.TERRAIN);
-                        break;
+                case 'map-id-roadmap':
+                    controller.changeMapType(google.maps.MapTypeId.ROADMAP);
+                    break;
+                case 'map-id-satellite':
+                    controller.changeMapType(google.maps.MapTypeId.SATELLITE);
+                    break;
+                case 'map-id-hybrid':
+                    controller.changeMapType(google.maps.MapTypeId.HYBRID);
+                    break;
+                case 'map-id-terrain':
+                    controller.changeMapType(google.maps.MapTypeId.TERRAIN);
+                    break;
                 }
             });
         });
@@ -104,24 +122,37 @@
         <table>
             <tr>
                 <td>
-                    <div id="map-id-roadmap" style="font-size: 44px;" class="toggle-button">ROADMAP</div>
+                    <div id="map-id-roadmap" style="font-size: 44px;" class="toggle-button">
+                        Roadmap
+                        <div id="roadmap-map"></div>
+                    </div>
                 </td>
                 <td>
-                    <div id="map-id-satellite" style="font-size: 44px;" class="toggle-button">SATELLITE</div>
+                    <div id="map-id-satellite" style="font-size: 44px;" class="toggle-button">
+                        Satellite
+                        <div id="satellite-map"></div>
+                    </div>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <div id="map-id-hybrid" style="font-size: 44px;" class="toggle-button">HYBRID</div>
+                    <div id="map-id-hybrid" style="font-size: 44px;" class="toggle-button">
+                        Hybrid
+                        <div id="hybrid-map"></div>
+                    </div>
                 </td>
                 <td>
-                    <div id="map-id-terrain" style="font-size: 44px;" class="toggle-button">TERRAIN</div>
+                    <div id="map-id-terrain" style="font-size: 44px;" class="toggle-button">
+                        Terrain
+                        <div id="terrain-map"></div>
+                    </div>
                 </td>
             </tr>
         </table>
     </div>
 
     <div id="note-container" class="huddle-fullscreen">
+        <div id="tools"></div>
         <canvas id="note"></canvas>
     </div>
 </body>

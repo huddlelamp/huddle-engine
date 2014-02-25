@@ -92,8 +92,6 @@ Huddle.prototype.doConnect = function () {
 
         huddle.connected = false;
     };
-
-
 };
 
 Huddle.prototype.close = function () {

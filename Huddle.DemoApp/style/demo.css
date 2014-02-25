@@ -25,10 +25,29 @@
     display: none;
 }
 
+#tools {
+    background-color: lightgray;
+}
+
+#tools a {
+    border: 1px solid black;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    /*padding: 0 10px;*/
+    margin: 10px;
+    vertical-align: middle;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    color: black;
+    font-weight: bold;
+}
+
 .toggle-button {
     width: 500px;
     height: 350px;
-    background-color: deepskyblue;
+    /*background-color: deepskyblue;*/
     border: 1px solid black;
 }
 
@@ -61,10 +80,9 @@
     margin: 0 auto;
     background-color: deepskyblue;
     border: 1px solid black;
-
-    -o-transform-origin:0 100%;
-    -ms-transform-origin:0 100%;
-    -moz-transform-origin:0 100%;
-    -webkit-transform-origin:0 100%;
-    transform-origin:0 100%;
+    -o-transform-origin: 0 100%;
+    -ms-transform-origin: 0 100%;
+    -moz-transform-origin: 0 100%;
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
 }
