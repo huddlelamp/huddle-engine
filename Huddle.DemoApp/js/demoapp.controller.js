@@ -11,8 +11,7 @@
             x: 0,
             y: 0
         };
-
-        this.updateProxemics = true;
+        this.isUpdateProxemics = true;
 
         this.createQrCodeView();
         this.huddle = this.createHuddle(host, port);
@@ -48,8 +47,8 @@
             if (data.Type) {
                 switch (data.Type) {
                     case 'Proximity':
-                        if (controller.updateProxemics)
-                            controller.processProximity(data.Data).bind(controller);
+                        if (controller.isUpdateProxemics)
+                            controller.processProximity(data.Data);//.bind(controller);
                         break;
                     case 'Digital':
                         if (data.Data.Value)
@@ -58,10 +57,15 @@
                             controller.qrCodeContainer.hide();
                         break;
                     case 'Broadcast':
-                        var x = data.panBy.x;
-                        var y = data.panBy.y;
+                        if (data.panBy) {
+                            var x = data.panBy.x;
+                            var y = data.panBy.y;
 
-                        controller.map.panBy(x, y);
+                            controller.map.panBy(x, y);
+                        }
+                        else {
+                            controller.isUpdateProxemics = data.isUpdateProxemics;
+                        }
 
                         break;
                 }
@@ -106,6 +110,10 @@
         controller.isDragging = true;
         controller.dragPosition.x = e.screenX;
         controller.dragPosition.y = e.screenY;
+
+        controller.isUpdateProxemics = false;
+        var broadcast = '"isUpdateProxemics": false';
+        controller.huddle.broadcast(broadcast);
     },
 
     dragmove: function (e) {
@@ -168,10 +176,14 @@
 
         //var latLng = projection.fromPointToLatLng(point);
 
-        var offsetX = y / map.getZoom() * 8;
-        var offsetY = (1.0 - x) / map.getZoom() * 8;
+        if (!this.isUpdateProxemics) return;
 
-        var latLng2 = new google.maps.LatLng(centerLatLng.d - offsetX, centerLatLng.e - offsetY);
+        var zoom = this.map.getZoom();
+        var offsetX = y / zoom * 8;
+        var offsetY = (1.0 - x) / zoom * 8;
+
+        //var latLng2 = new google.maps.LatLng(centerLatLng.d - offsetX, centerLatLng.e - offsetY);
+        var latLng2 = new google.maps.LatLng(47.7083395 - offsetX, 9.1517065 - offsetY);
 
         //map.panTo(latLng2);
         this.map.setCenter(latLng2);

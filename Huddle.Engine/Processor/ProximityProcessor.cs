@@ -470,7 +470,16 @@ namespace Huddle.Engine.Processor
                 var deltaAngle = blob.Angle - device.LastBlobAngle;
 
                 if (deltaAngle > 45)
-                    return;
+                {
+                    deltaAngle -= 90;
+                    //return;
+                }
+                else if (deltaAngle < -45)
+                {
+                    deltaAngle += 90;
+                }
+
+                Console.WriteLine("Delta Angle {0}", deltaAngle);
 
                 device.LastBlobAngle = blob.Angle;
                 device.Angle += deltaAngle;
