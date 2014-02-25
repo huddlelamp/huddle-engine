@@ -61,10 +61,12 @@
     <Content Include="Copyright.txt" />
     <Content Include="huddletest.html" />
     <Content Include="app.html" />
+    <Content Include="js\demoapp.controller.js" />
     <Content Include="js\google.map.extensions.js" />
     <Content Include="js\huddle.js" />
     <Content Include="js\jquery-2.1.0.min.js" />
     <Content Include="js\jquery.qrcode.min.js" />
+    <Content Include="js\prototype.js" />
     <Content Include="style\background.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

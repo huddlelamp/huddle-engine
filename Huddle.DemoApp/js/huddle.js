@@ -1,10 +1,10 @@
 String.prototype.format = function () {
-  var args = arguments;
-  return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function (m, n) {
-    if (m == "{{") { return "{"; }
-    if (m == "}}") { return "}"; }
-    return args[n];
-  });
+    var args = arguments;
+    return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function (m, n) {
+        if (m == "{{") { return "{"; }
+        if (m == "}}") { return "}"; }
+        return args[n];
+    });
 };
 
 window.WebSocket = window.WebSocket || window.MozWebSocket;
@@ -16,7 +16,7 @@ function Huddle(id, ondata) {
     this.reconnect = false;
 };
 
-Huddle.prototype.connect = function(host, port) {
+Huddle.prototype.connect = function (host, port) {
     this.host = host;
     this.port = port;
 
@@ -27,7 +27,7 @@ Huddle.prototype.doConnect = function () {
     var huddle = this;
 
     // send alive message every 10 seconds, otherwise web socket server closes connection
-    var aliveInterval = setInterval(function() {
+    var aliveInterval = setInterval(function () {
         if (huddle.connected) {
             var content = '"DeviceId": "{0}"'.format(huddle.id);
             huddle.send("Alive", content);
@@ -36,15 +36,14 @@ Huddle.prototype.doConnect = function () {
 
     this.wsUri = "ws://{0}".format(this.host);
     if (this.port)
-        this.wsUri = "{0}:{1}".format(this.wsUri, this.port); 
+        this.wsUri = "{0}:{1}".format(this.wsUri, this.port);
 
     this.socket = new WebSocket(this.wsUri);
 
-    this.socket.onopen = function() {
+    this.socket.onopen = function () {
         console.log("Huddle connection open");
-        
-        if (huddle.reconnectTimeout)
-        {
+
+        if (huddle.reconnectTimeout) {
             clearTimeout(huddle.reconnectTimeout);
             huddle.reconnectTimeout = null;
         }
@@ -56,7 +55,7 @@ Huddle.prototype.doConnect = function () {
         huddle.send("Handshake", content);
     };
 
-    this.socket.onmessage = function(event) {
+    this.socket.onmessage = function (event) {
         //console.log("Huddle Message {0}".format(event));
 
         if (!event || !event.data) return;
@@ -71,26 +70,24 @@ Huddle.prototype.doConnect = function () {
 
         if (!data || data == null) return;
 
-        if (typeof(huddle.ondata) == "function") {
+        if (typeof (huddle.ondata) == "function") {
             huddle.ondata(data);
         }
     };
 
-    this.socket.onerror = function(event) {
+    this.socket.onerror = function (event) {
         console.log("Huddle Error {0}".format(event));
 
         huddle.connected = false;
 
-        if (huddle.reconnect)
-        {
-            huddle.reconnectTimeout = setTimeout(function()
-            {
+        if (huddle.reconnect) {
+            huddle.reconnectTimeout = setTimeout(function () {
                 huddle.doConnect(huddle.host, huddle.port);
             }, 1000);
         }
     };
 
-    this.socket.onclose = function(event) {
+    this.socket.onclose = function (event) {
         console.log("Huddle Closed {0}".format(event));
 
         huddle.connected = false;
@@ -99,7 +96,7 @@ Huddle.prototype.doConnect = function () {
 
 };
 
-Huddle.prototype.close = function() {
+Huddle.prototype.close = function () {
     if (this.socket)
         this.socket.close();
 };
@@ -109,6 +106,8 @@ Huddle.prototype.broadcast = function (message) {
 };
 
 Huddle.prototype.send = function (type, content) {
-    var message = '{{"Type": "{0}", {1}}}'.format(type, content);
-    this.socket.send(message);
+    if (this.connected) {
+        var message = '{{"Type": "{0}", {1}}}'.format(type, content);
+        this.socket.send(message);
+    }
 }
