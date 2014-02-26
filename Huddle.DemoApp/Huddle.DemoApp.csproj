@@ -72,6 +72,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="style\demo.css" />
+    <Content Include="style\hybrid0.png" />
+    <Content Include="style\roadmap0.png" />
+    <Content Include="style\satellite0.png" />
+    <Content Include="style\terrain0.png" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>

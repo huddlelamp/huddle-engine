@@ -21,7 +21,7 @@
 }
 
 #tool-palette-container {
-    background-color: yellow;
+    background-color: white;
     display: none;
 }
 
@@ -68,6 +68,26 @@
 #qrcode {
     margin-top: 50px;
     text-align: center;
+}
+
+table {
+    margin: 0 auto;
+}
+
+#map-id-roadmap {
+    background-image: url('roadmap0.png');
+}
+
+#map-id-hybrid {
+    background-image: url('hybrid0.png');
+}
+
+#map-id-satellite {
+    background-image: url('satellite0.png');
+}
+
+#map-id-terrain {
+    background-image: url('terrain0.png');
 }
 
 #peephole-canvas {

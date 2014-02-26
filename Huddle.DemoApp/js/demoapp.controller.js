@@ -21,6 +21,16 @@
         this.worldMapCenter = this.map.getCenter();
         this.latestWorldMapCenter = this.map.getCenter();
 
+        this.mapOffset = {
+            x: 0,
+            y: 0
+        };
+
+        this.lastPosition = {
+            x: 0,
+            y: 0
+        };
+
         this.initializeListeners();
     },
 
@@ -104,11 +114,16 @@
         if (!zoom || zoom == 'undefined')
             zoom = 13;
 
+        var mapTypeId = this.getParameterByName('mtype');
+        if (!mapTypeId || mapTypeId == 'undefined')
+            mapTypeId = google.maps.MapTypeId.ROADMAP;
+
         $('<div id="map-canvas"></div>').appendTo($(this.mapContainerSelector));
 
         var centerLatLng = new google.maps.LatLng(latitude, longitude);
         var mapOptions = {
             center: centerLatLng,
+            mapTypeId: mapTypeId,
             zoom: zoom,
             disableDefaultUI: true,
             draggable: false
@@ -171,14 +186,27 @@
 
         var controller = e.data.controller;
 
-        //var broadcastWmc = '"worldMapCenter": {{"lat": {0}, "lng": {1}}}'.format(controller.latestWorldMapCenter.d, controller.latestWorldMapCenter.e);
-        //controller.huddle.broadcast(broadcastWmc);
+        console.log(controller.worldMapCenter);
+
+        var localMapCenter = controller.map.getCenter();
+
+        var globalMapCenter = new google.maps.LatLng(localMapCenter.d + controller.mapOffset.x, localMapCenter.e + controller.mapOffset.y);
+
+        console.log("WorldMap: {0}, GlobalMap: {1}".format(localMapCenter.toString(), globalMapCenter.toString()));
+
+        //controller.worldMapCenter.d -= controller.latestWorldMapCenter.d;
+        //controller.worldMapCenter.e -= controller.latestWorldMapCenter.e;
+
+        controller.worldMapCenter = globalMapCenter;
+
+        var broadcastWmc = '"worldMapCenter": {{"lat": {0}, "lng": {1}}}'.format(globalMapCenter.d, globalMapCenter.e);
+        controller.huddle.broadcast(broadcastWmc);
 
         controller.isDragging = false;
 
-        //controller.isUpdateProxemics = true;
-        //var broadcast = '"isUpdateProxemics": true';
-        //controller.huddle.broadcast(broadcast);
+        controller.isUpdateProxemics = true;
+        var broadcast = '"isUpdateProxemics": true';
+        controller.huddle.broadcast(broadcast);
     },
 
     getParameterByName: function (name) {
@@ -211,20 +239,27 @@
             $('#note-container').hide();
         }
 
-        //var point = new google.maps.Point(x * -10, y * 100);
-
-        //var latLng = projection.fromPointToLatLng(point);
-
         if (!this.isUpdateProxemics) return;
+
+        //if (Math.abs(this.lastPosition.x - x) < 0.001 || Math.abs(this.lastPosition.y - y) < 0.001)
+        //    return;
+
+        this.lastPosition.x = x;
+        this.lastPosition.y = y;
 
         var zoom = this.map.getZoom();
         var offsetX = y / zoom * 8;
         var offsetY = (1.0 - x) / zoom * 8;
 
-        //var latLng2 = new google.maps.LatLng(centerLatLng.d - offsetX, centerLatLng.e - offsetY);
+        this.mapOffset.x = offsetX;
+        this.mapOffset.y = offsetY;
+
         this.latestWorldMapCenter = new google.maps.LatLng(this.worldMapCenter.d - offsetX, this.worldMapCenter.e - offsetY);
 
-        //map.panTo(latLng2);
+        //this.map.panTo(this.latestWorldMapCenter);
+
+        //console.log("World: {0}".format(this.latestWorldMapCenter));
+
         this.map.setCenter(this.latestWorldMapCenter);
     },
 });
