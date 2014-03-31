@@ -1,18 +1,27 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms.VisualStyles;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.External.Extensions;
 using Emgu.CV.Structure;
+using Emgu.CV.VideoSurveillance;
 using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
+using Huddle.Engine.Processor.OpenCv;
 using Huddle.Engine.Util;
+using Color = System.Drawing.Color;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
 
 namespace Huddle.Engine.Processor.Sensors
 {
@@ -144,6 +153,114 @@ namespace Huddle.Engine.Processor.Sensors
 
         #endregion
 
+        #region UVMapImageSource
+
+        /// <summary>
+        /// The <see cref="UVMapImageSource" /> property's name.
+        /// </summary>
+        public const string UVMapImageSourcePropertyName = "UVMapImageSource";
+
+        private BitmapSource _uvMapImageSource = null;
+
+        /// <summary>
+        /// Sets and gets the ConfidenceMapImageSource property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public BitmapSource UVMapImageSource
+        {
+            get
+            {
+                return _uvMapImageSource;
+            }
+
+            set
+            {
+                if (_uvMapImageSource == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(UVMapImageSourcePropertyName);
+                _uvMapImageSource = value;
+                RaisePropertyChanged(UVMapImageSourcePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region RgbOfDepthImageSource
+
+        /// <summary>
+        /// The <see cref="RgbOfDepthImageSource" /> property's name.
+        /// </summary>
+        public const string RgbOfDepthImageSourcePropertyName = "RgbOfDepthImageSource";
+
+        private BitmapSource _RgbOfDepthImageSource = null;
+
+        /// <summary>
+        /// Sets and gets the ConfidenceMapImageSource property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public BitmapSource RgbOfDepthImageSource
+        {
+            get
+            {
+                return _RgbOfDepthImageSource;
+            }
+
+            set
+            {
+                if (_RgbOfDepthImageSource == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(RgbOfDepthImageSourcePropertyName);
+                _RgbOfDepthImageSource = value;
+                RaisePropertyChanged(RgbOfDepthImageSourcePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region DepthOfRgbImageSource
+
+        /// <summary>
+        /// The <see cref="DepthOfRgbImageSource" /> property's name.
+        /// </summary>
+        public const string DepthOfRgbImageSourcePropertyName = "DepthOfRgbImageSource";
+
+        private BitmapSource _DepthOfRgbImageSource = null;
+
+        /// <summary>
+        /// Sets and gets the ConfidenceMapImageSource property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public BitmapSource DepthOfRgbImageSource
+        {
+            get
+            {
+                return _DepthOfRgbImageSource;
+            }
+
+            set
+            {
+                if (_DepthOfRgbImageSource == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DepthOfRgbImageSourcePropertyName);
+                _DepthOfRgbImageSource = value;
+                RaisePropertyChanged(DepthOfRgbImageSourcePropertyName);
+            }
+        }
+
+        #endregion
+
         #region DepthConfidenceThreshold
 
         /// <summary>
@@ -252,6 +369,310 @@ namespace Huddle.Engine.Processor.Sensors
 
         #endregion
 
+        #region UvMapChecked
+
+        /// <summary>
+        /// The <see cref="UvMapChecked" /> property's name.
+        /// </summary>
+        public const string UvMapCheckedPropertyName = "UvMapChecked";
+
+        private bool _uvMapCheckedProperty = false;
+
+        /// <summary>
+        /// Sets and gets the UvMapChecked property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool UvMapChecked
+        {
+            get
+            {
+                return _uvMapCheckedProperty;
+            }
+
+            set
+            {
+                if (_uvMapCheckedProperty == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(UvMapCheckedPropertyName);
+                _uvMapCheckedProperty = value;
+                RaisePropertyChanged(UvMapCheckedPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region RgbOfDepthChecked
+
+        /// <summary>
+        /// The <see cref="RgbOfDepthCheckedProperty" /> property's name.
+        /// </summary>
+        public const string RgbOfDepthCheckedPropertyName = "RgbOfDepthCheckedProperty";
+
+        private bool _rgbOfDepthCheckedProperty = false;
+
+        /// <summary>
+        /// Sets and gets the RgbOfDepthCheckedProperty property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool RgbOfDepthChecked
+        {
+            get
+            {
+                return _rgbOfDepthCheckedProperty;
+            }
+
+            set
+            {
+                if (_rgbOfDepthCheckedProperty == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(RgbOfDepthCheckedPropertyName);
+                _rgbOfDepthCheckedProperty = value;
+                RaisePropertyChanged(RgbOfDepthCheckedPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region DepthOfRgbChecked
+
+        /// <summary>
+        /// The <see cref="DepthOfRgbChecked" /> property's name.
+        /// </summary>
+        public const string DepthOfRgbCheckedPropertyName = "DepthOfRgbChecked";
+
+        private bool _depethOfRgbChecked = false;
+
+        /// <summary>
+        /// Sets and gets the DepthOfRgbChecked property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool DepthOfRgbChecked
+        {
+            get
+            {
+                return _depethOfRgbChecked;
+            }
+
+            set
+            {
+                if (_depethOfRgbChecked == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DepthOfRgbCheckedPropertyName);
+                _depethOfRgbChecked = value;
+                RaisePropertyChanged(DepthOfRgbCheckedPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region ColorImageFrameTime
+        /// <summary>
+        /// The <see cref="ColorImageFrameTime" /> property's name.
+        /// </summary>
+        public const string ColorImageFrameTimePropertyName = "ColorImageFrameTime";
+
+        private long _ColorImageFrameTime = 0;
+
+        /// <summary>
+        /// Sets and gets the ColorImageFrameTime property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public long ColorImageFrameTime
+        {
+            get
+            {
+                return _ColorImageFrameTime;
+            }
+
+            set
+            {
+                if (_ColorImageFrameTime == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ColorImageFrameTimePropertyName);
+                _ColorImageFrameTime = value;
+                RaisePropertyChanged(ColorImageFrameTimePropertyName);
+            }
+        }
+        #endregion
+
+        #region DepthImageFrameTime
+        /// <summary>
+        /// The <see cref="DepthImageFrameTime" /> property's name.
+        /// </summary>
+        public const string DepthImageFrameTimePropertyName = "DepthImageFrameTime";
+
+        private long _DepthImageFrameTime = 0;
+
+        /// <summary>
+        /// Sets and gets the DepthImageFrameTime property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public long DepthImageFrameTime
+        {
+            get
+            {
+                return _DepthImageFrameTime;
+            }
+
+            set
+            {
+                if (_DepthImageFrameTime == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DepthImageFrameTimePropertyName);
+                _DepthImageFrameTime = value;
+                RaisePropertyChanged(DepthImageFrameTimePropertyName);
+            }
+        }
+        #endregion
+
+        #region ConfidenceMapImageFrameTime
+        /// <summary>
+        /// The <see cref="ConfidenceMapImageFrameTime" /> property's name.
+        /// </summary>
+        public const string ConfidenceMapImageFrameTimePropertyName = "ConfidenceMapImageFrameTime";
+
+        private long _ConfidenceMapImageFrameTime = 0;
+
+        /// <summary>
+        /// Sets and gets the ConfidenceMapImageFrameTime property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public long ConfidenceMapImageFrameTime
+        {
+            get
+            {
+                return _ConfidenceMapImageFrameTime;
+            }
+
+            set
+            {
+                if (_ConfidenceMapImageFrameTime == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ConfidenceMapImageFrameTimePropertyName);
+                _ConfidenceMapImageFrameTime = value;
+                RaisePropertyChanged(ConfidenceMapImageFrameTimePropertyName);
+            }
+        }
+        #endregion
+
+        #region UVMapImageFrameTime
+        /// <summary>
+        /// The <see cref="UVMapImageFrameTime" /> property's name.
+        /// </summary>
+        public const string UVMapImageFrameTimePropertyName = "UVMapImageFrameTime";
+
+        private long _UVMapImageFrameTime = 0;
+
+        /// <summary>
+        /// Sets and gets the UVMapImageFrameTime property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public long UVMapImageFrameTime
+        {
+            get
+            {
+                return _UVMapImageFrameTime;
+            }
+
+            set
+            {
+                if (_UVMapImageFrameTime == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(UVMapImageFrameTimePropertyName);
+                _UVMapImageFrameTime = value;
+                RaisePropertyChanged(UVMapImageFrameTimePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region RgbOfDepthImageFrameTime
+        /// <summary>
+        /// The <see cref="RgbOfDepthImageFrameTime" /> property's name.
+        /// </summary>
+        public const string RgbOfDepthImageFrameTimePropertyName = "RgbOfDepthImageFrameTime";
+
+        private long _myProperty = 0;
+
+        /// <summary>
+        /// Sets and gets the RgbOfDepthImageFrameTime property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public long RgbOfDepthImageFrameTime
+        {
+            get
+            {
+                return _myProperty;
+            }
+
+            set
+            {
+                if (_myProperty == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(RgbOfDepthImageFrameTimePropertyName);
+                _myProperty = value;
+                RaisePropertyChanged(RgbOfDepthImageFrameTimePropertyName);
+            }
+        }
+        #endregion
+
+        #region DepthOfRgbImageFrameTime
+        /// <summary>
+        /// The <see cref="DepthOfRgbImageFrameTime" /> property's name.
+        /// </summary>
+        public const string DepthOfRgbImageFrameTimePropertyName = "DepthOfRgbImageFrameTime";
+
+        private long _DepthOfRgbImageFrameTime = 0;
+
+        /// <summary>
+        /// Sets and gets the DepthOfRgbImageFrameTime property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public long DepthOfRgbImageFrameTime
+        {
+            get
+            {
+                return _DepthOfRgbImageFrameTime;
+            }
+
+            set
+            {
+                if (_DepthOfRgbImageFrameTime == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DepthOfRgbImageFrameTimePropertyName);
+                _DepthOfRgbImageFrameTime = value;
+                RaisePropertyChanged(DepthOfRgbImageFrameTimePropertyName);
+            }
+        }
+        #endregion
+
         #endregion
 
         #region ctor
@@ -303,7 +724,7 @@ namespace Huddle.Engine.Processor.Sensors
 
         private void DoRendering(SynchronizationContext ctx)
         {
-            _isRunning = true;
+            _isRunning = true; 
 
             /* UtilMPipeline works best for synchronous color and depth streaming */
             _pp = new UtilMPipeline();
@@ -340,18 +761,92 @@ namespace Huddle.Engine.Processor.Sensors
                 var color = _pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_COLOR);
                 var depth = _pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_DEPTH);
 
+                Stopwatch sw = Stopwatch.StartNew();
                 var colorBitmap = GetRgb32Pixels(color);
+                ColorImageFrameTime = sw.ElapsedMilliseconds;
+                var colorImage = new Image<Rgb, byte>(colorBitmap);
+
+                sw.Restart();
                 var depthBitmap = GetRgb32Pixels(depth);
+                DepthImageFrameTime = sw.ElapsedMilliseconds;
+                var depthImage = new Image<Rgb, byte>(depthBitmap);
+
+                sw.Restart();
                 var confidenceMapImage = GetDepthConfidencePixels(depth);
+                DepthImageFrameTime = sw.ElapsedMilliseconds;
+
+                /* prepare additional streams based on uvmap if checked */
+                Image<Rgb, Byte> rgbOfDepthImage, depthOfRgbImage,
+                                     rgbOfDepthImageCopy, depthOfRgbImageCopy, uvMapImageCopy;
+
+                Image<Rgb, float> uvMapImage;
+
+                if (UvMapChecked)
+                {
+                    sw.Restart();
+                    uvMapImage = GetDepthUVMap(depth);
+                    UVMapImageFrameTime = sw.ElapsedMilliseconds;
+
+                    //for (int g = 0; g < uvMapImage.Height; g++)
+                    //{
+                    //    for (int h = 0; h < uvMapImage.Width; h++)
+                    //    {
+                    //        Console.WriteLine(g + ", " + h + " = " + uvMapImage[g, h].Red + ", " + uvMapImage[g, h].Green);
+                    //    }
+                    //}                        
+                    
+                    
+                    uvMapImageCopy = uvMapImage.Copy().Convert<Rgb,byte>();
+
+                    //for (int g = 0; g < uvMapImageCopy.Height; g++)
+                    //{
+                    //    for (int h = 0; h < uvMapImageCopy.Width; h++)
+                    //    {
+                    //        Console.WriteLine(g + ", " + h + " = " + uvMapImageCopy[g, h].Red + ", " + uvMapImageCopy[g, h].Green);
+                    //    }
+                    //}    
+                }
+                else
+                {
+                    uvMapImage = null;
+                    uvMapImageCopy = null;
+                    UVMapImageFrameTime = 0;
+                }
+
+                if (RgbOfDepthChecked && uvMapImage != null)
+                {
+                    sw.Restart();
+                    rgbOfDepthImage = GetRgbOfDepthPixels(depthImage, colorImage, uvMapImage);
+                    rgbOfDepthImageCopy = rgbOfDepthImage.Copy();
+                    RgbOfDepthImageFrameTime = sw.ElapsedMilliseconds;
+                }
+                else
+                {
+                    rgbOfDepthImage = null;
+                    rgbOfDepthImageCopy = null;
+                    RgbOfDepthImageFrameTime = 0;
+                }
+
+                if (DepthOfRgbChecked && uvMapImage != null)
+                {
+                    sw.Restart();
+                    depthOfRgbImage = GetDepthOfRGBPixels(depthImage, colorImage, uvMapImage);
+                    depthOfRgbImageCopy = depthOfRgbImage.Copy();
+                    DepthOfRgbImageFrameTime = sw.ElapsedMilliseconds; 
+                }
+                else
+                {
+                    depthOfRgbImage = null;
+                    depthOfRgbImageCopy = null;
+                    DepthOfRgbImageFrameTime = 0;
+                }
 
                 _pp.ReleaseFrame();
-
-                var colorImage = new Image<Rgb, byte>(colorBitmap);
-                var depthImage = new Image<Rgb, byte>(depthBitmap);
 
                 var colorImageCopy = colorImage.Copy();
                 var depthImageCopy = depthImage.Copy();
                 var confidenceMapImageCopy = confidenceMapImage.Copy();
+
                 DispatcherHelper.RunAsync(() =>
                 {
                     ColorImageSource = colorImageCopy.ToBitmapSource();
@@ -362,14 +857,50 @@ namespace Huddle.Engine.Processor.Sensors
 
                     ConfidenceMapImageSource = confidenceMapImageCopy.ToBitmapSource();
                     confidenceMapImageCopy.Dispose();
+
+                    if (uvMapImage != null)
+                    {
+                        UVMapImageSource = uvMapImageCopy.ToBitmapSource();
+                        uvMapImageCopy.Dispose();
+                    }
+                    else
+                    {
+                        UVMapImageSource = null;
+                    }
+
+                    if (rgbOfDepthImage != null)
+                    {
+                        RgbOfDepthImageSource = rgbOfDepthImageCopy.ToBitmapSource();
+                        rgbOfDepthImageCopy.Dispose();
+                    }
+                    else
+                    {
+                        RgbOfDepthImageSource = null;
+                    }
+
+                    if (depthOfRgbImage != null)
+                    {
+                        DepthOfRgbImageSource = depthOfRgbImageCopy.ToBitmapSource();
+                        depthOfRgbImage.Dispose();
+                    }
+                    else
+                    {
+                        DepthOfRgbImageSource = null;
+                    }
+
                 });
 
-                Publish(new DataContainer(++_frameId, DateTime.Now)
+                DataContainer dc = new DataContainer(++_frameId, DateTime.Now)
                 {
                     new RgbImageData("color", colorImage),
                     new RgbImageData("depth", depthImage),
-                    new RgbImageData("confidence", confidenceMapImage)
-                });
+                    new RgbImageData("confidence", confidenceMapImage),
+                };
+
+                //if (uvMapImage != null) dc.Add(new RgbImageData("uvmap", uvMapImage));
+                if (rgbOfDepthImage != null) dc.Add(new RgbImageData("rgbofdepth", rgbOfDepthImage));
+                if (depthOfRgbImage != null) dc.Add(new RgbImageData("depthofrgb", depthOfRgbImage));
+                Publish(dc);
 
                 Thread.Sleep(1000 / (Fps > 0 ? Fps : 1));
             }
@@ -437,7 +968,8 @@ namespace Huddle.Engine.Processor.Sensors
             if (image.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH, out cdata) <
                 pxcmStatus.PXCM_STATUS_NO_ERROR) return confidencePixels;
 
-            for (var y = 0; y < inputHeight; y++)
+            //for (var y = 0; y < inputHeight; y++) {
+            Parallel.For(0, inputHeight, y =>
             {
                 for (var x = 0; x < inputWidth; x++)
                 {
@@ -464,12 +996,181 @@ namespace Huddle.Engine.Processor.Sensors
                         }
                     }
                 }
-            }
+            });
 
             image.ReleaseAccess(ref cdata);
 
             return confidencePixels;
         }
+
+
+        private Image<Rgb, float> GetDepthUVMap(PXCMImage image)
+        {
+            var inputWidth = (int)image.info.width;
+            var inputHeight = (int)image.info.height;
+
+            var _uvMap = new Image<Rgb, float>(inputWidth, inputHeight);
+
+            PXCMImage.ImageData cdata;
+            if (image.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH, out cdata) <
+                pxcmStatus.PXCM_STATUS_NO_ERROR) return _uvMap;
+
+            var uv = new float[inputHeight * inputWidth * 2];
+
+            // read UV
+            var pData = cdata.buffer.planes[2];
+            Marshal.Copy(pData, uv, 0, inputWidth * inputHeight * 2);
+            image.ReleaseAccess(ref cdata);
+
+            Parallel.For(0, uv.Length / 2, i =>
+            {
+                int j = i * 2;
+                //Console.WriteLine(j + ": " + uv[j] * 255.0 + ", " + uv[j + 1] * 255.0);
+                _uvMap[(j / 2) / inputWidth, (j / 2) % inputWidth] = new Rgb(uv[j] * 255.0, uv[j + 1] * 255.0, 0);
+            });
+
+            return _uvMap;
+        }
+
+
+        private Image<Rgb, byte> GetRgbOfDepthPixels(Image<Rgb, byte> depth, Image<Rgb, byte> rgb, Image<Rgb, float> uvmap)
+        {
+            var resImg = new Image<Rgb, byte>(depth.Width, depth.Height);
+
+            // number of rgb pixels per depth pixel
+            int regWidth = rgb.Width / depth.Width;
+            int regHeight = rgb.Height / depth.Height;
+            int rgbWidth = rgb.Width;
+            int rgbHeight = rgb.Height;
+            float xfactor = 1.0f/255.0f*rgbWidth;
+            float yfactor = 1.0f/255.0f*rgbHeight;
+
+            Parallel.For(0, depth.Height, y =>
+            //for (int y = 0; y < depth.Height; y++)
+            {
+                for (int x = 0; x < depth.Width; x++)
+                {
+                    int xindex = (int)(uvmap.Data[y, x, 0] * xfactor + 0.5);
+                    int yindex = (int)(uvmap.Data[y, x, 1] * yfactor + 0.5);
+
+                    double rsum = 0, gsum = 0, bsum = 0;
+                    int pixelcount = 0;
+                    for (int rx = xindex - regWidth / 2; rx < xindex + regWidth / 2; rx++)
+                    {
+                        for (int ry = yindex - regHeight / 2; ry < yindex + regHeight / 2; ry++)
+                        {
+                            if (rx > 0 && ry > 0 && rx < rgbWidth && ry < rgbHeight)
+                            {
+                                rsum += rgb.Data[ry, rx, 0];
+                                gsum += rgb.Data[ry, rx, 1];
+                                bsum += rgb.Data[ry, rx, 2];
+                                pixelcount++;
+                            }
+                        }
+                    }
+                    resImg.Data[y, x, 0] = (byte)(rsum / pixelcount);
+                    resImg.Data[y, x, 1] = (byte)(gsum / pixelcount);
+                    resImg.Data[y, x, 2] = (byte)(bsum / pixelcount);
+                }
+            });
+
+            return resImg;
+        }
+
+
+        private Image<Rgb, byte> GetDepthOfRGBPixels(Image<Rgb, byte> depth, Image<Rgb, byte> rgb, Image<Rgb, float> uvmap)
+        {
+            // create RGB-sized image
+            var invUV = new Image<Rgb, byte>(rgb.Width, rgb.Height, new Rgb(Color.Black));
+            var invUVWidth = invUV.Width;
+            var invUVHeight = invUV.Height;
+            var uvmapWidth = uvmap.Width;
+            var uvmapHeight = uvmap.Height;
+
+            Parallel.For(0, uvmapHeight - 1, uvy =>
+            {
+                float xfactor = 1.0f/255.0f*invUVWidth;
+                float yfactor = 1.0f/255.0f*invUVHeight;
+
+                Parallel.For(0, uvmapWidth - 1, uvx =>
+                {
+                    // for each point in UVmap create two triangles that connect this point with the right/bottom neighbors                   
+                    var pts1 = new Point[3];
+                    var pts2 = new Point[3];
+
+                    bool outofbounds = false;
+
+                    // get points for triangle 1 (top left)
+                    pts1[0].X = (int)(uvmap.Data[uvy, uvx, 0]*xfactor + 0.5);
+                    outofbounds |= pts1[0].X < 0 || pts1[0].X > invUVWidth;
+                    
+                    pts1[0].Y = (int)(uvmap.Data[uvy, uvx, 1]*yfactor + 0.5);
+                    outofbounds |= pts1[0].Y < 0 || pts1[0].Y > invUVHeight;
+
+                    pts1[1].X = (int)(uvmap.Data[uvy, uvx + 1, 0]*xfactor + 0.5) - 1;
+                    outofbounds |= pts1[1].X < 0 || pts1[1].X > invUVWidth;
+
+                    pts1[1].Y = (int)(uvmap.Data[uvy, uvx + 1, 1]*yfactor + 0.5) - 1;
+                    outofbounds |= pts1[1].Y < 0 || pts1[1].Y > invUVHeight;
+                    
+                    pts1[2].X = (int)(uvmap.Data[uvy + 1, uvx, 0]*xfactor + 0.5);
+                    outofbounds |= pts1[2].X < 0 || pts1[2].X > invUVWidth;
+                    
+                    pts1[2].Y = (int)(uvmap.Data[uvy + 1, uvx, 1]*yfactor + 0.5) - 1;
+                    outofbounds |= pts1[2].Y < 0 || pts1[2].Y > invUVHeight;
+
+                    if (!outofbounds)
+                    {
+                        //Console.WriteLine(pts1[0] + ", " + pts1[1] + ", " + pts1[2]);
+                        invUV.FillConvexPoly(pts1,
+                            new Rgb(
+                            // get average depth value for triangle 1 (top left)
+                            (depth.Data[uvy, uvx, 0] + depth.Data[uvy, uvx + 1, 0] + depth.Data[uvy + 1, uvx, 0])/3.0,
+                            (depth.Data[uvy, uvx, 1] + depth.Data[uvy, uvx + 1, 1] + depth.Data[uvy + 1, uvx, 1])/3.0,
+                            (depth.Data[uvy, uvx, 2] + depth.Data[uvy, uvx + 1, 2] + depth.Data[uvy + 1, uvx, 2])/3.0)
+                            );
+                    }
+
+                    // get points for triangle 2 (bottom right)
+                    outofbounds = false;
+
+                    pts2[0].X = pts1[1].X;
+                    outofbounds |= pts2[0].X < 0 || pts2[0].X > invUVWidth;
+                    
+                    pts2[0].Y = pts1[1].Y;
+                    outofbounds |= pts2[0].Y < 0 || pts2[0].Y > invUVHeight;
+
+                    pts2[1].X = (int)(uvmap.Data[uvy + 1, uvx + 1, 0]*xfactor + 0.5);
+                    outofbounds |= pts2[1].X < 0 || pts2[1].X > invUVWidth;
+                    
+                    pts2[1].Y = (int)(uvmap.Data[uvy + 1, uvx + 1, 1]*yfactor + 0.5) - 1;
+                    outofbounds |= pts2[1].Y < 0 || pts2[1].Y > invUVHeight;
+                    
+                    pts2[2].X = pts1[2].X;
+                    outofbounds |= pts2[2].X < 0 || pts2[2].X > invUVWidth;
+
+                    pts2[2].Y = pts1[2].Y;
+                    outofbounds |= pts2[2].X < 0 || pts2[2].X > invUVWidth;
+
+                    if (!outofbounds)
+                    {
+                        //Console.WriteLine(pts2[0] + ", " + pts2[1] + ", " + pts2[2]);
+                        invUV.FillConvexPoly(pts2,
+                            new Rgb(
+                            // get average depth value for triangle 1 (top left)
+                            (depth.Data[uvy, uvx + 1, 0] + depth.Data[uvy + 1, uvx + 1, 0] + depth.Data[uvy + 1, uvx, 0]) / 3.0,
+                            (depth.Data[uvy, uvx + 1, 1] + depth.Data[uvy + 1, uvx + 1, 1] + depth.Data[uvy + 1, uvx, 1]) / 3.0,
+                            (depth.Data[uvy, uvx + 1, 2] + depth.Data[uvy + 1, uvx + 1, 2] + depth.Data[uvy + 1, uvx, 2]) / 3.0)
+                            );
+                    }
+
+                });
+            });
+
+            return invUV;
+        }
+
+
 
         private static PXCMCapture.VideoStream.ProfileInfo GetConfiguration(PXCMImage.ColorFormat format)
         {
@@ -477,8 +1178,8 @@ namespace Huddle.Engine.Processor.Sensors
 
             if (((int)format & (int)PXCMImage.ImageType.IMAGE_TYPE_COLOR) != 0)
             {
-                pinfo.imageInfo.width = 640;
-                pinfo.imageInfo.height = 480;
+                pinfo.imageInfo.width = 1280;
+                pinfo.imageInfo.height = 720;
 
                 pinfo.frameRateMin.numerator = 15;
                 pinfo.frameRateMax.numerator = 30;

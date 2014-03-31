@@ -3,45 +3,120 @@
                     xmlns:sensors="clr-namespace:Huddle.Engine.Processor.Sensors">
     <DataTemplate x:Key="Senz3D" DataType="sensors:Senz3D">
         <StackPanel>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+            <ScrollViewer Width="1200" Height="650" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
 
-                <GroupBox Header="Color Image"
-                          Grid.Column="0" Grid.Row="0">
-                    <Image Source="{Binding Path=ColorImageSource}" Width="320" Height="240" VerticalAlignment="Top" />
-                </GroupBox>
-                <GroupBox Header="Depth Image"
-                          Grid.Column="1" Grid.Row="0">
-                    <StackPanel>
-                        <Image Source="{Binding Path=DepthImageSource}" Width="320" Height="240" VerticalAlignment="Top" />
-                        <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=DepthSmoothing}" />
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Depth Confidence Threshold"/>
-                            <Slider Width="340" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThreshold}" />
-                            <TextBlock Text="{Binding Path=DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <GroupBox Header="color" Grid.Column="0" Grid.Row="0">
+                        <StackPanel>
+                            <Image Source="{Binding Path=ColorImageSource}" Width="320" Height="240" VerticalAlignment="Top"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=ColorImageSource.PixelWidth}"/>
+                                <Label Content=" x "/>                              
+                                <Label Content="{Binding Path=ColorImageSource.PixelHeight}"/>
+                                <Label Content=" ("/>
+                                <Label Content="{Binding Path=ColorImageFrameTime}"/>
+                                <Label Content=" ms)"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                </GroupBox>
-                <GroupBox Header="Confidence Map Image"
-                          Grid.Column="2" Grid.Row="0">
-                    <Image Source="{Binding Path=ConfidenceMapImageSource}" Width="320" Height="240" VerticalAlignment="Top" />
-                </GroupBox>
-                
-                <StackPanel Orientation="Horizontal"
-                            Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3">
-                    <Label Content="Fps"/>
-                    <Slider Value="{Binding Path=Fps}" Width="340" Height="25" Minimum="0" Maximum="100" />
-                    <TextBlock Text="{Binding Path=Fps}"/>
-                </StackPanel>
-            </Grid>
+                    </GroupBox>
+
+                    <GroupBox Header="depth" Grid.Column="1" Grid.Row="0">
+                        <StackPanel>
+                            <Image Source="{Binding Path=DepthImageSource}" Width="320" Height="240" VerticalAlignment="Top" />
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=DepthImageSource.PixelWidth}"/>
+                                <Label Content=" x "/>
+                                <Label Content="{Binding Path=DepthImageSource.PixelHeight}"/>
+                                <Label Content=" ("/>
+                                <Label Content="{Binding Path=DepthImageFrameTime}"/>
+                                <Label Content=" ms)"/>
+                            </StackPanel>
+                            <Separator/>
+                            <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=DepthSmoothing}" />
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Depth Confidence Threshold"/>
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThreshold}" />
+                                <TextBlock Text="{Binding Path=DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="confidence" Grid.Column="2" Grid.Row="0">
+                        <StackPanel>
+                            <Image Source="{Binding Path=ConfidenceMapImageSource}" Width="320" Height="240" VerticalAlignment="Top" />
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=ConfidenceMapImageSource.PixelWidth}"/>
+                                <Label Content=" x "/>
+                                <Label Content="{Binding Path=ConfidenceMapImageSource.PixelHeight}"/>
+                                <Label Content=" ("/>
+                                <Label Content="{Binding Path=ConfidenceMapImageFrameTime}"/>
+                                <Label Content=" ms)"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="uvmap" Grid.Column="0" Grid.Row="1">
+                        <StackPanel>
+                            <Image Source="{Binding Path=UVMapImageSource}" Width="320" Height="240" VerticalAlignment="Top" />
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=UVMapImageSource.PixelWidth}"/>
+                                <Label Content=" x "/>
+                                <Label Content="{Binding Path=UVMapImageSource.PixelHeight}"/>
+                                <Label Content=" ("/>
+                                <Label Content="{Binding Path=UVMapImageFrameTime}"/>
+                                <Label Content=" ms)"/>
+                            </StackPanel>
+                            <CheckBox Content="Active?" IsChecked="{Binding Path=UvMapChecked}"/>
+                        </StackPanel>                        
+                    </GroupBox>
+
+                    <GroupBox Header="rgbofdepth" Grid.Column="1" Grid.Row="1">
+                        <StackPanel>
+                            <Image Source="{Binding Path=RgbOfDepthImageSource}" Width="320" Height="240" VerticalAlignment="Top" />
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=RgbOfDepthImageSource.PixelWidth}"/>
+                                <Label Content=" x "/>
+                                <Label Content="{Binding Path=RgbOfDepthImageSource.PixelHeight}"/>
+                                <Label Content=" ("/>
+                                <Label Content="{Binding Path=RgbOfDepthImageFrameTime}"/>
+                                <Label Content=" ms)"/>
+                            </StackPanel>
+                            <CheckBox Content="Active?" IsChecked="{Binding Path=RgbOfDepthChecked}"/>
+                        </StackPanel>                        
+                    </GroupBox>
+
+                    <GroupBox Header="depthofrgb" Grid.Column="2" Grid.Row="1">
+                        <StackPanel>
+                            <Image Source="{Binding Path=DepthOfRgbImageSource}" Width="320" Height="240" VerticalAlignment="Top" />
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=DepthOfRgbImageSource.PixelWidth}"/>
+                                <Label Content=" x "/>
+                                <Label Content="{Binding Path=DepthOfRgbImageSource.PixelHeight}"/>
+                                <Label Content=" ("/>
+                                <Label Content="{Binding Path=DepthOfRgbImageFrameTime}"/>
+                                <Label Content=" ms)"/>
+                            </StackPanel>
+                            <CheckBox Content="Active?" IsChecked="{Binding Path=DepthOfRgbChecked}"/>
+                        </StackPanel>                        
+                    </GroupBox>
+
+                </Grid>
+            </ScrollViewer>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Fps"/>
+                <Slider Value="{Binding Path=Fps}" Width="340" Height="25" Minimum="0" Maximum="100" />
+                <TextBlock Text="{Binding Path=Fps}"/>
+            </StackPanel>
         </StackPanel>
     </DataTemplate>
 
