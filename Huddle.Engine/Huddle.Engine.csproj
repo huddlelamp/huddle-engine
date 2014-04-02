@@ -229,12 +229,14 @@
     <Compile Include="Data\BlobData.cs" />
     <Compile Include="Data\DataContainer.cs" />
     <Compile Include="Data\Digital.cs" />
+    <Compile Include="Data\GrayByteImage.cs" />
     <Compile Include="Data\IData.cs" />
     <Compile Include="Data\IDataContainer.cs" />
     <Compile Include="Data\BaseImageData.cs" />
     <Compile Include="Data\LocationData.cs" />
     <Compile Include="Data\Proximity.cs" />
     <Compile Include="Data\GrayFloatImage.cs" />
+    <Compile Include="Data\RgbFloatImage.cs" />
     <Compile Include="Data\RgbImageData.cs" />
     <Compile Include="Controls\ExceptionMessageBox.xaml.cs">
       <DependentUpon>ExceptionMessageBox.xaml</DependentUpon>
