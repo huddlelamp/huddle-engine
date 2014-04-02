@@ -30,42 +30,6 @@ namespace Huddle.Engine.Processor
 
         #endregion
 
-        #region IsRenderImage
-
-        /// <summary>
-        /// The <see cref="IsRenderImages" /> property's name.
-        /// </summary>
-        public const string IsRenderImagesPropertyName = "IsRenderImages";
-
-        private bool _isRenderImages = true;
-
-        /// <summary>
-        /// Sets and gets the IsRenderImages property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        [XmlAttribute]
-        public bool IsRenderImages
-        {
-            get
-            {
-                return _isRenderImages;
-            }
-
-            set
-            {
-                if (_isRenderImages == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(IsRenderImagesPropertyName);
-                _isRenderImages = value;
-                RaisePropertyChanged(IsRenderImagesPropertyName);
-            }
-        }
-
-        #endregion
-
         #region PreProcessImage
 
         /// <summary>
@@ -149,8 +113,10 @@ namespace Huddle.Engine.Processor
         {
             var image = data.Image;
 
-            if (IsRenderImages)
+            if (IsRenderContent)
             {
+                var name = GetType().Name;
+
                 Image<TColor, TDepth> preProcessImage = null;
                 try
                 {
@@ -203,7 +169,7 @@ namespace Huddle.Engine.Processor
                 return data;
             }
 
-            if (IsRenderImages)
+            if (IsRenderContent)
             {
                 if (_postProcessRendering != null)// && _postProcessRendering.Status == DispatcherOperationStatus.Pending)
                     _postProcessRendering.Abort();

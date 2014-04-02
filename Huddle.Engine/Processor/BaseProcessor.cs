@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Threading;
@@ -530,7 +531,7 @@ namespace Huddle.Engine.Processor
             // Set new data to keep data container's meta information.
             dataContainer.Clear();
 
-            foreach (var data in allData)
+            Parallel.ForEach(allData, data =>
             {
                 IData processedData = null;
                 try
@@ -543,10 +544,10 @@ namespace Huddle.Engine.Processor
                 }
 
                 if (processedData == null)
-                    continue;
+                    return;
 
                 dataContainer.Add(processedData);
-            }
+            });
 
             return dataContainer.Any() ? dataContainer : null;
         }
