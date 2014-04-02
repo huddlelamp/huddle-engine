@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.External.Structure;
+using Emgu.CV.GPU;
 using Emgu.CV.Structure;
 using GalaSoft.MvvmLight.Command;
 using Huddle.Engine.Properties;

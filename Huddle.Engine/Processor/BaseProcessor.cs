@@ -513,9 +513,6 @@ namespace Huddle.Engine.Processor
 
 #if DEBUG
                     //Console.WriteLine("QUEUE: {0}, IsProcessing: {1} Name: {2}", _dataQueue.Count, _processing, GetType().Name);
-
-                    if (_dataQueue.Count > 50)
-                        Console.WriteLine("Queue overflow");
 #endif
                 }
                 catch (Exception e)
@@ -605,15 +602,15 @@ namespace Huddle.Engine.Processor
 
         protected void Log(string format, params object[] args)
         {
-            //DispatcherHelper.RunAsync(() =>
-            //{
-            //    if (Logs.Count > 100)
-            //        Logs.RemoveAt(100);
+            DispatcherHelper.RunAsync(() =>
+            {
+                if (Logs.Count > 100)
+                    Logs.RemoveAt(100);
 
-            //    var message = string.Format(format, args);
+                var message = string.Format(format, args);
 
-            //    Logs.Insert(0, string.Format("[{0}] {1}", DateTime.Now, message));
-            //});
+                Logs.Insert(0, string.Format("[{0}] {1}", DateTime.Now, message));
+            });
         }
 
         public static IEnumerable<Type> GetKnownTypes()

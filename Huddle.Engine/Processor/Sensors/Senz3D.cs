@@ -45,6 +45,54 @@ namespace Huddle.Engine.Processor.Sensors
 
         #region properties
 
+        #region ColorImageProfile
+
+        [IgnoreDataMember]
+        public static string[] ColorImageProfiles
+        {
+            get
+            {
+                return new[]
+                {
+                    "1280 x 720",
+                    "640 x 480"
+                };
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="ColorImageProfile" /> property's name.
+        /// </summary>
+        public const string ColorImageProfilePropertyName = "ColorImageProfile";
+
+        private string _colorImageProfile = ColorImageProfiles.First();
+
+        /// <summary>
+        /// Sets and gets the ColorImageProfile property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string ColorImageProfile
+        {
+            get
+            {
+                return _colorImageProfile;
+            }
+
+            set
+            {
+                if (_colorImageProfile == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ColorImageProfilePropertyName);
+                _colorImageProfile = value;
+                RaisePropertyChanged(ColorImageProfilePropertyName);
+            }
+        }
+
+        #endregion
+
         #region ColorImageSource
 
         /// <summary>
@@ -1292,16 +1340,22 @@ namespace Huddle.Engine.Processor.Sensors
             return invUV;
         }
 
-
-
-        private static PXCMCapture.VideoStream.ProfileInfo GetConfiguration(PXCMImage.ColorFormat format)
+        private PXCMCapture.VideoStream.ProfileInfo GetConfiguration(PXCMImage.ColorFormat format)
         {
             var pinfo = new PXCMCapture.VideoStream.ProfileInfo { imageInfo = { format = format } };
 
             if (((int)format & (int)PXCMImage.ImageType.IMAGE_TYPE_COLOR) != 0)
             {
-                pinfo.imageInfo.width = 1280;
-                pinfo.imageInfo.height = 720;
+                if (ColorImageProfile.Equals("1280 x 720"))
+                {
+                    pinfo.imageInfo.width = 1280;
+                    pinfo.imageInfo.height = 720;
+                }
+                else if (ColorImageProfile.Equals("640 x 480"))
+                {
+                    pinfo.imageInfo.width = 640;
+                    pinfo.imageInfo.height = 480;
+                }
 
                 pinfo.frameRateMin.numerator = 15;
                 pinfo.frameRateMax.numerator = 30;

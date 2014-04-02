@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.External.Structure;
+using Emgu.CV.GPU;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
 using Huddle.Engine.Processor.OpenCv.Struct;
 using Huddle.Engine.Util;
+using Xceed.Wpf.DataGrid.ValidationRules;
 using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
@@ -414,111 +417,6 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        #region Sobel
-
-        /// <summary>
-        /// The <see cref="Sobel" /> property's name.
-        /// </summary>
-        public const string SobelPropertyName = "Sobel";
-
-        private int _sobel = 3;
-
-        /// <summary>
-        /// Sets and gets the Sobel property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public int Sobel
-        {
-            get
-            {
-                return _sobel;
-            }
-
-            set
-            {
-                if (_sobel == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(SobelPropertyName);
-                _sobel = value;
-                RaisePropertyChanged(SobelPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region BlockSize
-
-        /// <summary>
-        /// The <see cref="BlockSize" /> property's name.
-        /// </summary>
-        public const string BlockSizePropertyName = "BlockSize";
-
-        private int _blockSize = 3;
-
-        /// <summary>
-        /// Sets and gets the BlockSize property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public int BlockSize
-        {
-            get
-            {
-                return _blockSize;
-            }
-
-            set
-            {
-                if (_blockSize == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(BlockSizePropertyName);
-                _blockSize = value;
-                RaisePropertyChanged(BlockSizePropertyName);
-            }
-        }
-
-        #endregion
-
-        #region K
-
-        /// <summary>
-        /// The <see cref="K" /> property's name.
-        /// </summary>
-        public const string KPropertyName = "K";
-
-        private double _k = 0.01;
-
-        /// <summary>
-        /// Sets and gets the K property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double K
-        {
-            get
-            {
-                return _k;
-            }
-
-            set
-            {
-                if (_k == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(KPropertyName);
-                _k = value;
-                RaisePropertyChanged(KPropertyName);
-            }
-        }
-
-        #endregion
-
         #endregion
 
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
@@ -534,25 +432,19 @@ namespace Huddle.Engine.Processor.OpenCv
 
             using (var storage = new MemStorage())
             {
+                //var contours = grayImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, IsRetrieveExternal ? RETR_TYPE.CV_RETR_EXTERNAL : RETR_TYPE.CV_RETR_LIST, storage);
+                //Parallel.ForEach(IterateContours(contours, storage), contour =>
+                //{
+
+                //});
                 for (var contours = grayImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, IsRetrieveExternal ? RETR_TYPE.CV_RETR_EXTERNAL : RETR_TYPE.CV_RETR_LIST, storage); contours != null; contours = contours.HNext)
                 {
                     var currentContour = contours.ApproxPoly(contours.Perimeter * 0.05, storage);
-
-                    //Console.WriteLine("AREA {0}", currentContour.Area);
 
                     if (currentContour.Area > MinContourArea) //only consider contours with area greater than 250
                     {
                         outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
 
-                        //if (currentContour.Total == 3) //The contour has 3 vertices, it is a triangle
-                        //{
-                        //    //Point[] pts = currentContour.ToArray();
-                        //    //triangleList.Add(new Triangle2DF(
-                        //    //   pts[0],
-                        //    //   pts[1],
-                        //    //   pts[2]
-                        //    //   ));
-                        //}
                         if (currentContour.Total >= 4) //The contour has 4 vertices.
                         {
                             #region determine if all the angles in the contour are within [80, 100] degree
@@ -597,14 +489,13 @@ namespace Huddle.Engine.Processor.OpenCv
 
                                     var distance2 = Math.Sqrt(Math.Pow(oCenter.X - cCenter.X, 2) + Math.Pow(oCenter.Y - cCenter.Y, 2));
 
-                                    Log("Distance {0}", distance2);
+                                    //Log("Distance {0}", distance2);
 
                                     if (distance2 < MaxDistanceRestoreId)
                                     //if (currentContour.BoundingRectangle.IntersectsWith(o.Bounds))
                                     {
-
                                         o.LastUpdate = DateTime.Now;
-                                        o.Center = new Point((int) cCenter.X, (int) cCenter.Y);
+                                        o.Center = new Point((int)cCenter.X, (int)cCenter.Y);
                                         o.Bounds = currentContour.BoundingRectangle;
                                         o.Shape = currentContour.GetMinAreaRect();
                                         o.Points = pts;
@@ -634,7 +525,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     }
                 }
             }
-            
+
             foreach (var rawObject in _objects)
             {
                 //var orig = currentContour.BoundingRectangle.Location;
@@ -669,8 +560,8 @@ namespace Huddle.Engine.Processor.OpenCv
                 Stage(new BlobData(string.Format("FindContours Id{0}", rawObject.Id))
                 {
                     Id = rawObject.Id,
-                    X = (rawObject.EstimatedCenter.X) / (double) image.Width,
-                    Y = (rawObject.EstimatedCenter.Y) / (double) image.Height,
+                    X = (rawObject.EstimatedCenter.X) / (double)image.Width,
+                    Y = (rawObject.EstimatedCenter.Y) / (double)image.Height,
                     Angle = rawObject.Shape.angle,
                     Area = new Rect
                     {
@@ -692,6 +583,14 @@ namespace Huddle.Engine.Processor.OpenCv
         private static long GetNextId()
         {
             return ++_id;
+        }
+
+        private IEnumerable<Contour<Point>> IterateContours(Contour<Point> contours, MemStorage storage)
+        {
+            for ( ; contours != null; contours = contours.HNext)
+            {
+                yield return contours.ApproxPoly(contours.Perimeter * 0.05, storage);
+            }
         }
     }
 }

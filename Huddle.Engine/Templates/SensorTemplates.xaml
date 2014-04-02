@@ -27,6 +27,11 @@
                                 <Label Content="{Binding Path=ColorImageFrameTime}"/>
                                 <Label Content=" ms)"/>
                             </StackPanel>
+                            
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Profile"/>
+                                <ComboBox ItemsSource="{Binding Path=ColorImageProfiles}" SelectedValue="{Binding Path=ColorImageProfile}" />
+                            </StackPanel>
                         </StackPanel>
                     </GroupBox>
 
