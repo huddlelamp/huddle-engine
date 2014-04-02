@@ -6,12 +6,35 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Media.Imaging;
+using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 
 namespace Emgu.CV.External.Extensions
 {
     public static class EmguExtensions
     {
+        private static readonly Rgb[] Gradient = CreateGradient();
+
+        private static Rgb[] CreateGradient()
+        {
+            var gradient = new Rgb[4 * 256];
+            int i = 0;
+
+            /* Blue 0,0,255 --> Cyan 0,255,255 */
+            for (int j = 0; j < 256; j++) gradient[i++] = new Rgb(0, j, 255);
+
+            /* Cyan 0,255,255 --> Green 0,255,0  */
+            for (int j = 0; j < 256; j++) gradient[i++] = new Rgb(0, 255, 255 - j);
+
+            /* Green 0,255,0 --> Yellow 255,255,0 */
+            for (int j = 0; j < 256; j++) gradient[i++] = new Rgb(j, 255, 0);
+
+            /* Yellow 255,255,0 --> Red 255,0,0 */
+            for (int j = 0; j < 256; j++) gradient[i++] = new Rgb(255, 255 - j, 0);
+
+            return gradient;
+        }
+
         public static BitmapSource ToBitmapSource(this IImage image)
         {
             using (var bitmap = image.Bitmap)
@@ -29,6 +52,42 @@ namespace Emgu.CV.External.Extensions
                     return bitmapImage;
                 }
             }
+        }
+
+        public static BitmapSource ToGradientBitmapSource(this Image<Gray, float> image, int lowConfidence, int saturation)
+        {
+            var width = image.Width;
+            var height = image.Height;
+
+            var gradientImage = new Image<Rgb, byte>(width, height, Rgbs.White);
+
+            Rgb color;
+            for (var y = 0; y < height; y++)
+            {
+                for (var x = 0; x < width; x++)
+                {
+                    var depth = image.Data[y, x, 0];
+
+                    if (depth == lowConfidence)
+                    {
+                        color = Rgbs.Black;
+                    }
+                    else if (depth == saturation)
+                    {
+                        color = Rgbs.White;
+                    }
+                    else
+                    {
+                        var index = (int)((Gradient.Length - 1) * (255.0 - depth) / 255.0);
+
+                        color = Gradient[index];
+                    }
+
+                    gradientImage[y, x] = color;
+                }
+            }
+
+            return gradientImage.ToBitmapSource();
         }
 
         public static IImage Copy(this IImage image)

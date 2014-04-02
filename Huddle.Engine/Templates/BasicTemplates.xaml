@@ -22,6 +22,14 @@
         </StackPanel>
     </DataTemplate>
 
+    <DataTemplate x:Key="Sampler" DataType="processor:Sampler">
+
+    </DataTemplate>
+
+    <DataTemplate x:Key="ITakeLong" DataType="processor:ITakeLong">
+        
+    </DataTemplate>
+
     <DataTemplate x:Key="QRCodeDecoder" DataType="barCodes:QRCodeDecoder">
         <StackPanel>
             <Grid>

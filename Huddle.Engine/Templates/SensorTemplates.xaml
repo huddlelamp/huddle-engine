@@ -48,6 +48,16 @@
                                 <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThreshold}" />
                                 <TextBlock Text="{Binding Path=DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
                             </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Min Depth Value"/>
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=MinDepthValue}" />
+                                <TextBlock Text="{Binding Path=MinDepthValue, StringFormat={}{0:#}}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Max Depth Value"/>
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="5000" Value="{Binding Path=MaxDepthValue}" />
+                                <TextBlock Text="{Binding Path=MaxDepthValue, StringFormat={}{0:#}}"/>
+                            </StackPanel>
                         </StackPanel>
                     </GroupBox>
 

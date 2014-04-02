@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -19,6 +20,13 @@ namespace Huddle.Engine.Processor
 
         public static MCvFont EmguFont = new MCvFont(FONT.CV_FONT_HERSHEY_SIMPLEX, 0.3, 0.3);
         public static MCvFont EmguFontBig = new MCvFont(FONT.CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0);
+
+        #endregion
+
+        #region private fields
+
+        private DispatcherOperation _preProcessRendering;
+        private DispatcherOperation _postProcessRendering;
 
         #endregion
 
@@ -146,13 +154,16 @@ namespace Huddle.Engine.Processor
                 Image<TColor, TDepth> preProcessImage = null;
                 try
                 {
+                    if (_preProcessRendering != null)// && _preProcessRendering.Status == DispatcherOperationStatus.Pending)
+                        _preProcessRendering.Abort();
+
                     // the copy is required in order to not influence processing that happens later
                     preProcessImage = PreProcess(image.Copy());
 
                     // draw debug information on image -> TODO might worth be worth it to bind that information to the data template directly
                     DrawDebug(preProcessImage);
 
-                    DispatcherHelper.RunAsync(() =>
+                    _preProcessRendering = DispatcherHelper.RunAsync(() =>
                     {
                         if (preProcessImage == null) return;
 
@@ -184,22 +195,27 @@ namespace Huddle.Engine.Processor
             }
             catch (Exception)
             {
-                DispatcherHelper.RunAsync(() =>
-                {
-                    //if (!Messages.Any(m => Equals(e.Message, m)))
-                    //    Log(e.Message);
-                });
+                //DispatcherHelper.RunAsync(() =>
+                //{
+                //    //if (!Messages.Any(m => Equals(e.Message, m)))
+                //    //    Log(e.Message);
+                //});
                 return data;
             }
 
             if (IsRenderImages)
             {
+                if (_postProcessRendering != null)// && _postProcessRendering.Status == DispatcherOperationStatus.Pending)
+                    _postProcessRendering.Abort();
+
                 var postProcessImage = data.Image.Copy();
-                DispatcherHelper.RunAsync(() =>
+
+                _postProcessRendering = DispatcherHelper.RunAsync(() =>
                 {
                     if (postProcessImage == null) return;
 
                     PostProcessImage = postProcessImage.ToBitmapSource();
+
                     postProcessImage.Dispose();
                 });
             }

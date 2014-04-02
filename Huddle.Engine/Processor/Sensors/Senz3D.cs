@@ -673,6 +673,76 @@ namespace Huddle.Engine.Processor.Sensors
         }
         #endregion
 
+        #region MinDepthValue
+
+        /// <summary>
+        /// The <see cref="MinDepthValue" /> property's name.
+        /// </summary>
+        public const string MinDepthValuePropertyName = "MinDepthValue";
+
+        private float _minDepthThreshold = 0.0f;
+
+        /// <summary>
+        /// Sets and gets the MinDepthValue property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public float MinDepthValue
+        {
+            get
+            {
+                return _minDepthThreshold;
+            }
+
+            set
+            {
+                if (_minDepthThreshold == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(MinDepthValuePropertyName);
+                _minDepthThreshold = value;
+                RaisePropertyChanged(MinDepthValuePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region MaxDepthValue
+
+        /// <summary>
+        /// The <see cref="MaxDepthValue" /> property's name.
+        /// </summary>
+        public const string MaxDepthValuePropertyName = "MaxDepthValue";
+
+        private float _maxDepthValue = 5000.0f;
+
+        /// <summary>
+        /// Sets and gets the MaxDepthValue property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public float MaxDepthValue
+        {
+            get
+            {
+                return _maxDepthValue;
+            }
+
+            set
+            {
+                if (_maxDepthValue == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(MaxDepthValuePropertyName);
+                _maxDepthValue = value;
+                RaisePropertyChanged(MaxDepthValuePropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -724,7 +794,7 @@ namespace Huddle.Engine.Processor.Sensors
 
         private void DoRendering(SynchronizationContext ctx)
         {
-            _isRunning = true; 
+            _isRunning = true;
 
             /* UtilMPipeline works best for synchronous color and depth streaming */
             _pp = new UtilMPipeline();
@@ -757,62 +827,45 @@ namespace Huddle.Engine.Processor.Sensors
                 if (!_pp.AcquireFrame(true)) break;
                 if (_pp.IsDisconnected()) break;
 
-                /* Display images */
-                var color = _pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_COLOR);
-                var depth = _pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_DEPTH);
-
+                /* Get RGB color image */
                 Stopwatch sw = Stopwatch.StartNew();
+                var color = _pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_COLOR);
                 var colorBitmap = GetRgb32Pixels(color);
-                ColorImageFrameTime = sw.ElapsedMilliseconds;
                 var colorImage = new Image<Rgb, byte>(colorBitmap);
+                var colorImageCopy = colorImage.Copy();
+                ColorImageFrameTime = sw.ElapsedMilliseconds;
 
+                /* Get depth image */
                 sw.Restart();
-                var depthBitmap = GetRgb32Pixels(depth);
+                var depth = _pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_DEPTH);
+                var depthImage = GetHighPrecisionDepthImage(depth);
+                var depthImageCopy = depthImage.Copy();
                 DepthImageFrameTime = sw.ElapsedMilliseconds;
-                var depthImage = new Image<Rgb, byte>(depthBitmap);
 
+                /* Get confidence map */
                 sw.Restart();
                 var confidenceMapImage = GetDepthConfidencePixels(depth);
-                DepthImageFrameTime = sw.ElapsedMilliseconds;
+                var confidenceMapImageCopy = confidenceMapImage.Copy();
+                ConfidenceMapImageFrameTime = sw.ElapsedMilliseconds;
 
-                /* prepare additional streams based on uvmap if checked */
-                Image<Rgb, Byte> rgbOfDepthImage, depthOfRgbImage,
-                                     rgbOfDepthImageCopy, depthOfRgbImageCopy, uvMapImageCopy;
-
-                Image<Rgb, float> uvMapImage;
-
+                /* Get UV map */
+                Image<Rgb, float> uvMapImage, uvMapImageCopy;
                 if (UvMapChecked)
                 {
                     sw.Restart();
                     uvMapImage = GetDepthUVMap(depth);
                     UVMapImageFrameTime = sw.ElapsedMilliseconds;
-
-                    //for (int g = 0; g < uvMapImage.Height; g++)
-                    //{
-                    //    for (int h = 0; h < uvMapImage.Width; h++)
-                    //    {
-                    //        Console.WriteLine(g + ", " + h + " = " + uvMapImage[g, h].Red + ", " + uvMapImage[g, h].Green);
-                    //    }
-                    //}                        
-                    
-                    
-                    uvMapImageCopy = uvMapImage.Copy().Convert<Rgb,byte>();
-
-                    //for (int g = 0; g < uvMapImageCopy.Height; g++)
-                    //{
-                    //    for (int h = 0; h < uvMapImageCopy.Width; h++)
-                    //    {
-                    //        Console.WriteLine(g + ", " + h + " = " + uvMapImageCopy[g, h].Red + ", " + uvMapImageCopy[g, h].Green);
-                    //    }
-                    //}    
+                    uvMapImageCopy = uvMapImage.Copy();
                 }
                 else
                 {
                     uvMapImage = null;
                     uvMapImageCopy = null;
-                    UVMapImageFrameTime = 0;
+                    UVMapImageFrameTime = -1;
                 }
 
+                /* Get RgbOfDepth */
+                Image<Rgb, byte> rgbOfDepthImage, rgbOfDepthImageCopy;
                 if (RgbOfDepthChecked && uvMapImage != null)
                 {
                     sw.Restart();
@@ -824,15 +877,17 @@ namespace Huddle.Engine.Processor.Sensors
                 {
                     rgbOfDepthImage = null;
                     rgbOfDepthImageCopy = null;
-                    RgbOfDepthImageFrameTime = 0;
+                    RgbOfDepthImageFrameTime = -1;
                 }
 
+                /* Get DepthOfRGB */
+                Image<Gray, float> depthOfRgbImage, depthOfRgbImageCopy;
                 if (DepthOfRgbChecked && uvMapImage != null)
                 {
                     sw.Restart();
                     depthOfRgbImage = GetDepthOfRGBPixels(depthImage, colorImage, uvMapImage);
                     depthOfRgbImageCopy = depthOfRgbImage.Copy();
-                    DepthOfRgbImageFrameTime = sw.ElapsedMilliseconds; 
+                    DepthOfRgbImageFrameTime = sw.ElapsedMilliseconds;
                 }
                 else
                 {
@@ -843,16 +898,18 @@ namespace Huddle.Engine.Processor.Sensors
 
                 _pp.ReleaseFrame();
 
-                var colorImageCopy = colorImage.Copy();
-                var depthImageCopy = depthImage.Copy();
-                var confidenceMapImageCopy = confidenceMapImage.Copy();
-
                 DispatcherHelper.RunAsync(() =>
                 {
                     ColorImageSource = colorImageCopy.ToBitmapSource();
                     colorImageCopy.Dispose();
 
-                    DepthImageSource = depthImageCopy.ToBitmapSource();
+                    float prop;
+                    _pp.QueryCapture().QueryDevice().QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_LOW_CONFIDENCE_VALUE, out prop);
+                    var lowConfidence = (int)prop;
+                    _pp.QueryCapture().QueryDevice().QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_SATURATION_VALUE, out prop);
+                    var saturation = (int)prop;
+
+                    DepthImageSource = depthImageCopy.ToGradientBitmapSource(lowConfidence, saturation);
                     depthImageCopy.Dispose();
 
                     ConfidenceMapImageSource = confidenceMapImageCopy.ToBitmapSource();
@@ -880,7 +937,7 @@ namespace Huddle.Engine.Processor.Sensors
 
                     if (depthOfRgbImage != null)
                     {
-                        DepthOfRgbImageSource = depthOfRgbImageCopy.ToBitmapSource();
+                        DepthOfRgbImageSource = depthOfRgbImageCopy.ToGradientBitmapSource(lowConfidence, saturation);
                         depthOfRgbImage.Dispose();
                     }
                     else
@@ -890,16 +947,16 @@ namespace Huddle.Engine.Processor.Sensors
 
                 });
 
-                DataContainer dc = new DataContainer(++_frameId, DateTime.Now)
+                var dc = new DataContainer(++_frameId, DateTime.Now)
                 {
                     new RgbImageData("color", colorImage),
-                    new RgbImageData("depth", depthImage),
+                    new GrayFloatImage("depth", depthImage),
                     new RgbImageData("confidence", confidenceMapImage),
                 };
 
                 //if (uvMapImage != null) dc.Add(new RgbImageData("uvmap", uvMapImage));
                 if (rgbOfDepthImage != null) dc.Add(new RgbImageData("rgbofdepth", rgbOfDepthImage));
-                if (depthOfRgbImage != null) dc.Add(new RgbImageData("depthofrgb", depthOfRgbImage));
+                if (depthOfRgbImage != null) dc.Add(new GrayFloatImage("depthofrgb", depthOfRgbImage));
                 Publish(dc);
 
                 Thread.Sleep(1000 / (Fps > 0 ? Fps : 1));
@@ -950,6 +1007,75 @@ namespace Huddle.Engine.Processor.Sensors
 
             return bitmap;
         }
+
+        private Image<Gray, float> GetHighPrecisionDepthImage(PXCMImage depthImage)
+        {
+            var inputWidth = Align16(depthImage.info.width);  /* aligned width */
+            var inputHeight = (int)depthImage.info.height;
+
+            var _output = new Image<Gray, float>(inputWidth, inputHeight);
+
+            PXCMImage.ImageData cdata;
+            if (depthImage.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH, out cdata) <
+                pxcmStatus.PXCM_STATUS_NO_ERROR) return _output;
+
+            float prop;
+            _pp.QueryCapture().QueryDevice().QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_LOW_CONFIDENCE_VALUE, out prop);
+            var lowConfidence = (int)prop;
+            _pp.QueryCapture().QueryDevice().QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_SATURATION_VALUE, out prop);
+            var saturation = (int)prop;
+
+            var depthValues = cdata.ToByteArray(0, inputWidth * inputHeight * 2);
+            depthImage.ReleaseAccess(ref cdata);
+
+            var minValue = MinDepthValue;
+            var maxValue = MaxDepthValue;
+
+            lock (this)
+            {
+                int i = 0;
+                Random r = new Random();
+
+                for (int y = 0; y < inputHeight; y++)
+                {
+                    for (int x = 0; x < inputWidth; x++)
+                    {
+                        var highBits = depthValues[i + 1];
+                        var lowBits = depthValues[i];
+
+                        //Console.WriteLine(depthValues[i] + " --> " + (float)depthValues[i]);
+                        float depth = (highBits << 8) | lowBits;
+                        i += 2;
+                        if (depth != lowConfidence && depth != saturation)
+                        //if (depth < 32000)
+                        {
+                            var test = (depth - minValue) / (maxValue - minValue); //r.Next(0,3000)
+
+                            if (test < 0)
+                                test = 0.0f;
+                            else if (test > 1.0)
+                                test = 1.0f;
+
+                            test *= 255.0f;
+
+                            //Console.WriteLine(test);
+
+                            _output.Data[y, x, 0] = test;
+                            //TODO: dynamic instead of static?                        
+                        }
+                        else
+                        {
+                            _output.Data[y, x, 0] = depth;
+                        }
+                    }
+                }
+            }
+            //Console.WriteLine(_output.GetAverage());
+            return _output.Copy();
+        }
+
+
+
 
         private Image<Rgb, byte> GetDepthConfidencePixels(PXCMImage image)
         {
@@ -1033,7 +1159,7 @@ namespace Huddle.Engine.Processor.Sensors
         }
 
 
-        private Image<Rgb, byte> GetRgbOfDepthPixels(Image<Rgb, byte> depth, Image<Rgb, byte> rgb, Image<Rgb, float> uvmap)
+        private Image<Rgb, byte> GetRgbOfDepthPixels(Image<Gray, float> depth, Image<Rgb, byte> rgb, Image<Rgb, float> uvmap)
         {
             var resImg = new Image<Rgb, byte>(depth.Width, depth.Height);
 
@@ -1042,8 +1168,8 @@ namespace Huddle.Engine.Processor.Sensors
             int regHeight = rgb.Height / depth.Height;
             int rgbWidth = rgb.Width;
             int rgbHeight = rgb.Height;
-            float xfactor = 1.0f/255.0f*rgbWidth;
-            float yfactor = 1.0f/255.0f*rgbHeight;
+            float xfactor = 1.0f / 255.0f * rgbWidth;
+            float yfactor = 1.0f / 255.0f * rgbHeight;
 
             Parallel.For(0, depth.Height, y =>
             //for (int y = 0; y < depth.Height; y++)
@@ -1078,10 +1204,10 @@ namespace Huddle.Engine.Processor.Sensors
         }
 
 
-        private Image<Rgb, byte> GetDepthOfRGBPixels(Image<Rgb, byte> depth, Image<Rgb, byte> rgb, Image<Rgb, float> uvmap)
+        private Image<Gray, float> GetDepthOfRGBPixels(Image<Gray, float> depth, Image<Rgb, byte> rgb, Image<Rgb, float> uvmap)
         {
             // create RGB-sized image
-            var invUV = new Image<Rgb, byte>(rgb.Width, rgb.Height, new Rgb(Color.Black));
+            var invUV = new Image<Gray, float>(rgb.Width, rgb.Height, new Gray(0));
             var invUVWidth = invUV.Width;
             var invUVHeight = invUV.Height;
             var uvmapWidth = uvmap.Width;
@@ -1089,8 +1215,8 @@ namespace Huddle.Engine.Processor.Sensors
 
             Parallel.For(0, uvmapHeight - 1, uvy =>
             {
-                float xfactor = 1.0f/255.0f*invUVWidth;
-                float yfactor = 1.0f/255.0f*invUVHeight;
+                float xfactor = 1.0f / 255.0f * invUVWidth;
+                float yfactor = 1.0f / 255.0f * invUVHeight;
 
                 Parallel.For(0, uvmapWidth - 1, uvx =>
                 {
@@ -1101,68 +1227,64 @@ namespace Huddle.Engine.Processor.Sensors
                     bool outofbounds = false;
 
                     // get points for triangle 1 (top left)
-                    pts1[0].X = (int)(uvmap.Data[uvy, uvx, 0]*xfactor + 0.5);
+                    pts1[0].X = (int)(uvmap.Data[uvy, uvx, 0] * xfactor + 0.5);
                     outofbounds |= pts1[0].X < 0 || pts1[0].X > invUVWidth;
-                    
-                    pts1[0].Y = (int)(uvmap.Data[uvy, uvx, 1]*yfactor + 0.5);
+
+                    pts1[0].Y = (int)(uvmap.Data[uvy, uvx, 1] * yfactor + 0.5);
                     outofbounds |= pts1[0].Y < 0 || pts1[0].Y > invUVHeight;
 
-                    pts1[1].X = (int)(uvmap.Data[uvy, uvx + 1, 0]*xfactor + 0.5) - 1;
+                    pts1[1].X = (int)(uvmap.Data[uvy, uvx + 1, 0] * xfactor + 0.5) - 1;
                     outofbounds |= pts1[1].X < 0 || pts1[1].X > invUVWidth;
 
-                    pts1[1].Y = (int)(uvmap.Data[uvy, uvx + 1, 1]*yfactor + 0.5) - 1;
+                    pts1[1].Y = (int)(uvmap.Data[uvy, uvx + 1, 1] * yfactor + 0.5) - 1;
                     outofbounds |= pts1[1].Y < 0 || pts1[1].Y > invUVHeight;
-                    
-                    pts1[2].X = (int)(uvmap.Data[uvy + 1, uvx, 0]*xfactor + 0.5);
+
+                    pts1[2].X = (int)(uvmap.Data[uvy + 1, uvx, 0] * xfactor + 0.5);
                     outofbounds |= pts1[2].X < 0 || pts1[2].X > invUVWidth;
-                    
-                    pts1[2].Y = (int)(uvmap.Data[uvy + 1, uvx, 1]*yfactor + 0.5) - 1;
+
+                    pts1[2].Y = (int)(uvmap.Data[uvy + 1, uvx, 1] * yfactor + 0.5) - 1;
                     outofbounds |= pts1[2].Y < 0 || pts1[2].Y > invUVHeight;
 
-                    if (!outofbounds)
-                    {
-                        //Console.WriteLine(pts1[0] + ", " + pts1[1] + ", " + pts1[2]);
-                        invUV.FillConvexPoly(pts1,
-                            new Rgb(
-                            // get average depth value for triangle 1 (top left)
-                            (depth.Data[uvy, uvx, 0] + depth.Data[uvy, uvx + 1, 0] + depth.Data[uvy + 1, uvx, 0])/3.0,
-                            (depth.Data[uvy, uvx, 1] + depth.Data[uvy, uvx + 1, 1] + depth.Data[uvy + 1, uvx, 1])/3.0,
-                            (depth.Data[uvy, uvx, 2] + depth.Data[uvy, uvx + 1, 2] + depth.Data[uvy + 1, uvx, 2])/3.0)
-                            );
-                    }
+                    //if (!outofbounds)
+                    //{
+                    //    //Console.WriteLine(pts1[0] + ", " + pts1[1] + ", " + pts1[2]);
+                    //    invUV.FillConvexPoly(pts1,
+                    //        new Gray(
+                    //        // get average depth value for triangle 1 (top left)
+                    //        (int)((depth.Data[uvy, uvx, 0] + depth.Data[uvy, uvx + 1, 0] + depth.Data[uvy + 1, uvx, 0])/3.0)
+                    //        ));
+                    //}
 
                     // get points for triangle 2 (bottom right)
                     outofbounds = false;
 
                     pts2[0].X = pts1[1].X;
                     outofbounds |= pts2[0].X < 0 || pts2[0].X > invUVWidth;
-                    
+
                     pts2[0].Y = pts1[1].Y;
                     outofbounds |= pts2[0].Y < 0 || pts2[0].Y > invUVHeight;
 
-                    pts2[1].X = (int)(uvmap.Data[uvy + 1, uvx + 1, 0]*xfactor + 0.5);
+                    pts2[1].X = (int)(uvmap.Data[uvy + 1, uvx + 1, 0] * xfactor + 0.5);
                     outofbounds |= pts2[1].X < 0 || pts2[1].X > invUVWidth;
-                    
-                    pts2[1].Y = (int)(uvmap.Data[uvy + 1, uvx + 1, 1]*yfactor + 0.5) - 1;
+
+                    pts2[1].Y = (int)(uvmap.Data[uvy + 1, uvx + 1, 1] * yfactor + 0.5) - 1;
                     outofbounds |= pts2[1].Y < 0 || pts2[1].Y > invUVHeight;
-                    
+
                     pts2[2].X = pts1[2].X;
                     outofbounds |= pts2[2].X < 0 || pts2[2].X > invUVWidth;
 
                     pts2[2].Y = pts1[2].Y;
                     outofbounds |= pts2[2].X < 0 || pts2[2].X > invUVWidth;
 
-                    if (!outofbounds)
-                    {
-                        //Console.WriteLine(pts2[0] + ", " + pts2[1] + ", " + pts2[2]);
-                        invUV.FillConvexPoly(pts2,
-                            new Rgb(
-                            // get average depth value for triangle 1 (top left)
-                            (depth.Data[uvy, uvx + 1, 0] + depth.Data[uvy + 1, uvx + 1, 0] + depth.Data[uvy + 1, uvx, 0]) / 3.0,
-                            (depth.Data[uvy, uvx + 1, 1] + depth.Data[uvy + 1, uvx + 1, 1] + depth.Data[uvy + 1, uvx, 1]) / 3.0,
-                            (depth.Data[uvy, uvx + 1, 2] + depth.Data[uvy + 1, uvx + 1, 2] + depth.Data[uvy + 1, uvx, 2]) / 3.0)
-                            );
-                    }
+                    //if (!outofbounds)
+                    //{
+                    //    //Console.WriteLine(pts2[0] + ", " + pts2[1] + ", " + pts2[2]);
+                    //    invUV.FillConvexPoly(pts2,
+                    //        new Gray(
+                    //        // get average depth value for triangle 1 (top left)
+                    //        (int)((depth.Data[uvy, uvx + 1, 0] + depth.Data[uvy + 1, uvx + 1, 0] + depth.Data[uvy + 1, uvx, 0]) / 3.0)
+                    //        ));
+                    //}
 
                 });
             });

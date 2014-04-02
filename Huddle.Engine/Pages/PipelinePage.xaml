@@ -142,6 +142,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <ContentPresenter Grid.Row="0" Content="{Binding Path=Model}"
@@ -166,6 +167,13 @@
                                     </ItemsControl>
                                 </ScrollViewer>
                             </Expander>
+
+                            <StackPanel Grid.Row="2" Orientation="Vertical">
+                                <Label Content="{Binding Path=Model.Benchmark.Average, Mode=OneWay}" ContentStringFormat="Average Time: {0} ms" />
+                                <Label Content="{Binding Path=Model.Benchmark.LastMeasurement, Mode=OneWay}" ContentStringFormat="Last Measurement: {0} ms" />
+                                <!--<Label Content="{Binding Path=Model.Benchmark.AccumulateMeasurements, Mode=OneWay}" ContentStringFormat="Accumulate Measurement: {0}" />
+                                <Label Content="{Binding Path=Model.Benchmark.MeasurementCount, Mode=OneWay}" ContentStringFormat="Measurement Count: {0}" />-->
+                            </StackPanel>
                         </Grid>
                     </controls:RemovableExpander>
                 </StackPanel>

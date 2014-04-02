@@ -143,7 +143,8 @@
     <Reference Include="GalaSoft.MvvmLight.WPF45">
       <HintPath>..\packages\MvvmLightLibs.4.2.30.0\lib\net45\GalaSoft.MvvmLight.WPF45.dll</HintPath>
     </Reference>
-    <Reference Include="libpxcclr">
+    <Reference Include="libpxcclr, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\Intel PCSDK\libpxcclr.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation">
@@ -233,6 +234,7 @@
     <Compile Include="Data\BaseImageData.cs" />
     <Compile Include="Data\LocationData.cs" />
     <Compile Include="Data\Proximity.cs" />
+    <Compile Include="Data\GrayFloatImage.cs" />
     <Compile Include="Data\RgbImageData.cs" />
     <Compile Include="Controls\ExceptionMessageBox.xaml.cs">
       <DependentUpon>ExceptionMessageBox.xaml</DependentUpon>
@@ -258,7 +260,9 @@
     <Compile Include="Processor\BarCodes\ZXingHelper\IBarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\ImageLuminanceSource.cs" />
     <Compile Include="Processor\BaseProcessor.cs" />
+    <Compile Include="Processor\Benchmark.cs" />
     <Compile Include="Processor\DataTypeFilter.cs" />
+    <Compile Include="Processor\ITakeLong.cs" />
     <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\WebSocketServer.cs" />
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
@@ -268,6 +272,7 @@
     <Compile Include="Processor\OpenCv\Kalman.cs" />
     <Compile Include="Processor\OpenCv\Struct\RawObject.cs" />
     <Compile Include="Processor\PipelineMode.cs" />
+    <Compile Include="Processor\Sampler.cs" />
     <Compile Include="Processor\Sensors\Senz3D.cs" />
     <Compile Include="Extensions\DependencyObjectExtensions.cs" />
     <Compile Include="Model\Pipeline.cs" />

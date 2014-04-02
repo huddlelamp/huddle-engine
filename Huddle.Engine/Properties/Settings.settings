@@ -5,5 +5,8 @@
     <Setting Name="DefaultPipelineFileName" Type="System.String" Scope="User">
       <Value Profile="(Default)">Resources/Default.pipeline.huddle</Value>
     </Setting>
+    <Setting Name="IsBenchmarkEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

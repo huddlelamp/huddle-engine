@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using Emgu.CV.GPU;
 using GalaSoft.MvvmLight.Threading;
 
 namespace Huddle.Engine
@@ -20,6 +21,14 @@ namespace Huddle.Engine
             //    }
 
             DispatcherUnhandledException += App_DispatcherUnhandledException;
+
+            Startup += App_Startup;
+        }
+
+        void App_Startup(object sender, StartupEventArgs e)
+        {
+            Console.WriteLine("Cuda support available: {0}", GpuInvoke.HasCuda);
+            //MessageBox.Show(string.Format( "Cuda support available: {0}", GpuInvoke.HasCuda), "Cuda Support");
         }
 
         void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -11,6 +12,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
 using Huddle.Engine.Model;
+using Huddle.Engine.Properties;
 using Huddle.Engine.Util;
 
 namespace Huddle.Engine.Processor
@@ -344,6 +346,50 @@ namespace Huddle.Engine.Processor
 
         #endregion
 
+        #region Benchmark
+
+        /// <summary>
+        /// The <see cref="Benchmark" /> property's name.
+        /// </summary>
+        public const string BenchmarkPropertyName = "Benchmark";
+
+        private Benchmark _benchmark = new Benchmark();
+
+        /// <summary>
+        /// Sets and gets the Benchmark property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public Benchmark Benchmark
+        {
+            get
+            {
+                return _benchmark;
+            }
+
+            set
+            {
+                if (_benchmark == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(BenchmarkPropertyName);
+                _benchmark = value;
+                RaisePropertyChanged(BenchmarkPropertyName);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region ctor
+
+        protected BaseProcessor()
+        {
+        }
+
         #endregion
 
         #region Processing
@@ -382,6 +428,9 @@ namespace Huddle.Engine.Processor
                     if (dataContainer == null)
                         throw new Exception("Empty data container has been queued");
 
+                    if (Settings.Default.IsBenchmarkEnabled)
+                        _benchmark.StartMeasurement();
+
                     dataContainer = PreProcess(dataContainer);
 
                     if (dataContainer != null)
@@ -389,6 +438,9 @@ namespace Huddle.Engine.Processor
 
                     if (dataContainer != null)
                         dataContainer = PostProcess(dataContainer);
+
+                    if (Settings.Default.IsBenchmarkEnabled)
+                        _benchmark.StopMeasurement();
 
                     if (dataContainer != null)
                         Publish(dataContainer);
@@ -460,6 +512,9 @@ namespace Huddle.Engine.Processor
 
 #if DEBUG
                     //Console.WriteLine("QUEUE: {0}, IsProcessing: {1} Name: {2}", _dataQueue.Count, _processing, GetType().Name);
+
+                    if (_dataQueue.Count > 50)
+                        Console.WriteLine("Queue overflow");
 #endif
                 }
                 catch (Exception e)
@@ -549,15 +604,15 @@ namespace Huddle.Engine.Processor
 
         protected void Log(string format, params object[] args)
         {
-            DispatcherHelper.RunAsync(() =>
-            {
-                if (Logs.Count > 100)
-                    Logs.RemoveAt(100);
+            //DispatcherHelper.RunAsync(() =>
+            //{
+            //    if (Logs.Count > 100)
+            //        Logs.RemoveAt(100);
 
-                var message = string.Format(format, args);
+            //    var message = string.Format(format, args);
 
-                Logs.Insert(0, string.Format("[{0}] {1}", DateTime.Now, message));
-            });
+            //    Logs.Insert(0, string.Format("[{0}] {1}", DateTime.Now, message));
+            //});
         }
 
         public static IEnumerable<Type> GetKnownTypes()

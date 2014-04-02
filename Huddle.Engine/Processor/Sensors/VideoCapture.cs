@@ -4,6 +4,7 @@ using System.Threading;
 using System.Windows.Media.Imaging;
 using Emgu.CV;
 using Emgu.CV.External.Extensions;
+using Emgu.CV.GPU;
 using Emgu.CV.Structure;
 using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;

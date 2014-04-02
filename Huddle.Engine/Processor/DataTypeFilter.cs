@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using System.Threading;
 using Huddle.Engine.Data;
 using Huddle.Engine.Util;
 
@@ -55,6 +56,7 @@ namespace Huddle.Engine.Processor
                 {
                     typeof(BaseData).FullName,
                     typeof(RgbImageData).FullName,
+                    typeof(GrayFloatImage).FullName,
                     typeof(BlobData).FullName,
                     typeof(LocationData).FullName
                 };
