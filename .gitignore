@@ -5,3 +5,4 @@ packages/
 *.pfx
 *.suo
 *.bak
+*.tmp
