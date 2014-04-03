@@ -120,14 +120,14 @@ namespace Huddle.Engine.Processor
                 Image<TColor, TDepth> preProcessImage = null;
                 try
                 {
-                    //if (_preProcessRendering != null && _preProcessRendering.Status == DispatcherOperationStatus.Pending)
-                    //    _preProcessRendering.Abort();
-
                     // the copy is required in order to not influence processing that happens later
                     preProcessImage = PreProcess(image.Copy());
 
                     // draw debug information on image -> TODO might worth be worth it to bind that information to the data template directly
                     DrawDebug(preProcessImage);
+
+                    if (_preProcessRendering != null && _preProcessRendering.Status != DispatcherOperationStatus.Completed)
+                        _preProcessRendering.Abort();
 
                     _preProcessRendering = DispatcherHelper.RunAsync(() =>
                     {
@@ -175,8 +175,8 @@ namespace Huddle.Engine.Processor
 
             if (IsRenderContent)
             {
-                //if (_postProcessRendering != null && _postProcessRendering.Status == DispatcherOperationStatus.Pending)
-                //    _postProcessRendering.Abort();
+                if (_postProcessRendering != null && _postProcessRendering.Status != DispatcherOperationStatus.Pending)
+                    _postProcessRendering.Abort();
 
                 var postProcessImage = data.Image.Copy();
 
