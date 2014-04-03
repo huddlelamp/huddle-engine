@@ -185,5 +185,10 @@ namespace Emgu.CV.External.Extensions
         //{
         //    return image as Image<TColor, TDepth>;
         //}
+
+        public static double Length(this PointF self, PointF point)
+        {
+            return Math.Sqrt(Math.Pow(self.X - point.X, 2) + Math.Pow(self.Y - point.Y, 2));
+        }
     }
 }

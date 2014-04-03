@@ -275,6 +275,7 @@
     <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
     <Compile Include="Processor\OpenCv\FindConvexHulls.cs" />
     <Compile Include="Processor\OpenCv\Kalman.cs" />
+    <Compile Include="Processor\OpenCv\Struct\Palm.cs" />
     <Compile Include="Processor\OpenCv\Struct\RawObject.cs" />
     <Compile Include="Processor\PipelineMode.cs" />
     <Compile Include="Processor\Sampler.cs" />

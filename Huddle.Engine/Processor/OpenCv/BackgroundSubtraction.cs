@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
@@ -10,10 +12,13 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
+using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
 using Huddle.Engine.Extensions;
+using Huddle.Engine.Processor.OpenCv.Filter;
+using Huddle.Engine.Processor.OpenCv.Struct;
 using Huddle.Engine.Util;
 
 namespace Huddle.Engine.Processor.OpenCv
@@ -26,6 +31,10 @@ namespace Huddle.Engine.Processor.OpenCv
         private Image<Gray, float> _backgroundImage;
 
         private int _collectedBackgroundImages = 0;
+
+        private readonly List<Palm> _palms = new List<Palm>();
+
+        private static long _id = -1;
 
         #endregion
 
@@ -262,6 +271,7 @@ namespace Huddle.Engine.Processor.OpenCv
         /// Sets and gets the FloodFillMask property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [IgnoreDataMember]
         public BitmapSource FloodFillMask
         {
             get
@@ -356,8 +366,6 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        #region public properties
-
         #region ctor
 
         public BackgroundSubtraction()
@@ -367,8 +375,6 @@ namespace Huddle.Engine.Processor.OpenCv
                 _backgroundImage = null;
             });
         }
-
-        #endregion
 
         #endregion
 
@@ -382,6 +388,10 @@ namespace Huddle.Engine.Processor.OpenCv
         public override Image<Gray, float> ProcessAndView(Image<Gray, float> image)
         {
             if (BuildingBackgroundImage(image)) return null;
+
+            var now = DateTime.Now;
+
+            _palms.RemoveAll(p => (now - p.LastUpdate).TotalMilliseconds > 300);
 
             var width = image.Width;
             var height = image.Height;
@@ -450,7 +460,7 @@ namespace Huddle.Engine.Processor.OpenCv
             var debugOutput = new Image<Rgb, byte>(width, height);
 
             MCvConnectedComp comp;
-            for (var i = 0 ; !minValues[0].Equals(maxValues[0]) && i < 100; 
+            for (var i = 0; !minValues[0].Equals(maxValues[0]) && i < 100;
                 imageWithOriginalDepth.MinMax(out minValues, out maxValues, out minLocations, out maxLocations), i++)
             {
                 var mask = new Image<Gray, byte>(width + 2, height + 2);
@@ -484,7 +494,46 @@ namespace Huddle.Engine.Processor.OpenCv
                     var segment = mask.Mul(imageWithOriginalDepthCopy);// .Dilate(2);
                     mask.Dispose();
                     segment.MinMax(out minValues0, out maxValues0, out minLocations0, out maxLocations0);
-                    debugOutput.Draw(new CircleF(new PointF(maxLocations0[0].X, maxLocations0[0].Y), 5), Rgbs.Green, 3);
+
+                    var x = maxLocations0[0].X;
+                    var y = maxLocations0[0].Y;
+
+                    Palm palm;
+                    var point = new Point(x, y);
+
+                    if (_palms.Count > 0)
+                    {
+                        palm = _palms.Aggregate((curmin, p) => p.EstimatedCenter.Length(point) < curmin.EstimatedCenter.Length(point) ? p : curmin);
+                    }
+                    else
+                    {
+                        palm = new Palm(GetNextId(), point)
+                        {
+                            LastUpdate = now
+                        };
+                        _palms.Add(palm);
+                    }
+
+                    if (palm.EstimatedCenter.Length(point) < 15)
+                    {
+                        palm.Center = point;
+                        palm.LastUpdate = now;
+                    }
+                    else
+                    {
+                        palm = new Palm(GetNextId(), point)
+                        {
+                            LastUpdate = now
+                        };
+                        _palms.Add(palm);
+                    }
+
+
+                    debugOutput.Draw(new CircleF(new PointF(x, y), 5), Rgbs.Red, 3);
+                    debugOutput.Draw(new CircleF(new PointF(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), 5), Rgbs.Green, 3);
+
+                    debugOutput.Draw(string.Format("Id {0}", palm.Id), ref EmguFontBig, new Point((int)palm.EstimatedCenter.X, (int)palm.EstimatedCenter.Y), Rgbs.White);
+
 
                     //using (var storage = new MemStorage())
                     //{
@@ -558,6 +607,10 @@ namespace Huddle.Engine.Processor.OpenCv
         {
             for (; contours != null; contours = contours.HNext)
                 yield return contours;
+        }
+        private static long GetNextId()
+        {
+            return ++_id;
         }
     }
 }

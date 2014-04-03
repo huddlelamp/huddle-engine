@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
-using Emgu.CV.GPU;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
 using Huddle.Engine.Processor.OpenCv.Struct;
 using Huddle.Engine.Util;
-using Xceed.Wpf.DataGrid.ValidationRules;
 using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
@@ -487,6 +483,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
                                     //var distance = currentContour.Distance(shapeCenter);
 
+                                    //var distance2 = oCenter.Length(cCenter);
                                     var distance2 = Math.Sqrt(Math.Pow(oCenter.X - cCenter.X, 2) + Math.Pow(oCenter.Y - cCenter.Y, 2));
 
                                     //Log("Distance {0}", distance2);
