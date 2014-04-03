@@ -1329,9 +1329,6 @@ namespace Huddle.Engine.Processor.Sensors
                     if (!outofbounds)
                         retdepth.FillConvexPoly(pts1, new Gray(d1avg));
 
-                    if (d1avg >= lowConfidence)
-                        ;
-
                     // get points for triangle 2 (bottom right)
                     outofbounds = false;
 
@@ -1355,9 +1352,6 @@ namespace Huddle.Engine.Processor.Sensors
 
                     if (!outofbounds)
                         retdepth.FillConvexPoly(pts2, new Gray(d2avg));
-
-                    if (d2avg >= lowConfidence)
-                        ;
 
                 });
             });
