@@ -56,6 +56,47 @@
             </StackPanel>
         </StackPanel>
     </DataTemplate>
+    
+    <DataTemplate x:Key="BackgroundSubtraction" DataType="openCv:BackgroundSubtraction">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Grid>
+                        <Image Source="{Binding Path=PreProcessImage}" />
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </Grid>
+            <Button Content="Subtract">
+                <i:Interaction.Triggers>
+                    <util:EventTriggerAdvanced EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=SubtractCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </util:EventTriggerAdvanced>
+                </i:Interaction.Triggers>
+            </Button>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Low Cut Off Depth"/>
+                <Slider Value="{Binding Path=LowCutOffDepth}" Width="340" Height="25" Minimum="0" Maximum="50" />
+                <TextBlock Text="{Binding Path=LowCutOffDepth, StringFormat={}{0:#}}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="High Cut Off Depth"/>
+                <Slider Value="{Binding Path=HighCutOffDepth}" Width="340" Height="25" Minimum="0" Maximum="500" />
+                <TextBlock Text="{Binding Path=HighCutOffDepth, StringFormat={}{0:#}}"/>
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
 
     <DataTemplate x:Key="CannyEdges" DataType="openCv:CannyEdges">
         <StackPanel>
@@ -88,6 +129,33 @@
             </StackPanel>
 
             <CheckBox Content="Gaussian Pyramid Down/Up Composition" IsChecked="{Binding Path=GaussianPyramidDownUpDecomposition}" />
+
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="FloodFill" DataType="openCv:FloodFill">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Image Source="{Binding Path=PreProcessImage}" />
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </Grid>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Difference"/>
+                <Slider Value="{Binding Path=Difference}" Width="340" Height="25" Minimum="0" Maximum="10" />
+                <TextBlock Text="{Binding Path=Difference, StringFormat={}{0:#.##}}"/>
+            </StackPanel>
 
         </StackPanel>
     </DataTemplate>

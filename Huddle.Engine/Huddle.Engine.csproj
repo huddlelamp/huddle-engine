@@ -261,12 +261,15 @@
     <Compile Include="Processor\BarCodes\ZXingHelper\BarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\IBarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\ImageLuminanceSource.cs" />
+    <Compile Include="Processor\GenericImageProcessor.cs" />
     <Compile Include="Processor\BaseProcessor.cs" />
     <Compile Include="Processor\Benchmark.cs" />
     <Compile Include="Processor\DataTypeFilter.cs" />
     <Compile Include="Processor\ITakeLong.cs" />
     <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\WebSocketServer.cs" />
+    <Compile Include="Processor\OpenCv\BackgroundSubtraction.cs" />
+    <Compile Include="Processor\OpenCv\FloodFill.cs" />
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
     <Compile Include="Processor\OpenCv\Filter\KalmanFilter.cs" />
     <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
@@ -503,7 +506,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /D /R $(SolutionDir)\lib\OpenCV\*.dll $(TargetDir)</PostBuildEvent>
+    <PostBuildEvent>xcopy /D /R $(SolutionDir)lib\OpenCV\*.dll $(TargetDir)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

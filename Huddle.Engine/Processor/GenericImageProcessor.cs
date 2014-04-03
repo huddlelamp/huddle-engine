@@ -12,7 +12,7 @@ using Huddle.Engine.Data;
 
 namespace Huddle.Engine.Processor
 {
-    public abstract class BaseImageProcessor<TColor, TDepth> : BaseProcessor
+    public abstract class GenericImageProcessor<TColor, TDepth> : BaseProcessor
         where TColor : struct, IColor
         where TDepth : new()
     {
@@ -184,10 +184,7 @@ namespace Huddle.Engine.Processor
                 {
                     if (postProcessImage == null) return;
 
-                    if (postProcessImage is Image<Gray, float>)
-                        PostProcessImage = (postProcessImage as Image<Gray, float>).ToGradientBitmapSource(32001, 32002);
-                    else
-                        PostProcessImage = postProcessImage.ToBitmapSource();
+                    PostProcessImage = postProcessImage.ToBitmapSource();
 
                     postProcessImage.Dispose();
                 });

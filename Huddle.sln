@@ -35,9 +35,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Huddle.Peephole", "Huddle.Peephole\Huddle.Peephole.csproj", "{75151C09-ECEA-43E4-8608-D84161F30143}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{780E7C78-98D2-40E1-888F-95EF0910CDC3}"
-	ProjectSection(SolutionItems) = preProject
-		Performance1.psess = Performance1.psess
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,8 +100,5 @@ Global
 		{34D63E42-579E-4950-8E83-F71DBD95F34E} = {02658324-73EF-4645-8861-C7EDD2A4B257}
 		{1CFA56C6-5765-4CC1-A611-7F4BD4CA2FFF} = {CD8124CA-97C9-495F-AE7E-2A3A3AF630A5}
 		{75151C09-ECEA-43E4-8608-D84161F30143} = {CD8124CA-97C9-495F-AE7E-2A3A3AF630A5}
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

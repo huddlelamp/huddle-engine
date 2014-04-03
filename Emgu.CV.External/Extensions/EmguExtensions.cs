@@ -68,19 +68,27 @@ namespace Emgu.CV.External.Extensions
                 {
                     var depth = image.Data[y, x, 0];
 
-                    if (depth == lowConfidence)
+                    //if (depth == lowConfidence)
+                    //{
+                    //    color = Rgbs.Black;
+                    //}
+                    //else if (depth == saturation)
+                    //{
+                    //    color = Rgbs.White;
+                    //}
+
+                    if (depth > 10000)
                     {
                         color = Rgbs.Black;
-                    }
-                    else if (depth == saturation)
-                    {
-                        color = Rgbs.White;
                     }
                     else
                     {
                         var index = (int)((Gradient.Length - 1) * (255.0 - depth) / 255.0);
 
-                        color = Gradient[index];
+                        if (index < 0 || index > Gradient.Length - 1)
+                            color = Rgbs.White;
+                        else
+                            color = Gradient[index];
                     }
 
                     gradientImage[y, x] = color;

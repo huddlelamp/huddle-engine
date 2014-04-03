@@ -4,8 +4,7 @@
                     xmlns:command="http://www.galasoft.ch/mvvmlight"
                     xmlns:processor="clr-namespace:Huddle.Engine.Processor"
                     xmlns:barCodes="clr-namespace:Huddle.Engine.Processor.BarCodes"
-                    xmlns:util="clr-namespace:Huddle.Engine.Util"
-                    xmlns:ar="clr-namespace:Huddle.Engine.Processor.AR">
+                    xmlns:util="clr-namespace:Huddle.Engine.Util">
 
     <DataTemplate x:Key="DataTypeFilter" DataType="processor:DataTypeFilter">
         <StackPanel>
@@ -24,10 +23,6 @@
     </DataTemplate>
 
     <DataTemplate x:Key="Sampler" DataType="processor:Sampler">
-
-    </DataTemplate>
-
-    <DataTemplate x:Key="ArToolkitTracker" DataType="ar:ArToolkitTracker">
 
     </DataTemplate>
 
