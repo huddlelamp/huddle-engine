@@ -92,9 +92,23 @@
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="High Cut Off Depth"/>
-                <Slider Value="{Binding Path=HighCutOffDepth}" Width="340" Height="25" Minimum="0" Maximum="500" />
+                <Slider Value="{Binding Path=HighCutOffDepth}" Width="340" Height="25" Minimum="0" Maximum="1000" />
                 <TextBlock Text="{Binding Path=HighCutOffDepth, StringFormat={}{0:#}}"/>
             </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="ERODE"/>
+                <Slider Value="{Binding Path=NumErode}" Width="340" Height="25" Minimum="0" Maximum="100" />
+                <TextBlock Text="{Binding Path=NumErode, StringFormat={}{0:#}}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="DILATE"/>
+                <Slider Value="{Binding Path=NumDilate}" Width="340" Height="25" Minimum="0" Maximum="100" />
+                <TextBlock Text="{Binding Path=NumDilate, StringFormat={}{0:#}}"/>
+            </StackPanel>
+
+            <CheckBox Content="Smooth Gaussian" IsChecked="{Binding Path=IsSmoothGaussianEnabled}" />
         </StackPanel>
     </DataTemplate>
 

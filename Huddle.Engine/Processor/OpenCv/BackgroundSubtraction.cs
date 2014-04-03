@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Xml.Serialization;
@@ -102,6 +103,113 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #region IsSmoothGaussianEnabled
+
+        /// <summary>
+        /// The <see cref="IsSmoothGaussianEnabled" /> property's name.
+        /// </summary>
+        public const string IsSmoothGaussianEnabledPropertyName = "IsSmoothGaussianEnabled";
+
+        private bool _isSmoothGaussianEnabled = false;
+
+        /// <summary>
+        /// Sets and gets the IsSmoothGaussianEnabled property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsSmoothGaussianEnabled
+        {
+            get
+            {
+                return _isSmoothGaussianEnabled;
+            }
+
+            set
+            {
+                if (_isSmoothGaussianEnabled == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsSmoothGaussianEnabledPropertyName);
+                _isSmoothGaussianEnabled = value;
+                RaisePropertyChanged(IsSmoothGaussianEnabledPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region NumDilate
+
+        /// <summary>
+        /// The <see cref="NumDilate" /> property's name.
+        /// </summary>
+        public const string NumDilatePropertyName = "NumDilate";
+
+        private int _numDilate = 2;
+
+        /// <summary>
+        /// Sets and gets the NumDilate property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlAttribute]
+        public int NumDilate
+        {
+            get
+            {
+                return _numDilate;
+            }
+
+            set
+            {
+                if (_numDilate == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(NumDilatePropertyName);
+                _numDilate = value;
+                RaisePropertyChanged(NumDilatePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region NumErode
+
+        /// <summary>
+        /// The <see cref="NumErode" /> property's name.
+        /// </summary>
+        public const string NumErodePropertyName = "NumErode";
+
+        private int _numErode = 2;
+
+        /// <summary>
+        /// Sets and gets the NumErode property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [XmlAttribute]
+        public int NumErode
+        {
+            get
+            {
+                return _numErode;
+            }
+
+            set
+            {
+                if (_numErode == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(NumErodePropertyName);
+                _numErode = value;
+                RaisePropertyChanged(NumErodePropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region public properties
@@ -133,29 +241,35 @@ namespace Huddle.Engine.Processor.OpenCv
                 return null;
             }
 
+            var width = image.Width;
+            var height = image.Height;
+
+            var lowCutOffDepth = LowCutOffDepth;
+            var highCutOffDepth = HighCutOffDepth;
+
             var cleanImage = image.Copy().Sub(_backgroundImage);
 
-            var cleanerImage = new Image<Gray, byte>(image.Width, image.Height);
-            for (int y = 0; y < cleanImage.Height; y++)
+            var cleanerImage = new Image<Gray, byte>(width, height);
+            Parallel.For(0, height, y =>
             {
-                for (int x = 0; x < cleanImage.Width; x++)
+                for (int x = 0; x < width; x++)
                 {
-                    byte val = (byte)cleanImage[y, x].Intensity;
+                    var val = (byte)cleanImage.Data[y, x, 0];
 
-                    //cleanerImage[y, x] = new Gray(val);
-
-                    if (val > LowCutOffDepth && val < HighCutOffDepth)
-                    {
-                        cleanerImage[y, x] = image[y, x];
-                    }
+                    byte value;
+                    if (val > lowCutOffDepth && val < highCutOffDepth)
+                        value = (byte)image.Data[y, x, 0];
                     else
-                    {
-                        cleanerImage[y, x] = new Gray(0);
-                    }
-                }
-            }
+                        value = 0;
 
-            cleanerImage = cleanerImage.Erode(1).Dilate(1);
+                    cleanerImage.Data[y, x, 0] = value;
+                }
+            });
+
+            cleanerImage = cleanerImage.Erode(NumErode).Dilate(NumDilate);
+
+            //if (IsSmoothGaussianEnabled)
+            //    cleanerImage = cleanerImage.SmoothGaussian(3);
 
             return cleanerImage.Convert<Gray, float>();
         }
