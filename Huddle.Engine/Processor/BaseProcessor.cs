@@ -347,6 +347,41 @@ namespace Huddle.Engine.Processor
 
         #endregion
 
+        #region HasErrorState
+
+        /// <summary>
+        /// The <see cref="HasErrorState" /> property's name.
+        /// </summary>
+        public const string HasErrorStatePropertyName = "HasErrorState";
+
+        private bool _hasErrorState = false;
+
+        /// <summary>
+        /// Sets and gets the HasErrorState property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool HasErrorState
+        {
+            get
+            {
+                return _hasErrorState;
+            }
+
+            set
+            {
+                if (_hasErrorState == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(HasErrorStatePropertyName);
+                _hasErrorState = value;
+                RaisePropertyChanged(HasErrorStatePropertyName);
+            }
+        }
+
+        #endregion
+
         #region Benchmark
 
         /// <summary>
@@ -404,7 +439,8 @@ namespace Huddle.Engine.Processor
 
         public virtual void Start()
         {
-            _dataQueue = new BlockingCollection<IDataContainer>(100);
+            HasErrorState = false;
+            _dataQueue = new BlockingCollection<IDataContainer>(_dataQueue.BoundedCapacity);
 
             if (_processing)
                 return;
@@ -509,6 +545,12 @@ namespace Huddle.Engine.Processor
             if (!_dataQueue.IsCompleted)
                 try
                 {
+                    if (_dataQueue.Count == _dataQueue.BoundedCapacity)
+                    { 
+                        _dataQueue = new BlockingCollection<IDataContainer>(_dataQueue.BoundedCapacity);
+                        HasErrorState = true;
+                    }
+
                     _dataQueue.Add(dataContainer);
 
 #if DEBUG

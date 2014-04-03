@@ -63,6 +63,11 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="0" />
             <Setter Property="Margin" Value="0" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Model.HasErrorState}" Value="True">
+                    <Setter Property="Background" Value="Red" />
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <Style x:Key="ContainerRemoveableBoxStyle" TargetType="{x:Type controls:RemovableExpander}">

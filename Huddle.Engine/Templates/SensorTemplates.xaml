@@ -129,7 +129,7 @@
             </ScrollViewer>
             <StackPanel Orientation="Horizontal">
                 <Label Content="Fps"/>
-                <Slider Value="{Binding Path=Fps}" Width="340" Height="25" Minimum="0" Maximum="100" />
+                <Slider Value="{Binding Path=Fps}" Width="340" Height="25" Minimum="0" Maximum="30" />
                 <TextBlock Text="{Binding Path=Fps}"/>
             </StackPanel>
         </StackPanel>

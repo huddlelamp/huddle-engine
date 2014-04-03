@@ -446,8 +446,6 @@ namespace Huddle.Engine.Processor.OpenCv
                     MCvConnectedComp comp1;
                     CvInvoke.cvFloodFill(output.Ptr, maxLocations[0], new MCvScalar(color += 25), new MCvScalar(FloodFillDifference), new MCvScalar(FloodFillDifference), out comp1, CONNECTIVITY.EIGHT_CONNECTED, FLOODFILL_FLAG.DEFAULT, mask.Ptr);
 
-                    Console.WriteLine();
-
                     mask = mask.Mul(255);
 
                     outputImage += mask.Convert<Rgb, byte>();
