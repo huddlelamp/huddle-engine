@@ -381,7 +381,7 @@ namespace Huddle.Engine.Processor
                     var distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
 
                     // device2 to device1 angle
-                    var globalAngle = Math.Atan(y / x).RandianToDegree();
+                    var globalAngle = Math.Atan(y / x).RadiansToDegree();
 
                     if (x >= 0 && y < 0)
                         globalAngle = 90 + globalAngle;

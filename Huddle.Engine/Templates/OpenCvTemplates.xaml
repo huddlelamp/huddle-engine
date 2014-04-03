@@ -63,6 +63,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
@@ -74,6 +75,10 @@
                 <GroupBox Header="Post Processed Image"
                           Grid.Column="1">
                     <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+                <GroupBox Header="Flood Fill Mask"
+                          Grid.Column="2">
+                    <Image Source="{Binding Path=FloodFillMask}" />
                 </GroupBox>
             </Grid>
             <Button Content="Subtract">
@@ -108,7 +113,25 @@
                 <TextBlock Text="{Binding Path=NumDilate, StringFormat={}{0:#}}"/>
             </StackPanel>
 
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Min Hand/Arm Area"/>
+                <Slider Value="{Binding Path=MinHandArmArea}" Width="340" Height="25" Minimum="0" Maximum="3000" />
+                <TextBlock Text="{Binding Path=MinHandArmArea, StringFormat={}{0}}"/>
+            </StackPanel>
+
             <CheckBox Content="Smooth Gaussian" IsChecked="{Binding Path=IsSmoothGaussianEnabled}" />
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Difference"/>
+                <Slider Value="{Binding Path=FloodFillDifference}" Width="340" Height="25" Minimum="0" Maximum="50" />
+                <TextBlock Text="{Binding Path=FloodFillDifference, StringFormat={}{0:#.##}}"/>
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Contour Accuracy"/>
+                <Slider Value="{Binding Path=ContourAccuracy}" Width="340" Height="25" Minimum="0" Maximum="0.05" IsSnapToTickEnabled="True" TickFrequency="0.005" />
+                <TextBlock Text="{Binding Path=ContourAccuracy, StringFormat={}{0:#.###}}"/>
+            </StackPanel>
         </StackPanel>
     </DataTemplate>
 
