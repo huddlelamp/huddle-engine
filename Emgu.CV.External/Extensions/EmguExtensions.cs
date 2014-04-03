@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
@@ -59,14 +60,16 @@ namespace Emgu.CV.External.Extensions
             var width = image.Width;
             var height = image.Height;
 
+            var imageData = image.Data;
             var gradientImage = new Image<Rgb, byte>(width, height, Rgbs.White);
+           // var gradientImageData = gradientImage.Data;
 
-            Rgb color;
-            for (var y = 0; y < height; y++)
+            Parallel.For(0, height, y =>
             {
-                for (var x = 0; x < width; x++)
+                for(int x=0; x<width; x++)
                 {
-                    var depth = image.Data[y, x, 0];
+                    Rgb color;
+                    var depth = imageData[y, x, 0];
 
                     if (depth == lowConfidence)
                     {
@@ -78,14 +81,14 @@ namespace Emgu.CV.External.Extensions
                     }
                     else
                     {
-                        var index = (int)((Gradient.Length - 1) * (255.0 - depth) / 255.0);
-
+                        var index = (int) ((Gradient.Length - 1)*(255.0 - depth)/255.0);
+                        if (index < 0) index = 0;
+                        if (index > Gradient.Length) index = Gradient.Length - 1;
                         color = Gradient[index];
                     }
-
                     gradientImage[y, x] = color;
                 }
-            }
+            });
 
             return gradientImage.ToBitmapSource();
         }
