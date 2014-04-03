@@ -487,6 +487,9 @@ namespace Huddle.Engine.ViewModel
 
         private void Load(string fileName)
         {
+            Processors.Clear();
+            Pipes.Clear();
+
             try
             {
                 //var serializer = new XmlSerializer(typeof(Pipeline));

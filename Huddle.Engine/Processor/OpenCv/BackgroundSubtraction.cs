@@ -23,6 +23,8 @@ namespace Huddle.Engine.Processor.OpenCv
 
         private Image<Gray, float> _backgroundImage;
 
+        private int _collectedBackgroundImages = 0;
+
         #endregion
 
         #region commands
@@ -368,18 +370,16 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        public override Image<Gray, float> PreProcess(Image<Gray, float> image)
+        public override void Start()
         {
-            return image;
+            _collectedBackgroundImages = 0;
+
+            base.Start();
         }
 
         public override Image<Gray, float> ProcessAndView(Image<Gray, float> image)
         {
-            if (_backgroundImage == null)
-            {
-                _backgroundImage = image.Copy();
-                return null;
-            }
+            if (BuildingBackgroundImage(image)) return null;
 
             var width = image.Width;
             var height = image.Height;
@@ -387,47 +387,55 @@ namespace Huddle.Engine.Processor.OpenCv
             var lowCutOffDepth = LowCutOffDepth;
             var highCutOffDepth = HighCutOffDepth;
 
-            var minHandArmArea = MinHandArmArea;
-            var contourAccuracy = ContourAccuracy;
+            // This image is used to segment object from background
+            var imageRemovedBackground = image.Sub(_backgroundImage);
 
-            var cleanImage = image.Copy().Sub(_backgroundImage);
+            // This image is necessary for using FloodFill to avoid filling background
+            // (segmented objects are shifted back to original depth location after background subtraction)
+            var imageWithOriginalDepth = new Image<Gray, byte>(width, height);
 
-            var cleanerImage = new Image<Gray, byte>(width, height);
+            var imageData = image.Data;
+            var imageRemovedBackgroundData = imageRemovedBackground.Data;
+            var imageWithOriginalDepthData = imageWithOriginalDepth.Data;
+
             Parallel.For(0, height, y =>
             {
-                for (int x = 0; x < width; x++)
+                byte originalDepthValue;
+                for (var x = 0; x < width; x++)
                 {
-                    var val = (byte)cleanImage.Data[y, x, 0];
+                    // DON'T REMOVE CAST (it is necessary!!! :) )
+                    var depthValue = (byte)imageRemovedBackgroundData[y, x, 0];
 
-                    byte value;
-                    if (val > lowCutOffDepth && val < highCutOffDepth)
-                        value = (byte)image.Data[y, x, 0];
+                    if (depthValue > lowCutOffDepth && depthValue < highCutOffDepth)
+                        originalDepthValue = (byte)imageData[y, x, 0];
                     else
-                        value = 0;
+                        originalDepthValue = 0;
 
-                    cleanerImage.Data[y, x, 0] = value;
+                    imageWithOriginalDepthData[y, x, 0] = originalDepthValue;
                 }
             });
 
-            var grayByteImage = cleanerImage.Copy();
+            imageRemovedBackground.Dispose();
 
-            cleanerImage = cleanerImage.Erode(NumErode).Dilate(NumDilate);
+            var imageWithOriginalDepthCopy = imageWithOriginalDepth.Copy();
 
-            cleanerImage = cleanerImage.PyrUp().PyrDown();
+            // Remove noise (background noise)
+            imageWithOriginalDepth = imageWithOriginalDepth
+                .Erode(NumErode)
+                .Dilate(NumDilate)
+                .PyrUp()
+                .PyrDown();
 
-            var output = cleanerImage.Copy();
-
-            //if (IsSmoothGaussianEnabled)
-            //    cleanerImage = cleanerImage.SmoothGaussian(3);
+            var debugOutput = imageWithOriginalDepth.Copy();
 
             double[] minValues;
             double[] maxValues;
             Point[] minLocations;
             Point[] maxLocations;
-            cleanerImage.MinMax(out minValues, out maxValues, out minLocations, out maxLocations);
+            imageWithOriginalDepth.MinMax(out minValues, out maxValues, out minLocations, out maxLocations);
 
-            //if (maxLocations.Length > 1)
-            //    Console.WriteLine();
+            var minHandArmArea = MinHandArmArea;
+            var contourAccuracy = ContourAccuracy;
 
             var i = 0;
 
@@ -440,17 +448,17 @@ namespace Huddle.Engine.Processor.OpenCv
                 //Flood(cleanerImage, maxLocations[0], 0.0f);
 
                 MCvConnectedComp comp0;
-                CvInvoke.cvFloodFill(cleanerImage.Ptr, maxLocations[0], new MCvScalar(0.0f), new MCvScalar(FloodFillDifference), new MCvScalar(FloodFillDifference), out comp0, CONNECTIVITY.EIGHT_CONNECTED, FLOODFILL_FLAG.DEFAULT, IntPtr.Zero);
+                CvInvoke.cvFloodFill(imageWithOriginalDepth.Ptr, maxLocations[0], new MCvScalar(0.0f), new MCvScalar(FloodFillDifference), new MCvScalar(FloodFillDifference), out comp0, CONNECTIVITY.EIGHT_CONNECTED, FLOODFILL_FLAG.DEFAULT, IntPtr.Zero);
 
                 if (comp0.area > minHandArmArea)
                 {
                     var mask = new Image<Gray, byte>(width + 2, height + 2);
                     MCvConnectedComp comp1;
-                    CvInvoke.cvFloodFill(output.Ptr, maxLocations[0], new MCvScalar(color += 25), new MCvScalar(FloodFillDifference), new MCvScalar(FloodFillDifference), out comp1, CONNECTIVITY.EIGHT_CONNECTED, FLOODFILL_FLAG.DEFAULT, mask.Ptr);
+                    CvInvoke.cvFloodFill(debugOutput.Ptr, maxLocations[0], new MCvScalar(color += 25), new MCvScalar(FloodFillDifference), new MCvScalar(FloodFillDifference), out comp1, CONNECTIVITY.EIGHT_CONNECTED, FLOODFILL_FLAG.DEFAULT, mask.Ptr);
 
                     var maskCopy = mask.Copy();
                     maskCopy.ROI = new Rectangle(1, 1, width, height);
-                    var asdf = maskCopy.Mul(grayByteImage);
+                    var asdf = maskCopy.Mul(imageWithOriginalDepthCopy);
 
                     //var data = asdf.Data;
                     //var rows = asdf.Rows;
@@ -475,7 +483,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
                     outputImage += mask.Convert<Rgb, byte>();
 
-                    outputImage.Draw(new CircleF(new PointF(maxLocations0[0].X, maxLocations0[0].Y), 3), Rgbs.Red, 3);
+                    outputImage.Draw(new CircleF(new PointF(maxLocations0[0].X, maxLocations0[0].Y), 5), Rgbs.Green, 3);
 
                     using (var storage = new MemStorage())
                     {
@@ -488,17 +496,17 @@ namespace Huddle.Engine.Processor.OpenCv
 
                             var currentContour = contours.ApproxPoly(contours.Perimeter * contourAccuracy, 1, storage);
 
-                            //using (var storage2 = new MemStorage())
-                            //{
-                            //    var defacts = currentContour.GetConvexityDefacts(storage2, ORIENTATION.CV_CLOCKWISE).ToArray();
+                            using (var storage2 = new MemStorage())
+                            {
+                                var defacts = currentContour.GetConvexityDefacts(storage2, ORIENTATION.CV_CLOCKWISE).ToArray();
 
-                            //    foreach (var defact in defacts)
-                            //    {
-                            //        outputImage.Draw(new CircleF(defact.DepthPoint, 3), Rgbs.Red, 3);
-                            //        outputImage.Draw(new CircleF(defact.StartPoint, 3), Rgbs.Yellow, 3);
-                            //        outputImage.Draw(new CircleF(defact.EndPoint, 3), Rgbs.Blue, 3);
-                            //    }
-                            //}
+                                foreach (var defact in defacts)
+                                {
+                                    outputImage.Draw(new CircleF(defact.DepthPoint, 3), Rgbs.Red, 3);
+                                    outputImage.Draw(new CircleF(defact.StartPoint, 3), Rgbs.Yellow, 3);
+                                    outputImage.Draw(new CircleF(defact.EndPoint, 3), Rgbs.Blue, 3);
+                                }
+                            }
 
 
                             //outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
@@ -519,7 +527,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
                 //Flood(output, maxLocations[0], color += 50);
                 //cleanerImage.Data[maxLocations[0].Y, maxLocations[0].X, 0] = 255.0;
-                cleanerImage.MinMax(out minValues, out maxValues, out minLocations, out maxLocations);
+                imageWithOriginalDepth.MinMax(out minValues, out maxValues, out minLocations, out maxLocations);
                 i++;
             }
 
@@ -530,12 +538,24 @@ namespace Huddle.Engine.Processor.OpenCv
                 outputImageCopy.Dispose();
             });
 
-            return output.Convert<Gray, float>();
+            return debugOutput.Convert<Gray, float>();
         }
 
-        private void Flood(IImage image, Point maxLocation, float color)
+        private bool BuildingBackgroundImage(Image<Gray, float> image)
         {
+            if (_backgroundImage == null)
+            {
+                _backgroundImage = image.Copy();
+                return true;
+            }
 
+            if (++_collectedBackgroundImages < 30)
+            {
+                _backgroundImage.RunningAvg(image, 0.5);
+                return true;
+            }
+
+            return false;
         }
     }
 }
