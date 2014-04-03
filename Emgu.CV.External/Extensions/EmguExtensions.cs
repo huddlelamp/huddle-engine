@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
@@ -53,8 +54,7 @@ namespace Emgu.CV.External.Extensions
                 }
             }
         }
-
-        public static BitmapSource ToGradientBitmapSource(this Image<Gray, float> image, int lowConfidence, int saturation)
+        public static BitmapSource ToGradientBitmapSourceForHandTracking(this Image<Gray, float> image, int lowConfidence, int saturation)
         {
             var width = image.Width;
             var height = image.Height;
@@ -94,6 +94,44 @@ namespace Emgu.CV.External.Extensions
                     gradientImage[y, x] = color;
                 }
             }
+
+            return gradientImage.ToBitmapSource();
+        }
+
+        public static BitmapSource ToGradientBitmapSource(this Image<Gray, float> image, int lowConfidence, int saturation)
+        {
+            var width = image.Width;
+            var height = image.Height;
+
+            var imageData = image.Data;
+            var gradientImage = new Image<Rgb, byte>(width, height, Rgbs.White);
+            // var gradientImageData = gradientImage.Data;
+
+            Parallel.For(0, height, y =>
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    Rgb color;
+                    var depth = imageData[y, x, 0];
+
+                    if (depth == lowConfidence)
+                    {
+                        color = Rgbs.Black;
+                    }
+                    else if (depth == saturation)
+                    {
+                        color = Rgbs.White;
+                    }
+                    else
+                    {
+                        var index = (int)((Gradient.Length - 1) * (255.0 - depth) / 255.0);
+                        if (index < 0) index = 0;
+                        if (index > Gradient.Length) index = Gradient.Length - 1;
+                        color = Gradient[index];
+                    }
+                    gradientImage[y, x] = color;
+                }
+            });
 
             return gradientImage.ToBitmapSource();
         }
