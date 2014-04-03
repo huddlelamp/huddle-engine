@@ -226,6 +226,7 @@
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\BaseData.cs" />
+    <Compile Include="Data\ROI.cs" />
     <Compile Include="Data\BlobData.cs" />
     <Compile Include="Data\DataContainer.cs" />
     <Compile Include="Data\Digital.cs" />

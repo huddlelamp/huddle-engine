@@ -9,6 +9,7 @@ using Emgu.CV.External.Structure;
 using Emgu.CV.GPU;
 using Emgu.CV.Structure;
 using GalaSoft.MvvmLight.Command;
+using Huddle.Engine.Data;
 using Huddle.Engine.Properties;
 using Huddle.Engine.Util;
 using Point = System.Windows.Point;
@@ -237,6 +238,15 @@ namespace Huddle.Engine.Processor.OpenCv
         #endregion
 
         #endregion
+
+        public override IData Process(IData data)
+        {
+            var roi = data as ROI;
+            if (roi != null)
+                ROI = roi.RoiRectangle;
+
+            return base.Process(data);
+        }
 
         public override Image<Rgb, byte> PreProcess(Image<Rgb, byte> image0)
         {

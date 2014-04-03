@@ -57,6 +57,9 @@ namespace Huddle.Engine.Processor
                     typeof(BaseData).FullName,
                     typeof(RgbImageData).FullName,
                     typeof(GrayFloatImage).FullName,
+                    typeof(GrayByteImage).FullName,
+                    typeof(Proximity).FullName,
+                    typeof(ROI).FullName,
                     typeof(BlobData).FullName,
                     typeof(LocationData).FullName
                 };
