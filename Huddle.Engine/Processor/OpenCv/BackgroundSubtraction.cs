@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -426,7 +428,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 .PyrUp()
                 .PyrDown();
 
-            var debugOutput = imageWithOriginalDepth.Copy();
+            var targetImage = imageWithOriginalDepth.Copy();
 
             double[] minValues;
             double[] maxValues;
@@ -434,111 +436,105 @@ namespace Huddle.Engine.Processor.OpenCv
             Point[] maxLocations;
             imageWithOriginalDepth.MinMax(out minValues, out maxValues, out minLocations, out maxLocations);
 
+            double[] minValues0;
+            double[] maxValues0;
+            Point[] minLocations0;
+            Point[] maxLocations0;
+
             var minHandArmArea = MinHandArmArea;
             var contourAccuracy = ContourAccuracy;
-
-            var i = 0;
+            var shrinkMaskROI = new Rectangle(1, 1, width, height);
 
             var color = 0.0f;
 
-            var outputImage = new Image<Rgb, byte>(width + 2, height + 2);
+            var debugOutput = new Image<Rgb, byte>(width, height);
 
-            while (!minValues[0].Equals(maxValues[0]) && i < 100)
+            MCvConnectedComp comp;
+            for (var i = 0 ; !minValues[0].Equals(maxValues[0]) && i < 100; 
+                imageWithOriginalDepth.MinMax(out minValues, out maxValues, out minLocations, out maxLocations), i++)
             {
-                //Flood(cleanerImage, maxLocations[0], 0.0f);
+                var mask = new Image<Gray, byte>(width + 2, height + 2);
 
-                MCvConnectedComp comp0;
-                CvInvoke.cvFloodFill(imageWithOriginalDepth.Ptr, maxLocations[0], new MCvScalar(0.0f), new MCvScalar(FloodFillDifference), new MCvScalar(FloodFillDifference), out comp0, CONNECTIVITY.EIGHT_CONNECTED, FLOODFILL_FLAG.DEFAULT, IntPtr.Zero);
+                CvInvoke.cvFloodFill(imageWithOriginalDepth.Ptr,
+                    maxLocations[0],
+                    new MCvScalar(0.0f),
+                    new MCvScalar(FloodFillDifference),
+                    new MCvScalar(FloodFillDifference),
+                    out comp,
+                    CONNECTIVITY.EIGHT_CONNECTED,
+                    FLOODFILL_FLAG.DEFAULT,
+                    mask.Ptr);
 
-                if (comp0.area > minHandArmArea)
+                if (comp.area > minHandArmArea && comp.area < width * height - 1000)
                 {
-                    var mask = new Image<Gray, byte>(width + 2, height + 2);
-                    MCvConnectedComp comp1;
-                    CvInvoke.cvFloodFill(debugOutput.Ptr, maxLocations[0], new MCvScalar(color += 25), new MCvScalar(FloodFillDifference), new MCvScalar(FloodFillDifference), out comp1, CONNECTIVITY.EIGHT_CONNECTED, FLOODFILL_FLAG.DEFAULT, mask.Ptr);
+                    mask.ROI = shrinkMaskROI;
+                    var possibleFillAreaMaskCopy = mask.Copy();
+                    possibleFillAreaMaskCopy.Mul(color += 25);
+
+                    // Draw result on output image
+                    targetImage = targetImage.Max(possibleFillAreaMaskCopy);
+
+                    possibleFillAreaMaskCopy.Dispose();
 
                     var maskCopy = mask.Copy();
-                    maskCopy.ROI = new Rectangle(1, 1, width, height);
-                    var asdf = maskCopy.Mul(imageWithOriginalDepthCopy);
+                    maskCopy = maskCopy.Mul(255);
+                    debugOutput += maskCopy.Convert<Rgb, byte>();
+                    maskCopy.Dispose();
 
-                    //var data = asdf.Data;
-                    //var rows = asdf.Rows;
-                    //var cols = asdf.Cols;
+                    var segment = mask.Mul(imageWithOriginalDepthCopy);// .Dilate(2);
+                    mask.Dispose();
+                    segment.MinMax(out minValues0, out maxValues0, out minLocations0, out maxLocations0);
+                    debugOutput.Draw(new CircleF(new PointF(maxLocations0[0].X, maxLocations0[0].Y), 5), Rgbs.Green, 3);
 
-                    //for (var y = 0; y < rows; ++y)
+                    //using (var storage = new MemStorage())
                     //{
-                    //    for (var x = 0; x < cols; ++x)
+                    //    var contours = mask.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL, storage);
+
+                    //    //CvInvoke.cvDrawContours(outputImage.Ptr, contours.Ptr, new MCvScalar(128), new MCvScalar(80), 1, 2, LINE_TYPE.EIGHT_CONNECTED, new Point());
+
+                    //    for (; contours != null; contours = contours.HNext)
                     //    {
-                    //        if (data[y, x, 0] == 0)
-                    //            data[y, x, 0] = 255;
+
+                    //        var currentContour = contours.ApproxPoly(contours.Perimeter * contourAccuracy, 1, storage);
+
+                    //        using (var storage2 = new MemStorage())
+                    //        {
+                    //            var defacts = currentContour.GetConvexityDefacts(storage2, ORIENTATION.CV_CLOCKWISE).ToArray();
+
+                    //            foreach (var defact in defacts)
+                    //            {
+                    //                imageFloodFillsMask.Draw(new CircleF(defact.DepthPoint, 3), Rgbs.Red, 3);
+                    //                imageFloodFillsMask.Draw(new CircleF(defact.StartPoint, 3), Rgbs.Yellow, 3);
+                    //                imageFloodFillsMask.Draw(new CircleF(defact.EndPoint, 3), Rgbs.Blue, 3);
+                    //            }
+                    //        }
+
+
+                    //        //outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
+
+                    //        var area = currentContour.GetMinAreaRect();
+
+                    //        var center = area.center;
+
+                    //        var x = (float)(center.X + (50 * Math.Cos(area.angle.DegreeToRadians())));
+                    //        var y = (float)(center.Y + (50 * Math.Sin(area.angle.DegreeToRadians())));
+
+                    //        var toPoint = new PointF(x, y);
+
+                    //        //outputImage.Draw(new LineSegment2DF(center, toPoint), Rgbs.Green, 2);
                     //    }
                     //}
-
-                    double[] minValues0;
-                    double[] maxValues0;
-                    Point[] minLocations0;
-                    Point[] maxLocations0;
-                    asdf.MinMax(out minValues0, out maxValues0, out minLocations0, out maxLocations0);
-
-                    mask = mask.Mul(255);
-
-                    outputImage += mask.Convert<Rgb, byte>();
-
-                    outputImage.Draw(new CircleF(new PointF(maxLocations0[0].X, maxLocations0[0].Y), 5), Rgbs.Green, 3);
-
-                    using (var storage = new MemStorage())
-                    {
-                        var contours = mask.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL, storage);
-
-                        //CvInvoke.cvDrawContours(outputImage.Ptr, contours.Ptr, new MCvScalar(128), new MCvScalar(80), 1, 2, LINE_TYPE.EIGHT_CONNECTED, new Point());
-
-                        for ( ; contours != null; contours = contours.HNext)
-                        {
-
-                            var currentContour = contours.ApproxPoly(contours.Perimeter * contourAccuracy, 1, storage);
-
-                            using (var storage2 = new MemStorage())
-                            {
-                                var defacts = currentContour.GetConvexityDefacts(storage2, ORIENTATION.CV_CLOCKWISE).ToArray();
-
-                                foreach (var defact in defacts)
-                                {
-                                    outputImage.Draw(new CircleF(defact.DepthPoint, 3), Rgbs.Red, 3);
-                                    outputImage.Draw(new CircleF(defact.StartPoint, 3), Rgbs.Yellow, 3);
-                                    outputImage.Draw(new CircleF(defact.EndPoint, 3), Rgbs.Blue, 3);
-                                }
-                            }
-
-
-                            //outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
-
-                            var area = currentContour.GetMinAreaRect();
-
-                            var center = area.center;
-
-                            var x = (float)(center.X + (50 * Math.Cos(area.angle.DegreeToRadians())));
-                            var y = (float)(center.Y + (50 * Math.Sin(area.angle.DegreeToRadians())));
-
-                            var toPoint = new PointF(x, y);
-
-                            //outputImage.Draw(new LineSegment2DF(center, toPoint), Rgbs.Green, 2);
-                        }
-                    }
                 }
-
-                //Flood(output, maxLocations[0], color += 50);
-                //cleanerImage.Data[maxLocations[0].Y, maxLocations[0].X, 0] = 255.0;
-                imageWithOriginalDepth.MinMax(out minValues, out maxValues, out minLocations, out maxLocations);
-                i++;
             }
 
-            var outputImageCopy = outputImage.Copy();
+            var debugOutputCopy = debugOutput.Copy();
             DispatcherHelper.RunAsync(() =>
             {
-                FloodFillMask = outputImageCopy.ToBitmapSource();
-                outputImageCopy.Dispose();
+                FloodFillMask = debugOutputCopy.ToBitmapSource();
+                debugOutputCopy.Dispose();
             });
 
-            return debugOutput.Convert<Gray, float>();
+            return targetImage.Convert<Gray, float>();
         }
 
         private bool BuildingBackgroundImage(Image<Gray, float> image)
@@ -549,13 +545,19 @@ namespace Huddle.Engine.Processor.OpenCv
                 return true;
             }
 
-            if (++_collectedBackgroundImages < 30)
+            if (++_collectedBackgroundImages < 50)
             {
-                _backgroundImage.RunningAvg(image, 0.5);
+                _backgroundImage.RunningAvg(image, 0.8);
                 return true;
             }
 
             return false;
+        }
+
+        private IEnumerable<object> IterateContours(Contour<Point> contours)
+        {
+            for (; contours != null; contours = contours.HNext)
+                yield return contours;
         }
     }
 }
