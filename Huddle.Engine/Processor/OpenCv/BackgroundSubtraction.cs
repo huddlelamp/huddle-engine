@@ -409,6 +409,8 @@ namespace Huddle.Engine.Processor.OpenCv
                 }
             });
 
+            var grayByteImage = cleanerImage.Copy();
+
             cleanerImage = cleanerImage.Erode(NumErode).Dilate(NumDilate);
 
             cleanerImage = cleanerImage.PyrUp().PyrDown();
@@ -446,35 +448,60 @@ namespace Huddle.Engine.Processor.OpenCv
                     MCvConnectedComp comp1;
                     CvInvoke.cvFloodFill(output.Ptr, maxLocations[0], new MCvScalar(color += 25), new MCvScalar(FloodFillDifference), new MCvScalar(FloodFillDifference), out comp1, CONNECTIVITY.EIGHT_CONNECTED, FLOODFILL_FLAG.DEFAULT, mask.Ptr);
 
+                    var maskCopy = mask.Copy();
+                    maskCopy.ROI = new Rectangle(1, 1, width, height);
+                    var asdf = maskCopy.Mul(grayByteImage);
+
+                    //var data = asdf.Data;
+                    //var rows = asdf.Rows;
+                    //var cols = asdf.Cols;
+
+                    //for (var y = 0; y < rows; ++y)
+                    //{
+                    //    for (var x = 0; x < cols; ++x)
+                    //    {
+                    //        if (data[y, x, 0] == 0)
+                    //            data[y, x, 0] = 255;
+                    //    }
+                    //}
+
+                    double[] minValues0;
+                    double[] maxValues0;
+                    Point[] minLocations0;
+                    Point[] maxLocations0;
+                    asdf.MinMax(out minValues0, out maxValues0, out minLocations0, out maxLocations0);
+
                     mask = mask.Mul(255);
 
                     outputImage += mask.Convert<Rgb, byte>();
+
+                    outputImage.Draw(new CircleF(new PointF(maxLocations0[0].X, maxLocations0[0].Y), 3), Rgbs.Red, 3);
 
                     using (var storage = new MemStorage())
                     {
                         var contours = mask.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL, storage);
 
-                        CvInvoke.cvDrawContours(outputImage.Ptr, contours.Ptr, new MCvScalar(128), new MCvScalar(80), 1, 2, LINE_TYPE.EIGHT_CONNECTED, new Point());
+                        //CvInvoke.cvDrawContours(outputImage.Ptr, contours.Ptr, new MCvScalar(128), new MCvScalar(80), 1, 2, LINE_TYPE.EIGHT_CONNECTED, new Point());
 
                         for ( ; contours != null; contours = contours.HNext)
                         {
 
                             var currentContour = contours.ApproxPoly(contours.Perimeter * contourAccuracy, 1, storage);
 
-                            using (var storage2 = new MemStorage())
-                            {
-                                var defacts = currentContour.GetConvexityDefacts(storage2, ORIENTATION.CV_CLOCKWISE).ToArray();
+                            //using (var storage2 = new MemStorage())
+                            //{
+                            //    var defacts = currentContour.GetConvexityDefacts(storage2, ORIENTATION.CV_CLOCKWISE).ToArray();
 
-                                foreach (var defact in defacts)
-                                {
-                                    outputImage.Draw(new CircleF(defact.DepthPoint, 3), Rgbs.Red, 3);
-                                    outputImage.Draw(new CircleF(defact.StartPoint, 3), Rgbs.Yellow, 3);
-                                    outputImage.Draw(new CircleF(defact.EndPoint, 3), Rgbs.Blue, 3);
-                                }
-                            }
+                            //    foreach (var defact in defacts)
+                            //    {
+                            //        outputImage.Draw(new CircleF(defact.DepthPoint, 3), Rgbs.Red, 3);
+                            //        outputImage.Draw(new CircleF(defact.StartPoint, 3), Rgbs.Yellow, 3);
+                            //        outputImage.Draw(new CircleF(defact.EndPoint, 3), Rgbs.Blue, 3);
+                            //    }
+                            //}
 
 
-                            outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
+                            //outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
 
                             var area = currentContour.GetMinAreaRect();
 
@@ -485,7 +512,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
                             var toPoint = new PointF(x, y);
 
-                            outputImage.Draw(new LineSegment2DF(center, toPoint), Rgbs.Green, 2);
+                            //outputImage.Draw(new LineSegment2DF(center, toPoint), Rgbs.Green, 2);
                         }
                     }
                 }
