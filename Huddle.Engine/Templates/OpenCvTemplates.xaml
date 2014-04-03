@@ -160,24 +160,6 @@
                 <Slider Value="{Binding Path=MaxDistanceRestoreId}" Minimum="0" Maximum="100" />
                 <TextBlock Text="{Binding Path=MaxDistanceRestoreId}"/>
             </StackPanel>
-            
-            <StackPanel>
-                <Label Content="BlockSize"/>
-                <Slider Value="{Binding Path=BlockSize}" Minimum="0" Maximum="100" />
-                <TextBlock Text="{Binding Path=BlockSize}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Sobel"/>
-                <Slider Value="{Binding Path=Sobel}" Minimum="0" Maximum="100" />
-                <TextBlock Text="{Binding Path=Sobel}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="K"/>
-                <Slider Value="{Binding Path=K}" Minimum="0.00" Maximum="1.00" />
-                <TextBlock Text="{Binding Path=K}"/>
-            </StackPanel>
 
             <StackPanel>
                 <Label Content="Min Contour Area"/>

@@ -12,9 +12,11 @@ namespace Huddle.Engine.Processor
     [ViewTemplate("I Take Long", "ITakeLong")]
     public class ITakeLong : BaseProcessor
     {
+        private readonly Random _random = new Random();
+
         public override IData Process(IData data)
         {
-            Thread.Sleep(100);
+            Thread.Sleep(_random.Next(10, 1000));
             return data;
         }
     }

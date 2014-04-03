@@ -54,6 +54,38 @@ namespace Huddle.Engine.Controls
 
         #endregion
 
+        #region dependency properties
+
+        #region HeaderContentTemplate
+
+        public DataTemplate HeaderContentTemplate
+        {
+            get { return (DataTemplate)GetValue(HeaderContentTemplateProperty); }
+            set { SetValue(HeaderContentTemplateProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for HeaderContentTemplate.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty HeaderContentTemplateProperty =
+            DependencyProperty.Register("HeaderContentTemplate", typeof(DataTemplate), typeof(RemovableExpander), new PropertyMetadata(null));
+
+        #endregion
+
+        #region HeaderContent
+
+        public object HeaderContent
+        {
+            get { return (object)GetValue(HeaderContentProperty); }
+            set { SetValue(HeaderContentProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for HeaderContent.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty HeaderContentProperty =
+            DependencyProperty.Register("HeaderContent", typeof(object), typeof(RemovableExpander), new PropertyMetadata(null));
+
+        #endregion
+
+        #endregion
+
         public RemovableExpander()
         {
             InitializeComponent();

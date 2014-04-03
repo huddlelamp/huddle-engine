@@ -138,9 +138,18 @@
                                 <command:EventToCommand Command="{Binding Path=RemoveCommand, Mode=OneWay}" />
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
+
+                        <controls:RemovableExpander.HeaderContent>
+                            <StackPanel Grid.Row="1" Orientation="Vertical">
+                                <Label Content="{Binding Path=Model.Benchmark.Average, Mode=OneWay}" ContentStringFormat="Average Time: {0} ms" />
+                                <Label Content="{Binding Path=Model.Benchmark.LastMeasurement, Mode=OneWay}" ContentStringFormat="Last Measurement: {0} ms" />
+                                <!--<Label Content="{Binding Path=Model.Benchmark.AccumulateMeasurements, Mode=OneWay}" ContentStringFormat="Accumulate Measurement: {0}" />
+                                <Label Content="{Binding Path=Model.Benchmark.MeasurementCount, Mode=OneWay}" ContentStringFormat="Measurement Count: {0}" />-->
+                            </StackPanel>
+                        </controls:RemovableExpander.HeaderContent>
+
                         <Grid Margin="0">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
@@ -167,13 +176,6 @@
                                     </ItemsControl>
                                 </ScrollViewer>
                             </Expander>
-
-                            <StackPanel Grid.Row="2" Orientation="Vertical">
-                                <Label Content="{Binding Path=Model.Benchmark.Average, Mode=OneWay}" ContentStringFormat="Average Time: {0} ms" />
-                                <Label Content="{Binding Path=Model.Benchmark.LastMeasurement, Mode=OneWay}" ContentStringFormat="Last Measurement: {0} ms" />
-                                <!--<Label Content="{Binding Path=Model.Benchmark.AccumulateMeasurements, Mode=OneWay}" ContentStringFormat="Accumulate Measurement: {0}" />
-                                <Label Content="{Binding Path=Model.Benchmark.MeasurementCount, Mode=OneWay}" ContentStringFormat="Measurement Count: {0}" />-->
-                            </StackPanel>
                         </Grid>
                     </controls:RemovableExpander>
                 </StackPanel>
