@@ -53,6 +53,49 @@ namespace Emgu.CV.External.Extensions
                 }
             }
         }
+        public static BitmapSource ToGradientBitmapSourceForHandTracking(this Image<Gray, float> image, int lowConfidence, int saturation)
+        {
+            var width = image.Width;
+            var height = image.Height;
+
+            var gradientImage = new Image<Rgb, byte>(width, height, Rgbs.White);
+
+            Rgb color;
+            for (var y = 0; y < height; y++)
+            {
+                for (var x = 0; x < width; x++)
+                {
+                    var depth = image.Data[y, x, 0];
+
+                    //if (depth == lowConfidence)
+                    //{
+                    //    color = Rgbs.Black;
+                    //}
+                    //else if (depth == saturation)
+                    //{
+                    //    color = Rgbs.White;
+                    //}
+
+                    if (depth > 10000)
+                    {
+                        color = Rgbs.Black;
+                    }
+                    else
+                    {
+                        var index = (int)((Gradient.Length - 1) * (255.0 - depth) / 255.0);
+
+                        if (index < 0 || index > Gradient.Length - 1)
+                            color = Rgbs.White;
+                        else
+                            color = Gradient[index];
+                    }
+
+                    gradientImage[y, x] = color;
+                }
+            }
+
+            return gradientImage.ToBitmapSource();
+        }
 
         public static BitmapSource ToGradientBitmapSource(this Image<Gray, float> image, int lowConfidence, int saturation)
         {
