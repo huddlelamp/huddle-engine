@@ -7,7 +7,7 @@ using Huddle.Engine.Processor.OpenCv.Filter;
 namespace Huddle.Engine.Processor.OpenCv.Struct
 {
 
-    public class Palm : ObservableObject
+    public class Hand : ObservableObject
     {
         #region private fields
 
@@ -87,6 +87,41 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #endregion
 
+        #region Depth
+
+        /// <summary>
+        /// The <see cref="Depth" /> property's name.
+        /// </summary>
+        public const string DepthPropertyName = "Depth";
+
+        private float _depth = 0.0f;
+
+        /// <summary>
+        /// Sets and gets the Depth property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public float Depth
+        {
+            get
+            {
+                return _depth;
+            }
+
+            set
+            {
+                if (_depth == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DepthPropertyName);
+                _depth = value;
+                RaisePropertyChanged(DepthPropertyName);
+            }
+        }
+
+        #endregion
+
         #region LastUpdate
 
         /// <summary>
@@ -126,7 +161,7 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #region ctor
 
-        public Palm(long id, Point center)
+        public Hand(long id, Point center)
         {
             Id = id;
             Center = center;

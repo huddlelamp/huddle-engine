@@ -32,7 +32,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
         private int _collectedBackgroundImages = 0;
 
-        private readonly List<Palm> _palms = new List<Palm>();
+        private readonly List<Hand> _palms = new List<Hand>();
 
         private static long _id = -1;
 
@@ -258,6 +258,41 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #region HandLocationSamples
+
+        /// <summary>
+        /// The <see cref="HandLocationSamples" /> property's name.
+        /// </summary>
+        public const string HandLocationSamplesPropertyName = "HandLocationSamples";
+
+        private int _handLocationSamples = 30;
+
+        /// <summary>
+        /// Sets and gets the HandLocationSamples property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int HandLocationSamples
+        {
+            get
+            {
+                return _handLocationSamples;
+            }
+
+            set
+            {
+                if (_handLocationSamples == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(HandLocationSamplesPropertyName);
+                _handLocationSamples = value;
+                RaisePropertyChanged(HandLocationSamplesPropertyName);
+            }
+        }
+
+        #endregion
+
         #region FloodFillMask
 
         /// <summary>
@@ -324,41 +359,6 @@ namespace Huddle.Engine.Processor.OpenCv
                 RaisePropertyChanging(FloodFillDifferencePropertyName);
                 _floodFillDifference = value;
                 RaisePropertyChanged(FloodFillDifferencePropertyName);
-            }
-        }
-
-        #endregion
-
-        #region ContourAccuracy
-
-        /// <summary>
-        /// The <see cref="ContourAccuracy" /> property's name.
-        /// </summary>
-        public const string ContourAccuracyPropertyName = "ContourAccuracy";
-
-        private double _contourAccuracy = 0.05;
-
-        /// <summary>
-        /// Sets and gets the ContourAccuracy property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double ContourAccuracy
-        {
-            get
-            {
-                return _contourAccuracy;
-            }
-
-            set
-            {
-                if (_contourAccuracy == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(ContourAccuracyPropertyName);
-                _contourAccuracy = value;
-                RaisePropertyChanged(ContourAccuracyPropertyName);
             }
         }
 
@@ -446,13 +446,9 @@ namespace Huddle.Engine.Processor.OpenCv
             Point[] maxLocations;
             imageWithOriginalDepth.MinMax(out minValues, out maxValues, out minLocations, out maxLocations);
 
-            double[] minValues0;
-            double[] maxValues0;
-            Point[] minLocations0;
-            Point[] maxLocations0;
-
             var minHandArmArea = MinHandArmArea;
-            var contourAccuracy = ContourAccuracy;
+            var maxHandArmArea = width * height - 1000;
+
             var shrinkMaskROI = new Rectangle(1, 1, width, height);
 
             var color = 0.0f;
@@ -475,137 +471,41 @@ namespace Huddle.Engine.Processor.OpenCv
                     FLOODFILL_FLAG.DEFAULT,
                     mask.Ptr);
 
-                if (comp.area > minHandArmArea && comp.area < width * height - 1000)
+                if (comp.area > minHandArmArea && comp.area < maxHandArmArea)
                 {
                     mask.ROI = shrinkMaskROI;
-                    var possibleFillAreaMaskCopy = mask.Copy();
-                    possibleFillAreaMaskCopy.Mul(color += 25);
-
-                    // Draw result on output image
-                    targetImage += possibleFillAreaMaskCopy;
-
-                    possibleFillAreaMaskCopy.Dispose();
-
                     var maskCopy = mask.Copy();
-                    maskCopy = maskCopy.Mul(255);
-                    debugOutput += maskCopy.Convert<Rgb, byte>();
-                    maskCopy.Dispose();
+                    var coloredMask = maskCopy.Mul(color += 25);
+
+                    var colorMaskData = coloredMask.Data;
+                    var targetImageData = targetImage.Data;
+
+                    // This does not work therefore the following manual approach is used.
+                    //targetImage = targetImage.And(coloredMask);
+
+                    Parallel.For(0, height, y0 =>
+                    {
+                        for (var x0 = 0; x0 < width; x0++)
+                        {
+                            var maskValue = colorMaskData[y0, x0, 0];
+                            if (maskValue > 0)
+                                targetImageData[y0, x0, 0] = maskValue;
+                        }
+                    });
+
+                    debugOutput += maskCopy.Mul(255).Convert<Rgb, byte>();
+
+                    coloredMask.Dispose();
 
                     var segment = mask.Mul(imageWithOriginalDepthCopy);// .Dilate(2);
 
-                    var segmentCopy = segment.Copy();
+                    int x;
+                    int y;
+                    float depth;
+                    FindHandLocation(ref segment, ref mask, out x, out y, out depth);
+                    UpdateHand(ref x, ref y, ref depth);
 
-                    int[] xs = new int[30];
-                    int[] ys = new int[30];
-
-                    var minVal = double.MaxValue;
-                    var maxVal = 0.0;
-                    var minLoc = new Point();
-                    var maxLoc = new Point();
-
-                    for (int j = 0; j < 30; j++)
-                    {
-                        CvInvoke.cvMinMaxLoc(segmentCopy, ref minVal, ref maxVal, ref minLoc, ref maxLoc, maskCopy);
-
-                        xs[j] = maxLoc.X;
-                        ys[j] = maxLoc.Y;
-
-                        segmentCopy.Data[maxLoc.Y, maxLoc.X, 0] = 0;
-
-                        debugOutput.Draw(new CircleF(new PointF(maxLoc.X, maxLoc.Y), 2), Rgbs.Yellow, 2);
-                    }
-
-                    segmentCopy.Dispose();
-
-                    //segment.MinMax(out minValues0, out maxValues0, out minLocations0, out maxLocations0);
-
-                    //CvInvoke.cvMinMaxLoc(segment, ref minVal, ref maxVal, ref minLoc, ref maxLoc, maskCopy);
-
-                    mask.Dispose();
-
-                    var averageX = (int)xs.Average();
-                    var averageY = (int)ys.Average();
-
-                    //var x = maxLocations0[0].X;
-                    //var y = maxLocations0[0].Y;
-
-                    //if (maxLocations.Length > 1)
-                    //    Console.WriteLine();
-
-                    var x = maxLoc.X;
-                    var y = maxLoc.Y;
-
-                    if (x != maxLoc.X || y != maxLoc.Y)
-                        Console.WriteLine();
-
-                    Palm palm;
-                    var point = new Point(averageX, averageY);
-
-                    if (_palms.Count > 0)
-                    {
-                        palm = _palms.Aggregate((curmin, p) => p.EstimatedCenter.Length(point) < curmin.EstimatedCenter.Length(point) ? p : curmin);
-                    }
-                    else
-                    {
-                        palm = new Palm(GetNextId(), point)
-                        {
-                            LastUpdate = now
-                        };
-                        _palms.Add(palm);
-                    }
-
-                    if (palm.EstimatedCenter.Length(point) < 50)
-                    {
-                        palm.Center = point;
-                        palm.LastUpdate = now;
-                    }
-                    else
-                    {
-                        palm = new Palm(GetNextId(), point)
-                        {
-                            LastUpdate = now
-                        };
-                        _palms.Add(palm);
-                    }
-
-                    //using (var storage = new MemStorage())
-                    //{
-                    //    var contours = mask.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL, storage);
-
-                    //    //CvInvoke.cvDrawContours(outputImage.Ptr, contours.Ptr, new MCvScalar(128), new MCvScalar(80), 1, 2, LINE_TYPE.EIGHT_CONNECTED, new Point());
-
-                    //    for (; contours != null; contours = contours.HNext)
-                    //    {
-
-                    //        var currentContour = contours.ApproxPoly(contours.Perimeter * contourAccuracy, 1, storage);
-
-                    //        using (var storage2 = new MemStorage())
-                    //        {
-                    //            var defacts = currentContour.GetConvexityDefacts(storage2, ORIENTATION.CV_CLOCKWISE).ToArray();
-
-                    //            foreach (var defact in defacts)
-                    //            {
-                    //                imageFloodFillsMask.Draw(new CircleF(defact.DepthPoint, 3), Rgbs.Red, 3);
-                    //                imageFloodFillsMask.Draw(new CircleF(defact.StartPoint, 3), Rgbs.Yellow, 3);
-                    //                imageFloodFillsMask.Draw(new CircleF(defact.EndPoint, 3), Rgbs.Blue, 3);
-                    //            }
-                    //        }
-
-
-                    //        //outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
-
-                    //        var area = currentContour.GetMinAreaRect();
-
-                    //        var center = area.center;
-
-                    //        var x = (float)(center.X + (50 * Math.Cos(area.angle.DegreeToRadians())));
-                    //        var y = (float)(center.Y + (50 * Math.Sin(area.angle.DegreeToRadians())));
-
-                    //        var toPoint = new PointF(x, y);
-
-                    //        //outputImage.Draw(new LineSegment2DF(center, toPoint), Rgbs.Green, 2);
-                    //    }
-                    //}
+                    segment.Dispose();
                 }
             }
 
@@ -614,7 +514,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 debugOutput.Draw(new CircleF(new PointF(palm.Center.X, palm.Center.Y), 5), Rgbs.Red, 3);
                 debugOutput.Draw(new CircleF(new PointF(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), 5), Rgbs.Green, 3);
 
-                debugOutput.Draw(string.Format("Id {0}", palm.Id), ref EmguFontBig, new Point((int)palm.EstimatedCenter.X, (int)palm.EstimatedCenter.Y), Rgbs.White);
+                debugOutput.Draw(string.Format("Id {0} ({1})", palm.Id, palm.Depth), ref EmguFontBig, new Point(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), Rgbs.White);
             }
 
             var debugOutputCopy = debugOutput.Copy();
@@ -644,11 +544,93 @@ namespace Huddle.Engine.Processor.OpenCv
             return false;
         }
 
-        private IEnumerable<object> IterateContours(Contour<Point> contours)
+        #region Hand Processing
+
+        /// <summary>
+        /// Finds hand location in a segmented image. It assumes that the pixel with the highest depth value
+        /// is the tip of the hand (highest value means closest to the static surface). It uses a sample of
+        /// 30 highest depth values to compute the average x/y coordinate, which will be returned.
+        /// </summary>
+        /// <param name="handSegment"></param>
+        /// <param name="handMask"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        private void FindHandLocation(ref Image<Gray, byte> handSegment, ref Image<Gray, byte> handMask, out int x, out int y, out float depth)
         {
-            for (; contours != null; contours = contours.HNext)
-                yield return contours;
+            var samples = HandLocationSamples;
+
+            var xs = new int[samples];
+            var ys = new int[samples];
+
+            var minVal = double.MaxValue;
+            var maxVal = 0.0;
+            var minLoc = new Point();
+            var maxLoc = new Point();
+
+            for (var j = 0; j < samples; j++)
+            {
+                CvInvoke.cvMinMaxLoc(handSegment, ref minVal, ref maxVal, ref minLoc, ref maxLoc, handMask);
+
+                var maxX = maxLoc.X;
+                var maxY = maxLoc.Y;
+
+                xs[j] = maxX;
+                ys[j] = maxY;
+
+                handSegment.Data[maxY, maxX, 0] = 0;
+            }
+
+            x = (int)xs.Average();
+            y = (int)ys.Average();
+            depth = handSegment.Data[y, x, 0];
         }
+
+        /// <summary>
+        /// Updates a hand from previous frames or adds a new hand if not found in history.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        private void UpdateHand(ref int x, ref int y, ref float depth)
+        {
+            var now = DateTime.Now;
+            depth = 255 - depth;
+
+            Hand hand;
+            var point = new Point(x, y);
+
+            if (_palms.Count > 0)
+            {
+                hand = _palms.Aggregate((curmin, p) => p.EstimatedCenter.Length(point) < curmin.EstimatedCenter.Length(point) ? p : curmin);
+            }
+            else
+            {
+                hand = new Hand(GetNextId(), point)
+                {
+                    Depth = depth,
+                    LastUpdate = now
+                };
+                _palms.Add(hand);
+            }
+
+            if (hand.EstimatedCenter.Length(point) < 50)
+            {
+                hand.Center = point;
+                hand.Depth = depth;
+                hand.LastUpdate = now;
+            }
+            else
+            {
+                hand = new Hand(GetNextId(), point)
+                {
+                    Depth = depth,
+                    LastUpdate = now
+                };
+                _palms.Add(hand);
+            }
+        }
+
+        #endregion
+
         private static long GetNextId()
         {
             return ++_id;
