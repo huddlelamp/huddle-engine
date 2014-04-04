@@ -890,7 +890,7 @@ namespace Huddle.Engine.Processor.Sensors
                 var depthImageAndConfidence = GetHighPrecisionDepthImage(depth);
                 var depthImage = (Image<Gray, float>)depthImageAndConfidence[0];
                 var depthImageCopy = depthImage.Copy();
-                var confidenceMapImage = (Image<Gray, Byte>)depthImageAndConfidence[1];
+                var confidenceMapImage = (Image<Rgb, Byte>)depthImageAndConfidence[1];
                 var confidenceMapImageCopy = confidenceMapImage.Copy();
                 DepthImageFrameTime = sw.ElapsedMilliseconds;
                 ConfidenceMapImageFrameTime = 0;
@@ -1034,7 +1034,7 @@ namespace Huddle.Engine.Processor.Sensors
                     {
                         new RgbImageData("color", colorImage),
                         new GrayFloatImage("depth", depthImage),
-                        new GrayByteImage("confidence", confidenceMapImage),
+                        new RgbImageData("confidence", confidenceMapImage),
                     };
 
                     if (uvMapImage != null) dc.Add(new RgbFloatImage("uvmap", uvMapImage));
@@ -1099,7 +1099,7 @@ namespace Huddle.Engine.Processor.Sensors
 
             var returnImages = new IImage[2];
             returnImages[0] = new Image<Gray, float>(inputWidth, inputHeight);
-            returnImages[1] = new Image<Gray, Byte>(inputWidth, inputHeight, new Gray(0));
+            returnImages[1] = new Image<Rgb, Byte>(inputWidth, inputHeight);
 
             PXCMImage.ImageData cdata;
             if (depthImage.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH, out cdata) <
@@ -1118,7 +1118,7 @@ namespace Huddle.Engine.Processor.Sensors
             var maxValue = MaxDepthValue;
 
             var depthReturnImage = ((Image<Gray, float>)returnImages[0]);
-            var confidenceReturnImage = ((Image<Gray, Byte>)returnImages[1]);
+            var confidenceReturnImage = ((Image<Rgb, Byte>)returnImages[1]);
             var depthReturnImageData = depthReturnImage.Data;
             var confidenceReturnImageData = confidenceReturnImage.Data;
 
