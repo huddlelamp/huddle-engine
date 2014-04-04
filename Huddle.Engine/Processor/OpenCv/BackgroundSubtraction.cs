@@ -391,7 +391,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
             var now = DateTime.Now;
 
-            _palms.RemoveAll(p => (now - p.LastUpdate).TotalMilliseconds > 300);
+            _palms.RemoveAll(p => (now - p.LastUpdate).TotalMilliseconds > 150);
 
             var width = image.Width;
             var height = image.Height;
@@ -482,7 +482,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     possibleFillAreaMaskCopy.Mul(color += 25);
 
                     // Draw result on output image
-                    targetImage = targetImage.Max(possibleFillAreaMaskCopy);
+                    targetImage += possibleFillAreaMaskCopy;
 
                     possibleFillAreaMaskCopy.Dispose();
 
@@ -492,14 +492,54 @@ namespace Huddle.Engine.Processor.OpenCv
                     maskCopy.Dispose();
 
                     var segment = mask.Mul(imageWithOriginalDepthCopy);// .Dilate(2);
-                    mask.Dispose();
-                    segment.MinMax(out minValues0, out maxValues0, out minLocations0, out maxLocations0);
 
-                    var x = maxLocations0[0].X;
-                    var y = maxLocations0[0].Y;
+                    var segmentCopy = segment.Copy();
+
+                    int[] xs = new int[30];
+                    int[] ys = new int[30];
+
+                    var minVal = double.MaxValue;
+                    var maxVal = 0.0;
+                    var minLoc = new Point();
+                    var maxLoc = new Point();
+
+                    for (int j = 0; j < 30; j++)
+                    {
+                        CvInvoke.cvMinMaxLoc(segmentCopy, ref minVal, ref maxVal, ref minLoc, ref maxLoc, maskCopy);
+
+                        xs[j] = maxLoc.X;
+                        ys[j] = maxLoc.Y;
+
+                        segmentCopy.Data[maxLoc.Y, maxLoc.X, 0] = 0;
+
+                        debugOutput.Draw(new CircleF(new PointF(maxLoc.X, maxLoc.Y), 2), Rgbs.Yellow, 2);
+                    }
+
+                    segmentCopy.Dispose();
+
+                    //segment.MinMax(out minValues0, out maxValues0, out minLocations0, out maxLocations0);
+
+                    //CvInvoke.cvMinMaxLoc(segment, ref minVal, ref maxVal, ref minLoc, ref maxLoc, maskCopy);
+
+                    mask.Dispose();
+
+                    var averageX = (int)xs.Average();
+                    var averageY = (int)ys.Average();
+
+                    //var x = maxLocations0[0].X;
+                    //var y = maxLocations0[0].Y;
+
+                    //if (maxLocations.Length > 1)
+                    //    Console.WriteLine();
+
+                    var x = maxLoc.X;
+                    var y = maxLoc.Y;
+
+                    if (x != maxLoc.X || y != maxLoc.Y)
+                        Console.WriteLine();
 
                     Palm palm;
-                    var point = new Point(x, y);
+                    var point = new Point(averageX, averageY);
 
                     if (_palms.Count > 0)
                     {
@@ -514,7 +554,7 @@ namespace Huddle.Engine.Processor.OpenCv
                         _palms.Add(palm);
                     }
 
-                    if (palm.EstimatedCenter.Length(point) < 15)
+                    if (palm.EstimatedCenter.Length(point) < 50)
                     {
                         palm.Center = point;
                         palm.LastUpdate = now;
@@ -527,13 +567,6 @@ namespace Huddle.Engine.Processor.OpenCv
                         };
                         _palms.Add(palm);
                     }
-
-
-                    debugOutput.Draw(new CircleF(new PointF(x, y), 5), Rgbs.Red, 3);
-                    debugOutput.Draw(new CircleF(new PointF(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), 5), Rgbs.Green, 3);
-
-                    debugOutput.Draw(string.Format("Id {0}", palm.Id), ref EmguFontBig, new Point((int)palm.EstimatedCenter.X, (int)palm.EstimatedCenter.Y), Rgbs.White);
-
 
                     //using (var storage = new MemStorage())
                     //{
@@ -574,6 +607,14 @@ namespace Huddle.Engine.Processor.OpenCv
                     //    }
                     //}
                 }
+            }
+
+            foreach (var palm in _palms)
+            {
+                debugOutput.Draw(new CircleF(new PointF(palm.Center.X, palm.Center.Y), 5), Rgbs.Red, 3);
+                debugOutput.Draw(new CircleF(new PointF(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), 5), Rgbs.Green, 3);
+
+                debugOutput.Draw(string.Format("Id {0}", palm.Id), ref EmguFontBig, new Point((int)palm.EstimatedCenter.X, (int)palm.EstimatedCenter.Y), Rgbs.White);
             }
 
             var debugOutputCopy = debugOutput.Copy();
