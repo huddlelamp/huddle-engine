@@ -427,6 +427,19 @@ namespace Huddle.Engine.Processor
                 #endregion
 
                 Stage(proximity);
+
+                foreach (var hand in dataContainer.OfType<Hand>().ToArray())
+                {
+                    var x = hand.X * 320 - device1.X;
+                    var y = hand.Y * 240 - device1.Y;
+
+                    var distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
+
+                    if (distance < 30 && hand.Depth < 80)
+                    {
+                        Log("Hand {0} close to {1}", hand.Id, device1.DeviceId);
+                    }
+                }
             }
 
             Stage(devices.ToArray<IData>());

@@ -27,6 +27,15 @@ namespace Huddle.Engine.Processor
                 foreach (var data in dataContainer)
                     Stage(data);
             }
+            else if (dataContainer.OfType<Hand>().Any())
+            {
+                if (StagedData.OfType<Hand>().Any())
+                    Push();
+
+                foreach (var data in dataContainer)
+                    Stage(data);
+            }
+
             return null;
         }
 

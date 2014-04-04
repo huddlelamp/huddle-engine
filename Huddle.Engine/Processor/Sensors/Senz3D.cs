@@ -818,10 +818,10 @@ namespace Huddle.Engine.Processor.Sensors
                         break;
 
                     case ColorImageProfilePropertyName:
-                        Stop();
+                        //Stop();
                         _rgbInDepthROI = new Rectangle(0, 0, 0, 0);
-                        Thread.Sleep(2000);
-                        Start();
+                        //Thread.Sleep(2000);
+                        //Start();
                         break;
                 }
             };
@@ -1286,7 +1286,7 @@ namespace Huddle.Engine.Processor.Sensors
                             _rgbInDepthROI = currentContour.BoundingRectangle;
                             //contourImg.Draw(_rgbInDepthROI, new Gray(122.0), 5);
                             //return contourImg.Convert<Rgb, Byte>();
-                        
+
                             Stage(new ROI("rgbInDepthROI")
                             {
                                 RoiRectangle = _rgbInDepthROI

@@ -26,6 +26,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{
 		Pipelines\Default.pipeline.huddle = Pipelines\Default.pipeline.huddle
 		Pipelines\DemoApp.pipeline.huddle = Pipelines\DemoApp.pipeline.huddle
 		Pipelines\Recording.pipeline.huddle = Pipelines\Recording.pipeline.huddle
+		Pipelines\Test.pipeline.huddle = Pipelines\Test.pipeline.huddle
+		Pipelines\UISTDemo.pipeline.huddle = Pipelines\UISTDemo.pipeline.huddle
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{CD8124CA-97C9-495F-AE7E-2A3A3AF630A5}"

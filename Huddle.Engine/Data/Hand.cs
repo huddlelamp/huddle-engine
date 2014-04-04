@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using GalaSoft.MvvmLight;
 using Huddle.Engine.Processor.OpenCv.Filter;
 
-namespace Huddle.Engine.Processor.OpenCv.Struct
+namespace Huddle.Engine.Data
 {
-
-    public class Hand : ObservableObject
+    public class Hand : LocationData
     {
         #region private fields
 
@@ -161,7 +158,8 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #region ctor
 
-        public Hand(long id, Point center)
+        public Hand(string key, long id, Point center)
+            : base(key)
         {
             Id = id;
             Center = center;
@@ -192,5 +190,21 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
         }
 
         #endregion
+
+        public override IData Copy()
+        {
+            return new Hand(Key, Id, Center)
+            {
+                X = X,
+                Y = Y,
+                Angle = Angle,
+                LastUpdate = LastUpdate,
+                Depth = Depth
+            };
+        }
+
+        public override void Dispose()
+        {
+        }
     }
 }

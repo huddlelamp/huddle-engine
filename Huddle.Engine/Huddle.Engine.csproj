@@ -270,6 +270,7 @@
     <Compile Include="Processor\ITakeLong.cs" />
     <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\WebSocketServer.cs" />
+    <Compile Include="Processor\OpenCv\BasicsGrayFloat.cs" />
     <Compile Include="Processor\OpenCv\HandTracker.cs" />
     <Compile Include="Processor\OpenCv\FloodFill.cs" />
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
@@ -277,7 +278,7 @@
     <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
     <Compile Include="Processor\OpenCv\FindConvexHulls.cs" />
     <Compile Include="Processor\OpenCv\Kalman.cs" />
-    <Compile Include="Processor\OpenCv\Struct\Hand.cs" />
+    <Compile Include="Data\Hand.cs" />
     <Compile Include="Processor\OpenCv\Struct\RawObject.cs" />
     <Compile Include="Processor\PipelineMode.cs" />
     <Compile Include="Processor\Sampler.cs" />
