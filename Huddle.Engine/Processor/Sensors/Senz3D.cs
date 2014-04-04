@@ -818,10 +818,10 @@ namespace Huddle.Engine.Processor.Sensors
                         break;
 
                     case ColorImageProfilePropertyName:
-                        Stop();
+                        //Stop();
                         _rgbInDepthROI = new Rectangle(0, 0, 0, 0);
-                        Thread.Sleep(2000);
-                        Start();
+                        //Thread.Sleep(2000);
+                        //Start();
                         break;
                 }
             };

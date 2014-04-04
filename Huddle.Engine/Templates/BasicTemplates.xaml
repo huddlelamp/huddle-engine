@@ -31,7 +31,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="ITakeLong" DataType="processor:ITakeLong">
-        
+
     </DataTemplate>
 
     <DataTemplate x:Key="QRCodeDecoder" DataType="barCodes:QRCodeDecoder">
@@ -54,6 +54,17 @@
 
             <CheckBox Content="Try Harder" VerticalAlignment="Center" IsChecked="{Binding Path=TryHarder}" />
 
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="GlyphDecoder" DataType="barCodes:GlyphDecoder">
+        <StackPanel>
+                 <Image Source="{Binding Path=PostProcessImage}" />
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="MinFramesHistory"/>
+                    <Slider Value="{Binding Path=MinFramesProperty}" Width="340" Height="25" Minimum="1" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="1" />
+                    <TextBlock Text="{Binding Path=MinFramesProperty, StringFormat={}{0}}"/>
+                </StackPanel>
         </StackPanel>
     </DataTemplate>
 
