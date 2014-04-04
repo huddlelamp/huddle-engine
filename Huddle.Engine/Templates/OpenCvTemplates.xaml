@@ -119,18 +119,18 @@
                 <TextBlock Text="{Binding Path=MinHandArmArea, StringFormat={}{0}}"/>
             </StackPanel>
 
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Hand Location Samples"/>
+                <Slider Value="{Binding Path=HandLocationSamples}" Width="340" Height="25" Minimum="0" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=HandLocationSamples, StringFormat={}{0}}"/>
+            </StackPanel>
+
             <CheckBox Content="Smooth Gaussian" IsChecked="{Binding Path=IsSmoothGaussianEnabled}" />
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="Difference"/>
                 <Slider Value="{Binding Path=FloodFillDifference}" Width="340" Height="25" Minimum="0" Maximum="50" />
                 <TextBlock Text="{Binding Path=FloodFillDifference, StringFormat={}{0:#.##}}"/>
-            </StackPanel>
-            
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Contour Accuracy"/>
-                <Slider Value="{Binding Path=ContourAccuracy}" Width="340" Height="25" Minimum="0" Maximum="0.05" IsSnapToTickEnabled="True" TickFrequency="0.005" />
-                <TextBlock Text="{Binding Path=ContourAccuracy, StringFormat={}{0:#.###}}"/>
             </StackPanel>
         </StackPanel>
     </DataTemplate>

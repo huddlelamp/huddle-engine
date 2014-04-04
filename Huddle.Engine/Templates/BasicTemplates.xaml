@@ -22,6 +22,10 @@
         </StackPanel>
     </DataTemplate>
 
+    <DataTemplate x:Key="DataViewer" DataType="processor:DataViewer">
+        <DataGrid ItemsSource="{Binding Path=DataStats}" AutoGenerateColumns="True" />
+    </DataTemplate>
+
     <DataTemplate x:Key="Sampler" DataType="processor:Sampler">
 
     </DataTemplate>

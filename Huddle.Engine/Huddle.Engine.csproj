@@ -265,6 +265,7 @@
     <Compile Include="Processor\BaseProcessor.cs" />
     <Compile Include="Processor\Benchmark.cs" />
     <Compile Include="Processor\DataTypeFilter.cs" />
+    <Compile Include="Processor\DataViewer.cs" />
     <Compile Include="Processor\ITakeLong.cs" />
     <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\WebSocketServer.cs" />
@@ -275,7 +276,7 @@
     <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
     <Compile Include="Processor\OpenCv\FindConvexHulls.cs" />
     <Compile Include="Processor\OpenCv\Kalman.cs" />
-    <Compile Include="Processor\OpenCv\Struct\Palm.cs" />
+    <Compile Include="Processor\OpenCv\Struct\Hand.cs" />
     <Compile Include="Processor\OpenCv\Struct\RawObject.cs" />
     <Compile Include="Processor\PipelineMode.cs" />
     <Compile Include="Processor\Sampler.cs" />
