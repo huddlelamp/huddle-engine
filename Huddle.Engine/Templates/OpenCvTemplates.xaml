@@ -57,7 +57,7 @@
         </StackPanel>
     </DataTemplate>
     
-    <DataTemplate x:Key="BackgroundSubtraction" DataType="openCv:BackgroundSubtraction">
+    <DataTemplate x:Key="HandTracker" DataType="openCv:HandTracker">
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>

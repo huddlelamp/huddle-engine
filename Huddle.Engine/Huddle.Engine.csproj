@@ -270,7 +270,7 @@
     <Compile Include="Processor\ITakeLong.cs" />
     <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\WebSocketServer.cs" />
-    <Compile Include="Processor\OpenCv\BackgroundSubtraction.cs" />
+    <Compile Include="Processor\OpenCv\HandTracker.cs" />
     <Compile Include="Processor\OpenCv\FloodFill.cs" />
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
     <Compile Include="Processor\OpenCv\Filter\KalmanFilter.cs" />

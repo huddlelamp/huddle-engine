@@ -23,8 +23,8 @@ using Huddle.Engine.Util;
 
 namespace Huddle.Engine.Processor.OpenCv
 {
-    [ViewTemplate("BackgroundSubtraction", "BackgroundSubtraction")]
-    public class BackgroundSubtraction : BaseImageProcessor<Gray, float>
+    [ViewTemplate("Hand Tracker", "HandTracker")]
+    public class HandTracker : BaseImageProcessor<Gray, float>
     {
         #region private fields
 
@@ -45,6 +45,41 @@ namespace Huddle.Engine.Processor.OpenCv
         #endregion
 
         #region properties
+
+        #region BackgroundSubtractionSamples
+
+        /// <summary>
+        /// The <see cref="BackgroundSubtractionSamples" /> property's name.
+        /// </summary>
+        public const string BackgroundSubtractionSamplesPropertyName = "BackgroundSubtractionSamples";
+
+        private int _backgroundSubtractionSamples = 50;
+
+        /// <summary>
+        /// Sets and gets the BackgroundSubtractionSamples property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int BackgroundSubtractionSamples
+        {
+            get
+            {
+                return _backgroundSubtractionSamples;
+            }
+
+            set
+            {
+                if (_backgroundSubtractionSamples == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(BackgroundSubtractionSamplesPropertyName);
+                _backgroundSubtractionSamples = value;
+                RaisePropertyChanged(BackgroundSubtractionSamplesPropertyName);
+            }
+        }
+
+        #endregion
 
         #region LowCutOffDepth
 
@@ -293,6 +328,41 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #region IntegrationDistance
+
+        /// <summary>
+        /// The <see cref="IntegrationDistance" /> property's name.
+        /// </summary>
+        public const string IntegrationDistancePropertyName = "IntegrationDistance";
+
+        private int _integrationDistance = 50;
+
+        /// <summary>
+        /// Sets and gets the IntegrationDistance property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int IntegrationDistance
+        {
+            get
+            {
+                return _integrationDistance;
+            }
+
+            set
+            {
+                if (_integrationDistance == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IntegrationDistancePropertyName);
+                _integrationDistance = value;
+                RaisePropertyChanged(IntegrationDistancePropertyName);
+            }
+        }
+
+        #endregion
+
         #region FloodFillMask
 
         /// <summary>
@@ -368,7 +438,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #region ctor
 
-        public BackgroundSubtraction()
+        public HandTracker()
         {
             SubtractCommand = new RelayCommand(() =>
             {
@@ -535,7 +605,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 return true;
             }
 
-            if (++_collectedBackgroundImages < 50)
+            if (++_collectedBackgroundImages < BackgroundSubtractionSamples)
             {
                 _backgroundImage.RunningAvg(image, 0.8);
                 return true;
@@ -612,7 +682,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 _palms.Add(hand);
             }
 
-            if (hand.EstimatedCenter.Length(point) < 50)
+            if (hand.EstimatedCenter.Length(point) < IntegrationDistance)
             {
                 hand.Center = point;
                 hand.Depth = depth;
