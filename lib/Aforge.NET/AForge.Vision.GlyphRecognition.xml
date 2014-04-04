@@ -1,0 +1,671 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AForge.Vision.GlyphRecognition</name>
+    </assembly>
+    <members>
+        <member name="T:AForge.Vision.GlyphRecognition.ExtractedGlyphData">
+            <summary>
+            Information about the glyph extracted from an image using <see cref="T:AForge.Vision.GlyphRecognition.GlyphRecognizer"/>.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.ExtractedGlyphData.Quadrilateral">
+            <summary>
+            Quadrilateral of the raw glyph detected (see <see cref="F:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RawData"/>). First point
+            of this quadrilateral corresponds to upper-left point of the raw glyph data.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RawData">
+            <summary>
+            Raw glyph data extacted from processed image.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.ExtractedGlyphData.Confidence">
+             <summary>
+             Confidence level of <see cref="F:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RawData"/> recognition, [0.5, 0.1].
+             </summary>
+            
+             <remarks><para>The confidence level is a reflection of how <see cref="F:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RawData"/> property
+             is reliable. If it equals to 1.0, then <see cref="T:AForge.Vision.GlyphRecognition.GlyphRecognizer"/>
+             (and <see cref="T:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer"/>) is 100% sure about the glyph data found.
+             But if it getting closer to 0.5, then recognizer is uncertain about one or more values of the
+             raw glyph's data, which affect uncertainty level of the entire glyph.</para></remarks>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.ExtractedGlyphData.#ctor(System.Collections.Generic.List{AForge.IntPoint},System.Byte[0:,0:],System.Single)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AForge.Vision.GlyphRecognition.ExtractedGlyphData"/> class.
+            </summary>
+            
+            <param name="quadrilateral">Quadrilateral of the raw glyph detected.</param>
+            <param name="rawData">Raw glyph data extacted from processed image.</param>
+            <param name="confidence">Confidence level of <paramref name="rawData"/> recognition.</param>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.ExtractedGlyphData.Clone">
+            <summary>
+            Clone the object by making its exact copy.
+            </summary>
+            
+            <returns>Returns clone of the object.</returns>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RecognizedGlyph">
+             <summary>
+             Recognized glyph from a <see cref="T:AForge.Vision.GlyphRecognition.GlyphDatabase"/>.
+             </summary>
+            
+             <remarks><para>This property is set by <see cref="T:AForge.Vision.GlyphRecognition.GlyphRecognizer"/> in the case if
+             <see cref="F:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RawData"/> matches (see <see cref="M:AForge.Vision.GlyphRecognition.Glyph.CheckForMatching(System.Byte[0:,0:])"/>) to any of the glyphs
+             in the specified glyphs' database (see <see cref="P:AForge.Vision.GlyphRecognition.GlyphRecognizer.GlyphDatabase"/>. If a match is found
+             then this property is set to the matching glyph. Otherwise it is set to <see langword="null"/>.
+             </para></remarks>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RecognizedQuadrilateral">
+            <summary>
+            Quadrilateral area corresponding to the <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RecognizedGlyph"/>.
+            </summary>
+            
+            <remarks><para>First point of this quadrilateral corresponds to upper-left point of the
+            recognized glyph, not the raw extracted glyph. This property may not be equal to <see cref="F:AForge.Vision.GlyphRecognition.ExtractedGlyphData.Quadrilateral"/>
+            since the raw glyph data may represent rotation of the glyph registered in glyphs' database.</para>
+            
+            <para>This property is really important for applications like augmented reality, where it is required to know
+            coordinates of points corresponding to each corner of the recognized glyph.</para>
+            
+            <para>This property is always set together with <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RecognizedGlyph"/> on successful glyph matching. Otherwise
+            it is set to <see langword="null"/>.</para>
+            </remarks>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.TransformationMatrix">
+            <summary>
+            Glyphs transformation matrix.
+            </summary>
+            
+            <remarks><para>The property provides real world glyph's transformation, which is
+            estimated by <see cref="M:AForge.Vision.GlyphRecognition.GlyphTracker.TrackGlyphs(System.Collections.Generic.List{AForge.Vision.GlyphRecognition.ExtractedGlyphData})">glyph tracking routine</see>.</para>
+            </remarks>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.IsTransformationDetected">
+             <summary>
+             Check if glyph pose was estimated or not.
+             </summary>
+             
+             <remarks><para>The property tells if <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.TransformationMatrix"/> property
+             was calculated for this glyph or not.</para></remarks>
+            
+        </member>
+        <member name="T:AForge.Vision.GlyphRecognition.Glyph">
+            <summary>
+            Square binary glyph.
+            </summary>
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.Glyph.#ctor(System.String,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AForge.Vision.GlyphRecognition.Glyph"/> class.
+            </summary>
+            
+            <param name="name">Glyph's name.</param>
+            <param name="size">Glyph's size.</param>
+            
+            <remarks><para>Creates an empty <paramref name="size"/>x<paramref name="size"/> glyph
+            (all values are set to 0 - black).</para></remarks>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.Glyph.#ctor(System.String,System.Byte[0:,0:])">
+            <summary>
+            Initializes a new instance of the <see cref="T:AForge.Vision.GlyphRecognition.Glyph"/> class.
+            </summary>
+            
+            <param name="name">Glyph's name.</param>
+            <param name="data">Glyph's data array (see <see cref="P:AForge.Vision.GlyphRecognition.Glyph.Data"/>).</param>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.Glyph.Clone">
+            <summary>
+            Clone the glyph.
+            </summary>
+            
+            <returns>Returns clone of the glyph.</returns>
+            
+            <remarks><para><note>It is user's responsibility to clone <see cref="P:AForge.Vision.GlyphRecognition.Glyph.UserData"/> property if it is
+            set to reference type object.</note></para></remarks>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.Glyph.CheckForMatching(System.Byte[0:,0:])">
+            <summary>
+            Check for matching between the glyph and specified raw glyph data.
+            </summary>
+            
+            <param name="rawGlyphData">Glyph data to check match with.</param>
+            
+            <returns>Returns -1 if there is no matching between the glyph and the specified glyph data.
+            In the case if match is found it returns:
+            <list type="bullets">
+            <item>0 - the glyph matches with specified glyph data as they are provided;</item>
+            <item>90, 180 or 270 - the glyph matches with specified data if they are rotated by 90, 180 or 270
+            degree respectively in counter clockwise direction.</item>
+            </list></returns>
+            
+            <exception cref="T:System.ArgumentException">Invalid glyph data array - must be square.</exception>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.Glyph.CheckForMatching(System.Byte[0:,0:],System.Byte[0:,0:])">
+            <summary>
+            Check for matching between raw data of two glyphs.
+            </summary>
+            
+            <param name="sourceGlyph">Source glyph data to check.</param>
+            <param name="targetGlyph">Target glyph data to match with.</param>
+            
+            <returns>Returns -1 if there is no matching between two specified glyphs.
+            In the case if match is found it returns:
+            <list type="bullets">
+            <item>0 - the two glyphs match each other as they are provided;</item>
+            <item>90, 180 or 270 - the source glyph matches with target glyph if it is rotated by 90, 180 or 270
+            degree respectively in counter clockwise direction.</item>
+            </list></returns>
+            
+            <exception cref="T:System.ArgumentException">Invalid glyph data array - must be square.</exception>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.Glyph.CheckIfRotationInvariant(System.Byte[0:,0:])">
+            <summary>
+            Check if the specified glyph data are rotation invariant or not.
+            </summary>
+            
+            <param name="rawGlyphData">Glyph data to check for rotation invariance.</param>
+            
+            <returns>Returns <see langword="true"/> if the specified glyph data are rotation
+            invariant or <see langword="false"/> otherwise.</returns>
+            
+            <remarks><para>Rotation invariant glyph means that it looks the same in case if rotated by 90 or 180
+            degrees. In most applications (like augmented reality) glyphs must be rotation variant, so it could
+            be possible to recognize rotation of the glyph. But for some applications, where glyph are not supposed
+            to be rotated, the rotation invariance is also acceptable.</para></remarks>
+            
+            <exception cref="T:System.ArgumentException">Invalid glyph data array - must be square.</exception>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.Glyph.CheckIfEveryRowColumnHasValue(System.Byte[0:,0:])">
+            <summary>
+            Check if the specified raw glyph's data has a value in each inner row/column.
+            </summary>
+            
+            <param name="rawGlyphData">Glyph data to check.</param>
+            
+            <returns>Returns <see langword="true"/> if the specified glyph data contain
+            a value (elemenent equal to 1) in every inner row/column
+            or <see langword="false"/> otherwise.</returns>
+            
+            <remarks><para>The tool method is used to check if specified glyph data have at least
+            single element equal to 1 in every row/column except the first and the last.
+            </para></remarks>
+            
+            <exception cref="T:System.ArgumentException">Invalid glyph data array - must be square.</exception>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.Glyph.CheckIfGlyphHasBorder(System.Byte[0:,0:])">
+            <summary>
+            Check if the specified raw glyph's data have a border of 0 elements.
+            </summary>
+            
+            <param name="rawGlyphData">Glyph data to check.</param>
+            
+            <returns>Returns <see langword="true"/> if the specified glyph data contain
+            0 elements only in the first and the last row and column
+            or <see langword="false"/> otherwise.</returns>
+            
+            <exception cref="T:System.ArgumentException">Invalid glyph data array - must be square.</exception>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.Glyph.Name">
+            <summary>
+            Glyph's name.
+            </summary>
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.Glyph.Size">
+            <summary>
+            Glyph's size - length of <see cref="P:AForge.Vision.GlyphRecognition.Glyph.Data"/> array dimenstions.
+            </summary>
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.Glyph.Data">
+            <summary>
+            Glyph's data array.
+            </summary>
+            
+            <remarks><para>The array contains 0 and 1 elements, where 0 corresponds to black areas of the glyph
+            and 1 corresponds to white areas.</para>
+            
+            <para><note>The data array must be square.</note></para>
+            </remarks>
+            
+            <exception cref="T:System.NullReferenceException">The data array cannot be null.</exception>
+            <exception cref="T:System.ArgumentException">Both dimensions of the array must have the same length.</exception>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.Glyph.UserData">
+            <summary>
+            User's data associated with the glyph.
+            </summary>
+            
+            <remarks><para>The property allows to associate any user data with the glyph, like glyph's visualization
+            parameters for example.</para></remarks>
+            
+        </member>
+        <member name="T:AForge.Vision.GlyphRecognition.GlyphDatabase">
+            <summary>
+            Glyphs' database.
+            </summary>
+            
+            <remarks><para>The class represents collection of glyphs, which cab be recognized with the help of
+            <see cref="T:AForge.Vision.GlyphRecognition.GlyphRecognizer"/>.</para></remarks>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphDatabase.GetEnumerator">
+            <summary>
+            Get glyph's enumerator.
+            </summary>
+            
+            <returns>Returns glyph's enumerator.</returns>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphDatabase.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AForge.Vision.GlyphRecognition.GlyphDatabase"/> class.
+            </summary>
+            
+            <param name="size"><see cref="P:AForge.Vision.GlyphRecognition.GlyphDatabase.Size">Size</see> of glyphs to store in the database.</param>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphDatabase.Add(AForge.Vision.GlyphRecognition.Glyph)">
+            <summary>
+            Add glyph to the database.
+            </summary>
+            
+            <param name="glyph">Glyph to add to the database.</param>
+            
+            <exception cref="T:System.ApplicationException">Glyph size does not match the database.</exception>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphDatabase.Remove(System.String)">
+            <summary>
+            Remove a glyph from the database.
+            </summary>
+            
+            <param name="name">Glyph name to remove from the database.</param>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphDatabase.Replace(System.String,AForge.Vision.GlyphRecognition.Glyph)">
+            <summary>
+            Replace a glyph in the databse.
+            </summary>
+            
+            <param name="name">Name of the glyph to replace.</param>
+            <param name="newGlyph">New glyph to put into the database.</param>
+            
+            <remarks><para>If the specified glyph's <paramref name="name"/> equals to the <see cref="P:AForge.Vision.GlyphRecognition.Glyph.Name">name of the new glyph</see>,
+            then the database is just updated with the new glyph. But if these names are different, then the old glyph with the specified
+            name is removed from the database and the new glyph is added.</para></remarks>
+            
+            <exception cref="T:System.ArgumentException">A glyph with the specified <paramref name="name"/> does not exist in the database.</exception>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphDatabase.Rename(System.String,System.String)">
+            <summary>
+            Rename a glyph in the database.
+            </summary>
+            
+            <param name="name">Name of the glyph to rename.</param>
+            <param name="newName">New name of the glyph to set.</param>
+            
+            <exception cref="T:System.ArgumentException">A glyph with the specified <paramref name="name"/> does not exist in the database.</exception>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphDatabase.GetGlyphNames">
+            <summary>
+            Get collection of glyph names available in the database.
+            </summary>
+            
+            <returns>Returns read only collection of glyph names.</returns>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphDatabase.RecognizeGlyph(System.Byte[0:,0:],System.Int32@)">
+            <summary>
+            Recognize the glyph represented by the specified raw glyph's data.
+            </summary>
+            
+            <param name="rawGlyphData">Raw glyph data to recognize.</param>
+            <param name="rotation">Contains rotation angle of the match on success (0, 90, 180 or 270) -
+            see <see cref="M:AForge.Vision.GlyphRecognition.Glyph.CheckForMatching(System.Byte[0:,0:])"/>. In the case of no matching is found the value is
+            assigned to -1.</param>
+            
+            <returns>Returns a glyph from the database which matches the specified raw glyph data. If there is
+            no matching found, then <see langword="null"/> is returned.</returns>
+            
+            <remarks><para>The method searches for a glyph in the database which matches (see <see cref="M:AForge.Vision.GlyphRecognition.Glyph.CheckForMatching(System.Byte[0:,0:])"/>)
+            the specified raw glyph data.</para></remarks>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.GlyphDatabase.Size">
+            <summary>
+            Size of glyphs in the dabase.
+            </summary>
+            
+            <remarks><para>All glyph of a database are <b>size</b>x<b>size</b> square glyph.</para></remarks>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.GlyphDatabase.Count">
+            <summary>
+            Number of glyphs in the database.
+            </summary>
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.GlyphDatabase.Item(System.String)">
+            <summary>
+            Get glyph by its name.
+            </summary>
+            
+            <param name="name">Name of the glyph to retrieve for the database.</param>
+            
+            <returns>Returns the glyph with the specified name or <see langword="null"/> if such
+            glyph does not exist.</returns>
+            
+        </member>
+        <member name="T:AForge.Vision.GlyphRecognition.GlyphRecognizer">
+            <summary>
+            The class locates and recognizes glyphs in a specified image.
+            </summary>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphRecognizer.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AForge.Vision.GlyphRecognition.GlyphRecognizer"/> class.
+            </summary>
+            
+            <param name="glyphSize"><see cref="P:AForge.Vision.GlyphRecognition.GlyphRecognizer.GlyphSize">Size</see> of glyphs to search for and recognize.</param>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphRecognizer.#ctor(AForge.Vision.GlyphRecognition.GlyphDatabase)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AForge.Vision.GlyphRecognition.GlyphRecognizer"/> class.
+            </summary>
+            
+            <param name="glyphDatabase"><see cref="T:AForge.Vision.GlyphRecognition.GlyphRecognizer">Database of glyphs</see> to recognize.</param>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphRecognizer.FindGlyphs(System.Drawing.Bitmap)">
+             <summary>
+             Search for glyphs in the specified image and recognize them.
+             </summary>
+             
+             <param name="image">Image to search glyphs in.</param>
+             
+             <returns>Return a list of found glyphs.</returns>
+             
+             <remarks><para>The method does processing of the specified image and searches for glyphs in it of
+             the specified <see cref="P:AForge.Vision.GlyphRecognition.GlyphRecognizer.GlyphSize">size</see>. In the case if <see cref="P:AForge.Vision.GlyphRecognition.GlyphRecognizer.GlyphDatabase">glyphs' database</see>
+             is set, it tries to find a matching glyph in it for each found glyph in the image. If matching is found,
+             then <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RecognizedGlyph">RecognizedGlyph</see> and
+             <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RecognizedQuadrilateral">RecognizedQuadrilateral</see>
+             properties of <see cref="T:AForge.Vision.GlyphRecognition.ExtractedGlyphData"/> are set correspondingly.</para></remarks>
+             
+             <exception cref="T:AForge.Imaging.UnsupportedImageFormatException">Pixel format of the specified image is not supported.
+             It must be 8 bpp indexed or 24/32 bpp color image.</exception>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphRecognizer.FindGlyphs(AForge.Imaging.UnmanagedImage)">
+            <summary>
+            Search for glyphs in the specified image and recognize them.
+            </summary>
+            
+            <param name="image">Image to search glyphs in.</param>
+            
+            <returns>Return a list of found glyphs.</returns>
+            
+            <remarks><para>The method does processing of the specified image and searches for glyphs in it of
+            the specified <see cref="P:AForge.Vision.GlyphRecognition.GlyphRecognizer.GlyphSize">size</see>. In the case if <see cref="P:AForge.Vision.GlyphRecognition.GlyphRecognizer.GlyphDatabase">glyphs' database</see>
+            is set, it tries to find a matching glyph in it for each found glyph in the image. If matching is found,
+            then <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RecognizedGlyph">RecognizedGlyph</see> and
+            <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RecognizedQuadrilateral">RecognizedQuadrilateral</see>
+            properties of <see cref="T:AForge.Vision.GlyphRecognition.ExtractedGlyphData"/> are set correspondingly.</para></remarks>
+            
+            <exception cref="T:AForge.Imaging.UnsupportedImageFormatException">Pixel format of the specified image is not supported.
+            It must be 8 bpp indexed or 24/32 bpp color image.</exception>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.GlyphRecognizer.GlyphSize">
+            <summary>
+            Size of glyph to search and recognize, [5, 23].
+            </summary>
+            
+            <remarks><para>The property specifies the size of glyphs the instance of the class will be searching for.</para>
+            
+            <para><note>Setting of this property is allowed only in the case if <see cref="P:AForge.Vision.GlyphRecognition.GlyphRecognizer.GlyphDatabase"/> is set
+            to <see langword="null"/>. If glyph database is set, then this property is initialized with glyphs' size of the
+            database.</note></para>
+            </remarks>
+            
+            <exception cref="T:System.ApplicationException">Glyph size cannot be set if glyph database is set.</exception>
+            <exception cref="T:System.ArgumentException">Invalid glyph size was specified.</exception>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.GlyphRecognizer.GlyphDatabase">
+            <summary>
+            Database of glyphs to recognize.
+            </summary>
+            
+            <remarks><para>The property sets database of glyphs, which could be recognized by an instance of the class.
+            In the case if glyph recognizer finds some glyphs which are not listed in the database, it will still provide
+            information about them, but <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RecognizedGlyph">RecognizedGlyph</see> and
+            <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RecognizedQuadrilateral">RecognizedQuadrilateral</see>
+            properties of <see cref="T:AForge.Vision.GlyphRecognition.ExtractedGlyphData"/> will not be set.</para>
+            
+            <para>Setting this property will also set <see cref="P:AForge.Vision.GlyphRecognition.GlyphRecognizer.GlyphSize"/> automatically to the glyphs' size specified
+            in the database.</para>
+            
+            <para><note>If the property is set to <see langword="null"/>, the class will only do searching for glyphs - objects
+            which look like a glyph and satisfy certain constaints applicable to a valid glyph. In this case it will
+            provide information about all found glyphs - their position and raw data.</note></para>
+            </remarks>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.GlyphRecognizer.MaxNumberOfGlyphsToSearch">
+            <summary>
+            Maximum number of glyph to search for in a single image, [1, 10].
+            </summary>
+            
+            <remarks><para>The property sets maximum number of glyphs to search in a given image. If
+            image processing routines finds the specified number of glyphs it will stop further image
+            processing even if there are some more data to process is available.</para>
+            
+            <para><note>The image processing routine analyzes found objects in size descending order -
+            larger objects are analyzed first.</note></para>
+            
+            <para>Default value is set to <b>3</b>.</para>
+            </remarks>
+            
+        </member>
+        <member name="T:AForge.Vision.GlyphRecognition.GlyphTracker">
+            <summary>
+            Glyph tracker.
+            </summary>
+            
+            <remarks><para>The purpose of this class is to perform tracking of glyphs, which are
+            typically recognized by <see cref="M:AForge.Vision.GlyphRecognition.GlyphRecognizer.FindGlyphs(AForge.Imaging.UnmanagedImage)"/> routine or
+            similar. The main purpose of this class is to provide 3D pose estimation of glyphs as well
+            as provide glyphs' IDs, which could be used by user to perform glyphs' tracking in continuous
+            video feed. See <see cref="M:AForge.Vision.GlyphRecognition.GlyphTracker.TrackGlyphs(System.Collections.Generic.List{AForge.Vision.GlyphRecognition.ExtractedGlyphData})"/> method for additional information.</para>
+            </remarks>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphTracker.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AForge.Vision.GlyphRecognition.GlyphTracker"/> class.
+            </summary>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphTracker.TrackGlyphs(System.Collections.Generic.List{AForge.Vision.GlyphRecognition.ExtractedGlyphData})">
+            <summary>
+            Track glyphs in continuous video feed.
+            </summary>
+            
+            <param name="glyphs">List of glyphs to track.</param>
+            
+            <returns>Return IDs of the specified glyphs</returns>
+            
+            <remarks><para>The method perform tracking of glyphs in continuous video feed. The
+            specified list of <paramref name="glyphs"/> is supposed to be collected using <see cref="M:AForge.Vision.GlyphRecognition.GlyphRecognizer.FindGlyphs(AForge.Imaging.UnmanagedImage)"/>
+            or similar method.</para>
+            
+            <para>The main purpose of the method is to perform glyphs’ 3D pose estimation and reduce
+            glyphs’ vibration (if glyph's corners do small negligible movement between continuous frames
+            (kind of shacking), then it is treated as noise and glyphs pose is taken from the history).
+            The estimated pose is provided as <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.TransformationMatrix"/> and
+            the <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.IsTransformationDetected"/> property is set in this case as well.
+            If movement noise suppression is performed, then <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RecognizedQuadrilateral"/>
+            property is updated with coordinates from previous frame (which means noise suppression is performed
+            for recognized glyphs only).</para>
+            
+            <para>As an extra bonus the method provides list of glyphs' IDs - each detected glyph gets
+            an ID so it could be tracked between continuous video frames. <b>Note:</b> these IDs should not
+            be considered 100% reliable as ID of the same glyph may change if it disappears for a while
+            or does not move smoothly.</para>
+            </remarks>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphTracker.Reset">
+            <summary>
+            Reset internal state of the tracker.
+            </summary>
+            
+            <remarks><para>The method resets all internal variables of the tracker to the
+            initial state so it is ready to be used on different video feed.</para></remarks>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.GlyphTracker.ImageSize">
+            <summary>
+            Size of the image containing glyphs.
+            </summary>
+            
+            <remarks><para>The property sets size of the image from which tracked glyphs are extracted.</para>
+            
+            <para>Default value is set to <b>(640, 480)</b>.</para>
+            </remarks>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.GlyphTracker.CameraFocalLength">
+             <summary>
+             Effective focal length of camera.
+             </summary>
+             
+             <remarks><para>The property sets effective focal length of the camera used
+             to capture glyphs being tracked.</para>
+             
+             <para><note>In many cases the value can be set to width of the image containing glyphs
+             to achieve reasonable results. However the property is provided to let user make
+             decision about it.</note></para>
+            
+             <para>Default value is set to <b>640</b>.</para>
+             </remarks>
+             
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.GlyphTracker.GlyphSize">
+            <summary>
+            Real size of tracked glyphs.
+            </summary>
+            
+            <remarks><para>The property sets real size of glyphs being tracked. The class
+            makes assumption that glyphs are square objects, so specifying size of one
+            glyph's side is enough.</para>
+            
+            <para>It is up to user to choose units for this property. Just keep in mind that
+            glyph's translation which is part of glyph's
+            <see cref="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.TransformationMatrix">transformation matrix</see>
+            will have same units.</para>
+            
+            <para>If the property is set to <b>0</b>, then glyphs' pose estimation will not
+            be performed.</para>
+            
+            <para>Default value is set to <b>0</b>. The property can not be negative.</para>
+            </remarks>
+            
+        </member>
+        <member name="T:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer">
+            <summary>
+            Recognition of square glyphs in binary images.
+            </summary>
+            
+            <remarks><para>The class performs processing of binary images trying to recognize square glyph
+            of the specified <see cref="P:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer.GlyphSize">size</see>.</para></remarks>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer"/> class.
+            </summary>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer"/> class.
+            </summary>
+            
+            <param name="glyphSize">Glyph <see cref="P:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer.GlyphSize">size</see> to recognize.</param>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer.Recognize(System.Drawing.Bitmap,System.Drawing.Rectangle,System.Single@)">
+            <summary>
+            Recognize glyph in the specified image.
+            </summary>
+            
+            <param name="image">Image to recognize glyph in.</param>
+            <param name="rect">Rectangle of the glyph to recognize.</param>
+            <param name="confidence">Gets recognition confidence on return.</param>
+            
+            <returns>Returns recognized glyph's data - 2D array of <see cref="P:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer.GlyphSize"/>x<see cref="P:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer.GlyphSize"/>.</returns>
+            
+            <remarks><para>Performs processing of the specified image recognizing a glyph in it and providing confidence
+            level of recognition. If the confidence level equals to 1.0, then this routine is 100% confident about the recognized glyph.
+            If the confidence level is getting closer to 0.5, then it means that some glyph's values are not reliable
+            enough – kind of 50/50: certain glyph’s rectangle may not be white enough or may not be black enough.</para>
+            </remarks>
+            
+            <exception cref="T:AForge.Imaging.UnsupportedImageFormatException">Pixel format of the specified image is not supported. Must be 8 bpp indexed image.</exception>
+            
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer.Recognize(AForge.Imaging.UnmanagedImage,System.Drawing.Rectangle,System.Single@)">
+            <summary>
+            Recognize glyph in the specified image.
+            </summary>
+            
+            <param name="image">Image to recognize glyph in.</param>
+            <param name="rect">Rectangle of the glyph to recognize.</param>
+            <param name="confidence">Gets recognition confidence on return.</param>
+            
+            <returns>Returns recognized glyph's data - 2D array of <see cref="P:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer.GlyphSize"/>x<see cref="P:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer.GlyphSize"/>.</returns>
+            
+            <remarks><para>Performs processing of the specified image recognizing a glyph in it and providing confidence
+            level of recognition. If the confidence level equals to 1.0, then this routine is 100% confident about the recognized glyph.
+            If the confidence level is getting closer to 0.5, then it means that some glyph's values are not reliable
+            enough – kind of 50/50: certain glyph’s rectangle may not be white enough or may not be black enough.</para>
+            </remarks>
+            
+            <exception cref="T:AForge.Imaging.UnsupportedImageFormatException">Pixel format of the specified image is not supported. Must be 8 bpp indexed image.</exception>
+            
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.SquareBinaryGlyphRecognizer.GlyphSize">
+             <summary>
+             Glyph size to recognize, [5, 23].
+             </summary>
+            
+             <remarks><para>The property sets glyphs' size to recognize in given images.</para>
+             
+             <para>Default value is set to <b>5</b>.</para>
+             </remarks>
+            
+        </member>
+    </members>
+</doc>
