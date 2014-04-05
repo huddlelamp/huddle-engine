@@ -363,36 +363,36 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        #region FloodFillMask
+        #region FloodFillMaskImageSource
 
         /// <summary>
-        /// The <see cref="FloodFillMask" /> property's name.
+        /// The <see cref="FloodFillMaskImageSource" /> property's name.
         /// </summary>
-        public const string FloodFillMaskPropertyName = "FloodFillMask";
+        public const string FloodFillMaskPropertyName = "FloodFillMaskImageSource";
 
-        private BitmapSource _floodFillMask = null;
+        private BitmapSource _floodFillMaskImageSource = null;
 
         /// <summary>
-        /// Sets and gets the FloodFillMask property.
+        /// Sets and gets the FloodFillMaskImageSource property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         [IgnoreDataMember]
-        public BitmapSource FloodFillMask
+        public BitmapSource FloodFillMaskImageSource
         {
             get
             {
-                return _floodFillMask;
+                return _floodFillMaskImageSource;
             }
 
             set
             {
-                if (_floodFillMask == value)
+                if (_floodFillMaskImageSource == value)
                 {
                     return;
                 }
 
                 RaisePropertyChanging(FloodFillMaskPropertyName);
-                _floodFillMask = value;
+                _floodFillMaskImageSource = value;
                 RaisePropertyChanged(FloodFillMaskPropertyName);
             }
         }
@@ -596,11 +596,12 @@ namespace Huddle.Engine.Processor.OpenCv
                 }
 
                 var debugOutputCopy = debugOutput.Copy();
-                DispatcherHelper.RunAsync(() =>
+                Task.Factory.StartNew(() =>
                 {
-                    FloodFillMask = debugOutputCopy.ToBitmapSource();
+                    var bitmap = debugOutputCopy.ToBitmapSource(true);
                     debugOutputCopy.Dispose();
-                });
+                    return bitmap;
+                }).ContinueWith(s => FloodFillMaskImageSource = s.Result);
             }
 
             foreach (var palm in _palms)

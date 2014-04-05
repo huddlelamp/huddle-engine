@@ -130,7 +130,7 @@
                 </GroupBox>
                 <GroupBox Header="Flood Fill Mask"
                           Grid.Column="2">
-                    <Image Source="{Binding Path=FloodFillMask}" />
+                    <Image Source="{Binding Path=FloodFillMaskImageSource}" />
                 </GroupBox>
             </Grid>
             <Button Content="Subtract">
