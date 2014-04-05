@@ -19,7 +19,7 @@
     <UserControl.Resources>
 
         <DataTemplate DataType="{x:Type viewModel:PipeViewModel}">
-            <view:Pipe DataContext="{Binding}" />
+            <view:PipeView DataContext="{Binding}" />
         </DataTemplate>
 
         <util:ProcessorTemplateSelector x:Key="ProcessorViewTemplateSelector" />
@@ -303,13 +303,14 @@
                     </xctk:Zoombox.ViewStack>
                     <Grid Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
                           Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}">
+
                         <ItemsControl ItemsSource="{Binding Path=Pipes, Mode=OneWay}"
                                       ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas Width="{Binding ElementName=ZoomCanvas, Path=Width}"
                                             Height="{Binding ElementName=ZoomCanvas, Path=Height}"
-                                            Background="DarkTurquoise" />
+                                            Background="Turquoise" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>

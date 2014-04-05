@@ -387,7 +387,7 @@ namespace Huddle.Engine.ViewModel
             //    }
             //}
 
-            var elementsInGeometry = HitTestHelper.GetElementsInGeometry<Pipe>(pg, inkCanvas);
+            var elementsInGeometry = HitTestHelper.GetElementsInGeometry<PipeView>(pg, inkCanvas);
 
             var linksToDelete = elementsInGeometry.Select(view => view.DataContext)
                 .OfType<PipeViewModel>().ToArray();

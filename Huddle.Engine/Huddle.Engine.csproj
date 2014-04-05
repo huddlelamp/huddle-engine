@@ -350,8 +350,8 @@
     <Compile Include="ViewModel\PipelineViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
-    <Compile Include="View\Pipe.xaml.cs">
-      <DependentUpon>Pipe.xaml</DependentUpon>
+    <Compile Include="View\PipeView.xaml.cs">
+      <DependentUpon>PipeView.xaml</DependentUpon>
     </Compile>
     <Page Include="Controls\DropHereZone.xaml">
       <SubType>Designer</SubType>
@@ -409,7 +409,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Pipe.xaml">
+    <Page Include="View\PipeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

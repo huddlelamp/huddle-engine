@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -8,24 +7,14 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Forms.VisualStyles;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.External.Extensions;
-using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
-using Emgu.CV.VideoSurveillance;
-using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
-using Huddle.Engine.Extensions;
-using Huddle.Engine.Processor.OpenCv;
 using Huddle.Engine.Util;
-using Color = System.Drawing.Color;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
 using Point = System.Drawing.Point;
 
@@ -989,74 +978,6 @@ namespace Huddle.Engine.Processor.Sensors
 
                 if (IsRenderContent)
                 {
-                    ///* draw color image */
-                    //DispatcherHelper.RunAsync(() =>
-                    //{
-                    //    ColorImageSource = colorImageCopy.ToBitmapSource();
-                    //    colorImageCopy.Dispose();
-                    //});
-
-
-                    ///* draw depth image */
-                    //DispatcherHelper.RunAsync(() =>
-                    //{
-                    //    DepthImageSource = depthImageCopy.ToGradientBitmapSource(lowConfidence, saturation);
-                    //    depthImageCopy.Dispose();
-                    //});
-
-
-                    ///* draw confidence map */
-                    //DispatcherHelper.RunAsync(() =>
-                    //{
-                    //    ConfidenceMapImageSource = confidenceMapImageCopy.ToBitmapSource();
-                    //    confidenceMapImageCopy.Dispose();
-                    //});
-
-
-                    ///* draw uvmap */
-                    //if (uvMapImage != null)
-                    //{
-                    //    DispatcherHelper.RunAsync(() =>
-                    //    {
-                    //        UVMapImageSource = uvMapImageCopy.ToBitmapSource();
-                    //        uvMapImageCopy.Dispose();
-                    //    });
-                    //}
-                    //else
-                    //{
-                    //    UVMapImageSource = null;
-                    //}
-
-
-                    ///* draw rgbofdepth */
-                    //if (rgbOfDepthImage != null)
-                    //{
-                    //    DispatcherHelper.RunAsync(() =>
-                    //    {
-                    //        RgbOfDepthImageSource = rgbOfDepthImageCopy.ToBitmapSource();
-                    //        rgbOfDepthImageCopy.Dispose();
-                    //    });
-                    //}
-                    //else
-                    //{
-                    //    RgbOfDepthImageSource = null;
-                    //}
-
-
-                    ///* draw depthofrgb */
-                    //if (depthOfRgbImage != null)
-                    //{
-                    //    DispatcherHelper.RunAsync(() =>
-                    //    {
-                    //        DepthOfRgbImageSource = depthOfRgbImageCopy.ToGradientBitmapSource(lowConfidence, saturation);
-                    //        depthOfRgbImageCopy.Dispose();
-                    //    });
-                    //}
-                    //else
-                    //{
-                    //    DepthOfRgbImageSource = null;
-                    //}
-
                     Task.Factory.StartNew(() =>
                     {
                         var bitmap = colorImageCopy.ToBitmapSource(true);
@@ -1107,13 +1028,6 @@ namespace Huddle.Engine.Processor.Sensors
                             return bitmap;
                         }).ContinueWith(s => DepthOfRgbImageSource = s.Result);
                 }
-
-
-                ///* publish results */
-                //DispatcherHelper.RunAsync(() =>
-                //{
-
-                //});
 
                 var dc = new DataContainer(++_frameId, DateTime.Now)
                     {
