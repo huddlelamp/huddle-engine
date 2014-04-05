@@ -690,6 +690,7 @@ namespace Huddle.Engine.Processor.OpenCv
             var maxVal = 0.0;
             var minLoc = new Point();
             var maxLoc = new Point();
+            var handsegmentData = handSegment.Data;
 
             for (var j = 0; j < samples; j++)
             {
@@ -697,13 +698,13 @@ namespace Huddle.Engine.Processor.OpenCv
 
                 var maxX = maxLoc.X;
                 var maxY = maxLoc.Y;
-                var maxDepth = handSegment.Data[maxY, maxX, 0];
+                var maxDepth = handsegmentData[maxY, maxX, 0];
 
                 xs[j] = maxX;
                 ys[j] = maxY;
                 ds[j] = maxDepth;
 
-                handSegment.Data[maxY, maxX, 0] = 0;
+                handsegmentData[maxY, maxX, 0] = 0;
             }
 
             x = (int)xs.Average();
