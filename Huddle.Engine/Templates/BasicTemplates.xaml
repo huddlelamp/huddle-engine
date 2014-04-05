@@ -59,12 +59,14 @@
 
     <DataTemplate x:Key="GlyphDecoder" DataType="barCodes:GlyphDecoder">
         <StackPanel>
-                 <Image Source="{Binding Path=PostProcessImage}" />
+                 <Image Source="{Binding Path=OutputImage}" />
                 <StackPanel Orientation="Horizontal">
                     <Label Content="MinFramesHistory"/>
                     <Slider Value="{Binding Path=MinFramesProperty}" Width="340" Height="25" Minimum="1" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="1" />
                     <TextBlock Text="{Binding Path=MinFramesProperty, StringFormat={}{0}}"/>
-                </StackPanel>
+            </StackPanel>
+            
+            <CheckBox Content="Use blobs to minimize scan area" VerticalAlignment="Center" IsChecked="{Binding Path=UseBlobs}" />
         </StackPanel>
     </DataTemplate>
 

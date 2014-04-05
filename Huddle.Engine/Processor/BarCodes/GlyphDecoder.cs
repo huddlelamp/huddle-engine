@@ -1,30 +1,35 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Text;
 using System.IO;
 using System.Linq;
-using System.Windows.Documents;
-using System.Windows.Media;
-using System.Windows.Shapes;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using AForge;
 using AForge.Vision.GlyphRecognition;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
+using Emgu.CV.External.Extensions;
+using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
 using Huddle.Engine.Extensions;
-using Huddle.Engine.Processor.BarCodes.ZXingHelper;
-using Huddle.Engine.Properties;
 using Huddle.Engine.Util;
 using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.BarCodes
 {
     [ViewTemplate("Glyph Decoder", "GlyphDecoder", "/Huddle.Engine;component/Resources/qrcode.png")]
-    public class GlyphDecoder : RgbProcessor
+    public class GlyphDecoder : BaseProcessor
     {
+        #region static fields
+
+        public static MCvFont EmguFont = new MCvFont(FONT.CV_FONT_HERSHEY_SIMPLEX, 0.3, 0.3);
+        public static MCvFont EmguFontBig = new MCvFont(FONT.CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0);
+
+        #endregion
+
         #region private fields
 
         // possible number of different glyphs in glyph set
@@ -41,6 +46,10 @@ namespace Huddle.Engine.Processor.BarCodes
 
         private GlyphRecognizer _glyphRecognizer = null;
 
+        private Image<Rgb, Byte> lastFrame;
+
+        private DispatcherOperation _outputImageRendering;
+
         internal class GlyphMetadata
         {
             public Glyph glyph;
@@ -54,6 +63,41 @@ namespace Huddle.Engine.Processor.BarCodes
         #endregion
 
         #region public properties
+
+        #region OutputImage
+
+        /// <summary>
+        /// The <see cref="OutputImage" /> property's name.
+        /// </summary>
+        public const string OutputImagePropertyName = "OutputImage";
+
+        private BitmapSource _outputImage;
+
+        /// <summary>
+        /// Sets and gets the OutputImage property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public BitmapSource OutputImage
+        {
+            get
+            {
+                return _outputImage;
+            }
+
+            set
+            {
+                if (_outputImage == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(OutputImagePropertyName);
+                _outputImage = value;
+                RaisePropertyChanged(OutputImagePropertyName);
+            }
+        }
+
+        #endregion
 
         #region MinFramesProperty
 
@@ -85,6 +129,41 @@ namespace Huddle.Engine.Processor.BarCodes
                 RaisePropertyChanging(MinFramesPropertyName);
                 _minFramesProperty = value;
                 RaisePropertyChanged(MinFramesPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region UseBlobs
+
+        /// <summary>
+        /// The <see cref="UseBlobs" /> property's name.
+        /// </summary>
+        public const string UseBlobsPropertyName = "UseBlobs";
+
+        private bool _useBlobs = false;
+
+        /// <summary>
+        /// Sets and gets the UseBlobs property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool UseBlobs
+        {
+            get
+            {
+                return _useBlobs;
+            }
+
+            set
+            {
+                if (_useBlobs == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(UseBlobsPropertyName);
+                _useBlobs = value;
+                RaisePropertyChanged(UseBlobsPropertyName);
             }
         }
 
@@ -150,7 +229,91 @@ namespace Huddle.Engine.Processor.BarCodes
 
         #endregion
 
-        public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
+        public override IDataContainer PreProcess(IDataContainer dataContainer)
+        {
+            if (lastFrame == null) return base.PreProcess(dataContainer);
+
+            var blobs = dataContainer.OfType<BlobData>().ToArray();
+            if (!blobs.Any()) return base.PreProcess(dataContainer);
+
+            var outputImage = new Image<Rgb, byte>(lastFrame.Width, lastFrame.Height);
+
+            foreach (var blob in blobs)
+            {
+                var area = blob.Area;
+
+                var roi = new Rectangle(
+                    (int)(area.X * lastFrame.Width) - 50,
+                    (int)(area.Y * lastFrame.Height) - 50,
+                    (int)(area.Width * lastFrame.Width) + 50,
+                    (int)(area.Height * lastFrame.Height) + 50
+                    );
+
+                var imageWithROI = lastFrame.Copy(roi);
+
+                FindMarker(imageWithROI, ref outputImage);
+            }
+
+            if (IsRenderContent)
+            {
+                if (_outputImageRendering != null && _outputImageRendering.Status != DispatcherOperationStatus.Completed)
+                { 
+                    _outputImageRendering.Abort();
+                    _outputImageRendering = null;
+                }
+
+                var outputImageCopy = outputImage.Copy();
+                _outputImageRendering = DispatcherHelper.RunAsync(() =>
+                {
+                    OutputImage = outputImageCopy.ToBitmapSource();
+                    outputImageCopy.Dispose();
+                });
+
+                outputImage.Dispose();
+            }
+
+            // Push staged data
+            Push();
+
+            return base.PreProcess(dataContainer);
+        }
+
+        public override IData Process(IData data)
+        {
+            var imageData = data as RgbImageData;
+            if (imageData != null)
+            {
+                if (lastFrame != null) lastFrame.Dispose();
+                lastFrame = imageData.Image.Copy();
+
+                if (!UseBlobs)
+                {
+                    FindMarker(lastFrame, ref lastFrame);
+
+                    if (IsRenderContent)
+                    {
+                        if (_outputImageRendering != null && _outputImageRendering.Status != DispatcherOperationStatus.Completed)
+                        {
+                            _outputImageRendering.Abort();
+                            _outputImageRendering = null;
+                        }
+
+                        var outputImageCopy = lastFrame.Copy();
+                        _outputImageRendering = DispatcherHelper.RunAsync(() =>
+                        {
+                            OutputImage = outputImageCopy.ToBitmapSource();
+                            outputImageCopy.Dispose();
+                        });
+                    }
+
+                    // Push staged data
+                    Push();
+                }
+            }
+            return null;
+        }
+
+        private void FindMarker(Image<Rgb, byte> image, ref Image<Rgb, byte> outputImage)
         {
             if (_glyphRecognizer != null)
             {
@@ -167,7 +330,7 @@ namespace Huddle.Engine.Processor.BarCodes
                     if (quad != null && quad.Count == 4)
                     {
                         image.DrawPolyline(
-                            new Point[]
+                            new[]
                             {
                                 new Point(quad[0].X, quad[0].Y),
                                 new Point(quad[1].X, quad[1].Y),
@@ -254,7 +417,7 @@ namespace Huddle.Engine.Processor.BarCodes
 
                             double degOrientation = orientation.RadiansToDegree() + 90;
 
-                            
+
                             // find bounding rectangle
                             float minX = image.Width;
                             float minY = image.Height;
@@ -269,22 +432,18 @@ namespace Huddle.Engine.Processor.BarCodes
                                 maxY = Math.Max(maxY, p.Y);
                             }
 
-                            float centerX = minX + (maxX - minX)/2.0f;
-                            float centerY = minY + (maxY - minY)/2.0f;
-                            image.Draw(new Cross2DF(new PointF(centerX,centerY),6,6),Rgbs.Red,1);
-                            
-                            // Stage data for later push
-                                Stage(new LocationData(string.Format("Glyph{0}", name))
-                                {
-                                    Id = name,
-                                    X = centerX / image.Width,
-                                    Y = centerY / image.Height,
-                                    Angle = degOrientation
-                                });
-                            
+                            float centerX = minX + (maxX - minX) / 2.0f;
+                            float centerY = minY + (maxY - minY) / 2.0f;
+                            image.Draw(new Cross2DF(new PointF(centerX, centerY), 6, 6), Rgbs.Red, 1);
 
-                            //// Push staged data
-                            Push();
+                            // Stage data for later push
+                            Stage(new LocationData(string.Format("Glyph{0}", name))
+                            {
+                                Id = name,
+                                X = centerX / image.Width,
+                                Y = centerY / image.Height,
+                                Angle = degOrientation
+                            });
 
                             // bring to human readable form                            
                             radOrientation = Math.Round(radOrientation, 2);
@@ -303,7 +462,6 @@ namespace Huddle.Engine.Processor.BarCodes
                 }
 
             }
-            return image.Clone();
 
             //var outputImage = image.Copy();
 
