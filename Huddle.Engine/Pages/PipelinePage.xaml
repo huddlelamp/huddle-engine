@@ -105,24 +105,27 @@
                             <RowDefinition Height="30" />
                         </Grid.RowDefinitions>
 
-                        <Rectangle Grid.Column="0" Fill="Red"
-                                   AllowDrop="True">
+                        <Label Grid.Column="0" Background="Red"
+                                   AllowDrop="True"
+                                   Content="&#9654;IN" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="White" FontFamily="Courier"                                   
+                                   >
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Drop">
                                     <command:EventToCommand Command="{Binding Path=DropSourceCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
-                        </Rectangle>
+                        </Label>
                         <Rectangle Grid.Column="1" Fill="LawnGreen">
                             <i:Interaction.Behaviors>
                                 <behaviors:DragDropBehavior X="{Binding Path=Model.X, Mode=TwoWay}"  Y="{Binding Path=Model.Y, Mode=TwoWay}"
                                                             Scale="{Binding Path=Pipeline.Model.Scale, Mode=OneWay}"/>
                             </i:Interaction.Behaviors>
                         </Rectangle>
-                        <Rectangle Grid.Column="1" Fill="Yellow"
+                        <Rectangle Grid.Column="1" Fill="LawnGreen"
                                    Visibility="{Binding Path=IsDragOver, Converter={util:BoolToVisibilityConverter}}">
                         </Rectangle>
-                        <Rectangle Grid.Column="2" Fill="Orange">
+                        <Label Grid.Column="2" Background="Orange"
+                                   Content="OUT&#9654;" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="White" FontFamily="Courier"                                   >
                             <i:Interaction.Triggers>
                                 <util:EventTriggerAdvanced EventName="MouseDown">
                                     <command:EventToCommand Command="{Binding Path=DragSourceStartCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
@@ -134,7 +137,7 @@
                                     <command:EventToCommand Command="{Binding Path=DragSourceEndCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
                                 </util:EventTriggerAdvanced>
                             </i:Interaction.Triggers>
-                        </Rectangle>
+                        </Label>
                     </Grid>
                     <controls:RemovableExpander Header="{Binding Path=Model.Metadata.Name}" IsExpanded="{Binding Path=Model.IsRenderContent}"
                                                 Style="{StaticResource ResourceKey=ContainerRemoveableBoxStyle}">
