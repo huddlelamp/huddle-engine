@@ -46,5 +46,17 @@ namespace Huddle.Engine.Properties {
                 this["IsBenchmarkEnabled"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Highest")]
+        public global::System.Threading.ThreadPriority ProcessingThreadPriority {
+            get {
+                return ((global::System.Threading.ThreadPriority)(this["ProcessingThreadPriority"]));
+            }
+            set {
+                this["ProcessingThreadPriority"] = value;
+            }
+        }
     }
 }

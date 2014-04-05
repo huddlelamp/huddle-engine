@@ -293,7 +293,7 @@ namespace Huddle.Engine.Processor
                     {
                         var blob1 = blob;
                         DispatcherHelper.RunAsync(() =>
-                            Devices.Add(new Device(loc.Key)
+                            Devices.Add(new Device(this, loc.Key)
                             {
                                 BlobId = blob1.Id,
                                 X = blob1.X * Width,

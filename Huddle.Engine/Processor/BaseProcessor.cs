@@ -360,6 +360,7 @@ namespace Huddle.Engine.Processor
         /// Sets and gets the HasErrorState property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [IgnoreDataMember]
         public bool HasErrorState
         {
             get
@@ -484,7 +485,9 @@ namespace Huddle.Engine.Processor
                 }
             })
             {
-                Name = string.Format(@"{0}{1}", GetType().Name, NextThreadNumber())
+                Name = string.Format(@"{0}{1}", GetType().Name, NextThreadNumber()),
+                Priority = Settings.Default.ProcessingThreadPriority,
+                IsBackground = true
             };
             _processingThread.Start();
         }
@@ -540,6 +543,13 @@ namespace Huddle.Engine.Processor
                 Publish(dataContainer);
                 return;
             }
+
+            //if (HasErrorState && _dataQueue.Count < 5)
+            //{
+            //    HasErrorState = false;
+            //}
+
+            _benchmark.QueueCount = _dataQueue.Count;
 
             // Add data container to processing queue.
             if (!_dataQueue.IsCompleted)

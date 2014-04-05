@@ -242,6 +242,7 @@
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\BaseData.cs" />
+    <Compile Include="Data\Marker.cs" />
     <Compile Include="Data\ROI.cs" />
     <Compile Include="Data\BlobData.cs" />
     <Compile Include="Data\DataContainer.cs" />
@@ -259,6 +260,7 @@
       <DependentUpon>ExceptionMessageBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Domain\Device.cs" />
+    <Compile Include="Extensions\DispatcherExtensions.cs" />
     <Compile Include="Extensions\NumericExtensions.cs" />
     <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
     <Compile Include="Extensions\PointExtensions.cs" />
@@ -274,10 +276,15 @@
     <Compile Include="Pages\PipelinePage.xaml.cs">
       <DependentUpon>PipelinePage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Processor\BarCodes\GlyphDecoder.cs" />
     <Compile Include="Processor\BarCodes\QRCodeDecoder.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\BarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\IBarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\ImageLuminanceSource.cs" />
+    <Compile Include="Processor\Complex\BlobFusion.cs" />
+    <Compile Include="Processor\Complex\BlobRenderer.cs" />
+    <Compile Include="Processor\Complex\SyncFusion.cs" />
+    <Compile Include="Processor\Complex\HybridTracking.cs" />
     <Compile Include="Processor\GenericImageProcessor.cs" />
     <Compile Include="Processor\BaseProcessor.cs" />
     <Compile Include="Processor\Benchmark.cs" />
@@ -286,14 +293,19 @@
     <Compile Include="Processor\ITakeLong.cs" />
     <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\WebSocketServer.cs" />
-    <Compile Include="Processor\OpenCv\BackgroundSubtraction.cs" />
+    <Compile Include="Processor\OpenCv\FindContours2.cs" />
+    <Compile Include="Processor\OpenCv\FindConvexHulls2.cs" />
+    <Compile Include="Processor\OpenCv\SubtractBackground.cs" />
+    <Compile Include="Processor\OpenCv\Not.cs" />
+    <Compile Include="Processor\OpenCv\BasicsGrayFloat.cs" />
+    <Compile Include="Processor\OpenCv\HandTracker.cs" />
     <Compile Include="Processor\OpenCv\FloodFill.cs" />
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
     <Compile Include="Processor\OpenCv\Filter\KalmanFilter.cs" />
     <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
     <Compile Include="Processor\OpenCv\FindConvexHulls.cs" />
     <Compile Include="Processor\OpenCv\Kalman.cs" />
-    <Compile Include="Processor\OpenCv\Struct\Hand.cs" />
+    <Compile Include="Data\Hand.cs" />
     <Compile Include="Processor\OpenCv\Struct\RawObject.cs" />
     <Compile Include="Processor\PipelineMode.cs" />
     <Compile Include="Processor\Sampler.cs" />
@@ -381,6 +393,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Templates\ComplexTemplates.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Templates\SensorTemplates.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -412,6 +428,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Resource Include="Resources\Glyph.png" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -520,6 +537,10 @@
     <Resource Include="Resources\32x32\save_as.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\TagDefinitions\tagdefinition.txt">
+      <Link>tagdefinition.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\256x256\ppl_256px.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

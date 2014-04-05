@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using GalaSoft.MvvmLight;
 
 namespace Huddle.Engine.Processor
@@ -9,6 +10,9 @@ namespace Huddle.Engine.Processor
         #region private members
 
         private readonly Stopwatch _stopwatch;
+
+        private long[] _slidingAverage = new long[20];
+        private int _slidingAveragePointer = 0;
 
         #endregion
 
@@ -154,6 +158,41 @@ namespace Huddle.Engine.Processor
 
         #endregion
 
+        #region QueueCount
+
+        /// <summary>
+        /// The <see cref="QueueCount" /> property's name.
+        /// </summary>
+        public const string QueueCountPropertyName = "QueueCount";
+
+        private int _queueCount = 0;
+
+        /// <summary>
+        /// Sets and gets the QueueCount property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int QueueCount
+        {
+            get
+            {
+                return _queueCount;
+            }
+
+            set
+            {
+                if (_queueCount == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(QueueCountPropertyName);
+                _queueCount = value;
+                RaisePropertyChanged(QueueCountPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -174,10 +213,13 @@ namespace Huddle.Engine.Processor
 
             //Console.WriteLine("Measurement {0}", measurement);
 
-            LastMeasurement = measurement;
-            AccumulateMeasurements += measurement;
+            _slidingAverage[_slidingAveragePointer++] = measurement;
+            _slidingAveragePointer %= 20;
 
-            Average = AccumulateMeasurements / ++MeasurementCount;
+            LastMeasurement = measurement;
+            //AccumulateMeasurements += measurement;
+
+            Average = (long)_slidingAverage.Average(); // AccumulateMeasurements / ++MeasurementCount;
         }
 
         #endregion

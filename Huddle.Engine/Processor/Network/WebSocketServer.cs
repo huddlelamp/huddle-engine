@@ -126,7 +126,7 @@ namespace Huddle.Engine.Processor.Network
 
             #region Reveal QrCode on unidentified clients
 
-            var digital = new Digital("Identify") { Value = true };
+            var digital = new Digital(this, "Identify") { Value = true };
             foreach (var client in _connectedClients.Values)
             {
                 if (identifiedDevices.Any(d => Equals(d.DeviceId, client.DeviceId))) continue;
@@ -134,7 +134,7 @@ namespace Huddle.Engine.Processor.Network
                 client.Send(digital);
             }
 
-            var digital2 = new Digital("Identify") { Value = false };
+            var digital2 = new Digital(this, "Identify") { Value = false };
             foreach (var client in _connectedClients.Values)
             {
                 if (identifiedDevices.Any(d => Equals(d.DeviceId, client.DeviceId)))

@@ -33,7 +33,10 @@ namespace Huddle.Engine
 
         void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            MessageBox.Show(e.Exception.StackTrace.ToString(), "Dispatcher Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //MessageBox.Show(e.Exception.StackTrace.ToString(), "Dispatcher Error", MessageBoxButton.OK, MessageBoxImage.Error);
+
+            Console.WriteLine("{0}{1}{2}", e.Exception.Message, Environment.NewLine, e.Exception.StackTrace);
+
             e.Handled = true;
         }
     }

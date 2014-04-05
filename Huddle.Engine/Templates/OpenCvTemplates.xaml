@@ -9,6 +9,58 @@
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Grid>
+                        <Image x:Name="PreProcessImage" Source="{Binding Path=PreProcessImage}">
+                            <i:Interaction.Triggers>
+                                <util:EventTriggerAdvanced EventName="MouseDown">
+                                    <command:EventToCommand Command="{Binding Path=MouseDownCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </util:EventTriggerAdvanced>
+                                <util:EventTriggerAdvanced EventName="MouseMove">
+                                    <command:EventToCommand Command="{Binding Path=MouseMoveCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </util:EventTriggerAdvanced>
+                                <util:EventTriggerAdvanced EventName="MouseUp">
+                                    <command:EventToCommand Command="{Binding Path=MouseUpCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
+                                </util:EventTriggerAdvanced>
+                            </i:Interaction.Triggers>
+                        </Image>
+                        <Canvas Width="{Binding ElementName=PreProcessImage, Path=ActualWidth}"
+                                Height="{Binding ElementName=PreProcessImage, Path=ActualHeight}"
+                                Visibility="{Binding Path=PreProcessImage, Converter={util:NullToVisibilityConverter}}">
+                            <Rectangle Stroke="Red" StrokeThickness="3"
+                                       Canvas.Left="{Binding Path=ROITemp, Converter={util:ObjectPropertyConverter Path=X}}"
+                                       Canvas.Top="{Binding Path=ROITemp, Converter={util:ObjectPropertyConverter Path=Y}}"
+                                       Width="{Binding Path=ROITemp, Converter={util:ObjectPropertyConverter Path=Width}}"
+                                       Height="{Binding Path=ROITemp, Converter={util:ObjectPropertyConverter Path=Height}}" />
+                        </Canvas>
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </Grid>
+
+            <CheckBox Content="Flip Vertical" VerticalAlignment="Center" IsChecked="{Binding Path=FlipVertical}" />
+            <CheckBox Content="Flip Horizontal" VerticalAlignment="Center" IsChecked="{Binding Path=FlipHorizontal}" />
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="ROI"/>
+                <TextBox Width="100" Text="{Binding Path=ROI, Converter={util:StringToRectangleConverter} }" VerticalAlignment="Center" TextAlignment="Center" />
+                <Button Content="Apply" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+    
+    <DataTemplate x:Key="BasicsGrayFloat" DataType="openCv:BasicsGrayFloat">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
@@ -57,7 +109,7 @@
         </StackPanel>
     </DataTemplate>
     
-    <DataTemplate x:Key="BackgroundSubtraction" DataType="openCv:BackgroundSubtraction">
+    <DataTemplate x:Key="HandTracker" DataType="openCv:HandTracker">
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -78,7 +130,7 @@
                 </GroupBox>
                 <GroupBox Header="Flood Fill Mask"
                           Grid.Column="2">
-                    <Image Source="{Binding Path=FloodFillMask}" />
+                    <Image Source="{Binding Path=FloodFillMaskImageSource}" />
                 </GroupBox>
             </Grid>
             <Button Content="Subtract">
@@ -132,6 +184,12 @@
                 <Slider Value="{Binding Path=FloodFillDifference}" Width="340" Height="25" Minimum="0" Maximum="50" />
                 <TextBlock Text="{Binding Path=FloodFillDifference, StringFormat={}{0:#.##}}"/>
             </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Difference"/>
+                <Slider Value="{Binding Path=IntegrationDistance}" Width="340" Height="25" Minimum="0" Maximum="250" TickFrequency="1" IsSnapToTickEnabled="True" TickPlacement="TopLeft" />
+                <TextBlock Text="{Binding Path=IntegrationDistance, StringFormat={}{0:#.##}}"/>
+            </StackPanel>
         </StackPanel>
     </DataTemplate>
 
@@ -139,8 +197,8 @@
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
@@ -174,8 +232,8 @@
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
@@ -201,8 +259,8 @@
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
@@ -214,6 +272,8 @@
                     <Image Source="{Binding Path=PostProcessImage}" />
                 </GroupBox>
             </Grid>
+            
+            <CheckBox Content="First Erode then Dilate" IsChecked="{Binding Path=IsFirstErodeThenDilate}" />
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="ERODE"/>
@@ -230,12 +290,56 @@
         </StackPanel>
     </DataTemplate>
 
+    <DataTemplate x:Key="SubtractBackground" DataType="openCv:SubtractBackground">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Grid>
+                        <Image Source="{Binding Path=PreProcessImage}" />
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </Grid>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Not" DataType="openCv:Not">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Grid>
+                        <Image Source="{Binding Path=PreProcessImage}" />
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </Grid>
+        </StackPanel>
+    </DataTemplate>
+
     <DataTemplate x:Key="FindContours" DataType="openCv:FindContours">
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
@@ -262,7 +366,7 @@
 
             <StackPanel>
                 <Label Content="Max Distance Restore Id"/>
-                <Slider Value="{Binding Path=MaxDistanceRestoreId}" Minimum="0" Maximum="100" />
+                <Slider Value="{Binding Path=MaxDistanceRestoreId}" Minimum="0" Maximum="300" />
                 <TextBlock Text="{Binding Path=MaxDistanceRestoreId}"/>
             </StackPanel>
 
@@ -270,6 +374,12 @@
                 <Label Content="Min Contour Area"/>
                 <Slider Value="{Binding Path=MinContourArea}" Minimum="0" Maximum="1000" />
                 <TextBlock Text="{Binding Path=MinContourArea}"/>
+            </StackPanel>
+
+            <StackPanel>
+                <Label Content="Max Contour Area"/>
+                <Slider Value="{Binding Path=MaxContourArea}" Minimum="0" Maximum="10000" />
+                <TextBlock Text="{Binding Path=MaxContourArea}"/>
             </StackPanel>
 
             <StackPanel>
@@ -296,8 +406,8 @@
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
@@ -323,27 +433,15 @@
             </StackPanel>
 
             <StackPanel>
-                <Label Content="BlockSize"/>
-                <Slider Value="{Binding Path=BlockSize}" Minimum="0" Maximum="100" />
-                <TextBlock Text="{Binding Path=BlockSize}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Sobel"/>
-                <Slider Value="{Binding Path=Sobel}" Minimum="0" Maximum="100" />
-                <TextBlock Text="{Binding Path=Sobel}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="K"/>
-                <Slider Value="{Binding Path=K}" Minimum="0.00" Maximum="1.00" />
-                <TextBlock Text="{Binding Path=K}"/>
-            </StackPanel>
-
-            <StackPanel>
                 <Label Content="Min Contour Area"/>
-                <Slider Value="{Binding Path=MinContourArea}" Minimum="0" Maximum="1000" />
+                <Slider Value="{Binding Path=MinContourArea}" Minimum="0" Maximum="10000" />
                 <TextBlock Text="{Binding Path=MinContourArea}"/>
+            </StackPanel>
+
+            <StackPanel>
+                <Label Content="Max Contour Area"/>
+                <Slider Value="{Binding Path=MaxContourArea}" Minimum="0" Maximum="10000" />
+                <TextBlock Text="{Binding Path=MaxContourArea}"/>
             </StackPanel>
 
             <StackPanel>

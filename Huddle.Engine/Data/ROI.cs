@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Windows;
+using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
 {
@@ -44,8 +45,8 @@ namespace Huddle.Engine.Data
 
         #region ctor
 
-        public ROI(string key)
-            : base(key)
+        public ROI(IProcessor source, string key)
+            : base(source, key)
         {
         }
 
@@ -53,7 +54,7 @@ namespace Huddle.Engine.Data
 
         public override IData Copy()
         {
-            return new ROI(Key)
+            return new ROI(Source, Key)
             {
                 RoiRectangle = RoiRectangle
             };

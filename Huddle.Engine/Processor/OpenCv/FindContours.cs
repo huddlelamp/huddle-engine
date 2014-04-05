@@ -417,11 +417,14 @@ namespace Huddle.Engine.Processor.OpenCv
 
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
         {
+            var width = image.Width;
+            var height = image.Height;
+
             var now = DateTime.Now;
 
             _objects.RemoveAll(o => (now - o.LastUpdate).TotalMilliseconds > Timeout);
 
-            var outputImage = new Image<Rgb, byte>(image.Size.Width, image.Size.Height, Rgbs.Black);
+            var outputImage = new Image<Rgb, byte>(width, height, Rgbs.Black);
 
             //Convert the image to grayscale and filter out the noise
             var grayImage = image.Convert<Gray, Byte>();
@@ -525,47 +528,46 @@ namespace Huddle.Engine.Processor.OpenCv
 
             foreach (var rawObject in _objects)
             {
-                //var orig = currentContour.BoundingRectangle.Location;
-                //var pred = _kalmanFilter.GetPredictedPoint(orig);
-
-                //Log("Original={0}, Predicted={1}", orig, pred);
-
-                //outputImage.Draw(new CircleF(new PointF(orig.X, orig.Y), 5), Rgbs.Red, 5);
-
-                if (IsFillContours)
-                    outputImage.FillConvexPoly(rawObject.Points, Rgbs.Yellow);
-
-                if (IsDrawContours)
-                    outputImage.Draw(rawObject.Shape, Rgbs.Red, 2);
-
-                if (IsDrawCenter)
+                if (IsRenderContent)
                 {
-                    var circle = new CircleF(rawObject.Center, 3);
-                    outputImage.Draw(circle, Rgbs.Green, 3);
+                    if (IsFillContours)
+                        outputImage.FillConvexPoly(rawObject.Points, Rgbs.Yellow);
+
+                    if (IsDrawContours)
+                        outputImage.Draw(rawObject.Shape, Rgbs.Red, 2);
+
+                    if (IsDrawCenter)
+                    {
+                        var circle = new CircleF(rawObject.Center, 3);
+                        outputImage.Draw(circle, Rgbs.Green, 3);
+                    }
+
+                    if (IsDrawCenter)
+                    {
+                        var circle = new CircleF(rawObject.EstimatedCenter, 3);
+                        outputImage.Draw(circle, Rgbs.Blue, 3);
+                    }
+
+                    //outputImage.Draw(string.Format("Angle {0}", rawObject.Shape.angle), ref EmguFont, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
+
+                    outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFontBig, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
                 }
 
-                if (IsDrawCenter)
-                {
-                    var circle = new CircleF(rawObject.EstimatedCenter, 3);
-                    outputImage.Draw(circle, Rgbs.Blue, 3);
-                }
-
-                //outputImage.Draw(string.Format("Angle {0}", rawObject.Shape.angle), ref EmguFont, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
-
-                outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFontBig, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
-
-                Stage(new BlobData(string.Format("FindContours Id{0}", rawObject.Id))
+                var bounds = rawObject.Bounds;
+                var estimatedCenter = rawObject.EstimatedCenter;
+                Stage(new BlobData(this, "DeviceBlob")
                 {
                     Id = rawObject.Id,
-                    X = (rawObject.EstimatedCenter.X) / (double)image.Width,
-                    Y = (rawObject.EstimatedCenter.Y) / (double)image.Height,
+                    X = estimatedCenter.X / (double)width,
+                    Y = estimatedCenter.Y / (double)height,
                     Angle = rawObject.Shape.angle,
+                    Shape = rawObject.Shape,
                     Area = new Rect
                     {
-                        X = rawObject.Bounds.X / (double)image.Width,
-                        Y = rawObject.Bounds.X / (double)image.Height,
-                        Width = rawObject.Bounds.X / (double)image.Width,
-                        Height = rawObject.Bounds.X / (double)image.Height,
+                        X = bounds.X / (double)width,
+                        Y = bounds.Y / (double)height,
+                        Width = bounds.Width / (double)width,
+                        Height = bounds.Height / (double)height,
                     }
                 });
             }
@@ -584,7 +586,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
         private IEnumerable<Contour<Point>> IterateContours(Contour<Point> contours, MemStorage storage)
         {
-            for ( ; contours != null; contours = contours.HNext)
+            for (; contours != null; contours = contours.HNext)
             {
                 yield return contours.ApproxPoly(contours.Perimeter * 0.05, storage);
             }

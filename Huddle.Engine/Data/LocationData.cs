@@ -1,6 +1,8 @@
-﻿namespace Huddle.Engine.Data
+﻿using Huddle.Engine.Processor;
+
+namespace Huddle.Engine.Data
 {
-    public class LocationData : BaseData
+    public abstract class LocationData : BaseData
     {
         #region properties
 
@@ -146,24 +148,10 @@
 
         #endregion
 
-        public LocationData(string key) : base(key)
+        protected LocationData(IProcessor source, string key)
+            : base(source, key)
         {
 
-        }
-
-        public override IData Copy()
-        {
-            return new LocationData(Key)
-            {
-                X = X,
-                Y = Y,
-                Angle = Angle
-            };
-        }
-
-        public override void Dispose()
-        {
-            
         }
     }
 }

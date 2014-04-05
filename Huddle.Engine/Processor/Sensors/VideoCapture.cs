@@ -126,7 +126,7 @@ namespace Huddle.Engine.Processor.Sensors
                                                                          imageCopy.Dispose();
                                                                      });
 
-                               var rgbImage = new RgbImageData("color", image);
+                               var rgbImage = new RgbImageData(this, "color", image);
                                Stage(rgbImage);
                                Push();
 

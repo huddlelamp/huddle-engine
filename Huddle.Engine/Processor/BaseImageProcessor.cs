@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Xml.Serialization;
@@ -115,37 +116,23 @@ namespace Huddle.Engine.Processor
 
             if (IsRenderContent)
             {
-                var name = GetType().Name;
+                // draw debug information on image -> TODO might worth be worth it to bind that information to the data template directly
+                var preProcessImage = image.Copy();
 
-                Image<TColor, TDepth> preProcessImage = null;
-                try
+                Task.Factory.StartNew(() =>
                 {
-                    // the copy is required in order to not influence processing that happens later
-                    preProcessImage = PreProcess(image.Copy());
+                    if (preProcessImage == null) return null;
 
-                    // draw debug information on image -> TODO might worth be worth it to bind that information to the data template directly
-                    DrawDebug(preProcessImage);
+                    BitmapSource bitmap;
+                    if (preProcessImage is Image<Gray, float>)
+                        bitmap = (preProcessImage as Image<Gray, float>).ToGradientBitmapSource(32001, 32002, true);
+                    else
+                        bitmap = preProcessImage.ToBitmapSource(true);
 
-                    if (_preProcessRendering != null && _preProcessRendering.Status != DispatcherOperationStatus.Completed)
-                        _preProcessRendering.Abort();
+                    preProcessImage.Dispose();
 
-                    _preProcessRendering = DispatcherHelper.RunAsync(() =>
-                    {
-                        if (preProcessImage == null) return;
-
-                        if (preProcessImage is Image<Gray, float>)
-                            PreProcessImage = (preProcessImage as Image<Gray, float>).ToGradientBitmapSource(32001, 32002);
-                        else
-                            PreProcessImage = preProcessImage.ToBitmapSource();
-
-                        preProcessImage.Dispose();
-                    });
-                }
-                catch (Exception)
-                {
-                    if (preProcessImage != null)
-                        preProcessImage.Dispose();
-                }
+                    return bitmap;
+                }).ContinueWith(s => PreProcessImage = s.Result);
             }
 
             try
@@ -175,22 +162,22 @@ namespace Huddle.Engine.Processor
 
             if (IsRenderContent)
             {
-                if (_postProcessRendering != null && _postProcessRendering.Status != DispatcherOperationStatus.Pending)
-                    _postProcessRendering.Abort();
-
                 var postProcessImage = data.Image.Copy();
 
-                _postProcessRendering = DispatcherHelper.RunAsync(() =>
+                Task.Factory.StartNew(() =>
                 {
-                    if (postProcessImage == null) return;
+                    if (postProcessImage == null) return null;
 
+                    BitmapSource bitmap;
                     if (postProcessImage is Image<Gray, float>)
-                        PostProcessImage = (postProcessImage as Image<Gray, float>).ToGradientBitmapSource(32001, 32002);
+                        bitmap = (postProcessImage as Image<Gray, float>).ToGradientBitmapSource(32001, 32002, true);
                     else
-                        PostProcessImage = postProcessImage.ToBitmapSource();
+                        bitmap = postProcessImage.ToBitmapSource(true);
 
                     postProcessImage.Dispose();
-                });
+
+                    return bitmap;
+                }).ContinueWith(s => PostProcessImage = s.Result);
             }
             return data;
         }
@@ -201,10 +188,5 @@ namespace Huddle.Engine.Processor
         }
 
         public abstract Image<TColor, TDepth> ProcessAndView(Image<TColor, TDepth> image);
-
-        protected virtual void DrawDebug(Image<TColor, TDepth> image)
-        {
-            // empty
-        }
     }
 }

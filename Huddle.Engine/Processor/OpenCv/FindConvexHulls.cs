@@ -544,7 +544,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
                 outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFontBig, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
 
-                Stage(new BlobData(string.Format("FindContours Id{0}", rawObject.Id))
+                Stage(new BlobData(this, string.Format("FindContours Id{0}", rawObject.Id))
                 {
                     Id = rawObject.Id,
                     X = (rawObject.EstimatedCenter.X) / (double) image.Width,

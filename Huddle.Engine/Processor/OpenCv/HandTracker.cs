@@ -23,8 +23,8 @@ using Huddle.Engine.Util;
 
 namespace Huddle.Engine.Processor.OpenCv
 {
-    [ViewTemplate("BackgroundSubtraction", "BackgroundSubtraction")]
-    public class BackgroundSubtraction : BaseImageProcessor<Gray, float>
+    [ViewTemplate("Hand Tracker", "HandTracker")]
+    public class HandTracker : BaseImageProcessor<Gray, float>
     {
         #region private fields
 
@@ -45,6 +45,41 @@ namespace Huddle.Engine.Processor.OpenCv
         #endregion
 
         #region properties
+
+        #region BackgroundSubtractionSamples
+
+        /// <summary>
+        /// The <see cref="BackgroundSubtractionSamples" /> property's name.
+        /// </summary>
+        public const string BackgroundSubtractionSamplesPropertyName = "BackgroundSubtractionSamples";
+
+        private int _backgroundSubtractionSamples = 50;
+
+        /// <summary>
+        /// Sets and gets the BackgroundSubtractionSamples property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int BackgroundSubtractionSamples
+        {
+            get
+            {
+                return _backgroundSubtractionSamples;
+            }
+
+            set
+            {
+                if (_backgroundSubtractionSamples == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(BackgroundSubtractionSamplesPropertyName);
+                _backgroundSubtractionSamples = value;
+                RaisePropertyChanged(BackgroundSubtractionSamplesPropertyName);
+            }
+        }
+
+        #endregion
 
         #region LowCutOffDepth
 
@@ -293,36 +328,71 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        #region FloodFillMask
+        #region IntegrationDistance
 
         /// <summary>
-        /// The <see cref="FloodFillMask" /> property's name.
+        /// The <see cref="IntegrationDistance" /> property's name.
         /// </summary>
-        public const string FloodFillMaskPropertyName = "FloodFillMask";
+        public const string IntegrationDistancePropertyName = "IntegrationDistance";
 
-        private BitmapSource _floodFillMask = null;
+        private int _integrationDistance = 25;
 
         /// <summary>
-        /// Sets and gets the FloodFillMask property.
+        /// Sets and gets the IntegrationDistance property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        [IgnoreDataMember]
-        public BitmapSource FloodFillMask
+        public int IntegrationDistance
         {
             get
             {
-                return _floodFillMask;
+                return _integrationDistance;
             }
 
             set
             {
-                if (_floodFillMask == value)
+                if (_integrationDistance == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IntegrationDistancePropertyName);
+                _integrationDistance = value;
+                RaisePropertyChanged(IntegrationDistancePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region FloodFillMaskImageSource
+
+        /// <summary>
+        /// The <see cref="FloodFillMaskImageSource" /> property's name.
+        /// </summary>
+        public const string FloodFillMaskPropertyName = "FloodFillMaskImageSource";
+
+        private BitmapSource _floodFillMaskImageSource = null;
+
+        /// <summary>
+        /// Sets and gets the FloodFillMaskImageSource property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public BitmapSource FloodFillMaskImageSource
+        {
+            get
+            {
+                return _floodFillMaskImageSource;
+            }
+
+            set
+            {
+                if (_floodFillMaskImageSource == value)
                 {
                     return;
                 }
 
                 RaisePropertyChanging(FloodFillMaskPropertyName);
-                _floodFillMask = value;
+                _floodFillMaskImageSource = value;
                 RaisePropertyChanged(FloodFillMaskPropertyName);
             }
         }
@@ -368,7 +438,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #region ctor
 
-        public BackgroundSubtraction()
+        public HandTracker()
         {
             SubtractCommand = new RelayCommand(() =>
             {
@@ -438,7 +508,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 .PyrUp()
                 .PyrDown();
 
-            var targetImage = imageWithOriginalDepth.Copy();
+            var postProcessImage = imageWithOriginalDepth.Copy();
 
             double[] minValues;
             double[] maxValues;
@@ -448,9 +518,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
             var minHandArmArea = MinHandArmArea;
             var maxHandArmArea = width * height - 1000;
-
             var shrinkMaskROI = new Rectangle(1, 1, width, height);
-
             var color = 0.0f;
 
             var debugOutput = new Image<Rgb, byte>(width, height);
@@ -459,8 +527,10 @@ namespace Huddle.Engine.Processor.OpenCv
             for (var i = 0; !minValues[0].Equals(maxValues[0]) && i < 100;
                 imageWithOriginalDepth.MinMax(out minValues, out maxValues, out minLocations, out maxLocations), i++)
             {
+                // Mask need to be two pixels bigger than the source image.
                 var mask = new Image<Gray, byte>(width + 2, height + 2);
 
+                // Flood fill segment with lowest pixel value to allow for next segment on next iteration.
                 CvInvoke.cvFloodFill(imageWithOriginalDepth.Ptr,
                     maxLocations[0],
                     new MCvScalar(0.0f),
@@ -471,17 +541,33 @@ namespace Huddle.Engine.Processor.OpenCv
                     FLOODFILL_FLAG.DEFAULT,
                     mask.Ptr);
 
-                if (comp.area > minHandArmArea && comp.area < maxHandArmArea)
+                // Only process segments that are of a certain size (and are not the entire image).
+                if (!(comp.area > minHandArmArea) || !(comp.area < maxHandArmArea)) continue;
+
+                mask.ROI = shrinkMaskROI;
+
+                var segment = mask.Mul(imageWithOriginalDepthCopy);// .Dilate(2);
+
+                int x;
+                int y;
+                float depth;
+                FindHandLocation(ref segment, ref mask, out x, out y, out depth);
+
+                var nx = x / (double)width;
+                var ny = y / (double)height;
+                UpdateHand(x, y, nx, ny, depth);
+
+                segment.Dispose();
+
+                if (IsRenderContent)
                 {
-                    mask.ROI = shrinkMaskROI;
-                    var maskCopy = mask.Copy();
-                    var coloredMask = maskCopy.Mul(color += 25);
-
-                    var colorMaskData = coloredMask.Data;
-                    var targetImageData = targetImage.Data;
-
                     // This does not work therefore the following manual approach is used.
                     //targetImage = targetImage.And(coloredMask);
+
+                    var coloredMask = mask.Mul(color += 25);
+
+                    var colorMaskData = coloredMask.Data;
+                    var targetImageData = postProcessImage.Data;
 
                     Parallel.For(0, height, y0 =>
                     {
@@ -493,38 +579,38 @@ namespace Huddle.Engine.Processor.OpenCv
                         }
                     });
 
-                    debugOutput += maskCopy.Mul(255).Convert<Rgb, byte>();
+                    debugOutput += mask.Mul(255).Convert<Rgb, byte>();
 
                     coloredMask.Dispose();
-
-                    var segment = mask.Mul(imageWithOriginalDepthCopy);// .Dilate(2);
-
-                    int x;
-                    int y;
-                    float depth;
-                    FindHandLocation(ref segment, ref mask, out x, out y, out depth);
-                    UpdateHand(ref x, ref y, ref depth);
-
-                    segment.Dispose();
                 }
+            }
+
+            if (IsRenderContent)
+            {
+                foreach (var palm in _palms)
+                {
+                    debugOutput.Draw(new CircleF(new PointF(palm.Center.X, palm.Center.Y), 5), Rgbs.Red, 3);
+                    debugOutput.Draw(new CircleF(new PointF(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), 5), Rgbs.Green, 3);
+
+                    debugOutput.Draw(string.Format("Id {0} ({1})", palm.Id, palm.Depth), ref EmguFont, new Point(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), Rgbs.White);
+                }
+
+                var debugOutputCopy = debugOutput.Copy();
+                Task.Factory.StartNew(() =>
+                {
+                    var bitmap = debugOutputCopy.ToBitmapSource(true);
+                    debugOutputCopy.Dispose();
+                    return bitmap;
+                }).ContinueWith(s => FloodFillMaskImageSource = s.Result);
             }
 
             foreach (var palm in _palms)
             {
-                debugOutput.Draw(new CircleF(new PointF(palm.Center.X, palm.Center.Y), 5), Rgbs.Red, 3);
-                debugOutput.Draw(new CircleF(new PointF(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), 5), Rgbs.Green, 3);
-
-                debugOutput.Draw(string.Format("Id {0} ({1})", palm.Id, palm.Depth), ref EmguFontBig, new Point(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), Rgbs.White);
+                Stage(palm.Copy());
             }
+            Push();
 
-            var debugOutputCopy = debugOutput.Copy();
-            DispatcherHelper.RunAsync(() =>
-            {
-                FloodFillMask = debugOutputCopy.ToBitmapSource();
-                debugOutputCopy.Dispose();
-            });
-
-            return targetImage.Convert<Gray, float>();
+            return postProcessImage.Convert<Gray, float>();
         }
 
         private bool BuildingBackgroundImage(Image<Gray, float> image)
@@ -535,7 +621,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 return true;
             }
 
-            if (++_collectedBackgroundImages < 50)
+            if (++_collectedBackgroundImages < BackgroundSubtractionSamples)
             {
                 _backgroundImage.RunningAvg(image, 0.8);
                 return true;
@@ -561,6 +647,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
             var xs = new int[samples];
             var ys = new int[samples];
+            var ds = new float[samples];
 
             var minVal = double.MaxValue;
             var maxVal = 0.0;
@@ -573,16 +660,18 @@ namespace Huddle.Engine.Processor.OpenCv
 
                 var maxX = maxLoc.X;
                 var maxY = maxLoc.Y;
+                var maxDepth = handSegment.Data[maxY, maxX, 0];
 
                 xs[j] = maxX;
                 ys[j] = maxY;
+                ds[j] = maxDepth;
 
                 handSegment.Data[maxY, maxX, 0] = 0;
             }
 
             x = (int)xs.Average();
             y = (int)ys.Average();
-            depth = handSegment.Data[y, x, 0];
+            depth = ds.Average();
         }
 
         /// <summary>
@@ -590,7 +679,8 @@ namespace Huddle.Engine.Processor.OpenCv
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void UpdateHand(ref int x, ref int y, ref float depth)
+        /// <param name="depth"></param>
+        private void UpdateHand(int x, int y, double nx, double ny, float depth)
         {
             var now = DateTime.Now;
             depth = 255 - depth;
@@ -604,24 +694,32 @@ namespace Huddle.Engine.Processor.OpenCv
             }
             else
             {
-                hand = new Hand(GetNextId(), point)
+                var id = GetNextId();
+                hand = new Hand(this, string.Format("Hand{0}", id), id, point)
                 {
+                    X = nx,
+                    Y = ny,
                     Depth = depth,
                     LastUpdate = now
                 };
                 _palms.Add(hand);
             }
 
-            if (hand.EstimatedCenter.Length(point) < 50)
+            if (hand.EstimatedCenter.Length(point) < IntegrationDistance)
             {
+                hand.X = nx;
+                hand.Y = ny;
                 hand.Center = point;
                 hand.Depth = depth;
                 hand.LastUpdate = now;
             }
             else
             {
-                hand = new Hand(GetNextId(), point)
+                var id = GetNextId();
+                hand = new Hand(this, string.Format("Hand{0}", id), id, point)
                 {
+                    X = nx,
+                    Y = ny,
                     Depth = depth,
                     LastUpdate = now
                 };

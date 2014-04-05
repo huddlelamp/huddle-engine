@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
+using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
 {
@@ -10,8 +11,8 @@ namespace Huddle.Engine.Data
         #endregion
 
         #region ctor
-        public RgbImageData(string key, Image<Rgb, byte> image)
-            : base(key, image)
+        public RgbImageData(IProcessor source, string key, Image<Rgb, byte> image)
+            : base(source, key, image)
         {
         }
 
@@ -19,7 +20,7 @@ namespace Huddle.Engine.Data
 
         public override IData Copy()
         {
-            return new RgbImageData(Key, Image.Copy());
+            return new RgbImageData(Source, Key, Image.Copy());
         }
     }
 }

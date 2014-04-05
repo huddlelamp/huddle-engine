@@ -1,4 +1,7 @@
-﻿namespace Huddle.Engine
+﻿using System.Threading.Tasks;
+using Huddle.Engine.Util;
+
+namespace Huddle.Engine
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

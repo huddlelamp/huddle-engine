@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Documents;
 using Huddle.Engine.Domain;
+using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
 {
@@ -221,13 +222,14 @@ namespace Huddle.Engine.Data
 
         #endregion
 
-        public Proximity(string key) : base(key)
+        public Proximity(IProcessor source, string key)
+            : base(source, key)
         {
         }
 
         public override IData Copy()
         {
-            return new Proximity(Key)
+            return new Proximity(Source, Key)
             {
                 Distance = Distance,
                 Identity = Identity,

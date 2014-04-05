@@ -151,6 +151,7 @@
                             <StackPanel Grid.Row="1" Orientation="Vertical">
                                 <Label Content="{Binding Path=Model.Benchmark.Average, Mode=OneWay}" ContentStringFormat="Average Time: {0} ms" />
                                 <Label Content="{Binding Path=Model.Benchmark.LastMeasurement, Mode=OneWay}" ContentStringFormat="Last Measurement: {0} ms" />
+                                <Label Content="{Binding Path=Model.Benchmark.QueueCount, Mode=OneWay}" ContentStringFormat="Queue: {0}" />
                                 <!--<Label Content="{Binding Path=Model.Benchmark.AccumulateMeasurements, Mode=OneWay}" ContentStringFormat="Accumulate Measurement: {0}" />
                                 <Label Content="{Binding Path=Model.Benchmark.MeasurementCount, Mode=OneWay}" ContentStringFormat="Measurement Count: {0}" />-->
                             </StackPanel>

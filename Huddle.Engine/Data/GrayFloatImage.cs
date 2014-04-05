@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
+using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
 {
@@ -10,8 +11,8 @@ namespace Huddle.Engine.Data
         #endregion
 
         #region ctor
-        public GrayFloatImage(string key, Image<Gray, float> image)
-            : base(key, image)
+        public GrayFloatImage(IProcessor source, string key, Image<Gray, float> image)
+            : base(source, key, image)
         {
         }
 
@@ -19,7 +20,7 @@ namespace Huddle.Engine.Data
 
         public override IData Copy()
         {
-            return new GrayFloatImage(Key, Image.Copy());
+            return new GrayFloatImage(Source, Key, Image.Copy());
         }
     }
 }

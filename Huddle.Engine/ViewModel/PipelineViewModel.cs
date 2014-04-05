@@ -225,7 +225,8 @@ namespace Huddle.Engine.ViewModel
             }
             else
             {
-                var types = GetAttributesFromType<ViewTemplateAttribute, BaseProcessor>().ToArray();
+                var types = GetAttributesFromType<ViewTemplateAttribute, BaseProcessor>().ToList();
+                types.Sort(new ProcessorComparer());
 
                 ProcessorTypes = new ObservableCollection<ViewTemplateAttribute>(types);
             }
@@ -608,5 +609,12 @@ namespace Huddle.Engine.ViewModel
         }
 
         #endregion
-    }
+
+        private class ProcessorComparer : IComparer<ViewTemplateAttribute>
+        {
+            public int Compare(ViewTemplateAttribute x, ViewTemplateAttribute y)
+            {
+                return String.Compare(x.Name, y.Name, StringComparison.Ordinal);
+            }
+        }}
 }

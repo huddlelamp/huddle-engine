@@ -1,5 +1,6 @@
 ﻿using GalaSoft.MvvmLight;
 using Huddle.Engine.Data;
+using Huddle.Engine.Processor;
 using Newtonsoft.Json;
 
 namespace Huddle.Engine.Domain
@@ -259,8 +260,8 @@ namespace Huddle.Engine.Domain
 
         #region ctor
 
-        public Device(string key)
-            : base(key)
+        public Device(IProcessor source, string key)
+            : base(source, key)
         {
         }
 
@@ -268,7 +269,7 @@ namespace Huddle.Engine.Domain
 
         public override IData Copy()
         {
-            return new Device(Key)
+            return new Device(Source, Key)
             {
                 Angle = Angle,
                 DeviceId = DeviceId,

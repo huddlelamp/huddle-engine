@@ -8,5 +8,8 @@
     <Setting Name="IsBenchmarkEnabled" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="ProcessingThreadPriority" Type="System.Threading.ThreadPriority" Scope="User">
+      <Value Profile="(Default)">Highest</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

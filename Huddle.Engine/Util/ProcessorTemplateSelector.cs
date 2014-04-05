@@ -21,11 +21,17 @@ namespace Huddle.Engine.Util
 
                     try
                     {
-                        return element.FindResource(viewAttribute.Template) as DataTemplate;
+                        var dataTemplate = element.FindResource(viewAttribute.Template) as DataTemplate;
+
+                        if (dataTemplate != null)
+                            return dataTemplate;
+                        return element.FindResource("DefaultTemplate") as DataTemplate;
                     }
                     catch (Exception)
                     {
                         Console.WriteLine(@"DataTemplate not found for {0}. Add template to App.xaml.", viewAttribute.Template);
+
+                        return element.FindResource("DefaultTemplate") as DataTemplate;
                     }
                 }
             }

@@ -1,4 +1,7 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
 using System.Threading;
 using Huddle.Engine.Data;
 using Huddle.Engine.Util;
@@ -47,23 +50,12 @@ namespace Huddle.Engine.Processor
 
         #region Type
 
+        private static string[] _types;
+
         [IgnoreDataMember]
         public static string[] Types
         {
-            get
-            {
-                return new[]
-                {
-                    typeof(BaseData).FullName,
-                    typeof(RgbImageData).FullName,
-                    typeof(GrayFloatImage).FullName,
-                    typeof(GrayByteImage).FullName,
-                    typeof(Proximity).FullName,
-                    typeof(ROI).FullName,
-                    typeof(BlobData).FullName,
-                    typeof(LocationData).FullName
-                };
-            }
+            get { return _types ?? (_types = GetTypeNames<BaseData>()); }
         }
 
         /// <summary>
@@ -103,13 +95,22 @@ namespace Huddle.Engine.Processor
 
         public override IData Process(IData data)
         {
-            if (Type != null && !Equals(Type, data.GetType().FullName))
+            if (Type != null && !(Type.Equals(data.GetType().Name)))
                 return null;
 
             if (!string.IsNullOrWhiteSpace(Key) && !Equals(Key, data.Key))
                 return null;
 
             return data;
+        }
+
+        public static string[] GetTypeNames<T>()
+        {
+            var types = from t in Assembly.GetExecutingAssembly().GetTypes()
+                        where typeof(T).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface
+                        select t.Name;
+
+            return types.ToArray();
         }
     }
 }

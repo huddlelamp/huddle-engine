@@ -17,6 +17,8 @@ using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
 using Huddle.Engine.Domain;
 using Huddle.Engine.Extensions;
+using Huddle.Engine.Processor.BarCodes;
+using Huddle.Engine.Processor.OpenCv;
 using Huddle.Engine.Util;
 
 namespace Huddle.Engine.Processor
@@ -243,7 +245,7 @@ namespace Huddle.Engine.Processor
 
                 e.Handled = true;
 
-                Devices.Add(new Device(string.Format("{0}{1}", FakeDevicePrefix, ++_fakeDeviceId))
+                Devices.Add(new Device(this, string.Format("{0}{1}", FakeDevicePrefix, ++_fakeDeviceId))
                 {
                     BlobId = 999,
                     DeviceId = "999",
@@ -311,10 +313,11 @@ namespace Huddle.Engine.Processor
             _lastUpdateTime = DateTime.Now;
 
             var blobs = dataContainer.OfType<BlobData>().ToList();
-            var qrCodes = dataContainer.OfType<LocationData>().ToList();
+            var marker = dataContainer.OfType<Marker>().ToList();
+            var hands = dataContainer.OfType<Hand>().ToList();
 
             // Update view
-            UpdateView(blobs, qrCodes);
+            UpdateView(blobs, marker, hands);
 
             // Remove all devices that are not present by a blob anymore
             Devices.RemoveAll(device => blobs.All(b => b.Id != device.BlobId));
@@ -327,7 +330,7 @@ namespace Huddle.Engine.Processor
                 var blobPoint = new Point(blob.X, blob.Y);
 
                 // Find matching QrCode for current blob
-                var codes = qrCodes.Where(c => (new Point(c.X, c.Y) - blobPoint).Length < Distance).ToArray();
+                var codes = marker.Where(c => (new Point(c.X, c.Y) - blobPoint).Length < Distance).ToArray();
 
                 if (codes.Any())
                 {
@@ -360,7 +363,7 @@ namespace Huddle.Engine.Processor
             foreach (var device1 in identifiedDevices)
             {
                 var p1 = new Point(device1.X / Width, device1.Y / Height);
-                var proximity = new Proximity(device1.Key)
+                var proximity = new Proximity(this, device1.Key)
                 {
                     Identity = device1.DeviceId,
                     Location = p1,
@@ -415,7 +418,7 @@ namespace Huddle.Engine.Processor
 
                     var p2 = new Point(device2.X / Width, device2.Y / Height);
 
-                    proximity.Presences.Add(new Proximity(device2.Key)
+                    proximity.Presences.Add(new Proximity(this, device2.Key)
                     {
                         Identity = device2.DeviceId,
                         Location = p2,
@@ -427,6 +430,19 @@ namespace Huddle.Engine.Processor
                 #endregion
 
                 Stage(proximity);
+
+                foreach (var hand in dataContainer.OfType<Hand>().ToArray())
+                {
+                    var x = hand.X * 320 - device1.X;
+                    var y = hand.Y * 240 - device1.Y;
+
+                    var distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
+
+                    if (distance < 30 && hand.Depth < 80)
+                    {
+                        Log("Hand {0} close to {1}", hand.Id, device1.DeviceId);
+                    }
+                }
             }
 
             Stage(devices.ToArray<IData>());
@@ -440,7 +456,7 @@ namespace Huddle.Engine.Processor
 
         private void CreateDevice(BlobData blob)
         {
-            var device = new Device("not identified")
+            var device = new Device(this, "not identified")
             {
                 BlobId = blob.Id,
                 IsIdentified = false,
@@ -517,7 +533,7 @@ namespace Huddle.Engine.Processor
             DrawModels.Add(model);
         }
 
-        private void UpdateView(IEnumerable<BlobData> blobs, IEnumerable<LocationData> qrCodes)
+        private void UpdateView(IEnumerable<BlobData> blobs, IEnumerable<Marker> qrCodes, IEnumerable<Hand> hands)
         {
             #region Update DrawModels
 
@@ -528,6 +544,9 @@ namespace Huddle.Engine.Processor
 
             foreach (var code in qrCodes)
                 AddDrawModel(code.X * Width, code.Y * Height, Brushes.DeepSkyBlue, 2);
+
+            foreach (var hand in hands)
+                AddDrawModel(hand.X * Width, hand.Y * Height, Brushes.DarkSlateBlue, 3);
 
             #endregion
         }
