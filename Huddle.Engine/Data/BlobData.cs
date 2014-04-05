@@ -1,4 +1,7 @@
 ﻿using System.Windows;
+using System.Windows.Shapes;
+using Emgu.CV.Structure;
+using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
 {
@@ -181,12 +184,47 @@ namespace Huddle.Engine.Data
 
         #endregion
 
+        #region Shape
+
+        /// <summary>
+        /// The <see cref="Shape" /> property's name.
+        /// </summary>
+        public const string ShapePropertyName = "Shape";
+
+        private MCvBox2D _shape;
+
+        /// <summary>
+        /// Sets and gets the Shape property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public MCvBox2D Shape
+        {
+            get
+            {
+                return _shape;
+            }
+
+            set
+            {
+                if (_shape.Equals(value))
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ShapePropertyName);
+                _shape = value;
+                RaisePropertyChanged(ShapePropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
 
-        public BlobData(string key)
-            : base(key)
+        public BlobData(IProcessor source, string key)
+            : base(source, key)
         {
         }
 
@@ -194,13 +232,14 @@ namespace Huddle.Engine.Data
 
         public override IData Copy()
         {
-            return new BlobData(Key)
+            return new BlobData(Source, Key)
             {
                 Id = Id,
                 X = X,
                 Y = Y,
                 Angle = Angle,
-                Area = Area
+                Area = Area,
+                Shape = Shape
             };
         }
 

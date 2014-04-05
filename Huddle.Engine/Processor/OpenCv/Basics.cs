@@ -36,6 +36,13 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #region public properties
 
+        #region IsInitialized
+
+        // IsInitialized is used to set ROI if filter is used the first time.
+        public bool IsInitialized { get; set; }
+
+        #endregion
+
         #region ROI
 
         /// <summary>
@@ -43,7 +50,7 @@ namespace Huddle.Engine.Processor.OpenCv
         /// </summary>
         public const string ROIPropertyName = "ROI";
 
-        private Rectangle _roi = new Rectangle(20, 20, 280, 200);
+        private Rectangle _roi = new Rectangle(0, 0, 1, 1);
 
         /// <summary>
         /// Sets and gets the ROI property.
@@ -178,10 +185,13 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #endregion
+
         #region ctor
 
         public Basics()
         {
+            IsInitialized = false;
             MouseDownCommand = new RelayCommand<SenderAwareEventArgs>(args =>
             {
                 var sender = args.Sender as IInputElement;
@@ -237,8 +247,6 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        #endregion
-
         public override IData Process(IData data)
         {
             var roi = data as ROI;
@@ -250,6 +258,13 @@ namespace Huddle.Engine.Processor.OpenCv
 
         public override Image<Rgb, byte> PreProcess(Image<Rgb, byte> image0)
         {
+            if (!IsInitialized)
+            {
+                ROI = new Rectangle(0, 0, image0.Width, image0.Height);
+
+                IsInitialized = true;
+            }
+
             var image = base.PreProcess(image0);
 
             image.Draw(ROI, Rgbs.Red, 1);

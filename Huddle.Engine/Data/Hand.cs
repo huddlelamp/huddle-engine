@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using Huddle.Engine.Processor;
 using Huddle.Engine.Processor.OpenCv.Filter;
 
 namespace Huddle.Engine.Data
@@ -158,8 +159,8 @@ namespace Huddle.Engine.Data
 
         #region ctor
 
-        public Hand(string key, long id, Point center)
-            : base(key)
+        public Hand(IProcessor source, string key, long id, Point center)
+            : base(source, key)
         {
             Id = id;
             Center = center;
@@ -193,7 +194,7 @@ namespace Huddle.Engine.Data
 
         public override IData Copy()
         {
-            return new Hand(Key, Id, Center)
+            return new Hand(Source, Key, Id, Center)
             {
                 X = X,
                 Y = Y,

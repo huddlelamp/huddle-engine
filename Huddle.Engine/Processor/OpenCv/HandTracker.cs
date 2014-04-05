@@ -694,7 +694,7 @@ namespace Huddle.Engine.Processor.OpenCv
             else
             {
                 var id = GetNextId();
-                hand = new Hand(string.Format("Hand{0}", id), id, point)
+                hand = new Hand(this, string.Format("Hand{0}", id), id, point)
                 {
                     X = nx,
                     Y = ny,
@@ -715,7 +715,7 @@ namespace Huddle.Engine.Processor.OpenCv
             else
             {
                 var id = GetNextId();
-                hand = new Hand(string.Format("Hand{0}", id), id, point)
+                hand = new Hand(this, string.Format("Hand{0}", id), id, point)
                 {
                     X = nx,
                     Y = ny,

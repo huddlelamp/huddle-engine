@@ -1062,14 +1062,14 @@ namespace Huddle.Engine.Processor.Sensors
                 {
                     var dc = new DataContainer(++_frameId, DateTime.Now)
                     {
-                        new RgbImageData("color", colorImage),
-                        new GrayFloatImage("depth", depthImage),
-                        new RgbImageData("confidence", confidenceMapImage),
+                        new RgbImageData(this, "color", colorImage),
+                        new GrayFloatImage(this, "depth", depthImage),
+                        new RgbImageData(this, "confidence", confidenceMapImage),
                     };
 
-                    if (uvMapImage != null) dc.Add(new RgbFloatImage("uvmap", uvMapImage));
-                    if (rgbOfDepthImage != null) dc.Add(new RgbImageData("rgbofdepth", rgbOfDepthImage));
-                    if (depthOfRgbImage != null) dc.Add(new GrayFloatImage("depthofrgb", depthOfRgbImage));
+                    if (uvMapImage != null) dc.Add(new RgbFloatImage(this, "uvmap", uvMapImage));
+                    if (rgbOfDepthImage != null) dc.Add(new RgbImageData(this, "rgbofdepth", rgbOfDepthImage));
+                    if (depthOfRgbImage != null) dc.Add(new GrayFloatImage(this, "depthofrgb", depthOfRgbImage));
                     Publish(dc);
                 });
 
@@ -1287,7 +1287,7 @@ namespace Huddle.Engine.Processor.Sensors
                             //contourImg.Draw(_rgbInDepthROI, new Gray(122.0), 5);
                             //return contourImg.Convert<Rgb, Byte>();
 
-                            Stage(new ROI("rgbInDepthROI")
+                            Stage(new ROI(this, "rgbInDepthROI")
                             {
                                 RoiRectangle = _rgbInDepthROI
                             });

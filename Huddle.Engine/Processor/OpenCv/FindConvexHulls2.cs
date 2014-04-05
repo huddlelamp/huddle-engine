@@ -15,8 +15,8 @@ using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
 {
-    [ViewTemplate("Find Convex Hulls", "FindConvexHullsTemplate")]
-    public class FindConvexHulls : RgbProcessor
+    [ViewTemplate("Find Convex Hulls 2", "FindConvexHullsTemplate")]
+    public class FindConvexHulls2 : RgbProcessor
     {
         #region private fields
 
@@ -128,6 +128,41 @@ namespace Huddle.Engine.Processor.OpenCv
                 RaisePropertyChanging(MinContourAreaPropertyName);
                 _minContourArea = value;
                 RaisePropertyChanged(MinContourAreaPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region MaxContourArea
+
+        /// <summary>
+        /// The <see cref="MaxContourArea" /> property's name.
+        /// </summary>
+        public const string MaxContourAreaPropertyName = "MaxContourArea";
+
+        private int _maxContourArea = 3000;
+
+        /// <summary>
+        /// Sets and gets the MaxContourArea property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int MaxContourArea
+        {
+            get
+            {
+                return _maxContourArea;
+            }
+
+            set
+            {
+                if (_maxContourArea == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(MaxContourAreaPropertyName);
+                _maxContourArea = value;
+                RaisePropertyChanged(MaxContourAreaPropertyName);
             }
         }
 
@@ -379,111 +414,6 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        #region Sobel
-
-        /// <summary>
-        /// The <see cref="Sobel" /> property's name.
-        /// </summary>
-        public const string SobelPropertyName = "Sobel";
-
-        private int _sobel = 3;
-
-        /// <summary>
-        /// Sets and gets the Sobel property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public int Sobel
-        {
-            get
-            {
-                return _sobel;
-            }
-
-            set
-            {
-                if (_sobel == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(SobelPropertyName);
-                _sobel = value;
-                RaisePropertyChanged(SobelPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region BlockSize
-
-        /// <summary>
-        /// The <see cref="BlockSize" /> property's name.
-        /// </summary>
-        public const string BlockSizePropertyName = "BlockSize";
-
-        private int _blockSize = 3;
-
-        /// <summary>
-        /// Sets and gets the BlockSize property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public int BlockSize
-        {
-            get
-            {
-                return _blockSize;
-            }
-
-            set
-            {
-                if (_blockSize == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(BlockSizePropertyName);
-                _blockSize = value;
-                RaisePropertyChanged(BlockSizePropertyName);
-            }
-        }
-
-        #endregion
-
-        #region K
-
-        /// <summary>
-        /// The <see cref="K" /> property's name.
-        /// </summary>
-        public const string KPropertyName = "K";
-
-        private double _k = 0.01;
-
-        /// <summary>
-        /// Sets and gets the K property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double K
-        {
-            get
-            {
-                return _k;
-            }
-
-            set
-            {
-                if (_k == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(KPropertyName);
-                _k = value;
-                RaisePropertyChanged(KPropertyName);
-            }
-        }
-
-        #endregion
-
         #endregion
 
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
@@ -505,10 +435,11 @@ namespace Huddle.Engine.Processor.OpenCv
 
                     //Console.WriteLine("AREA {0}", currentContour.Area);
 
-                    if (currentContour.Area > MinContourArea) //only consider contours with area greater than 250
+                    if (currentContour.Total == 4 && currentContour.Area > MinContourArea && currentContour.Area < MaxContourArea) //only consider contours with area greater than 250
                     {
                         //outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.White, 2);
                         outputImage.FillConvexPoly(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE).ToArray(), Rgbs.White);
+                        outputImage.Draw(string.Format("{0}", currentContour.Area), ref EmguFont, currentContour.BoundingRectangle.Location, Rgbs.Red);
                     }
                 }
             }

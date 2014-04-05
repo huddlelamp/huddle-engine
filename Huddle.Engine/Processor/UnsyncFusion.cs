@@ -41,7 +41,7 @@ namespace Huddle.Engine.Processor
 
         public override IData Process(IData data)
         {
-            return data;
+            return null;
         }
 
         #endregion

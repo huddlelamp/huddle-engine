@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Xml.Serialization;
 using Emgu.CV;
@@ -8,14 +9,15 @@ using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
+using Huddle.Engine.Extensions;
 using Huddle.Engine.Processor.OpenCv.Struct;
 using Huddle.Engine.Util;
 using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
 {
-    [ViewTemplate("Find Contours", "FindContours")]
-    public class FindContours : RgbProcessor
+    [ViewTemplate("Find Contours 2", "FindContours")]
+    public class FindContours2 : RgbProcessor
     {
         #region private fields
 
@@ -127,6 +129,41 @@ namespace Huddle.Engine.Processor.OpenCv
                 RaisePropertyChanging(MinContourAreaPropertyName);
                 _minContourArea = value;
                 RaisePropertyChanged(MinContourAreaPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region MaxContourArea
+
+        /// <summary>
+        /// The <see cref="MaxContourArea" /> property's name.
+        /// </summary>
+        public const string MaxContourAreaPropertyName = "MaxContourArea";
+
+        private int _maxContourArea = 3000;
+
+        /// <summary>
+        /// Sets and gets the MaxContourArea property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int MaxContourArea
+        {
+            get
+            {
+                return _maxContourArea;
+            }
+
+            set
+            {
+                if (_maxContourArea == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(MaxContourAreaPropertyName);
+                _maxContourArea = value;
+                RaisePropertyChanged(MaxContourAreaPropertyName);
             }
         }
 
@@ -378,6 +415,41 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #region IntegrationDistance
+
+        /// <summary>
+        /// The <see cref="IntegrationDistance" /> property's name.
+        /// </summary>
+        public const string IntegrationDistancePropertyName = "IntegrationDistance";
+
+        private double _integrationDistance = 0.1;
+
+        /// <summary>
+        /// Sets and gets the IntegrationDistance property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double IntegrationDistance
+        {
+            get
+            {
+                return _integrationDistance;
+            }
+
+            set
+            {
+                if (_integrationDistance == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IntegrationDistancePropertyName);
+                _integrationDistance = value;
+                RaisePropertyChanged(IntegrationDistancePropertyName);
+            }
+        }
+
+        #endregion
+
         #region IsSubtractConfidenceImage
 
         /// <summary>
@@ -440,7 +512,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 {
                     var currentContour = contours.ApproxPoly(contours.Perimeter * 0.05, storage);
 
-                    if (currentContour.Area > MinContourArea) //only consider contours with area greater than 250
+                    if (currentContour.Area > MinContourArea && currentContour.Area < MaxContourArea) //only consider contours with area greater than 250
                     {
                         outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
 
@@ -477,36 +549,23 @@ namespace Huddle.Engine.Processor.OpenCv
 
                             if (isRectangle)
                             {
-                                bool updated = false;
+                                var cCenter = currentContour.GetMinAreaRect().center;
+                                var point = new Point((int)cCenter.X, (int)cCenter.Y);
 
-                                foreach (var o in _objects)
+                                RawObject obj = null;
+
+                                if (_objects.Count > 0)
+                                    obj = _objects.Aggregate((curmin, p) => p.EstimatedCenter.Length(point) < curmin.EstimatedCenter.Length(point) ? p : curmin);
+
+                                if (obj != null && obj.EstimatedCenter.Length(point) < MaxDistanceRestoreId)
                                 {
-                                    var oCenter = o.Shape.center;
-                                    var cCenter = currentContour.GetMinAreaRect().center;
-
-                                    //var distance = currentContour.Distance(shapeCenter);
-
-                                    //var distance2 = oCenter.Length(cCenter);
-                                    var distance2 = Math.Sqrt(Math.Pow(oCenter.X - cCenter.X, 2) + Math.Pow(oCenter.Y - cCenter.Y, 2));
-
-                                    //Log("Distance {0}", distance2);
-
-                                    if (distance2 < MaxDistanceRestoreId)
-                                    //if (currentContour.BoundingRectangle.IntersectsWith(o.Bounds))
-                                    {
-                                        o.LastUpdate = DateTime.Now;
-                                        o.Center = new Point((int)cCenter.X, (int)cCenter.Y);
-                                        o.Bounds = currentContour.BoundingRectangle;
-                                        o.Shape = currentContour.GetMinAreaRect();
-                                        o.Points = pts;
-
-                                        updated = true;
-                                    }
+                                    obj.LastUpdate = DateTime.Now;
+                                    obj.Center = new Point((int)cCenter.X, (int)cCenter.Y);
+                                    obj.Bounds = currentContour.BoundingRectangle;
+                                    obj.Shape = currentContour.GetMinAreaRect();
+                                    obj.Points = pts;
                                 }
-
-                                //_objects.RemoveAll(o => currentContour.BoundingRectangle.IntersectsWith(o.Bounds));
-
-                                if (!updated)
+                                else
                                 {
                                     var minAreaRect = currentContour.GetMinAreaRect();
 
@@ -548,8 +607,6 @@ namespace Huddle.Engine.Processor.OpenCv
                         outputImage.Draw(circle, Rgbs.Blue, 3);
                     }
 
-                    //outputImage.Draw(string.Format("Angle {0}", rawObject.Shape.angle), ref EmguFont, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
-
                     outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFontBig, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
                 }
 
@@ -586,7 +643,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
         private IEnumerable<Contour<Point>> IterateContours(Contour<Point> contours, MemStorage storage)
         {
-            for (; contours != null; contours = contours.HNext)
+            for ( ; contours != null; contours = contours.HNext)
             {
                 yield return contours.ApproxPoly(contours.Perimeter * 0.05, storage);
             }

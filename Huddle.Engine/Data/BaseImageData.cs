@@ -1,4 +1,5 @@
 ﻿using Emgu.CV;
+using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
 {
@@ -34,8 +35,8 @@ namespace Huddle.Engine.Data
 
         #region ctor
 
-        protected BaseImageData(string key, Image<TColor, TDepth> image)
-            : base(key)
+        protected BaseImageData(IProcessor source, string key, Image<TColor, TDepth> image)
+            : base(source, key)
         {
             Image = image;
         }

@@ -6,6 +6,10 @@
                     xmlns:barCodes="clr-namespace:Huddle.Engine.Processor.BarCodes"
                     xmlns:util="clr-namespace:Huddle.Engine.Util">
 
+    <DataTemplate x:Key="DefaultTemplate">
+        <Label Content="No template defined" />
+    </DataTemplate>
+    
     <DataTemplate x:Key="DataTypeFilter" DataType="processor:DataTypeFilter">
         <StackPanel>
             <StackPanel Orientation="Horizontal">

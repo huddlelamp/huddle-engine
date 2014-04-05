@@ -226,6 +226,7 @@
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\BaseData.cs" />
+    <Compile Include="Data\Marker.cs" />
     <Compile Include="Data\ROI.cs" />
     <Compile Include="Data\BlobData.cs" />
     <Compile Include="Data\DataContainer.cs" />
@@ -262,6 +263,10 @@
     <Compile Include="Processor\BarCodes\ZXingHelper\BarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\IBarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\ImageLuminanceSource.cs" />
+    <Compile Include="Processor\Complex\BlobFusion.cs" />
+    <Compile Include="Processor\Complex\BlobRenderer.cs" />
+    <Compile Include="Processor\Complex\SyncFusion.cs" />
+    <Compile Include="Processor\Complex\HybridTracking.cs" />
     <Compile Include="Processor\GenericImageProcessor.cs" />
     <Compile Include="Processor\BaseProcessor.cs" />
     <Compile Include="Processor\Benchmark.cs" />
@@ -270,6 +275,10 @@
     <Compile Include="Processor\ITakeLong.cs" />
     <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\WebSocketServer.cs" />
+    <Compile Include="Processor\OpenCv\FindContours2.cs" />
+    <Compile Include="Processor\OpenCv\FindConvexHulls2.cs" />
+    <Compile Include="Processor\OpenCv\SubtractBackground.cs" />
+    <Compile Include="Processor\OpenCv\Not.cs" />
     <Compile Include="Processor\OpenCv\BasicsGrayFloat.cs" />
     <Compile Include="Processor\OpenCv\HandTracker.cs" />
     <Compile Include="Processor\OpenCv\FloodFill.cs" />
@@ -363,6 +372,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Templates\BasicTemplates.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Templates\ComplexTemplates.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

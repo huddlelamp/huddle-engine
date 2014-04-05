@@ -165,7 +165,7 @@ namespace Huddle.Engine.Processor.BarCodes
                 outputImage.Draw(new CircleF(new PointF(centerX, centerY), 5), Rgbs.TangerineTango, 3);
 
                 // Stage data for later push
-                Stage(new LocationData(string.Format("QrCode{0}", results[i].Text))
+                Stage(new Marker(this, string.Format("QrCode{0}", results[i].Text))
                 {
                     Id = results[i].Text,
                     X = centerX / image.Width,

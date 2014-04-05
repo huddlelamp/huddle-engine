@@ -9,8 +9,8 @@
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
@@ -197,8 +197,8 @@
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
@@ -232,8 +232,8 @@
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
@@ -259,8 +259,8 @@
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
@@ -272,6 +272,8 @@
                     <Image Source="{Binding Path=PostProcessImage}" />
                 </GroupBox>
             </Grid>
+            
+            <CheckBox Content="First Erode then Dilate" IsChecked="{Binding Path=IsFirstErodeThenDilate}" />
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="ERODE"/>
@@ -288,12 +290,56 @@
         </StackPanel>
     </DataTemplate>
 
+    <DataTemplate x:Key="SubtractBackground" DataType="openCv:SubtractBackground">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Grid>
+                        <Image Source="{Binding Path=PreProcessImage}" />
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </Grid>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Not" DataType="openCv:Not">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Grid>
+                        <Image Source="{Binding Path=PreProcessImage}" />
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </Grid>
+        </StackPanel>
+    </DataTemplate>
+
     <DataTemplate x:Key="FindContours" DataType="openCv:FindContours">
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
@@ -320,7 +366,7 @@
 
             <StackPanel>
                 <Label Content="Max Distance Restore Id"/>
-                <Slider Value="{Binding Path=MaxDistanceRestoreId}" Minimum="0" Maximum="100" />
+                <Slider Value="{Binding Path=MaxDistanceRestoreId}" Minimum="0" Maximum="300" />
                 <TextBlock Text="{Binding Path=MaxDistanceRestoreId}"/>
             </StackPanel>
 
@@ -328,6 +374,12 @@
                 <Label Content="Min Contour Area"/>
                 <Slider Value="{Binding Path=MinContourArea}" Minimum="0" Maximum="1000" />
                 <TextBlock Text="{Binding Path=MinContourArea}"/>
+            </StackPanel>
+
+            <StackPanel>
+                <Label Content="Max Contour Area"/>
+                <Slider Value="{Binding Path=MaxContourArea}" Minimum="0" Maximum="10000" />
+                <TextBlock Text="{Binding Path=MaxContourArea}"/>
             </StackPanel>
 
             <StackPanel>
@@ -354,8 +406,8 @@
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
@@ -381,27 +433,15 @@
             </StackPanel>
 
             <StackPanel>
-                <Label Content="BlockSize"/>
-                <Slider Value="{Binding Path=BlockSize}" Minimum="0" Maximum="100" />
-                <TextBlock Text="{Binding Path=BlockSize}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Sobel"/>
-                <Slider Value="{Binding Path=Sobel}" Minimum="0" Maximum="100" />
-                <TextBlock Text="{Binding Path=Sobel}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="K"/>
-                <Slider Value="{Binding Path=K}" Minimum="0.00" Maximum="1.00" />
-                <TextBlock Text="{Binding Path=K}"/>
-            </StackPanel>
-
-            <StackPanel>
                 <Label Content="Min Contour Area"/>
-                <Slider Value="{Binding Path=MinContourArea}" Minimum="0" Maximum="1000" />
+                <Slider Value="{Binding Path=MinContourArea}" Minimum="0" Maximum="10000" />
                 <TextBlock Text="{Binding Path=MinContourArea}"/>
+            </StackPanel>
+
+            <StackPanel>
+                <Label Content="Max Contour Area"/>
+                <Slider Value="{Binding Path=MaxContourArea}" Minimum="0" Maximum="10000" />
+                <TextBlock Text="{Binding Path=MaxContourArea}"/>
             </StackPanel>
 
             <StackPanel>

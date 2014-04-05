@@ -1,4 +1,6 @@
-﻿namespace Huddle.Engine.Data
+﻿using Huddle.Engine.Processor;
+
+namespace Huddle.Engine.Data
 {
     public class Digital : BaseData
     {
@@ -41,13 +43,14 @@
 
         #endregion
 
-        public Digital(string key) : base(key)
+        public Digital(IProcessor source, string key)
+            : base(source, key)
         {
         }
 
         public override IData Copy()
         {
-            return new Digital(Key)
+            return new Digital(Source, Key)
             {
                 Value = Value
             };
