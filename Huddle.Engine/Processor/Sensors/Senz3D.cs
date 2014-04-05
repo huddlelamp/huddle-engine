@@ -829,8 +829,7 @@ namespace Huddle.Engine.Processor.Sensors
 
         public override void Start()
         {
-            var ctx = SynchronizationContext.Current;
-            var thread = new Thread(() => DoRendering(ctx));
+            var thread = new Thread(DoRendering);
             thread.Start();
             Thread.Sleep(5);
         }
@@ -844,7 +843,7 @@ namespace Huddle.Engine.Processor.Sensors
 
         #region private methods
 
-        private void DoRendering(SynchronizationContext ctx)
+        private void DoRendering()
         {
             _isRunning = true;
 
@@ -865,7 +864,11 @@ namespace Huddle.Engine.Processor.Sensors
 
             /* Initialization */
             if (!_pp.Init())
-                ctx.Send(state => ThrowException("Could not initialize Senz3D hardware"), null);
+            {
+                Log("Could not initialize Senz3D hardware");
+                HasErrorState = true;
+                return;
+            }
 
             _device = _pp.capture.device;
             _pp.capture.device.SetProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_CONFIDENCE_THRESHOLD, DepthConfidenceThreshold);
@@ -1046,11 +1049,6 @@ namespace Huddle.Engine.Processor.Sensors
 
             _pp.Close();
             _pp.Dispose();
-        }
-
-        private static void ThrowException(string message)
-        {
-            throw new Exception(message);
         }
 
         private static int Align16(uint width)

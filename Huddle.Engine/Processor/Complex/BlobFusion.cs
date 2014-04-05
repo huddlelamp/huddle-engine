@@ -22,16 +22,19 @@ namespace Huddle.Engine.Processor.Complex
             foreach (var depthBlob in depthBlobs)
                 Stage(depthBlob);
 
-            foreach (var colorBlob in colorBlobs)
+            var pushableColorBlobs = colorBlobs.ToList();
+
+            foreach (var depthBlob in depthBlobs)
             {
-                var intersect = depthBlobs.All(depthBlob => colorBlob.Area.IntersectsWith(depthBlob.Area));
-
-                if (intersect)
-                    Console.WriteLine();
-
-                if (!intersect)
-                    Stage(colorBlob);
+                foreach (var colorBlob in colorBlobs)
+                {
+                    if (colorBlob.Area.IntersectsWith(depthBlob.Area))
+                        pushableColorBlobs.Remove(colorBlob);
+                }
             }
+
+            foreach (var colorBlob in pushableColorBlobs)
+                Stage(colorBlob);
 
             Push();
 
