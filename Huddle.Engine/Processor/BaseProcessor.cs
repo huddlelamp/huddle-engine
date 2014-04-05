@@ -360,6 +360,7 @@ namespace Huddle.Engine.Processor
         /// Sets and gets the HasErrorState property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [IgnoreDataMember]
         public bool HasErrorState
         {
             get
