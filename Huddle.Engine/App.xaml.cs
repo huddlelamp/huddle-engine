@@ -35,7 +35,7 @@ namespace Huddle.Engine
         {
             //MessageBox.Show(e.Exception.StackTrace.ToString(), "Dispatcher Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
-            Console.WriteLine(e.Exception.StackTrace);
+            Console.WriteLine("{0}{1}{2}", e.Exception.Message, Environment.NewLine, e.Exception.StackTrace);
 
             e.Handled = true;
         }

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using AForge;
@@ -266,18 +267,13 @@ namespace Huddle.Engine.Processor.BarCodes
 
             if (IsRenderContent)
             {
-                //if (_outputImageRendering != null && _outputImageRendering.Status != DispatcherOperationStatus.Completed)
-                //{
-                //    _outputImageRendering.Abort();
-                //    _outputImageRendering = null;
-                //}
-
                 var outputImageCopy = outputImage.Copy();
-                _outputImageRendering = DispatcherHelper.RunAsync(() =>
+                Task.Factory.StartNew(() =>
                 {
-                    OutputImage = outputImageCopy.ToBitmapSource();
+                    var bitmap = outputImageCopy.ToBitmapSource(true);
                     outputImageCopy.Dispose();
-                });
+                    return bitmap;
+                }).ContinueWith(s => OutputImage = s.Result);
 
                 outputImage.Dispose();
             }
@@ -302,18 +298,13 @@ namespace Huddle.Engine.Processor.BarCodes
 
                     if (IsRenderContent)
                     {
-                        if (_outputImageRendering != null && _outputImageRendering.Status != DispatcherOperationStatus.Completed)
-                        {
-                            _outputImageRendering.Abort();
-                            _outputImageRendering = null;
-                        }
-
                         var outputImageCopy = lastFrame.Copy();
-                        _outputImageRendering = DispatcherHelper.RunAsync(() =>
+                        Task.Factory.StartNew(() =>
                         {
-                            OutputImage = outputImageCopy.ToBitmapSource();
+                            var bitmap = outputImageCopy.ToBitmapSource(true);
                             outputImageCopy.Dispose();
-                        });
+                            return bitmap;
+                        }).ContinueWith(s => OutputImage = s.Result);
                     }
 
                     // Push staged data

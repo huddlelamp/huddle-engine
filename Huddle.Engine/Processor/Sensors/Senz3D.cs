@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Forms.VisualStyles;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -21,6 +22,7 @@ using Emgu.CV.Structure;
 using Emgu.CV.VideoSurveillance;
 using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
+using Huddle.Engine.Extensions;
 using Huddle.Engine.Processor.OpenCv;
 using Huddle.Engine.Util;
 using Color = System.Drawing.Color;
@@ -987,91 +989,143 @@ namespace Huddle.Engine.Processor.Sensors
 
                 if (IsRenderContent)
                 {
-                    /* draw color image */
-                    DispatcherHelper.RunAsync(() =>
+                    ///* draw color image */
+                    //DispatcherHelper.RunAsync(() =>
+                    //{
+                    //    ColorImageSource = colorImageCopy.ToBitmapSource();
+                    //    colorImageCopy.Dispose();
+                    //});
+
+
+                    ///* draw depth image */
+                    //DispatcherHelper.RunAsync(() =>
+                    //{
+                    //    DepthImageSource = depthImageCopy.ToGradientBitmapSource(lowConfidence, saturation);
+                    //    depthImageCopy.Dispose();
+                    //});
+
+
+                    ///* draw confidence map */
+                    //DispatcherHelper.RunAsync(() =>
+                    //{
+                    //    ConfidenceMapImageSource = confidenceMapImageCopy.ToBitmapSource();
+                    //    confidenceMapImageCopy.Dispose();
+                    //});
+
+
+                    ///* draw uvmap */
+                    //if (uvMapImage != null)
+                    //{
+                    //    DispatcherHelper.RunAsync(() =>
+                    //    {
+                    //        UVMapImageSource = uvMapImageCopy.ToBitmapSource();
+                    //        uvMapImageCopy.Dispose();
+                    //    });
+                    //}
+                    //else
+                    //{
+                    //    UVMapImageSource = null;
+                    //}
+
+
+                    ///* draw rgbofdepth */
+                    //if (rgbOfDepthImage != null)
+                    //{
+                    //    DispatcherHelper.RunAsync(() =>
+                    //    {
+                    //        RgbOfDepthImageSource = rgbOfDepthImageCopy.ToBitmapSource();
+                    //        rgbOfDepthImageCopy.Dispose();
+                    //    });
+                    //}
+                    //else
+                    //{
+                    //    RgbOfDepthImageSource = null;
+                    //}
+
+
+                    ///* draw depthofrgb */
+                    //if (depthOfRgbImage != null)
+                    //{
+                    //    DispatcherHelper.RunAsync(() =>
+                    //    {
+                    //        DepthOfRgbImageSource = depthOfRgbImageCopy.ToGradientBitmapSource(lowConfidence, saturation);
+                    //        depthOfRgbImageCopy.Dispose();
+                    //    });
+                    //}
+                    //else
+                    //{
+                    //    DepthOfRgbImageSource = null;
+                    //}
+
+                    Task.Factory.StartNew(() =>
                     {
-                        ColorImageSource = colorImageCopy.ToBitmapSource();
+                        var bitmap = colorImageCopy.ToBitmapSource(true);
                         colorImageCopy.Dispose();
-                    });
+                        return bitmap;
+                    }).ContinueWith(s => ColorImageSource = s.Result);
 
-
-                    /* draw depth image */
-                    DispatcherHelper.RunAsync(() =>
+                    Task.Factory.StartNew(() =>
                     {
-                        DepthImageSource = depthImageCopy.ToGradientBitmapSource(lowConfidence, saturation);
+                        var bitmap = depthImageCopy.ToGradientBitmapSource(lowConfidence, saturation, true);
                         depthImageCopy.Dispose();
-                    });
+                        return bitmap;
+                    }).ContinueWith(s => DepthImageSource = s.Result);
 
-
-                    /* draw confidence map */
-                    DispatcherHelper.RunAsync(() =>
+                    Task.Factory.StartNew(() =>
                     {
-                        ConfidenceMapImageSource = confidenceMapImageCopy.ToBitmapSource();
+                        var bitmap = confidenceMapImageCopy.ToBitmapSource(true);
                         confidenceMapImageCopy.Dispose();
-                    });
-
+                        return bitmap;
+                    }).ContinueWith(s => ConfidenceMapImageSource = s.Result);
 
                     /* draw uvmap */
                     if (uvMapImage != null)
-                    {
-                        DispatcherHelper.RunAsync(() =>
-                        {
-                            UVMapImageSource = uvMapImageCopy.ToBitmapSource();
-                            uvMapImageCopy.Dispose();
-                        });
-                    }
-                    else
-                    {
-                        UVMapImageSource = null;
-                    }
-
+                        Task.Factory.StartNew(() =>
+                            {
+                                var bitmap = uvMapImageCopy.ToBitmapSource(true);
+                                uvMapImageCopy.Dispose();
+                                return bitmap;
+                            }).ContinueWith(s => UVMapImageSource = s.Result);
 
                     /* draw rgbofdepth */
                     if (rgbOfDepthImage != null)
                     {
-                        DispatcherHelper.RunAsync(() =>
+                        Task.Factory.StartNew(() =>
                         {
-                            RgbOfDepthImageSource = rgbOfDepthImageCopy.ToBitmapSource();
+                            var bitmap = rgbOfDepthImageCopy.ToBitmapSource(true);
                             rgbOfDepthImageCopy.Dispose();
-                        });
+                            return bitmap;
+                        }).ContinueWith(s => RgbOfDepthImageSource = s.Result);
                     }
-                    else
-                    {
-                        RgbOfDepthImageSource = null;
-                    }
-
 
                     /* draw depthofrgb */
                     if (depthOfRgbImage != null)
-                    {
-                        DispatcherHelper.RunAsync(() =>
+                        Task.Factory.StartNew(() =>
                         {
-                            DepthOfRgbImageSource = depthOfRgbImageCopy.ToGradientBitmapSource(lowConfidence, saturation);
-                            depthOfRgbImageCopy.Dispose();
-                        });
-                    }
-                    else
-                    {
-                        DepthOfRgbImageSource = null;
-                    }
+                            var bitmap = rgbOfDepthImageCopy.ToBitmapSource(true);
+                            rgbOfDepthImageCopy.Dispose();
+                            return bitmap;
+                        }).ContinueWith(s => RgbOfDepthImageSource = s.Result);
                 }
 
 
-                /* publish results */
-                DispatcherHelper.RunAsync(() =>
-                {
-                    var dc = new DataContainer(++_frameId, DateTime.Now)
+                ///* publish results */
+                //DispatcherHelper.RunAsync(() =>
+                //{
+
+                //});
+
+                var dc = new DataContainer(++_frameId, DateTime.Now)
                     {
                         new RgbImageData(this, "color", colorImage),
                         new GrayFloatImage(this, "depth", depthImage),
                         new RgbImageData(this, "confidence", confidenceMapImage),
                     };
 
-                    if (uvMapImage != null) dc.Add(new RgbFloatImage(this, "uvmap", uvMapImage));
-                    if (rgbOfDepthImage != null) dc.Add(new RgbImageData(this, "rgbofdepth", rgbOfDepthImage));
-                    if (depthOfRgbImage != null) dc.Add(new GrayFloatImage(this, "depthofrgb", depthOfRgbImage));
-                    Publish(dc);
-                });
+                if (uvMapImage != null) dc.Add(new RgbFloatImage(this, "uvmap", uvMapImage));
+                if (rgbOfDepthImage != null) dc.Add(new RgbImageData(this, "rgbofdepth", rgbOfDepthImage));
+                if (depthOfRgbImage != null) dc.Add(new GrayFloatImage(this, "depthofrgb", depthOfRgbImage));
+                Publish(dc);
 
                 Thread.Sleep(1000 / (Fps > 0 ? Fps : 1));
             }

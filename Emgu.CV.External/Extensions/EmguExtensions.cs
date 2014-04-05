@@ -36,7 +36,7 @@ namespace Emgu.CV.External.Extensions
             return gradient;
         }
 
-        public static BitmapSource ToBitmapSource(this IImage image)
+        public static BitmapSource ToBitmapSource(this IImage image, bool freeze = false)
         {
             using (var bitmap = image.Bitmap)
             {
@@ -49,6 +49,9 @@ namespace Emgu.CV.External.Extensions
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                     bitmapImage.StreamSource = ms;
                     bitmapImage.EndInit();
+
+                    if (freeze)
+                        bitmapImage.Freeze();
 
                     return bitmapImage;
                 }
@@ -98,7 +101,7 @@ namespace Emgu.CV.External.Extensions
             return gradientImage.ToBitmapSource();
         }
 
-        public static BitmapSource ToGradientBitmapSource(this Image<Gray, float> image, int lowConfidence, int saturation)
+        public static BitmapSource ToGradientBitmapSource(this Image<Gray, float> image, int lowConfidence, int saturation, bool freeze = false)
         {
             var width = image.Width;
             var height = image.Height;
@@ -133,7 +136,7 @@ namespace Emgu.CV.External.Extensions
                 }
             });
 
-            return gradientImage.ToBitmapSource();
+            return gradientImage.ToBitmapSource(freeze);
         }
 
         public static IImage Copy(this IImage image)
