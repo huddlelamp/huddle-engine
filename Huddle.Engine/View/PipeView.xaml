@@ -8,7 +8,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              d:DataContext="{viewModel:PipeViewModel}">
-    <Grid Background="Transparent" MouseDown="VisualPath_OnMouseDown">
+    <Grid Background="Transparent">
         <Path x:Name="VisualPath" StrokeThickness="{Binding Path=LinkWidth}">
             <Path.Data>
                 <GeometryGroup>

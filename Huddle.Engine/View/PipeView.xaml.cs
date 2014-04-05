@@ -14,21 +14,5 @@ namespace Huddle.Engine.View
         {
             InitializeComponent();
         }
-
-        protected override GeometryHitTestResult HitTestCore(GeometryHitTestParameters hitTestParameters)
-        {
-            return base.HitTestCore(hitTestParameters);
-        }
-
-        protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
-        {
-            return base.HitTestCore(hitTestParameters);
-        }
-
-        private void VisualPath_OnMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            //throw new System.NotImplementedException();
-            Console.WriteLine();
-        }
     }
 }

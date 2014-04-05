@@ -434,6 +434,41 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #region MaxFloodFillLoops
+
+        /// <summary>
+        /// The <see cref="MaxFloodFillLoops" /> property's name.
+        /// </summary>
+        public const string MaxFloodFillLoopsPropertyName = "MaxFloodFillLoops";
+
+        private int _maxFloodFillLoops = 100;
+
+        /// <summary>
+        /// Sets and gets the MaxFloodFillLoops property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int MaxFloodFillLoops
+        {
+            get
+            {
+                return _maxFloodFillLoops;
+            }
+
+            set
+            {
+                if (_maxFloodFillLoops == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(MaxFloodFillLoopsPropertyName);
+                _maxFloodFillLoops = value;
+                RaisePropertyChanged(MaxFloodFillLoopsPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -468,6 +503,8 @@ namespace Huddle.Engine.Processor.OpenCv
 
             var lowCutOffDepth = LowCutOffDepth;
             var highCutOffDepth = HighCutOffDepth;
+
+            var maxFloodFillLoops = MaxFloodFillLoops;
 
             // This image is used to segment object from background
             var imageRemovedBackground = image.Sub(_backgroundImage);
@@ -524,7 +561,7 @@ namespace Huddle.Engine.Processor.OpenCv
             var debugOutput = new Image<Rgb, byte>(width, height);
 
             MCvConnectedComp comp;
-            for (var i = 0; !minValues[0].Equals(maxValues[0]) && i < 100;
+            for (var i = 0; !minValues[0].Equals(maxValues[0]) && i < maxFloodFillLoops;
                 imageWithOriginalDepth.MinMax(out minValues, out maxValues, out minLocations, out maxLocations), i++)
             {
                 // Mask need to be two pixels bigger than the source image.

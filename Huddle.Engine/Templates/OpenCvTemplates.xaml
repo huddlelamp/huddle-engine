@@ -167,7 +167,7 @@
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="Min Hand/Arm Area"/>
-                <Slider Value="{Binding Path=MinHandArmArea}" Width="340" Height="25" Minimum="0" Maximum="3000" />
+                <Slider Value="{Binding Path=MinHandArmArea}" Width="340" Height="25" Minimum="0" Maximum="3000" IsSnapToTickEnabled="True" TickFrequency="1" />
                 <TextBlock Text="{Binding Path=MinHandArmArea, StringFormat={}{0}}"/>
             </StackPanel>
 
@@ -180,8 +180,14 @@
             <CheckBox Content="Smooth Gaussian" IsChecked="{Binding Path=IsSmoothGaussianEnabled}" />
 
             <StackPanel Orientation="Horizontal">
-                <Label Content="Difference"/>
-                <Slider Value="{Binding Path=FloodFillDifference}" Width="340" Height="25" Minimum="0" Maximum="50" />
+                <Label Content="Max Flood Fill Loops"/>
+                <Slider Value="{Binding Path=MaxFloodFillLoops}" Width="340" Height="25" Minimum="0" Maximum="500" TickFrequency="1" IsSnapToTickEnabled="True" />
+                <TextBlock Text="{Binding Path=MaxFloodFillLoops, StringFormat={}{0:#.##}}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Flood Fill Difference"/>
+                <Slider Value="{Binding Path=FloodFillDifference}" Width="340" Height="25" Minimum="0" Maximum="50" IsSnapToTickEnabled="True" TickFrequency="0.01" />
                 <TextBlock Text="{Binding Path=FloodFillDifference, StringFormat={}{0:#.##}}"/>
             </StackPanel>
 
