@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using GalaSoft.MvvmLight;
 
 namespace Huddle.Engine.Processor
@@ -9,6 +10,9 @@ namespace Huddle.Engine.Processor
         #region private members
 
         private readonly Stopwatch _stopwatch;
+
+        private long[] _slidingAverage = new long[20];
+        private int _slidingAveragePointer = 0;
 
         #endregion
 
@@ -174,10 +178,13 @@ namespace Huddle.Engine.Processor
 
             //Console.WriteLine("Measurement {0}", measurement);
 
-            LastMeasurement = measurement;
-            AccumulateMeasurements += measurement;
+            _slidingAverage[_slidingAveragePointer++] = measurement;
+            _slidingAveragePointer %= 20;
 
-            Average = AccumulateMeasurements / ++MeasurementCount;
+            LastMeasurement = measurement;
+            //AccumulateMeasurements += measurement;
+
+            Average = (long)_slidingAverage.Average(); // AccumulateMeasurements / ++MeasurementCount;
         }
 
         #endregion

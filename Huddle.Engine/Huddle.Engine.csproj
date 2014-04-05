@@ -122,6 +122,22 @@
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AForge, Version=2.2.5.0, Culture=neutral, PublicKeyToken=c1db6ff4eaa06aeb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\Aforge.NET\AForge.dll</HintPath>
+    </Reference>
+    <Reference Include="AForge.Imaging, Version=2.2.5.0, Culture=neutral, PublicKeyToken=ba8ddea9676ca48b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\Aforge.NET\AForge.Imaging.dll</HintPath>
+    </Reference>
+    <Reference Include="AForge.Math, Version=2.2.5.0, Culture=neutral, PublicKeyToken=abba2e25397ee8c9, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\Aforge.NET\AForge.Math.dll</HintPath>
+    </Reference>
+    <Reference Include="AForge.Vision.GlyphRecognition, Version=2.0.1.0, Culture=neutral, PublicKeyToken=e0a55246fcae183a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\Aforge.NET\AForge.Vision.GlyphRecognition.dll</HintPath>
+    </Reference>
     <Reference Include="Alchemy">
       <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
     </Reference>
@@ -259,6 +275,7 @@
     <Compile Include="Pages\PipelinePage.xaml.cs">
       <DependentUpon>PipelinePage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Processor\BarCodes\GlyphDecoder.cs" />
     <Compile Include="Processor\BarCodes\QRCodeDecoder.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\BarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\IBarcodeReaderImage.cs" />
@@ -518,6 +535,10 @@
     <Resource Include="Resources\32x32\save_as.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\TagDefinitions\tagdefinition.txt">
+      <Link>tagdefinition.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\256x256\ppl_256px.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -484,7 +484,9 @@ namespace Huddle.Engine.Processor
                 }
             })
             {
-                Name = string.Format(@"{0}{1}", GetType().Name, NextThreadNumber())
+                Name = string.Format(@"{0}{1}", GetType().Name, NextThreadNumber()),
+                Priority = ThreadPriority.Lowest,
+                IsBackground = true
             };
             _processingThread.Start();
         }
@@ -540,6 +542,11 @@ namespace Huddle.Engine.Processor
                 Publish(dataContainer);
                 return;
             }
+
+            //if (HasErrorState && _dataQueue.Count < 5)
+            //{
+            //    HasErrorState = false;
+            //}
 
             // Add data container to processing queue.
             if (!_dataQueue.IsCompleted)
