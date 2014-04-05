@@ -63,22 +63,15 @@ namespace Emgu.CV.External.Extensions
             var height = image.Height;
 
             var gradientImage = new Image<Rgb, byte>(width, height, Rgbs.White);
+            var imageData = image.Data;
+            
 
-            Rgb color;
-            for (var y = 0; y < height; y++)
+            Parallel.For(0, height, y=>             
             {
+                Rgb color;
                 for (var x = 0; x < width; x++)
                 {
-                    var depth = image.Data[y, x, 0];
-
-                    //if (depth == lowConfidence)
-                    //{
-                    //    color = Rgbs.Black;
-                    //}
-                    //else if (depth == saturation)
-                    //{
-                    //    color = Rgbs.White;
-                    //}
+                    var depth = imageData[y, x, 0];
 
                     if (depth > 10000)
                     {
@@ -96,7 +89,7 @@ namespace Emgu.CV.External.Extensions
 
                     gradientImage[y, x] = color;
                 }
-            }
+            });
 
             return gradientImage.ToBitmapSource();
         }
@@ -112,9 +105,9 @@ namespace Emgu.CV.External.Extensions
 
             Parallel.For(0, height, y =>
             {
+                Rgb color;
                 for (int x = 0; x < width; x++)
                 {
-                    Rgb color;
                     var depth = imageData[y, x, 0];
 
                     if (depth == lowConfidence)
