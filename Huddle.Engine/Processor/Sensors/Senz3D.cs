@@ -1102,10 +1102,10 @@ namespace Huddle.Engine.Processor.Sensors
                     if (depthOfRgbImage != null)
                         Task.Factory.StartNew(() =>
                         {
-                            var bitmap = rgbOfDepthImageCopy.ToBitmapSource(true);
-                            rgbOfDepthImageCopy.Dispose();
+                            var bitmap = depthOfRgbImageCopy.ToGradientBitmapSource(lowConfidence, saturation, true);
+                            depthOfRgbImageCopy.Dispose();
                             return bitmap;
-                        }).ContinueWith(s => RgbOfDepthImageSource = s.Result);
+                        }).ContinueWith(s => DepthOfRgbImageSource = s.Result);
                 }
 
 

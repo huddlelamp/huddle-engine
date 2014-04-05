@@ -158,6 +158,41 @@ namespace Huddle.Engine.Processor
 
         #endregion
 
+        #region QueueCount
+
+        /// <summary>
+        /// The <see cref="QueueCount" /> property's name.
+        /// </summary>
+        public const string QueueCountPropertyName = "QueueCount";
+
+        private int _queueCount = 0;
+
+        /// <summary>
+        /// Sets and gets the QueueCount property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int QueueCount
+        {
+            get
+            {
+                return _queueCount;
+            }
+
+            set
+            {
+                if (_queueCount == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(QueueCountPropertyName);
+                _queueCount = value;
+                RaisePropertyChanged(QueueCountPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor

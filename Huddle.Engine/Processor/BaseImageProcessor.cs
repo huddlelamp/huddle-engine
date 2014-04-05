@@ -188,10 +188,5 @@ namespace Huddle.Engine.Processor
         }
 
         public abstract Image<TColor, TDepth> ProcessAndView(Image<TColor, TDepth> image);
-
-        protected virtual void DrawDebug(Image<TColor, TDepth> image)
-        {
-            // empty
-        }
     }
 }

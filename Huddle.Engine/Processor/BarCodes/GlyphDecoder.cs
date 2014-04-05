@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -14,7 +15,6 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Emgu.CV.External.Extensions;
-using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
 using Huddle.Engine.Extensions;
 using Huddle.Engine.Util;
@@ -22,7 +22,7 @@ using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.BarCodes
 {
-    [ViewTemplate("Glyph Decoder", "GlyphDecoder", "/Huddle.Engine;component/Resources/qrcode.png")]
+    [ViewTemplate("Glyph Decoder", "GlyphDecoder", "/Huddle.Engine;component/Resources/Glyph.png")]
     public class GlyphDecoder : BaseProcessor
     {
         #region static fields
@@ -79,6 +79,7 @@ namespace Huddle.Engine.Processor.BarCodes
         /// Sets and gets the OutputImage property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [IgnoreDataMember]
         public BitmapSource OutputImage
         {
             get

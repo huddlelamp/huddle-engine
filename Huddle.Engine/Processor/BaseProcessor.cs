@@ -485,7 +485,7 @@ namespace Huddle.Engine.Processor
             })
             {
                 Name = string.Format(@"{0}{1}", GetType().Name, NextThreadNumber()),
-                Priority = ThreadPriority.Lowest,
+                Priority = Settings.Default.ProcessingThreadPriority,
                 IsBackground = true
             };
             _processingThread.Start();
@@ -547,6 +547,8 @@ namespace Huddle.Engine.Processor
             //{
             //    HasErrorState = false;
             //}
+
+            _benchmark.QueueCount = _dataQueue.Count;
 
             // Add data container to processing queue.
             if (!_dataQueue.IsCompleted)
