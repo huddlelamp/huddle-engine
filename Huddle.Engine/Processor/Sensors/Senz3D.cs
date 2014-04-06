@@ -24,7 +24,7 @@ namespace Huddle.Engine.Processor.Sensors
     public class Senz3D : BaseProcessor
     {
         #region private fields
-
+        
         private UtilMPipeline _pp;
 
         private PXCMCapture.Device _device;
@@ -870,8 +870,11 @@ namespace Huddle.Engine.Processor.Sensors
                 return;
             }
 
-            _device = _pp.capture.device;
-            _pp.capture.device.SetProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_CONFIDENCE_THRESHOLD, DepthConfidenceThreshold);
+            var capture = _pp.capture;
+            _device = capture.device;
+            _device.SetProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_CONFIDENCE_THRESHOLD, DepthConfidenceThreshold);
+            _device.QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_LOW_CONFIDENCE_VALUE, out EmguExtensions.LowConfidence);
+            _device.QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_SATURATION_VALUE, out EmguExtensions.Saturation);
 
             while (_isRunning)
             {
@@ -967,16 +970,6 @@ namespace Huddle.Engine.Processor.Sensors
                     DepthOfRgbImageFrameTime = -1;
                 }
 
-                float prop;
-                _pp.QueryCapture()
-                    .QueryDevice()
-                    .QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_LOW_CONFIDENCE_VALUE, out prop);
-                var lowConfidence = (int)prop;
-                _pp.QueryCapture()
-                    .QueryDevice()
-                    .QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_SATURATION_VALUE, out prop);
-                var saturation = (int)prop;
-
                 _pp.ReleaseFrame();
 
                 if (IsRenderContent)
@@ -990,7 +983,7 @@ namespace Huddle.Engine.Processor.Sensors
 
                     Task.Factory.StartNew(() =>
                     {
-                        var bitmap = depthImageCopy.ToGradientBitmapSource(lowConfidence, saturation, true);
+                        var bitmap = depthImageCopy.ToGradientBitmapSource(true, EmguExtensions.LowConfidence, EmguExtensions.Saturation);
                         depthImageCopy.Dispose();
                         return bitmap;
                     }).ContinueWith(s => DepthImageSource = s.Result);
@@ -1026,7 +1019,7 @@ namespace Huddle.Engine.Processor.Sensors
                     if (depthOfRgbImage != null)
                         Task.Factory.StartNew(() =>
                         {
-                            var bitmap = depthOfRgbImageCopy.ToGradientBitmapSource(lowConfidence, saturation, true);
+                            var bitmap = depthOfRgbImageCopy.ToGradientBitmapSource(true, EmguExtensions.LowConfidence, EmguExtensions.Saturation);
                             depthOfRgbImageCopy.Dispose();
                             return bitmap;
                         }).ContinueWith(s => DepthOfRgbImageSource = s.Result);
@@ -1101,12 +1094,6 @@ namespace Huddle.Engine.Processor.Sensors
             if (depthImage.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH, out cdata) <
                 pxcmStatus.PXCM_STATUS_NO_ERROR) return returnImages;
 
-            float prop;
-            _pp.QueryCapture().QueryDevice().QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_LOW_CONFIDENCE_VALUE, out prop);
-            var lowConfidence = (int)prop;
-            _pp.QueryCapture().QueryDevice().QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_SATURATION_VALUE, out prop);
-            var saturation = (int)prop;
-
             var depthValues = cdata.ToShortArray(0, inputWidth * inputHeight);
             depthImage.ReleaseAccess(ref cdata);
 
@@ -1123,7 +1110,7 @@ namespace Huddle.Engine.Processor.Sensors
                 for (int x = 0; x < inputWidth; x++)
                 {
                     float depth = depthValues[y * inputWidth + x];
-                    if (depth != lowConfidence && depth != saturation)
+                    if (depth != EmguExtensions.LowConfidence && depth != EmguExtensions.Saturation)
                     {
                         var test = (depth - minValue) / (maxValue - minValue);
 
@@ -1272,14 +1259,8 @@ namespace Huddle.Engine.Processor.Sensors
 
         private Image<Gray, float> GetDepthOfRGBPixels(Image<Gray, float> depth, Image<Rgb, byte> rgb, Image<Rgb, float> uvmap)
         {
-            float prop;
-            _pp.QueryCapture().QueryDevice().QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_LOW_CONFIDENCE_VALUE, out prop);
-            var lowConfidence = (int)prop;
-            _pp.QueryCapture().QueryDevice().QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_SATURATION_VALUE, out prop);
-            var saturation = (int)prop;
-
             // create RGB-sized image
-            var retdepth = new Image<Gray, float>(rgb.Width, rgb.Height, new Gray(lowConfidence));
+            var retdepth = new Image<Gray, float>(rgb.Width, rgb.Height, new Gray(EmguExtensions.LowConfidence));
             var retdepthWidth = retdepth.Width;
             var retdepthHeight = retdepth.Height;
 
@@ -1313,7 +1294,7 @@ namespace Huddle.Engine.Processor.Sensors
                     int count = 0;
                     for (int i = 0; i < d1.Length; i++)
                     {
-                        if (d1[i] != saturation && d1[i] != lowConfidence)
+                        if (d1[i] != EmguExtensions.Saturation && d1[i] != EmguExtensions.LowConfidence)
                         {
                             d1avg += d1[i];
                             count++;
@@ -1322,7 +1303,7 @@ namespace Huddle.Engine.Processor.Sensors
                     if (count > 0)
                         d1avg = d1avg / (float)count;
                     else
-                        d1avg = lowConfidence;
+                        d1avg = EmguExtensions.LowConfidence;
 
                     var pts2 = new Point[3];
                     var d2 = new float[]
@@ -1336,7 +1317,7 @@ namespace Huddle.Engine.Processor.Sensors
                     count = 0;
                     for (int i = 0; i < d2.Length; i++)
                     {
-                        if (d2[i] != saturation && d2[i] != lowConfidence)
+                        if (d2[i] != EmguExtensions.Saturation && d2[i] != EmguExtensions.LowConfidence)
                         {
                             d2avg += d2[i];
                             count++;
@@ -1345,7 +1326,7 @@ namespace Huddle.Engine.Processor.Sensors
                     if (count > 0)
                         d2avg = d2avg / (float)count;
                     else
-                        d2avg = lowConfidence;
+                        d2avg = EmguExtensions.LowConfidence;
 
 
                     bool outofbounds = false;

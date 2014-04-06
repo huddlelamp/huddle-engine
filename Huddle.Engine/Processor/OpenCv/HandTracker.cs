@@ -32,7 +32,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
         private int _collectedBackgroundImages = 0;
 
-        private readonly List<Hand> _palms = new List<Hand>();
+        private readonly List<Hand> _hands = new List<Hand>();
 
         private static long _id = -1;
 
@@ -328,6 +328,41 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #region IsDrawHandLocationSamples
+
+        /// <summary>
+        /// The <see cref="IsDrawHandLocationSamples" /> property's name.
+        /// </summary>
+        public const string IsDrawHandLocationSamplesPropertyName = "IsDrawHandLocationSamples";
+
+        private bool _isDrawHandLocationSamples = true;
+
+        /// <summary>
+        /// Sets and gets the IsDrawHandLocationSamples property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsDrawHandLocationSamples
+        {
+            get
+            {
+                return _isDrawHandLocationSamples;
+            }
+
+            set
+            {
+                if (_isDrawHandLocationSamples == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsDrawHandLocationSamplesPropertyName);
+                _isDrawHandLocationSamples = value;
+                RaisePropertyChanged(IsDrawHandLocationSamplesPropertyName);
+            }
+        }
+
+        #endregion
+
         #region IntegrationDistance
 
         /// <summary>
@@ -496,7 +531,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
             var now = DateTime.Now;
 
-            _palms.RemoveAll(p => (now - p.LastUpdate).TotalMilliseconds > 150);
+            _hands.RemoveAll(p => (now - p.LastUpdate).TotalMilliseconds > 150);
 
             var width = image.Width;
             var height = image.Height;
@@ -507,7 +542,7 @@ namespace Huddle.Engine.Processor.OpenCv
             var maxFloodFillLoops = MaxFloodFillLoops;
 
             // This image is used to segment object from background
-            var imageRemovedBackground = image.Sub(_backgroundImage);
+            var imageRemovedBackground = _backgroundImage.Sub(image.Copy());
 
             // This image is necessary for using FloodFill to avoid filling background
             // (segmented objects are shifted back to original depth location after background subtraction)
@@ -523,7 +558,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 for (var x = 0; x < width; x++)
                 {
                     // DON'T REMOVE CAST (it is necessary!!! :) )
-                    var depthValue = (byte)imageRemovedBackgroundData[y, x, 0];
+                    var depthValue = Math.Abs((byte)imageRemovedBackgroundData[y, x, 0]);
 
                     if (depthValue > lowCutOffDepth && depthValue < highCutOffDepth)
                         originalDepthValue = (byte)imageData[y, x, 0];
@@ -533,8 +568,6 @@ namespace Huddle.Engine.Processor.OpenCv
                     imageWithOriginalDepthData[y, x, 0] = originalDepthValue;
                 }
             });
-
-            imageRemovedBackground.Dispose();
 
             var imageWithOriginalDepthCopy = imageWithOriginalDepth.Copy();
 
@@ -588,7 +621,15 @@ namespace Huddle.Engine.Processor.OpenCv
                 int x;
                 int y;
                 float depth;
-                FindHandLocation(ref segment, ref mask, out x, out y, out depth);
+                try
+                {
+                    FindHandLocation(ref segment, ref imageRemovedBackground, ref debugOutput, ref mask, out x, out y, out depth);
+                }
+                catch (SamplingException e)
+                {
+                    Log(e.Message);
+                    continue;
+                }
 
                 var nx = x / (double)width;
                 var ny = y / (double)height;
@@ -622,14 +663,16 @@ namespace Huddle.Engine.Processor.OpenCv
                 }
             }
 
+            imageRemovedBackground.Dispose();
+
             if (IsRenderContent)
             {
-                foreach (var palm in _palms)
+                foreach (var palm in _hands)
                 {
                     debugOutput.Draw(new CircleF(new PointF(palm.Center.X, palm.Center.Y), 5), Rgbs.Red, 3);
                     debugOutput.Draw(new CircleF(new PointF(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), 5), Rgbs.Green, 3);
 
-                    debugOutput.Draw(string.Format("Id {0} ({1})", palm.Id, palm.Depth), ref EmguFont, new Point(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), Rgbs.White);
+                    debugOutput.Draw(string.Format("Id {0} ({1:F1})", palm.Id, palm.Depth), ref EmguFont, new Point(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), Rgbs.TrueRed);
                 }
 
                 var debugOutputCopy = debugOutput.Copy();
@@ -641,7 +684,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 }).ContinueWith(s => FloodFillMaskImageSource = s.Result);
             }
 
-            foreach (var palm in _palms)
+            foreach (var palm in _hands)
             {
                 Stage(palm.Copy());
             }
@@ -675,22 +718,27 @@ namespace Huddle.Engine.Processor.OpenCv
         /// 30 highest depth values to compute the average x/y coordinate, which will be returned.
         /// </summary>
         /// <param name="handSegment"></param>
+        /// <param name="imageRemoveBackground"></param>
         /// <param name="handMask"></param>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void FindHandLocation(ref Image<Gray, byte> handSegment, ref Image<Gray, byte> handMask, out int x, out int y, out float depth)
+        /// <param name="depth"></param>
+        private void FindHandLocation(ref Image<Gray, byte> handSegment, ref Image<Gray, float> imageRemovedBackground, ref Image<Rgb, byte> debugOutput, ref Image<Gray, byte> handMask, out int x, out int y, out float depth)
         {
             var samples = HandLocationSamples;
+            var lowCutOffDepth = LowCutOffDepth;
+            var highCutOffDepth = HighCutOffDepth;
 
-            var xs = new int[samples];
-            var ys = new int[samples];
-            var ds = new float[samples];
+            var xs = new List<int>(samples);
+            var ys = new List<int>(samples);
+            var ds = new List<float>(samples);
 
             var minVal = double.MaxValue;
             var maxVal = 0.0;
             var minLoc = new Point();
             var maxLoc = new Point();
-            var handsegmentData = handSegment.Data;
+            var handSegmentData = handSegment.Data;
+            var imageRemovedBackgroundData = imageRemovedBackground.Data;
 
             for (var j = 0; j < samples; j++)
             {
@@ -698,18 +746,31 @@ namespace Huddle.Engine.Processor.OpenCv
 
                 var maxX = maxLoc.X;
                 var maxY = maxLoc.Y;
-                var maxDepth = handsegmentData[maxY, maxX, 0];
 
-                xs[j] = maxX;
-                ys[j] = maxY;
-                ds[j] = maxDepth;
+                handSegmentData[maxY, maxX, 0] = 0;
 
-                handsegmentData[maxY, maxX, 0] = 0;
+                var depthValue = imageRemovedBackgroundData[maxY, maxX, 0];
+
+                if (!(depthValue > lowCutOffDepth && depthValue < highCutOffDepth))
+                    continue;
+
+                xs.Add(maxX);
+                ys.Add(maxY);
+                ds.Add(depthValue);
+
+                if (IsRenderContent && IsDrawHandLocationSamples)
+                    debugOutput.Draw(new CircleF(new PointF(maxX, maxY), 2.0f), Rgbs.Cyan, 2);
             }
+
+            if (xs.Count == 0)
+                throw new SamplingException("Could not get reliable point samples for current hand segment");
 
             x = (int)xs.Average();
             y = (int)ys.Average();
-            depth = ds.Average();
+            depth = imageRemovedBackgroundData[y, x, 0]; // ds.Average();
+
+            if (depth > highCutOffDepth)
+                depth = ds.Median();
         }
 
         /// <summary>
@@ -717,18 +778,20 @@ namespace Huddle.Engine.Processor.OpenCv
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
+        /// <param name="ny"></param>
         /// <param name="depth"></param>
+        /// <param name="nx"></param>
         private void UpdateHand(int x, int y, double nx, double ny, float depth)
         {
             var now = DateTime.Now;
-            depth = 255 - depth;
+            //depth = 255 - depth;
 
             Hand hand;
             var point = new Point(x, y);
 
-            if (_palms.Count > 0)
+            if (_hands.Count > 0)
             {
-                hand = _palms.Aggregate((curmin, p) => p.EstimatedCenter.Length(point) < curmin.EstimatedCenter.Length(point) ? p : curmin);
+                hand = _hands.Aggregate((curmin, p) => p.EstimatedCenter.Length(point) < curmin.EstimatedCenter.Length(point) ? p : curmin);
             }
             else
             {
@@ -740,7 +803,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     Depth = depth,
                     LastUpdate = now
                 };
-                _palms.Add(hand);
+                _hands.Add(hand);
             }
 
             if (hand.EstimatedCenter.Length(point) < IntegrationDistance)
@@ -761,7 +824,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     Depth = depth,
                     LastUpdate = now
                 };
-                _palms.Add(hand);
+                _hands.Add(hand);
             }
         }
 
@@ -771,5 +834,18 @@ namespace Huddle.Engine.Processor.OpenCv
         {
             return ++_id;
         }
+    }
+
+    internal class SamplingException : Exception
+    {
+        #region ctor
+
+        internal SamplingException(string message)
+            : base(message)
+        {
+
+        }
+
+        #endregion
     }
 }

@@ -45,6 +45,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TagDefinitions", "TagDefini
 		TagDefinitions\tagdefinition.txt = TagDefinitions\tagdefinition.txt
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Huddle.FunctionTest", "Huddle.FunctionTest\Huddle.FunctionTest.csproj", "{FE855447-12CC-46F1-AE1E-6D38A8921AB0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +109,14 @@ Global
 		{F5ECA0B7-69D0-4DA9-8D11-81DF02B7526D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F5ECA0B7-69D0-4DA9-8D11-81DF02B7526D}.Release|x64.ActiveCfg = Release|Any CPU
 		{F5ECA0B7-69D0-4DA9-8D11-81DF02B7526D}.Release|x86.ActiveCfg = Release|Any CPU
+		{FE855447-12CC-46F1-AE1E-6D38A8921AB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE855447-12CC-46F1-AE1E-6D38A8921AB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE855447-12CC-46F1-AE1E-6D38A8921AB0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FE855447-12CC-46F1-AE1E-6D38A8921AB0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FE855447-12CC-46F1-AE1E-6D38A8921AB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE855447-12CC-46F1-AE1E-6D38A8921AB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE855447-12CC-46F1-AE1E-6D38A8921AB0}.Release|x64.ActiveCfg = Release|Any CPU
+		{FE855447-12CC-46F1-AE1E-6D38A8921AB0}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -118,5 +128,6 @@ Global
 		{7CD69A7E-88AA-4F02-9F6C-539884598784} = {02658324-73EF-4645-8861-C7EDD2A4B257}
 		{1CFA56C6-5765-4CC1-A611-7F4BD4CA2FFF} = {CD8124CA-97C9-495F-AE7E-2A3A3AF630A5}
 		{75151C09-ECEA-43E4-8608-D84161F30143} = {CD8124CA-97C9-495F-AE7E-2A3A3AF630A5}
+		{FE855447-12CC-46F1-AE1E-6D38A8921AB0} = {CD8124CA-97C9-495F-AE7E-2A3A3AF630A5}
 	EndGlobalSection
 EndGlobal

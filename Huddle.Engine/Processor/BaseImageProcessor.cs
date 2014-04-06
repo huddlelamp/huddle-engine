@@ -125,7 +125,7 @@ namespace Huddle.Engine.Processor
 
                     BitmapSource bitmap;
                     if (preProcessImage is Image<Gray, float>)
-                        bitmap = (preProcessImage as Image<Gray, float>).ToGradientBitmapSource(32001, 32002, true);
+                        bitmap = (preProcessImage as Image<Gray, float>).ToGradientBitmapSource(true, EmguExtensions.LowConfidence, EmguExtensions.Saturation);
                     else
                         bitmap = preProcessImage.ToBitmapSource(true);
 
@@ -170,7 +170,7 @@ namespace Huddle.Engine.Processor
 
                     BitmapSource bitmap;
                     if (postProcessImage is Image<Gray, float>)
-                        bitmap = (postProcessImage as Image<Gray, float>).ToGradientBitmapSource(32001, 32002, true);
+                        bitmap = (postProcessImage as Image<Gray, float>).ToGradientBitmapSource(true, EmguExtensions.LowConfidence, EmguExtensions.Saturation);
                     else
                         bitmap = postProcessImage.ToBitmapSource(true);
 

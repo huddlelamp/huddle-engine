@@ -143,14 +143,14 @@
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="Low Cut Off Depth"/>
-                <Slider Value="{Binding Path=LowCutOffDepth}" Width="340" Height="25" Minimum="0" Maximum="50" />
-                <TextBlock Text="{Binding Path=LowCutOffDepth, StringFormat={}{0:#}}"/>
+                <Slider Value="{Binding Path=LowCutOffDepth}" Width="340" Height="25" Minimum="0" Maximum="255" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=LowCutOffDepth, StringFormat={}{0:#.##}}"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="High Cut Off Depth"/>
-                <Slider Value="{Binding Path=HighCutOffDepth}" Width="340" Height="25" Minimum="0" Maximum="1000" />
-                <TextBlock Text="{Binding Path=HighCutOffDepth, StringFormat={}{0:#}}"/>
+                <Slider Value="{Binding Path=HighCutOffDepth}" Width="340" Height="25" Minimum="0" Maximum="255" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=HighCutOffDepth, StringFormat={}{0:#.##}}"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
@@ -177,6 +177,8 @@
                 <TextBlock Text="{Binding Path=HandLocationSamples, StringFormat={}{0}}"/>
             </StackPanel>
 
+            <CheckBox Content="Draw Hand Location Samples" IsChecked="{Binding Path=IsDrawHandLocationSamples}" />
+
             <CheckBox Content="Smooth Gaussian" IsChecked="{Binding Path=IsSmoothGaussianEnabled}" />
 
             <StackPanel Orientation="Horizontal">
@@ -192,7 +194,7 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
-                <Label Content="Difference"/>
+                <Label Content="Integration Distance"/>
                 <Slider Value="{Binding Path=IntegrationDistance}" Width="340" Height="25" Minimum="0" Maximum="250" TickFrequency="1" IsSnapToTickEnabled="True" TickPlacement="TopLeft" />
                 <TextBlock Text="{Binding Path=IntegrationDistance, StringFormat={}{0:#.##}}"/>
             </StackPanel>

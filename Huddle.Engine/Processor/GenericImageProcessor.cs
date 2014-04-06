@@ -134,7 +134,7 @@ namespace Huddle.Engine.Processor
                         if (preProcessImage == null) return;
 
                         if (preProcessImage is Image<Gray, float>)
-                            PreProcessImage = (preProcessImage as Image<Gray, float>).ToGradientBitmapSource(32001, 32002);
+                            PreProcessImage = (preProcessImage as Image<Gray, float>).ToGradientBitmapSource(true, EmguExtensions.LowConfidence, EmguExtensions.Saturation);
                         else
                             PreProcessImage = preProcessImage.ToBitmapSource();
 

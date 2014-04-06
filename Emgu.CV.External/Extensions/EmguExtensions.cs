@@ -14,6 +14,16 @@ namespace Emgu.CV.External.Extensions
 {
     public static class EmguExtensions
     {
+        #region static members
+
+        public const float DefaultLowConfidence = 32001.0f;
+        public const float DefaultSaturation = 32002.0f;
+
+        public static float LowConfidence = DefaultLowConfidence;
+        public static float Saturation = DefaultSaturation;
+
+        #endregion
+
         private static readonly Rgb[] Gradient = CreateGradient();
 
         private static Rgb[] CreateGradient()
@@ -57,16 +67,16 @@ namespace Emgu.CV.External.Extensions
                 }
             }
         }
-        public static BitmapSource ToGradientBitmapSourceForHandTracking(this Image<Gray, float> image, int lowConfidence, int saturation)
+        public static BitmapSource ToGradientBitmapSourceForHandTracking(this Image<Gray, float> image, bool freeze = true, float lowConfidence = DefaultLowConfidence, float saturation = DefaultSaturation)
         {
             var width = image.Width;
             var height = image.Height;
 
             var gradientImage = new Image<Rgb, byte>(width, height, Rgbs.White);
             var imageData = image.Data;
-            
 
-            Parallel.For(0, height, y=>             
+
+            Parallel.For(0, height, y =>
             {
                 Rgb color;
                 for (var x = 0; x < width; x++)
@@ -94,14 +104,13 @@ namespace Emgu.CV.External.Extensions
             return gradientImage.ToBitmapSource();
         }
 
-        public static BitmapSource ToGradientBitmapSource(this Image<Gray, float> image, int lowConfidence, int saturation, bool freeze = false)
+        public static BitmapSource ToGradientBitmapSource(this Image<Gray, float> image, bool freeze = false, float lowConfidence = DefaultLowConfidence, float saturation = DefaultSaturation)
         {
             var width = image.Width;
             var height = image.Height;
 
             var imageData = image.Data;
             var gradientImage = new Image<Rgb, byte>(width, height, Rgbs.White);
-            // var gradientImageData = gradientImage.Data;
 
             Parallel.For(0, height, y =>
             {
@@ -110,11 +119,11 @@ namespace Emgu.CV.External.Extensions
                 {
                     var depth = imageData[y, x, 0];
 
-                    if (depth == lowConfidence)
+                    if (depth == LowConfidence)
                     {
                         color = Rgbs.Black;
                     }
-                    else if (depth == saturation)
+                    else if (depth == Saturation)
                     {
                         color = Rgbs.White;
                     }
