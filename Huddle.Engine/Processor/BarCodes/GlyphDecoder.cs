@@ -246,14 +246,17 @@ namespace Huddle.Engine.Processor.BarCodes
             {
                 var area = blob.Area;
 
-                var offsetX = (int)(area.X * lastFrame.Width);
-                var offsetY = (int)(area.Y * lastFrame.Height);
+                var width = lastFrame.Width;
+                var height = lastFrame.Height;
+
+                var offsetX = (int)(area.X * width);
+                var offsetY = (int)(area.Y * height);
 
                 var roi = new Rectangle(
                     offsetX,
                     offsetY,
-                    (int)(area.Width * lastFrame.Width),
-                    (int)(area.Height * lastFrame.Height)
+                    (int)(area.Width * width),
+                    (int)(area.Height * height)
                     );
 
                 if (IsRenderContent)
@@ -263,7 +266,7 @@ namespace Huddle.Engine.Processor.BarCodes
 
                 var imageWithROI = lastFrame.Copy(roi);
 
-                FindMarker(imageWithROI, offsetX, offsetY, ref outputImage);
+                FindMarker(imageWithROI, offsetX, offsetY, width, height, ref outputImage);
             }
 
             if (IsRenderContent)
@@ -295,7 +298,7 @@ namespace Huddle.Engine.Processor.BarCodes
 
                 if (!UseBlobs)
                 {
-                    FindMarker(lastFrame, 0, 0, ref lastFrame);
+                    FindMarker(lastFrame, 0, 0, lastFrame.Width, lastFrame.Height, ref lastFrame);
 
                     if (IsRenderContent)
                     {
@@ -315,7 +318,7 @@ namespace Huddle.Engine.Processor.BarCodes
             return null;
         }
 
-        private void FindMarker(Image<Rgb, byte> image, int offsetX, int offsetY, ref Image<Rgb, byte> outputImage)
+        private void FindMarker(Image<Rgb, byte> image, int offsetX, int offsetY, int width, int height, ref Image<Rgb, byte> outputImage)
         {
             if (_glyphRecognizer != null)
             {
@@ -451,8 +454,8 @@ namespace Huddle.Engine.Processor.BarCodes
                             Stage(new Marker(this, string.Format("Glyph{0}", name))
                             {
                                 Id = name,
-                                X = centerX / image.Width,
-                                Y = centerY / image.Height,
+                                X = centerX / width,
+                                Y = centerY / height,
                                 Angle = degOrientation
                             });
 
@@ -476,99 +479,6 @@ namespace Huddle.Engine.Processor.BarCodes
                 }
 
             }
-
-            //var outputImage = image.Copy();
-
-            //// get (hopefully) all visible QR codes
-            //ZXing.Result[] results;
-            //try
-            //{
-            //    results = _barcodeReader.DecodeMultiple(image);
-            //}
-            //catch (Exception)
-            //{
-            //    // sometimes there are some less important exceptions about the version of the QR codes
-            //    return outputImage;
-            //}
-
-            //var numQRs = 0;
-            //if (results != null)
-            //{
-            //    numQRs = results.Length;
-            //    Log("Found {0} QR tags", numQRs);
-            //}
-            //else
-            //{
-            //    Log("Failed");
-            //    //base.DrawDebug(image);
-            //    return outputImage;
-            //}
-
-            //// Process found QR codes
-
-            //if (!results.Any())
-            //    return outputImage;
-
-            //for (var i = 0; i < numQRs; i++)
-            //{
-            //    // Get content of tag from results[i].Text
-            //    var qrText = results[i].Text;
-
-            //    // Get corner points of tag from results[i].ResultPoints
-            //    var qrPoints = results[i].ResultPoints;
-
-            //    var minX = qrPoints.Min(p => p.X);
-            //    var minY = qrPoints.Min(p => p.Y);
-            //    var maxX = qrPoints.Max(p => p.X);
-            //    var maxY = qrPoints.Max(p => p.Y);
-
-            //    var colorEnumerator = _colors.GetEnumerator();
-
-            //    foreach (var point in qrPoints)
-            //    {
-            //        if (!colorEnumerator.MoveNext())
-            //        {
-            //            colorEnumerator.Reset();
-            //            colorEnumerator.MoveNext();
-            //        }
-
-
-
-            //        outputImage.Draw(new CircleF(new PointF(point.X, point.Y), 5), (Rgb)colorEnumerator.Current, 3);
-            //    }
-
-            //    if (qrPoints.Length >= 2)
-            //        outputImage.Draw(new LineSegment2DF(new PointF(qrPoints[0].X, qrPoints[0].Y), new PointF(qrPoints[1].X, qrPoints[1].Y)), Rgbs.Red, 5);
-
-            //    var dx = qrPoints[1].X - qrPoints[0].X;
-            //    var dy = qrPoints[1].Y - qrPoints[0].Y;
-
-            //    //// Get orientation of tag
-            //    var qrOrientation = Math.Atan2(dy, dx) / Math.PI * 180 + 90;
-
-            //    Log("Text={0} | Orientation={1}°", qrText, qrOrientation);
-
-            //    var centerX = (minX + (maxX - minX) / 2);
-            //    var centerY = (minY + (maxY - minY) / 2);
-
-            //    // center point
-            //    outputImage.Draw(new CircleF(new PointF(centerX, centerY), 5), Rgbs.TangerineTango, 3);
-
-            //    // Stage data for later push
-            //    Stage(new LocationData(string.Format("QrCode{0}", results[i].Text))
-            //    {
-            //        Id = results[i].Text,
-            //        X = centerX / image.Width,
-            //        Y = centerY / image.Height,
-            //        Angle = qrOrientation
-            //    });
-            //}
-
-            //// Push staged data
-            //Push();
-
-            //base.DrawDebug(image);
-            //return outputImage;
         }
     }
 }

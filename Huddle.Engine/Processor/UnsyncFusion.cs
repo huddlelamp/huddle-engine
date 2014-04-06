@@ -19,9 +19,9 @@ namespace Huddle.Engine.Processor
                 foreach (var data in dataContainer)
                     Stage(data);
             }
-            else if (dataContainer.OfType<LocationData>().Any())
+            else if (dataContainer.OfType<Marker>().Any())
             {
-                if (StagedData.OfType<LocationData>().Any())
+                if (StagedData.OfType<Marker>().Any())
                     Push();
 
                 foreach (var data in dataContainer)
