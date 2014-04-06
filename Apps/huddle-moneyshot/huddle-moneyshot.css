@@ -1,0 +1,13 @@
+/* CSS declarations go here */
+#world-canvas {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.world-object {
+	position: absolute;
+	background-color: green;
+}

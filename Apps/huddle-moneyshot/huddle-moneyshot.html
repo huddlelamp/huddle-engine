@@ -1,0 +1,19 @@
+<head>
+  <title>huddle-moneyshot</title>
+</head>
+
+<body>
+  {{> worldCanvas}}
+</body>
+
+<template name="worldCanvas">
+  <div id="world-canvas">
+	  {{#each objects}}
+	  	{{> worldObject}}
+	  {{/each}}
+  </div>
+</template>
+
+<template name="worldObject">
+  <div id="{{_id}}" class="world-object" style="left: {{x}}px; top: {{y}}px; width: {{width}}px; height: {{height}}px;"></div>
+</template>
