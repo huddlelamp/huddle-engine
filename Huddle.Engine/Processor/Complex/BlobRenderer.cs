@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
@@ -16,23 +17,41 @@ namespace Huddle.Engine.Processor.Complex
     [ViewTemplate("BlobRenderer", "BlobRenderer")]
     public class BlobRenderer : BaseProcessor
     {
+        #region static fields
+
+        public static MCvFont EmguFont = new MCvFont(FONT.CV_FONT_HERSHEY_SIMPLEX, 0.3, 0.3);
+        public static MCvFont EmguFontBig = new MCvFont(FONT.CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0);
+
+        #endregion
+
         public override IDataContainer PreProcess(IDataContainer dataContainer)
         {
-            const int width = 320;
-            const int height = 240;
+            const int width = 1280;
+            const int height = 720;
             var image = new Image<Rgb, byte>(width, height);
 
             foreach (var blob in dataContainer.OfType<BlobData>())
             {
-                var x = (int)(blob.Area.X * width);
-                var y = (int)(blob.Area.Y * height);
-                var w = (int)(blob.Area.Width * width);
-                var h = (int)(blob.Area.Height * height);
+                var polyline = new List<Point>();
+                foreach (var point in blob.Polygon.Points)
+                {
+                    var x = point.X * width;
+                    var y = point.Y * height;
 
+                    polyline.Add(new Point((int)x, (int)y));
+                }
+
+                Rgb color = Rgbs.White;
                 if (typeof(FindContours) == blob.Source.GetType())
-                    image.Draw(new Rectangle(x, y, w, h), Rgbs.Yellow, 2);
+                    color = Rgbs.Yellow;
                 else if (typeof(FindContours2) == blob.Source.GetType())
-                    image.Draw(new Rectangle(x, y, w, h), Rgbs.TangerineTango, 2);
+                    color = Rgbs.TangerineTango;
+
+                var centerX = (int)(blob.X * width);
+                var centerY = (int)(blob.Y * height);
+
+                image.DrawPolyline(polyline.ToArray(), true, color, 5);
+                image.Draw(string.Format("Id {0}", blob.Id), ref EmguFontBig, new Point(centerX, centerY), Rgbs.White);
             }
 
             Stage(new RgbImageData(this, "BlobRenderer", image));

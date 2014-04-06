@@ -10,6 +10,7 @@ using Emgu.CV.Structure;
 using Huddle.Engine.Data;
 using Huddle.Engine.Processor.OpenCv.Struct;
 using Huddle.Engine.Util;
+using PolygonIntersection;
 using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
@@ -498,6 +499,7 @@ namespace Huddle.Engine.Processor.OpenCv
                                         o.Center = new Point((int)cCenter.X, (int)cCenter.Y);
                                         o.Bounds = currentContour.BoundingRectangle;
                                         o.Shape = currentContour.GetMinAreaRect();
+                                        o.Polygon = new Polygon(contours.ToArray(), width, height);
                                         o.Points = pts;
 
                                         updated = true;
@@ -517,6 +519,7 @@ namespace Huddle.Engine.Processor.OpenCv
                                         Center = new Point((int)minAreaRect.center.X, (int)minAreaRect.center.Y),
                                         Bounds = currentContour.BoundingRectangle,
                                         Shape = minAreaRect,
+                                        Polygon = new Polygon(contours.ToArray(), width, height),
                                         Points = pts
                                     });
                                 }
@@ -562,6 +565,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     Y = estimatedCenter.Y / (double)height,
                     Angle = rawObject.Shape.angle,
                     Shape = rawObject.Shape,
+                    Polygon = rawObject.Polygon,
                     Area = new Rect
                     {
                         X = bounds.X / (double)width,

@@ -36,6 +36,8 @@ namespace Huddle.Engine.Processor
 
         private long _frameId;
 
+        private long _id = 0L;
+
         #endregion
 
         #region properties
@@ -651,6 +653,11 @@ namespace Huddle.Engine.Processor
         }
 
         #endregion
+
+        protected long NextId()
+        {
+            return _id++;
+        }
 
         protected void Log(string format, params object[] args)
         {

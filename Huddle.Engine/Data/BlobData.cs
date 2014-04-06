@@ -1,7 +1,7 @@
 ﻿using System.Windows;
-using System.Windows.Shapes;
 using Emgu.CV.Structure;
 using Huddle.Engine.Processor;
+using PolygonIntersection;
 
 namespace Huddle.Engine.Data
 {
@@ -219,6 +219,41 @@ namespace Huddle.Engine.Data
 
         #endregion
 
+        #region Polygon
+
+        /// <summary>
+        /// The <see cref="Polygon" /> property's name.
+        /// </summary>
+        public const string PolygonPropertyName = "Polygon";
+
+        private Polygon _polygon;
+
+        /// <summary>
+        /// Sets and gets the Polygon property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Polygon Polygon
+        {
+            get
+            {
+                return _polygon;
+            }
+
+            set
+            {
+                if (_polygon == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(PolygonPropertyName);
+                _polygon = value;
+                RaisePropertyChanged(PolygonPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -239,7 +274,8 @@ namespace Huddle.Engine.Data
                 Y = Y,
                 Angle = Angle,
                 Area = Area,
-                Shape = Shape
+                Shape = Shape,
+                Polygon = Polygon
             };
         }
 

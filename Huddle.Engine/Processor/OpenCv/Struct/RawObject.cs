@@ -3,6 +3,7 @@ using System.Drawing;
 using Emgu.CV.Structure;
 using GalaSoft.MvvmLight;
 using Huddle.Engine.Processor.OpenCv.Filter;
+using PolygonIntersection;
 
 namespace Huddle.Engine.Processor.OpenCv.Struct
 {
@@ -151,6 +152,41 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
                 RaisePropertyChanging(ShapePropertyName);
                 _shape = value;
                 RaisePropertyChanged(ShapePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Polygon
+
+        /// <summary>
+        /// The <see cref="Polygon" /> property's name.
+        /// </summary>
+        public const string PolygonPropertyName = "Polygon";
+
+        private Polygon _polygon;
+
+        /// <summary>
+        /// Sets and gets the Polygon property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Polygon Polygon
+        {
+            get
+            {
+                return _polygon;
+            }
+
+            set
+            {
+                if (_polygon == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(PolygonPropertyName);
+                _polygon = value;
+                RaisePropertyChanged(PolygonPropertyName);
             }
         }
 

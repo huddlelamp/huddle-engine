@@ -12,6 +12,7 @@ using Huddle.Engine.Data;
 using Huddle.Engine.Extensions;
 using Huddle.Engine.Processor.OpenCv.Struct;
 using Huddle.Engine.Util;
+using PolygonIntersection;
 using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
@@ -563,6 +564,7 @@ namespace Huddle.Engine.Processor.OpenCv
                                     obj.Center = new Point((int)cCenter.X, (int)cCenter.Y);
                                     obj.Bounds = currentContour.BoundingRectangle;
                                     obj.Shape = currentContour.GetMinAreaRect();
+                                    obj.Polygon = new Polygon(contours.ToArray(), width, height);
                                     obj.Points = pts;
                                 }
                                 else
@@ -576,6 +578,7 @@ namespace Huddle.Engine.Processor.OpenCv
                                         Center = new Point((int)minAreaRect.center.X, (int)minAreaRect.center.Y),
                                         Bounds = currentContour.BoundingRectangle,
                                         Shape = minAreaRect,
+                                        Polygon = new Polygon(contours.ToArray(), width, height),
                                         Points = pts
                                     });
                                 }
@@ -619,6 +622,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     Y = estimatedCenter.Y / (double)height,
                     Angle = rawObject.Shape.angle,
                     Shape = rawObject.Shape,
+                    Polygon = rawObject.Polygon,
                     Area = new Rect
                     {
                         X = bounds.X / (double)width,
@@ -643,7 +647,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
         private IEnumerable<Contour<Point>> IterateContours(Contour<Point> contours, MemStorage storage)
         {
-            for ( ; contours != null; contours = contours.HNext)
+            for (; contours != null; contours = contours.HNext)
             {
                 yield return contours.ApproxPoly(contours.Perimeter * 0.05, storage);
             }

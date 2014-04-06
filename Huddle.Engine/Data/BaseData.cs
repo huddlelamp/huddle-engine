@@ -65,5 +65,14 @@ namespace Huddle.Engine.Data
         public abstract IData Copy();
 
         public abstract void Dispose();
+
+        #region override methods
+
+        public override string ToString()
+        {
+            return string.Format("{0}: {1}", base.ToString(), Source.GetType().Name);
+        }
+
+        #endregion
     }
 }
