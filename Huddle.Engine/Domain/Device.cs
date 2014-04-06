@@ -1,7 +1,10 @@
-﻿using GalaSoft.MvvmLight;
+﻿using System.Drawing;
+using System.Windows;
+using GalaSoft.MvvmLight;
 using Huddle.Engine.Data;
 using Huddle.Engine.Processor;
 using Newtonsoft.Json;
+using PolygonIntersection;
 
 namespace Huddle.Engine.Domain
 {
@@ -256,6 +259,76 @@ namespace Huddle.Engine.Domain
 
         #endregion
 
+        #region Shape
+
+        /// <summary>
+        /// The <see cref="Shape" /> property's name.
+        /// </summary>
+        public const string ShapePropertyName = "Shape";
+
+        private Polygon _shape;
+
+        /// <summary>
+        /// Sets and gets the Shape property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Polygon Shape
+        {
+            get
+            {
+                return _shape;
+            }
+
+            set
+            {
+                if (_shape == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ShapePropertyName);
+                _shape = value;
+                RaisePropertyChanged(ShapePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Area
+
+        /// <summary>
+        /// The <see cref="Area" /> property's name.
+        /// </summary>
+        public const string AreaPropertyName = "Area";
+
+        private Rect _area = Rect.Empty;
+
+        /// <summary>
+        /// Sets and gets the Area property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Rect Area
+        {
+            get
+            {
+                return _area;
+            }
+
+            set
+            {
+                if (_area == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(AreaPropertyName);
+                _area = value;
+                RaisePropertyChanged(AreaPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -276,7 +349,9 @@ namespace Huddle.Engine.Domain
                 BlobId = BlobId,
                 IsIdentified = IsIdentified,
                 X = X,
-                Y = Y
+                Y = Y,
+                Shape = Shape,
+                Area = Area
             };
         }
 

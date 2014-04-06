@@ -16,6 +16,7 @@ using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Emgu.CV.External.Extensions;
 using Huddle.Engine.Data;
+using Huddle.Engine.Domain;
 using Huddle.Engine.Extensions;
 using Huddle.Engine.Util;
 using Point = System.Drawing.Point;
@@ -48,7 +49,7 @@ namespace Huddle.Engine.Processor.BarCodes
 
         private GlyphRecognizer _glyphRecognizer = null;
 
-        private Image<Rgb, Byte> lastFrame;
+        private Image<Rgb, Byte> _lastFrame;
 
         private DispatcherOperation _outputImageRendering;
 
@@ -234,43 +235,70 @@ namespace Huddle.Engine.Processor.BarCodes
 
         public override IDataContainer PreProcess(IDataContainer dataContainer)
         {
-            if (lastFrame == null) return base.PreProcess(dataContainer);
+            if (_lastFrame == null) return base.PreProcess(dataContainer);
 
-            var blobs = dataContainer.OfType<BlobData>().ToArray();
-            if (!blobs.Any()) return base.PreProcess(dataContainer);
-
-            //var outputImage = new Image<Rgb, byte>(lastFrame.Width, lastFrame.Height);
-            var outputImage = lastFrame.Copy();
-
-            foreach (var blob in blobs)
+            var devices = dataContainer.OfType<Device>().ToArray();
+            var unknownDevices = devices.Where(d => !d.IsIdentified).ToArray();
+            if (!devices.Any() || !unknownDevices.Any())
             {
-                var area = blob.Area;
+                return base.PreProcess(dataContainer);
+            }
 
-                var width = lastFrame.Width;
-                var height = lastFrame.Height;
+            var outputImage = _lastFrame.Copy();
 
-                var offsetX = (int)(area.X * width);
-                var offsetY = (int)(area.Y * height);
-
-                var roi = new Rectangle(
-                    offsetX,
-                    offsetY,
-                    (int)(area.Width * width),
-                    (int)(area.Height * height)
-                    );
-
-                if (IsRenderContent)
+            if (unknownDevices.Any())
+            {
+                foreach (var device in unknownDevices)
                 {
-                    outputImage.Draw(roi, Rgbs.Red, 2);
+                    var area = device.Area;
+
+                    var width = _lastFrame.Width;
+                    var height = _lastFrame.Height;
+
+                    var offsetX = (int)(area.X * width);
+                    var offsetY = (int)(area.Y * height);
+
+                    var roi = new Rectangle(
+                        offsetX,
+                        offsetY,
+                        (int)(area.Width * width),
+                        (int)(area.Height * height)
+                        );
+
+                    if (IsRenderContent)
+                    {
+                        outputImage.Draw(roi, Rgbs.Red, 2);
+                    }
+
+                    var imageWithROI = _lastFrame.Copy(roi);
+
+                    FindMarker(imageWithROI, offsetX, offsetY, width, height, ref outputImage);
                 }
-
-                var imageWithROI = lastFrame.Copy(roi);
-
-                FindMarker(imageWithROI, offsetX, offsetY, width, height, ref outputImage);
             }
 
             if (IsRenderContent)
             {
+                // Render known devices with green rectangle
+                foreach (var device in devices.Where(d => d.IsIdentified))
+                {
+                    var area = device.Area;
+
+                    var width = _lastFrame.Width;
+                    var height = _lastFrame.Height;
+
+                    var offsetX = (int)(area.X * width);
+                    var offsetY = (int)(area.Y * height);
+
+                    var roi = new Rectangle(
+                            offsetX,
+                            offsetY,
+                            (int)(area.Width * width),
+                            (int)(area.Height * height)
+                            );
+
+                    outputImage.Draw(roi, Rgbs.Green, 4);
+                }
+
                 var outputImageCopy = outputImage.Copy();
                 Task.Factory.StartNew(() =>
                 {
@@ -293,16 +321,16 @@ namespace Huddle.Engine.Processor.BarCodes
             var imageData = data as RgbImageData;
             if (imageData != null)
             {
-                if (lastFrame != null) lastFrame.Dispose();
-                lastFrame = imageData.Image.Copy();
+                if (_lastFrame != null) _lastFrame.Dispose();
+                _lastFrame = imageData.Image.Copy();
 
                 if (!UseBlobs)
                 {
-                    FindMarker(lastFrame, 0, 0, lastFrame.Width, lastFrame.Height, ref lastFrame);
+                    FindMarker(_lastFrame, 0, 0, _lastFrame.Width, _lastFrame.Height, ref _lastFrame);
 
                     if (IsRenderContent)
                     {
-                        var outputImageCopy = lastFrame.Copy();
+                        var outputImageCopy = _lastFrame.Copy();
                         Task.Factory.StartNew(() =>
                         {
                             var bitmap = outputImageCopy.ToBitmapSource(true);

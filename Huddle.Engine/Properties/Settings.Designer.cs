@@ -49,7 +49,7 @@ namespace Huddle.Engine.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Highest")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Normal")]
         public global::System.Threading.ThreadPriority ProcessingThreadPriority {
             get {
                 return ((global::System.Threading.ThreadPriority)(this["ProcessingThreadPriority"]));

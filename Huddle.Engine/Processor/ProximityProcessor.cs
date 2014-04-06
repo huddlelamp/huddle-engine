@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -9,7 +10,6 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Xml.Serialization;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
@@ -20,6 +20,10 @@ using Huddle.Engine.Extensions;
 using Huddle.Engine.Processor.BarCodes;
 using Huddle.Engine.Processor.OpenCv;
 using Huddle.Engine.Util;
+using PolygonIntersection;
+using Brush = System.Windows.Media.Brush;
+using Brushes = System.Windows.Media.Brushes;
+using Point = System.Windows.Point;
 
 namespace Huddle.Engine.Processor
 {
@@ -252,7 +256,9 @@ namespace Huddle.Engine.Processor
                     IsIdentified = true,
                     X = position.X,
                     Y = position.Y,
-                    Angle = 0//Math.PI
+                    Angle = 0,//Math.PI
+                    Shape = new Polygon(),
+                    Area = Rect.Empty
                 });
             });
 
@@ -456,13 +462,15 @@ namespace Huddle.Engine.Processor
 
         private void CreateDevice(BlobData blob)
         {
-            var device = new Device(this, "not identified")
+            var device = new Device(this, "unknown")
             {
                 BlobId = blob.Id,
                 IsIdentified = false,
                 X = blob.X * Width,
                 Y = blob.Y * Height,
-                LastBlobAngle = blob.Angle
+                LastBlobAngle = blob.Angle,
+                Shape = blob.Polygon,
+                Area = blob.Area
             };
             AddDevice(device);
         }
@@ -474,6 +482,8 @@ namespace Huddle.Engine.Processor
             device.BlobId = blob.Id;
             device.X = blob.X * Width;
             device.Y = blob.Y * Height;
+            device.Shape = blob.Polygon;
+            device.Area = blob.Area;
 
             if (code != null)
             {

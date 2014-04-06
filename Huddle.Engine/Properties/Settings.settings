@@ -9,7 +9,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="ProcessingThreadPriority" Type="System.Threading.ThreadPriority" Scope="User">
-      <Value Profile="(Default)">Highest</Value>
+      <Value Profile="(Default)">Normal</Value>
     </Setting>
   </Settings>
 </SettingsFile>
