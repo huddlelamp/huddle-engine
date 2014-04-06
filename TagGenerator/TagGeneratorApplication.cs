@@ -44,7 +44,7 @@ namespace TagGenerator
         private static void GenerateAndSaveTag(String id, String code)
         {
             var cells = 5.0; //5x5
-            var size = 210.0;
+            var size = 420.0;
             var output = new Image<Gray, Byte>((int)size, (int)size, new Gray(255));
             Gray color;
             int i = 0;
