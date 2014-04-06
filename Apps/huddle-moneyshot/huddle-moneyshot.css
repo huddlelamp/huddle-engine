@@ -5,9 +5,20 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
+
+	background-image: url('background.png');
 }
 
 .world-object {
 	position: absolute;
-	background-color: green;
+	background-color: deeppink;
+
+	background-image: url('dagstuhl13452.jpg');
+	background-size: contain;
+	background-repeat: no-repeat;
+	box-shadow: 5px 5px 5px #222222;
+
+	transform-origin: 50% 50%;
+	-ms-transform-origin: 50% 50%; /* IE 9 */
+	-webkit-transform-origin: 50% 50%; /* Chrome, Safari, Opera */
 }
