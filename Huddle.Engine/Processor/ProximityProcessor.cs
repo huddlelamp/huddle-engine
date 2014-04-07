@@ -18,9 +18,9 @@ using Huddle.Engine.Data;
 using Huddle.Engine.Domain;
 using Huddle.Engine.Extensions;
 using Huddle.Engine.Processor.BarCodes;
+using Huddle.Engine.Processor.Complex.PolygonIntersection;
 using Huddle.Engine.Processor.OpenCv;
 using Huddle.Engine.Util;
-using PolygonIntersection;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
 using Point = System.Windows.Point;
@@ -373,7 +373,8 @@ namespace Huddle.Engine.Processor
                 {
                     Identity = device1.DeviceId,
                     Location = p1,
-                    Orientation = device1.Angle
+                    Orientation = device1.Angle,
+                    DeviceToCameraRatio = device1.DeviceToCameraRatio
                 };
 
                 #region Calculate Proximities
@@ -429,7 +430,8 @@ namespace Huddle.Engine.Processor
                         Identity = device2.DeviceId,
                         Location = p2,
                         Distance = (p2 - p1).Length,
-                        Orientation = localAngle
+                        Orientation = localAngle,
+                        DeviceToCameraRatio = device2.DeviceToCameraRatio
                     });
                 }
 
@@ -470,7 +472,8 @@ namespace Huddle.Engine.Processor
                 Y = blob.Y * Height,
                 LastBlobAngle = blob.Angle,
                 Shape = blob.Polygon,
-                Area = blob.Area
+                Area = blob.Area,
+                DeviceToCameraRatio = blob.DeviceToCameraRatio
             };
             AddDevice(device);
         }
@@ -484,6 +487,9 @@ namespace Huddle.Engine.Processor
             device.Y = blob.Y * Height;
             device.Shape = blob.Polygon;
             device.Area = blob.Area;
+
+            // Do not update device to camera ratio (device ratio should not change)
+            device.DeviceToCameraRatio = blob.DeviceToCameraRatio;
 
             if (code != null)
             {

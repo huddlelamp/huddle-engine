@@ -3,8 +3,8 @@ using System.Windows;
 using GalaSoft.MvvmLight;
 using Huddle.Engine.Data;
 using Huddle.Engine.Processor;
+using Huddle.Engine.Processor.Complex.PolygonIntersection;
 using Newtonsoft.Json;
-using PolygonIntersection;
 
 namespace Huddle.Engine.Domain
 {
@@ -329,6 +329,41 @@ namespace Huddle.Engine.Domain
 
         #endregion
 
+        #region DeviceToCameraRatio
+
+        /// <summary>
+        /// The <see cref="DeviceToCameraRatio" /> property's name.
+        /// </summary>
+        public const string DeviceToCameraRatioPropertyName = "DeviceToCameraRatio";
+
+        private double _deviceToCameraRatio = 0.0;
+
+        /// <summary>
+        /// Sets and gets the DeviceToCameraRatio property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double DeviceToCameraRatio
+        {
+            get
+            {
+                return _deviceToCameraRatio;
+            }
+
+            set
+            {
+                if (_deviceToCameraRatio == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DeviceToCameraRatioPropertyName);
+                _deviceToCameraRatio = value;
+                RaisePropertyChanged(DeviceToCameraRatioPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -351,7 +386,8 @@ namespace Huddle.Engine.Domain
                 X = X,
                 Y = Y,
                 Shape = Shape,
-                Area = Area
+                Area = Area,
+                DeviceToCameraRatio = DeviceToCameraRatio
             };
         }
 

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Threading;
 using AForge;
 using AForge.Vision.GlyphRecognition;
@@ -66,6 +67,42 @@ namespace Huddle.Engine.Processor.BarCodes
         #endregion
 
         #region public properties
+
+        #region BinaryThresholdImageSource
+
+        /// <summary>
+        /// The <see cref="BinaryThresholdImageSource" /> property's name.
+        /// </summary>
+        public const string BinaryThresholdImageSourcePropertyName = "BinaryThresholdImageSource";
+
+        private BitmapSource _binaryThresholdImageSource = null;
+
+        /// <summary>
+        /// Sets and gets the BinaryThresholdImageSource property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public BitmapSource BinaryThresholdImageSource
+        {
+            get
+            {
+                return _binaryThresholdImageSource;
+            }
+
+            set
+            {
+                if (_binaryThresholdImageSource == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(BinaryThresholdImageSourcePropertyName);
+                _binaryThresholdImageSource = value;
+                RaisePropertyChanged(BinaryThresholdImageSourcePropertyName);
+            }
+        }
+
+        #endregion
 
         #region OutputImage
 
@@ -138,6 +175,41 @@ namespace Huddle.Engine.Processor.BarCodes
 
         #endregion
 
+        #region BinaryThreshold
+
+        /// <summary>
+        /// The <see cref="BinaryThreshold" /> property's name.
+        /// </summary>
+        public const string BinaryThresholdPropertyName = "BinaryThreshold";
+
+        private byte _binaryThreshold = 220;
+
+        /// <summary>
+        /// Sets and gets the BinaryThreshold property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public byte BinaryThreshold
+        {
+            get
+            {
+                return _binaryThreshold;
+            }
+
+            set
+            {
+                if (_binaryThreshold == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(BinaryThresholdPropertyName);
+                _binaryThreshold = value;
+                RaisePropertyChanged(BinaryThresholdPropertyName);
+            }
+        }
+
+        #endregion
+
         #region UseBlobs
 
         /// <summary>
@@ -168,6 +240,41 @@ namespace Huddle.Engine.Processor.BarCodes
                 RaisePropertyChanging(UseBlobsPropertyName);
                 _useBlobs = value;
                 RaisePropertyChanged(UseBlobsPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region RoiExpandFactor
+
+        /// <summary>
+        /// The <see cref="RoiExpandFactor" /> property's name.
+        /// </summary>
+        public const string RoiExpandFactorPropertyName = "RoiExpandFactor";
+
+        private float _roiExpandFactor = 0.02f;
+
+        /// <summary>
+        /// Sets and gets the RoiExpandFactor property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public float RoiExpandFactor
+        {
+            get
+            {
+                return _roiExpandFactor;
+            }
+
+            set
+            {
+                if (_roiExpandFactor == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(RoiExpandFactorPropertyName);
+                _roiExpandFactor = value;
+                RaisePropertyChanged(RoiExpandFactorPropertyName);
             }
         }
 
@@ -246,23 +353,40 @@ namespace Huddle.Engine.Processor.BarCodes
 
             var outputImage = _lastFrame.Copy();
 
+            var binaryThreshold = BinaryThreshold;
+
             if (unknownDevices.Any())
+            //if (devices.Any())
             {
+                var grayImage = _lastFrame.Copy().Convert<Gray, byte>();
+                grayImage = grayImage.ThresholdBinary(new Gray(binaryThreshold), new Gray(255));
+
+                var width = _lastFrame.Width;
+                var height = _lastFrame.Height;
+
                 foreach (var device in unknownDevices)
+                //foreach (var device in devices)
                 {
                     var area = device.Area;
 
-                    var width = _lastFrame.Width;
-                    var height = _lastFrame.Height;
+                    var roiExpandFactor = RoiExpandFactor;
+
+                    var indentX = width * roiExpandFactor;
+                    var indentY = height * roiExpandFactor;
 
                     var offsetX = (int)(area.X * width);
                     var offsetY = (int)(area.Y * height);
 
+                    var roiX = (int)Math.Max(0, offsetX - indentX);
+                    var roiY = (int)Math.Max(0, offsetY - indentY);
+                    var roiWidth = (int)Math.Min(width - roiX, area.Width * width + 2 * indentX);
+                    var roiHeight = (int)Math.Min(height - roiY, area.Height * height + 2 * indentY);
+
                     var roi = new Rectangle(
-                        offsetX,
-                        offsetY,
-                        (int)(area.Width * width),
-                        (int)(area.Height * height)
+                        roiX,
+                        roiY,
+                        roiWidth,
+                        roiHeight
                         );
 
                     if (IsRenderContent)
@@ -272,8 +396,59 @@ namespace Huddle.Engine.Processor.BarCodes
 
                     var imageWithROI = _lastFrame.Copy(roi);
 
-                    FindMarker(imageWithROI, offsetX, offsetY, width, height, ref outputImage);
+                    //FindMarker(imageWithROI, offsetX, offsetY, width, height, ref outputImage);
+
+                    grayImage.ROI = roi;
+
+                    Contour<Point> largestContour = null;
+                    using (var storage = new MemStorage())
+                    {
+                        for (var contours = grayImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL); contours != null; contours = contours.HNext)
+                        {
+                            var contour = contours.ApproxPoly(contours.Perimeter * 0.05);
+
+                            if (largestContour == null)
+                            {
+                                largestContour = contour;
+                                continue;
+                            }
+
+                            if (contour.Area > largestContour.Area)
+                            {
+                                largestContour = contour;
+                            }
+                        }
+
+                        if (largestContour != null)
+                        {
+                            var edges = DetermineLongestEdge(largestContour);
+
+                            if (IsRenderContent)
+                            {
+                                var oldROI = outputImage.ROI;
+                                outputImage.ROI = roi;
+                                outputImage.Draw(largestContour.GetMinAreaRect(storage), Rgbs.Cyan, 2);
+
+                                outputImage.Draw(edges[0], Rgbs.Red, 3);
+                                outputImage.Draw(edges[1], Rgbs.Green, 3);
+
+                                outputImage.ROI = oldROI;
+                            }
+                        }
+                    }
                 }
+
+                outputImage.ROI = new Rectangle(0, 0, width, height);
+                grayImage.ROI = new Rectangle(0, 0, width, height);
+                var binaryThresholdImageCopy = grayImage.Copy();
+                Task.Factory.StartNew(() =>
+                {
+                    var bitmap = binaryThresholdImageCopy.ToBitmapSource(true);
+                    binaryThresholdImageCopy.Dispose();
+                    return bitmap;
+                }).ContinueWith(s => BinaryThresholdImageSource = s.Result);
+
+                grayImage.Dispose();
             }
 
             if (IsRenderContent)
@@ -507,6 +682,30 @@ namespace Huddle.Engine.Processor.BarCodes
                 }
 
             }
+        }
+
+        private LineSegment2D[] DetermineLongestEdge(Contour<Point> contour)
+        {
+            var pts = contour.ToArray();
+            var edges = PointCollection.PolyLine(pts, true);
+
+            var longestEdge = edges[0];
+            var index = 0;
+            for (var i = 1; i < edges.Length; i++)
+            {
+                var edge = edges[i];
+
+                // Assumption is that the longest edge defines the width of the tracked device in the blob
+                if (edge.Length > longestEdge.Length)
+                {
+                    index = i;
+                    longestEdge = edges[i];
+                }
+            }
+
+            var nextEdgeToLongestEdge = edges[(index + 1) % edges.Length];
+
+            return new[] { longestEdge, nextEdgeToLongestEdge };
         }
     }
 }

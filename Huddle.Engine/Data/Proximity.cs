@@ -220,6 +220,41 @@ namespace Huddle.Engine.Data
 
         #endregion
 
+        #region DeviceToCameraRatio
+
+        /// <summary>
+        /// The <see cref="DeviceToCameraRatio" /> property's name.
+        /// </summary>
+        public const string DeviceToCameraRatioPropertyName = "DeviceToCameraRatio";
+
+        private double _deviceToCameraRatio = 0.0;
+
+        /// <summary>
+        /// Sets and gets the DeviceToCameraRatio property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double DeviceToCameraRatio
+        {
+            get
+            {
+                return _deviceToCameraRatio;
+            }
+
+            set
+            {
+                if (_deviceToCameraRatio == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DeviceToCameraRatioPropertyName);
+                _deviceToCameraRatio = value;
+                RaisePropertyChanged(DeviceToCameraRatioPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         public Proximity(IProcessor source, string key)
@@ -236,7 +271,8 @@ namespace Huddle.Engine.Data
                 Location = Location,
                 Movement = Movement,
                 Orientation = Orientation,
-                Presences = new List<Proximity>(Presences)
+                Presences = new List<Proximity>(Presences),
+                DeviceToCameraRatio = DeviceToCameraRatio
             };
         }
 

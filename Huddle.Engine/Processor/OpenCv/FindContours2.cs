@@ -10,9 +10,9 @@ using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
 using Huddle.Engine.Extensions;
+using Huddle.Engine.Processor.Complex.PolygonIntersection;
 using Huddle.Engine.Processor.OpenCv.Struct;
 using Huddle.Engine.Util;
-using PolygonIntersection;
 using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
@@ -490,14 +490,14 @@ namespace Huddle.Engine.Processor.OpenCv
 
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
         {
-            var width = image.Width;
-            var height = image.Height;
+            var imageWidth = image.Width;
+            var imageHeight = image.Height;
 
             var now = DateTime.Now;
 
             _objects.RemoveAll(o => (now - o.LastUpdate).TotalMilliseconds > Timeout);
 
-            var outputImage = new Image<Rgb, byte>(width, height, Rgbs.Black);
+            var outputImage = new Image<Rgb, byte>(imageWidth, imageHeight, Rgbs.Black);
 
             //Convert the image to grayscale and filter out the noise
             var grayImage = image.Convert<Gray, Byte>();
@@ -520,6 +520,8 @@ namespace Huddle.Engine.Processor.OpenCv
                         if (currentContour.Total >= 4) //The contour has 4 vertices.
                         {
                             #region determine if all the angles in the contour are within [80, 100] degree
+
+                            var longestEdgeLength = 0.0;
                             bool isRectangle = true;
                             Point[] pts = currentContour.ToArray();
                             LineSegment2D[] edges = PointCollection.PolyLine(pts, true);
@@ -527,8 +529,12 @@ namespace Huddle.Engine.Processor.OpenCv
                             var rightAngle = 0;
                             for (int i = 0; i < edges.Length; i++)
                             {
-                                var angle = Math.Abs(edges[(i + 1) % edges.Length].GetExteriorAngleDegree(edges[i]));
+                                var edge = edges[(i + 1) % edges.Length];
 
+                                // Assumption is that the longest edge defines the width of the tracked device in the blob
+                                longestEdgeLength = Math.Max(edge.Length, longestEdgeLength);
+
+                                var angle = Math.Abs(edge.GetExteriorAngleDegree(edges[i]));
 
                                 if (angle < MinAngle || angle > MaxAngle)
                                 {
@@ -564,7 +570,7 @@ namespace Huddle.Engine.Processor.OpenCv
                                     obj.Center = new Point((int)cCenter.X, (int)cCenter.Y);
                                     obj.Bounds = currentContour.BoundingRectangle;
                                     obj.Shape = currentContour.GetMinAreaRect();
-                                    obj.Polygon = new Polygon(contours.ToArray(), width, height);
+                                    obj.Polygon = new Polygon(contours.ToArray(), imageWidth, imageHeight);
                                     obj.Points = pts;
                                 }
                                 else
@@ -573,13 +579,14 @@ namespace Huddle.Engine.Processor.OpenCv
 
                                     _objects.Add(new RawObject
                                     {
-                                        Id = GetNextId(),
+                                        Id = NextId(),
                                         LastUpdate = DateTime.Now,
                                         Center = new Point((int)minAreaRect.center.X, (int)minAreaRect.center.Y),
                                         Bounds = currentContour.BoundingRectangle,
                                         Shape = minAreaRect,
-                                        Polygon = new Polygon(contours.ToArray(), width, height),
-                                        Points = pts
+                                        Polygon = new Polygon(contours.ToArray(), imageWidth, imageHeight),
+                                        Points = pts,
+                                        DeviceToCameraRatio = longestEdgeLength / imageWidth
                                     });
                                 }
                             }
@@ -618,17 +625,18 @@ namespace Huddle.Engine.Processor.OpenCv
                 Stage(new BlobData(this, "DeviceBlob")
                 {
                     Id = rawObject.Id,
-                    X = estimatedCenter.X / (double)width,
-                    Y = estimatedCenter.Y / (double)height,
+                    X = estimatedCenter.X / (double)imageWidth,
+                    Y = estimatedCenter.Y / (double)imageHeight,
                     Angle = rawObject.Shape.angle,
                     Shape = rawObject.Shape,
                     Polygon = rawObject.Polygon,
+                    DeviceToCameraRatio = rawObject.DeviceToCameraRatio,
                     Area = new Rect
                     {
-                        X = bounds.X / (double)width,
-                        Y = bounds.Y / (double)height,
-                        Width = bounds.Width / (double)width,
-                        Height = bounds.Height / (double)height,
+                        X = bounds.X / (double)imageWidth,
+                        Y = bounds.Y / (double)imageHeight,
+                        Width = bounds.Width / (double)imageWidth,
+                        Height = bounds.Height / (double)imageHeight,
                     }
                 });
             }
@@ -638,19 +646,6 @@ namespace Huddle.Engine.Processor.OpenCv
             grayImage.Dispose();
 
             return outputImage;
-        }
-
-        private static long GetNextId()
-        {
-            return ++_id;
-        }
-
-        private IEnumerable<Contour<Point>> IterateContours(Contour<Point> contours, MemStorage storage)
-        {
-            for (; contours != null; contours = contours.HNext)
-            {
-                yield return contours.ApproxPoly(contours.Perimeter * 0.05, storage);
-            }
         }
     }
 }

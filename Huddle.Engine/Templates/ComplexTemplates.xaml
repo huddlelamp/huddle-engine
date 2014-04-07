@@ -61,4 +61,33 @@
 
         </StackPanel>
     </DataTemplate>
+
+    <DataTemplate x:Key="FindDisplay" DataType="complex:FindDisplay">
+        <StackPanel>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Grid>
+                        <Image Source="{Binding Path=PreProcessImage}" />
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </Grid>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Flood Fill Threshold"/>
+                <Slider Value="{Binding Path=FloodFillDifference}" Width="340" Height="25" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" />
+                <TextBlock Text="{Binding Path=FloodFillDifference, StringFormat={}{0}}"/>
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
 </ResourceDictionary>

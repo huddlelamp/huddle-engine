@@ -621,15 +621,9 @@ namespace Huddle.Engine.Processor.OpenCv
                 int x;
                 int y;
                 float depth;
-                try
-                {
-                    FindHandLocation(ref segment, ref imageRemovedBackground, ref debugOutput, ref mask, out x, out y, out depth);
-                }
-                catch (SamplingException e)
-                {
-                    Log(e.Message);
-                    continue;
-                }
+                FindHandLocation(ref segment, ref imageRemovedBackground, ref debugOutput, ref mask, out x, out y, out depth);
+
+                if (depth < 0) continue;
 
                 var nx = x / (double)width;
                 var ny = y / (double)height;
@@ -763,7 +757,12 @@ namespace Huddle.Engine.Processor.OpenCv
             }
 
             if (xs.Count == 0)
-                throw new SamplingException("Could not get reliable point samples for current hand segment");
+            {
+                x = -1;
+                y = -1;
+                depth = -1.0f;
+                return;
+            }
 
             x = (int)xs.Average();
             y = (int)ys.Average();

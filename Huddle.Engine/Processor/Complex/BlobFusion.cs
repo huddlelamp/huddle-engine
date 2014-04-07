@@ -8,7 +8,6 @@ using Huddle.Engine.Data;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
 using Huddle.Engine.Processor.OpenCv;
 using Huddle.Engine.Util;
-using PolygonIntersection;
 
 namespace Huddle.Engine.Processor.Complex
 {

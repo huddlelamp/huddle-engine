@@ -4,13 +4,12 @@ using System.Windows;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
+using Huddle.Engine.Processor.Complex.PolygonIntersection;
 using Huddle.Engine.Processor.OpenCv.Struct;
 using Huddle.Engine.Util;
-using PolygonIntersection;
 using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
@@ -418,44 +417,52 @@ namespace Huddle.Engine.Processor.OpenCv
 
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
         {
-            var width = image.Width;
-            var height = image.Height;
+            var imageWidth = image.Width;
+            var imageHeight = image.Height;
 
             var now = DateTime.Now;
 
             _objects.RemoveAll(o => (now - o.LastUpdate).TotalMilliseconds > Timeout);
 
-            var outputImage = new Image<Rgb, byte>(width, height, Rgbs.Black);
+            var outputImage = new Image<Rgb, byte>(imageWidth, imageHeight, Rgbs.Black);
 
             //Convert the image to grayscale and filter out the noise
             var grayImage = image.Convert<Gray, Byte>();
 
             using (var storage = new MemStorage())
             {
-                //var contours = grayImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, IsRetrieveExternal ? RETR_TYPE.CV_RETR_EXTERNAL : RETR_TYPE.CV_RETR_LIST, storage);
-                //Parallel.ForEach(IterateContours(contours, storage), contour =>
-                //{
-
-                //});
                 for (var contours = grayImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, IsRetrieveExternal ? RETR_TYPE.CV_RETR_EXTERNAL : RETR_TYPE.CV_RETR_LIST, storage); contours != null; contours = contours.HNext)
                 {
                     var currentContour = contours.ApproxPoly(contours.Perimeter * 0.05, storage);
 
-                    if (currentContour.Area > MinContourArea) //only consider contours with area greater than 250
+                    if (currentContour.Area > MinContourArea) //only consider contours with area greater than
                     {
-                        outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
+                        if (IsRenderContent)
+                            outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
 
                         if (currentContour.Total >= 4) //The contour has 4 vertices.
                         {
                             #region determine if all the angles in the contour are within [80, 100] degree
+
                             bool isRectangle = true;
                             Point[] pts = currentContour.ToArray();
                             LineSegment2D[] edges = PointCollection.PolyLine(pts, true);
 
+                            LineSegment2D longestEdge = edges[0];
+                            var longestEdgeLength = 0.0;
                             var rightAngle = 0;
                             for (int i = 0; i < edges.Length; i++)
                             {
-                                var angle = Math.Abs(edges[(i + 1) % edges.Length].GetExteriorAngleDegree(edges[i]));
+                                var edge = edges[(i + 1) % edges.Length];
+
+                                // Assumption is that the longest edge defines the width of the tracked device in the blob
+                                if (edge.Length > longestEdgeLength)
+                                {
+                                    longestEdgeLength = edge.Length;
+                                    longestEdge = edge;
+                                }
+
+                                var angle = Math.Abs(edge.GetExteriorAngleDegree(edges[i]));
 
 
                                 if (angle < MinAngle || angle > MaxAngle)
@@ -499,8 +506,10 @@ namespace Huddle.Engine.Processor.OpenCv
                                         o.Center = new Point((int)cCenter.X, (int)cCenter.Y);
                                         o.Bounds = currentContour.BoundingRectangle;
                                         o.Shape = currentContour.GetMinAreaRect();
-                                        o.Polygon = new Polygon(contours.ToArray(), width, height);
+                                        o.Polygon = new Polygon(contours.ToArray(), imageWidth, imageHeight);
                                         o.Points = pts;
+                                        o.DeviceToCameraRatio = ((longestEdgeLength / imageWidth)*0.3 + o.DeviceToCameraRatio)*0.7;
+                                        o.LongestEdge = longestEdge;
 
                                         updated = true;
                                     }
@@ -514,13 +523,15 @@ namespace Huddle.Engine.Processor.OpenCv
 
                                     _objects.Add(new RawObject
                                     {
-                                        Id = GetNextId(),
+                                        Id = NextId(),
                                         LastUpdate = DateTime.Now,
                                         Center = new Point((int)minAreaRect.center.X, (int)minAreaRect.center.Y),
                                         Bounds = currentContour.BoundingRectangle,
                                         Shape = minAreaRect,
-                                        Polygon = new Polygon(contours.ToArray(), width, height),
-                                        Points = pts
+                                        Polygon = new Polygon(contours.ToArray(), imageWidth, imageHeight),
+                                        Points = pts,
+                                        DeviceToCameraRatio = longestEdgeLength / imageWidth,
+                                        LongestEdge = longestEdge
                                     });
                                 }
                             }
@@ -541,19 +552,23 @@ namespace Huddle.Engine.Processor.OpenCv
 
                     if (IsDrawCenter)
                     {
-                        var circle = new CircleF(rawObject.Center, 3);
+                        var circle = new CircleF(rawObject.Center, 2);
                         outputImage.Draw(circle, Rgbs.Green, 3);
                     }
 
                     if (IsDrawCenter)
                     {
-                        var circle = new CircleF(rawObject.EstimatedCenter, 3);
+                        var circle = new CircleF(rawObject.EstimatedCenter, 2);
                         outputImage.Draw(circle, Rgbs.Blue, 3);
                     }
 
-                    //outputImage.Draw(string.Format("Angle {0}", rawObject.Shape.angle), ref EmguFont, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
+                    if (IsRenderContent)
+                    {
+                        outputImage.Draw(rawObject.LongestEdge, Rgbs.Green, 5);
+                        outputImage.Draw(string.Format("Length {0:F1}", rawObject.LongestEdge.Length), ref EmguFont, rawObject.LongestEdge.P1, Rgbs.Green);
+                    }
 
-                    outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFontBig, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
+                    outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFont, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
                 }
 
                 var bounds = rawObject.Bounds;
@@ -561,17 +576,18 @@ namespace Huddle.Engine.Processor.OpenCv
                 Stage(new BlobData(this, "DeviceBlob")
                 {
                     Id = rawObject.Id,
-                    X = estimatedCenter.X / (double)width,
-                    Y = estimatedCenter.Y / (double)height,
+                    X = estimatedCenter.X / (double)imageWidth,
+                    Y = estimatedCenter.Y / (double)imageHeight,
                     Angle = rawObject.Shape.angle,
                     Shape = rawObject.Shape,
                     Polygon = rawObject.Polygon,
+                    DeviceToCameraRatio = rawObject.DeviceToCameraRatio,
                     Area = new Rect
                     {
-                        X = bounds.X / (double)width,
-                        Y = bounds.Y / (double)height,
-                        Width = bounds.Width / (double)width,
-                        Height = bounds.Height / (double)height,
+                        X = bounds.X / (double)imageWidth,
+                        Y = bounds.Y / (double)imageHeight,
+                        Width = bounds.Width / (double)imageWidth,
+                        Height = bounds.Height / (double)imageHeight,
                     }
                 });
             }
@@ -581,19 +597,6 @@ namespace Huddle.Engine.Processor.OpenCv
             grayImage.Dispose();
 
             return outputImage;
-        }
-
-        private static long GetNextId()
-        {
-            return ++_id;
-        }
-
-        private IEnumerable<Contour<Point>> IterateContours(Contour<Point> contours, MemStorage storage)
-        {
-            for (; contours != null; contours = contours.HNext)
-            {
-                yield return contours.ApproxPoly(contours.Perimeter * 0.05, storage);
-            }
         }
     }
 }
