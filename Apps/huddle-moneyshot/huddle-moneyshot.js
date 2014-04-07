@@ -1,6 +1,13 @@
 Objects = new Meteor.Collection("objects");
 
 if (Meteor.isClient) {
+  function getParameterByName(name) {
+      name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+      var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+          results = regex.exec(location.search);
+      return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+  }
+
   UI.body.rendered = function () {
     console.log("UI.body.rendered");
 
@@ -9,7 +16,133 @@ if (Meteor.isClient) {
       e.preventDefault();
     };
 
-    this.$('#world-canvas').visualizeTouches();
+    //this.$('#world-canvas').visualizeTouches();
+    
+    var id = getParameterByName("id");
+
+    console.log("Client Id: " + id);
+
+    var glyphContainer = this.$('#glyph-container');
+    var glyph = this.$('#glyph');
+    glyph.css('background-image', 'url(glyphs/' + id + '.png)');
+
+    var width = $(window).width();
+    var height = $(window).height();
+    $worldCanvas = $('#world-canvas');
+    var canvasWidth = $worldCanvas.width();
+    var canvasHeight = $worldCanvas.height();
+
+    var wppc = (canvasWidth / 100.0);
+    var tppc = (canvasWidth / 100.0);
+
+    /*
+    if (id == 5) {
+      tppc = (width / 23.5); 
+    }
+    else if (id == 4) {
+      tppc = (width / 19.2); 
+    }
+    */
+
+
+    console.log("width: " + canvasWidth);
+
+    // TEST BEGIN
+    /*
+    var ratio = 0.22;
+
+    var scaleX = 1 / ((canvasWidth * ratio) / width);
+
+    //var scaleX = 1 / ((canvasWidth * ratio) / width); 
+
+    var angle = 0.0;
+    var centerX = 2048;
+    var centerY = 1536;
+    var tx = 6000;
+    var ty = 2000;
+
+    console.log("test: " + scaleX);
+
+    var translateTransform = '';//'translate(-' + tx + 'px,-' + ty + 'px)';
+    var rotateTransform = '';//'rotate(' + -(angle) + 'deg)';
+    var scaleTransform = 'scale(' + scaleX + ',' + scaleX + ')';
+
+    var transform = translateTransform + ' ' + rotateTransform + ' ' + scaleTransform;
+    //var transform = scaleTransform + ' ' + rotateTransform + ' ' + scaleTransform;
+    var transformOrigin =  (tx + centerX) + 'px ' + (ty + centerY) + 'px 0'
+
+    
+    $worldCanvas.css('-webkit-transform-origin', '0% 0% 0');
+    $worldCanvas.css('-webkit-transform', transform);
+    */
+    /// TEST END
+
+    var $overview = $($worldCanvas.get(0).cloneNode(true));
+    //var canvasBackgroundImage = $overview.css('background-image');
+    //var canvasBackgroundRepeat = $overview.css('background-repeat');
+    //var canvasBackgroundSize = $overview.css('background-size');
+    $overview.attr('id', 'world-canvas-copy');
+    //$overview.css('-webkit-transform', 'scale(0.03,0.03)');
+    $overview.css('height', '100%');
+    $overview.css('background-color', 'green');
+    $overview.css('background-image', canvasBackgroundImage);
+    $overview.css('background-repeat', canvasBackgroundRepeat);
+    $overview.css('background-size', canvasBackgroundSize);
+    $('#world-canvas-overview').append($overview);
+
+    var scale = wppc / tppc * 0.5;
+
+    var huddle = new Huddle(id, function (data) {
+        if (data.Type) {
+            switch (data.Type) {
+                case 'Proximity':
+//                    console.log('proximity data: ' + JSON.stringify(data.Data));
+
+                    var location = data.Data.Location.split(",");
+                    var x = location[0];
+                    var y = location[1];
+                    var angle = data.Data.Orientation;
+
+                    var ratio = data.Data.DeviceToCameraRatio;
+                    var scaleX = 1 / ((canvasWidth * ratio) / width);
+                    //var scaleY = height / ratio;
+
+                    console.log("Ratio: " + scaleX);
+
+                    var centerX = parseInt(width / 2);
+                    var centerY = parseInt(height / 2);
+                    var tx = x * canvasWidth;
+                    var ty = 2000;//y * canvasHeight;
+
+                    var translateTransform = 'translate(-' + tx + 'px,-' + ty + 'px)';
+                    var rotateTransform = 'rotate(' + -(angle) + 'deg)';
+                    var scaleTransform = 'scale(' + scaleX + ',' + scaleX + ')';
+
+                    var transform = translateTransform + ' ' + rotateTransform + ' ' + scaleTransform;
+                    //var transform = scaleTransform + ' ' + rotateTransform + ' ' + scaleTransform;
+                    var transformOrigin =  (tx + centerX) + 'px ' + (ty + centerY) + 'px 0'
+
+                    $worldCanvas.css('-webkit-transform-origin', transformOrigin);
+                    $worldCanvas.css('-webkit-transform', transform);
+
+                    break;
+                case 'Digital':
+                    if (data.Data.Value)
+                      glyphContainer.show();
+                    else
+                      glyphContainer.hide();
+                    break;
+                case 'Broadcast':
+                    
+                    break;
+            }
+        }
+        else {
+            console.log("echo");
+        }
+      });
+      huddle.reconnect = true;
+      huddle.connect("192.168.1.118", 4711);
   };
 
   Template.worldCanvas.objects = function() {
@@ -120,17 +253,19 @@ if (Meteor.isClient) {
   });
 
   Template.worldCanvas.events({
-    'click #world-canvas2': function(e) {
+    'click #world-canvas': function(e) {
       console.log('clicked canvas');
  
       Objects.insert({
-        x: 0,
-        y: 0,
+        x: e.offsetX,
+        y: e.offsetY,
         width: 200,
         height: 200,
         angle: 0.0,
         scale: 1.0
       });
+
+      e.preventDefault();
     },
 
     'mousedown .world-object': function(e) {

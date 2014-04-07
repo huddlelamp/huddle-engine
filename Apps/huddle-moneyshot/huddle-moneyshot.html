@@ -14,6 +14,8 @@
   <script type="text/javascript" src="jquery.touch.js"></script>
   <script type="text/javascript" src="jquery.gesture.js"></script>
   <script type="text/javascript" src="jquery.gesture2.js"></script>
+
+  <script type="text/javascript" src="huddle.js"></script>
 </head>
 
 <body>
@@ -21,12 +23,20 @@
 </body>
 
 <template name="worldCanvas">
-  <button id="add-object">Add Object</button>
+  {{!--<button id="add-object">Add Object</button>--}}
 
-  <div id="world-canvas">
-	  {{#each objects}}
-	  	{{> worldObject}}
-	  {{/each}}
+  <div id="world-canvas-wrapper">
+	  <div id="world-canvas">
+		  {{#each objects}}
+		  	{{> worldObject}}
+		  {{/each}}
+	  </div>
+  </div>
+
+  <div id="world-canvas-overview"></div>
+
+  <div id="glyph-container">
+ 	<div id="glyph"></div>
   </div>
 </template>
 
