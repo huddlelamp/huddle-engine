@@ -19,6 +19,9 @@ if (Meteor.isClient) {
     //this.$('#world-canvas').visualizeTouches();
     
     var id = getParameterByName("id");
+    var debug = getParameterByName("debug");
+    if (debug == 'undefined')
+      debug = false;
 
     console.log("Client Id: " + id);
 
@@ -77,6 +80,7 @@ if (Meteor.isClient) {
     */
     /// TEST END
 
+/*
     var $overview = $($worldCanvas.get(0).cloneNode(true));
     //var canvasBackgroundImage = $overview.css('background-image');
     //var canvasBackgroundRepeat = $overview.css('background-repeat');
@@ -84,16 +88,19 @@ if (Meteor.isClient) {
     $overview.attr('id', 'world-canvas-copy');
     //$overview.css('-webkit-transform', 'scale(0.03,0.03)');
     $overview.css('height', '100%');
-    $overview.css('background-color', 'green');
-    $overview.css('background-image', canvasBackgroundImage);
-    $overview.css('background-repeat', canvasBackgroundRepeat);
-    $overview.css('background-size', canvasBackgroundSize);
+    //$overview.css('background-color', 'green');
+    //$overview.css('background-image', canvasBackgroundImage);
+    //$overview.css('background-repeat', canvasBackgroundRepeat);
+    //$overview.css('background-size', canvasBackgroundSize);
     $('#world-canvas-overview').append($overview);
-
+*/
     var scale = wppc / tppc * 0.5;
 
     var huddle = new Huddle(id, function (data) {
         if (data.Type) {
+
+            if (debug) return;
+
             switch (data.Type) {
                 case 'Proximity':
 //                    console.log('proximity data: ' + JSON.stringify(data.Data));
@@ -101,25 +108,45 @@ if (Meteor.isClient) {
                     var location = data.Data.Location.split(",");
                     var x = location[0];
                     var y = location[1];
+
+                    //console.log(x);
+
+                    var x = 0.5;
+                    var y = 0.2;
+
                     var angle = data.Data.Orientation;
+ 
+                    var ratio = data.Data.RgbImageToDisplayRatio;
 
-                    var ratio = data.Data.DeviceToCameraRatio;
-                    var scaleX = 1 / ((canvasWidth * ratio) / width);
-                    //var scaleY = height / ratio;
+                    //console.log("Rgb Image to Device Ratio: " + ratio.X + "," + ratio.Y);
 
-                    console.log("Ratio: " + scaleX);
+                    var ratioPeepholeToWorldX = canvasWidth * ratio.X;
+                    var ratioPeepholeToWorldY = canvasHeight * ratio.Y;
+
+                    var sx = (640 / canvasWidth) / ratio.X;
+                    var sy = (480 / canvasHeight) / ratio.Y;
+
+                    //console.log("peepholeToWorld: " + ratioPeepholeToWorldX);
+
+                    var scaleX = 1 / (canvasWidth * ratio.X) / width;
+                    var scaleY = 1 / (canvasHeight * ratio.Y) / height;
+
+                    //console.log("CanvasWidth/Width/RatioX/Scale: " + canvasWidth + '/' + width + '/' + ratio.X + '/' + scaleX);
 
                     var centerX = parseInt(width / 2);
                     var centerY = parseInt(height / 2);
-                    var tx = x * canvasWidth;
-                    var ty = 2000;//y * canvasHeight;
+                    var tx = x * canvasWidth - (width / 2);
+                    var ty = y * canvasHeight - (height / 2);
+
+                    angle = 0;
 
                     var translateTransform = 'translate(-' + tx + 'px,-' + ty + 'px)';
                     var rotateTransform = 'rotate(' + -(angle) + 'deg)';
-                    var scaleTransform = 'scale(' + scaleX + ',' + scaleX + ')';
+                    var scaleTransform = 'scale(' + sx + ',' + sy + ')';
 
-                    var transform = translateTransform + ' ' + rotateTransform + ' ' + scaleTransform;
+                    //var transform = translateTransform + ' ' + rotateTransform; + ' ' + scaleTransform;
                     //var transform = scaleTransform + ' ' + rotateTransform + ' ' + scaleTransform;
+                    var transform = translateTransform + scaleTransform;
                     var transformOrigin =  (tx + centerX) + 'px ' + (ty + centerY) + 'px 0'
 
                     $worldCanvas.css('-webkit-transform-origin', transformOrigin);
