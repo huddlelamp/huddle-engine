@@ -120,8 +120,8 @@ if (Meteor.isClient) {
                     //var ratioPeepholeToWorldX = canvasWidth * ratio.X;
                     //var ratioPeepholeToWorldY = canvasHeight * ratio.Y;
 
-                    var sx = (1280 / canvasWidth);// / ratio.X;
-                    var sy = (720 / canvasHeight);// / ratio.Y;
+                    //var sx = (1280 / canvasWidth) / ratio.X;
+                    //var sy = (720 / canvasHeight) / ratio.Y;
 
                     //var scaleX = 1 / (canvasWidth * ratio.X) / width;
                     //var scaleY = 1 / (canvasHeight * ratio.Y) / height;
@@ -133,20 +133,37 @@ if (Meteor.isClient) {
 
                     var centerX = parseInt(width / 2);
                     var centerY = parseInt(height / 2);
-                    var tx = x * canvasWidth - (width / 2);
-                    var ty = y * canvasHeight - (height / 2);
+                    //var tx = -1 * (x * canvasWidth - (width / 2)) / sx;
+                    //var ty = -1 * (y * canvasHeight - (height / 2)) / sy;
+                    //var tx = -1 * x * canvasWidth + (width * x / 2);
+                    //var ty = -1 * y * canvasHeight + (height * y / 2);
 
-                    var translateTransform = 'translate(-' + tx + 'px,-' + ty + 'px)';
+                    // correct calculation of top left corner
+                    var tx = -1 * (x * canvasWidth - (centerX * ratio.X));
+                    var ty = -1 * (y * canvasHeight - (centerY * ratio.Y));
+
+                    tx /= ratio.X;
+                    ty /= ratio.X;
+
+                    var translateTransform = 'translate(' + tx + 'px,' +ty + 'px)';
                     var rotateTransform = 'rotate(' + -(angle) + 'deg)';
-                    var scaleTransform = 'scale(' + sx + ',' + sy + ')';
+                    var scaleTransform = 'scale(' + 1 / ratio.X + ',' + 1 / ratio.X + ')';
 
                     //var transform = translateTransform + ' ' + rotateTransform; + ' ' + scaleTransform;
-                    var transform = translateTransform + ' ' + rotateTransform;// + ' ' + scaleTransform;
-                    //var transform = scaleTransform + ' ' + translateTransform;
+                    //var transform = translateTransform + ' ' + rotateTransform + ' ' + scaleTransform;
+                    var transform = translateTransform + ' ' + scaleTransform;
                     var transformOrigin =  (tx + centerX) + 'px ' + (ty + centerY) + 'px 0'
 
-                    $worldCanvas.css('-webkit-transform-origin', transformOrigin);
+                    //var transformOrigin =  '0px 0px 0';
+
+                    $worldCanvas.css('-webkit-transform-origin', '0px 0px 0px');
                     $worldCanvas.css('-webkit-transform', transform);
+                    //$worldCanvas.css({
+                    //  left: tx + 'px',
+                    //  top: ty + 'px'
+                    //});
+
+                    console.log('transform ' + transform);
 
                     break;
                 case 'Digital':

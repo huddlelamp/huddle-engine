@@ -94,9 +94,15 @@ Huddle.prototype.doConnect = function () {
         console.log("Huddle Closed {0}".format(event));
 
         huddle.connected = false;
+        
+        if (huddle.reconnect)
+        {
+            huddle.reconnectTimeout = setTimeout(function()
+            {
+                huddle.doConnect(huddle.host, huddle.port);
+            }, 1000);
+        }
     };
-
-
 };
 
 Huddle.prototype.close = function() {
