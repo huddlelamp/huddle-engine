@@ -111,9 +111,10 @@ if (Meteor.isClient) {
 
                     //console.log(x);
 
-                    var x = 0.5;
-                    var y = 0.2;
-
+                    // Indonesien Jakarta
+                    var x = 0.769;
+                    var y = 0.402;
+ 
                     var angle = data.Data.Orientation;
  
                     var ratio = data.Data.RgbImageToDisplayRatio;
@@ -123,8 +124,8 @@ if (Meteor.isClient) {
                     var ratioPeepholeToWorldX = canvasWidth * ratio.X;
                     var ratioPeepholeToWorldY = canvasHeight * ratio.Y;
 
-                    var sx = (640 / canvasWidth) / ratio.X;
-                    var sy = (480 / canvasHeight) / ratio.Y;
+                    var sx = (1280 / canvasWidth) / ratio.X;
+                    var sy = (720 / canvasHeight) / ratio.Y;
 
                     //console.log("peepholeToWorld: " + ratioPeepholeToWorldX);
 
