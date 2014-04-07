@@ -108,46 +108,41 @@ if (Meteor.isClient) {
                     var location = data.Data.Location.split(",");
                     var x = location[0];
                     var y = location[1];
-
-                    //console.log(x);
-
-                    // Indonesien Jakarta
-                    var x = 0.769;
-                    var y = 0.402;
- 
                     var angle = data.Data.Orientation;
- 
                     var ratio = data.Data.RgbImageToDisplayRatio;
 
+                    // Indonesien Jakarta
+                    //var x = 0.769;
+                    //var y = 0.402;
+ 
                     //console.log("Rgb Image to Device Ratio: " + ratio.X + "," + ratio.Y);
 
-                    var ratioPeepholeToWorldX = canvasWidth * ratio.X;
-                    var ratioPeepholeToWorldY = canvasHeight * ratio.Y;
+                    //var ratioPeepholeToWorldX = canvasWidth * ratio.X;
+                    //var ratioPeepholeToWorldY = canvasHeight * ratio.Y;
 
-                    var sx = (1280 / canvasWidth) / ratio.X;
-                    var sy = (720 / canvasHeight) / ratio.Y;
+                    var sx = (1280 / canvasWidth);// / ratio.X;
+                    var sy = (720 / canvasHeight);// / ratio.Y;
 
-                    //console.log("peepholeToWorld: " + ratioPeepholeToWorldX);
+                    //var scaleX = 1 / (canvasWidth * ratio.X) / width;
+                    //var scaleY = 1 / (canvasHeight * ratio.Y) / height;
 
-                    var scaleX = 1 / (canvasWidth * ratio.X) / width;
-                    var scaleY = 1 / (canvasHeight * ratio.Y) / height;
-
-                    //console.log("CanvasWidth/Width/RatioX/Scale: " + canvasWidth + '/' + width + '/' + ratio.X + '/' + scaleX);
+                    //if (id == 9 || id == 12) {
+                    //  sx *= 0.38;
+                    //  sy *= 0.38;
+                    //}
 
                     var centerX = parseInt(width / 2);
                     var centerY = parseInt(height / 2);
                     var tx = x * canvasWidth - (width / 2);
                     var ty = y * canvasHeight - (height / 2);
 
-                    angle = 0;
-
                     var translateTransform = 'translate(-' + tx + 'px,-' + ty + 'px)';
                     var rotateTransform = 'rotate(' + -(angle) + 'deg)';
                     var scaleTransform = 'scale(' + sx + ',' + sy + ')';
 
                     //var transform = translateTransform + ' ' + rotateTransform; + ' ' + scaleTransform;
-                    //var transform = scaleTransform + ' ' + rotateTransform + ' ' + scaleTransform;
-                    var transform = translateTransform + scaleTransform;
+                    var transform = translateTransform + ' ' + rotateTransform;// + ' ' + scaleTransform;
+                    //var transform = scaleTransform + ' ' + translateTransform;
                     var transformOrigin =  (tx + centerX) + 'px ' + (ty + centerY) + 'px 0'
 
                     $worldCanvas.css('-webkit-transform-origin', transformOrigin);
