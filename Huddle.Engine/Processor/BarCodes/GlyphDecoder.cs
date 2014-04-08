@@ -147,7 +147,7 @@ namespace Huddle.Engine.Processor.BarCodes
         /// </summary>
         public const string MinFramesPropertyName = "MinFramesProperty";
 
-        private int _minFramesProperty = 0;
+        private int _minFramesProperty = 1;
 
         /// <summary>
         /// Sets and gets the MinFramesProperty property.

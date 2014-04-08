@@ -1,0 +1,64 @@
+/* CSS declarations go here */
+#world-canvas {
+	position: absolute;
+	width: 1280px;
+	height: 720px;
+
+	//background-image: url('World-Map-3.jpg');
+	background-image: url('world-map-2.jpg');
+	background-repeat: repeat;
+	background-size: contain;
+
+	background-color: yellow;
+}
+
+#world-canvas-overview {
+	position: fixed;
+	bottom: 10px;
+	right: 10px;
+	width: 300px;
+	height: 200px;
+	background-color: gray;
+	border: 3px solid black;
+
+	//background-image: url('World-Map-3.jpg');
+	background-image: url('world-map-2.jpg');
+	background-repeat: repeat;
+	background-size: contain;
+}
+
+.world-object {
+	background-color: deeppink;
+
+	background-image: url('dagstuhl13452.jpg');
+	background-size: contain;
+	background-repeat: no-repeat;
+	box-shadow: 5px 5px 5px #222222;
+
+	transform-origin: 50% 50%;
+	-ms-transform-origin: 50% 50%; /* IE 9 */
+	-webkit-transform-origin: 50% 50%; /* Chrome, Safari, Opera */
+}
+
+#glyph-container {
+    top: 0;
+    left: 0;
+    position: fixed;
+    background-color: white;
+    vertical-align: bottom;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+#glyph {
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}

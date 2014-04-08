@@ -1,0 +1,47 @@
+<head>
+  <title>Huddle Moneyshot</title>
+
+  <!-- For iOS web apps -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Huddle Moneyshot">
+  <meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+
+  <!-- Visualize touch events -->
+  <script type="text/javascript" src="jquery.touchvisualizer.js"></script>
+
+  <!-- Touch support for mobile devices -->
+  <!-- <script type="text/javascript" src="jquery.ui.touch-punch.min.js"></script>-->
+  <script type="text/javascript" src="jquery.touch.js"></script>
+  <script type="text/javascript" src="jquery.gesture.js"></script>
+  <script type="text/javascript" src="jquery.gesture2.js"></script>
+
+  <script type="text/javascript" src="huddle.js"></script>
+</head>
+
+<body>
+  {{> worldCanvas}}
+</body>
+
+<template name="worldCanvas">
+  {{!--<button id="add-object">Add Object</button>--}}
+
+  <div id="world-canvas-wrapper">
+	  <div id="world-canvas">
+		  {{#each objects}}
+		  	{{> worldObject}}
+		  {{/each}}
+	  </div>
+  </div>
+
+  <div id="world-canvas-overview"></div>
+
+  <div id="glyph-container">
+ 	<div id="glyph"></div>
+  </div>
+</template>
+
+<template name="worldObject">
+  <!--<div id="{{_id}}" class="world-object" style="-webkit-transform: translate({{x}}px, {{y}}px) scale({{scale}}) rotate({{angle}}rad); width: {{width}}px; height: {{height}}px;"></div>-->
+
+  <div id="{{_id}}" class="world-object" style="width: {{width}}px; height: {{height}}px; -webkit-transform-origin: {{transformOrigin}}; -webkit-transform: {{transform}};"></div>
+</template>
