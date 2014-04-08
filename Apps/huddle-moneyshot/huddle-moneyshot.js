@@ -138,20 +138,16 @@ if (Meteor.isClient) {
                     //var tx = -1 * x * canvasWidth + (width * x / 2);
                     //var ty = -1 * y * canvasHeight + (height * y / 2);
 
-                    // correct calculation of top left corner
-                    var tx = -1 * (x * canvasWidth - (centerX * ratio.X));
-                    var ty = -1 * (y * canvasHeight - (centerY * ratio.Y));
-
-                    tx /= ratio.X;
-                    ty /= ratio.X;
+                    var tx = -1 * x * canvasWidth + ((width / ratio.Y) / 2);
+                    var ty = -1 * y * canvasHeight + ((height / ratio.Y) / 2);
 
                     var translateTransform = 'translate(' + tx + 'px,' +ty + 'px)';
                     var rotateTransform = 'rotate(' + -(angle) + 'deg)';
-                    var scaleTransform = 'scale(' + 1 / ratio.X + ',' + 1 / ratio.X + ')';
+                    var scaleTransform = 'scale(' + ratio.Y + ',' + ratio.Y + ')';
 
                     //var transform = translateTransform + ' ' + rotateTransform; + ' ' + scaleTransform;
                     //var transform = translateTransform + ' ' + rotateTransform + ' ' + scaleTransform;
-                    var transform = translateTransform + ' ' + scaleTransform;
+                    var transform = scaleTransform + ' ' + translateTransform;
                     var transformOrigin =  (tx + centerX) + 'px ' + (ty + centerY) + 'px 0'
 
                     //var transformOrigin =  '0px 0px 0';
@@ -182,7 +178,7 @@ if (Meteor.isClient) {
         }
       });
       huddle.reconnect = true;
-      huddle.connect("192.168.1.118", 4711);
+      huddle.connect("192.168.1.121", 4711);
   };
 
   Template.worldCanvas.objects = function() {
