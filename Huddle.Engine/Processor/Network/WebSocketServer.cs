@@ -104,6 +104,7 @@ namespace Huddle.Engine.Processor.Network
             {
                 _webSocketServer.Stop();
                 _webSocketServer.Dispose();
+                _webSocketServer = null;
             }
 
             // send disconnect??

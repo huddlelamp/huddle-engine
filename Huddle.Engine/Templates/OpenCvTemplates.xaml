@@ -385,12 +385,6 @@
             </StackPanel>
 
             <StackPanel>
-                <Label Content="Max Contour Area"/>
-                <Slider Value="{Binding Path=MaxContourArea}" Minimum="0" Maximum="10000" />
-                <TextBlock Text="{Binding Path=MaxContourArea}"/>
-            </StackPanel>
-
-            <StackPanel>
                 <Label Content="Min Angle"/>
                 <Slider Value="{Binding Path=MinAngle}" Minimum="0" Maximum="180" />
                 <TextBlock Text="{Binding Path=MinAngle}"/>
@@ -410,10 +404,11 @@
         </StackPanel>
     </DataTemplate>
     
-    <DataTemplate x:Key="FindConvexHullsTemplate" DataType="openCv:FindConvexHulls">
+    <DataTemplate x:Key="FillConvexHulls" DataType="openCv:FillConvexHulls">
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
@@ -422,23 +417,17 @@
                           Grid.Column="0">
                     <Image Source="{Binding Path=PreProcessImage}" />
                 </GroupBox>
-                <GroupBox Header="Post Processed Image"
+                <GroupBox Header="Debug Image"
                           Grid.Column="1">
+                    <Image Source="{Binding Path=DebugImageSource}" />
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="2">
                     <Image Source="{Binding Path=PostProcessImage}" />
                 </GroupBox>
             </Grid>
 
-            <CheckBox Content="Fill Contours" IsChecked="{Binding Path=IsFillContours}" />
-            <CheckBox Content="Draw Contours" IsChecked="{Binding Path=IsDrawContours}" />
-            <CheckBox Content="Draw Center" IsChecked="{Binding Path=IsDrawCenter}" />
-            <CheckBox Content="Subract Confidence Image" IsChecked="{Binding Path=IsSubtractConfidenceImage}" />
             <CheckBox Content="Retrieve External" IsChecked="{Binding Path=IsRetrieveExternal}" />
-
-            <StackPanel>
-                <Label Content="Max Distance Restore Id"/>
-                <Slider Value="{Binding Path=MaxDistanceRestoreId}" Minimum="0" Maximum="100" />
-                <TextBlock Text="{Binding Path=MaxDistanceRestoreId}"/>
-            </StackPanel>
 
             <StackPanel>
                 <Label Content="Min Contour Area"/>
@@ -450,24 +439,6 @@
                 <Label Content="Max Contour Area"/>
                 <Slider Value="{Binding Path=MaxContourArea}" Minimum="0" Maximum="10000" />
                 <TextBlock Text="{Binding Path=MaxContourArea}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Min Angle"/>
-                <Slider Value="{Binding Path=MinAngle}" Minimum="0" Maximum="180" />
-                <TextBlock Text="{Binding Path=MinAngle}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Max Angle"/>
-                <Slider Value="{Binding Path=MaxAngle}" Minimum="0" Maximum="180" />
-                <TextBlock Text="{Binding Path=MaxAngle}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Timeout"/>
-                <Slider Value="{Binding Path=Timeout}" Minimum="0" Maximum="10000" />
-                <TextBlock Text="{Binding Path=Timeout}"/>
             </StackPanel>
         </StackPanel>
     </DataTemplate>

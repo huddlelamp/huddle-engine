@@ -308,7 +308,7 @@
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
     <Compile Include="Processor\OpenCv\Filter\KalmanFilter.cs" />
     <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
-    <Compile Include="Processor\OpenCv\FindConvexHulls.cs" />
+    <Compile Include="Processor\OpenCv\FillConvexHulls.cs" />
     <Compile Include="Processor\OpenCv\Kalman.cs" />
     <Compile Include="Data\Hand.cs" />
     <Compile Include="Processor\OpenCv\Struct\RawObject.cs" />
