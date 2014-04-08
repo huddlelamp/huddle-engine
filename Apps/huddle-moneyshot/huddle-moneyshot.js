@@ -146,10 +146,14 @@ if (Meteor.isClient) {
                     //var transform = translateTransform + ' ' + rotateTransform + ' ' + scaleTransform;
                     var transform = ' scale(' + scaleX + ',' + scaleY + ')';
                     transform += ' translate(' + txd + 'px,' +tyd + 'px)';
+                    
+                    transform += ' translate(' + (-1 * tx) + 'px,' + (-1 * ty) + 'px)';
+                    transform += 'rotate(' + -(angle) + 'deg)';
+                    transform += ' translate(' + (1 * tx) + 'px,' + (1 * ty) + 'px)';
+
                     //transform += ' translate(' + (-1 * tx) + 'px,' + (-1 * ty) + 'px)';
                     //transform += ' scale(' + 0.5 + ',' + 0.5 + ')';
-                    //transform += ' translate(' + (1 * tx) + 'px,' + (1 * ty) + 'px)';
-
+                    
                     //console.log('asdf' + transform);
 
                     //var transformOrigin =  (tx + centerX) + 'px ' + (ty + centerY) + 'px 0'
