@@ -29,27 +29,15 @@ if (Meteor.isClient) {
     var glyph = this.$('#glyph');
     glyph.css('background-image', 'url(glyphs/' + id + '.png)');
 
-    var width = $(window).width();
-    var height = $(window).height();
+    var windowWidth = $(window).width();
+    var windowHeight = $(window).height();
+
     $worldCanvas = $('#world-canvas');
     var canvasWidth = $worldCanvas.width();
     var canvasHeight = $worldCanvas.height();
 
-    var wppc = (canvasWidth / 100.0);
-    var tppc = (canvasWidth / 100.0);
-
-    /*
-    if (id == 5) {
-      tppc = (width / 23.5); 
-    }
-    else if (id == 4) {
-      tppc = (width / 19.2); 
-    }
-    */
-
-
-    console.log("width: " + canvasWidth);
-
+    var devicePixelRatio = window.devicePixelRatio || 1.0;
+    
     // TEST BEGIN
     /*
     var ratio = 0.22;
@@ -94,8 +82,6 @@ if (Meteor.isClient) {
     //$overview.css('background-size', canvasBackgroundSize);
     $('#world-canvas-overview').append($overview);
 */
-    var scale = wppc / tppc * 0.5;
-
     var huddle = new Huddle(id, function (data) {
         if (data.Type) {
 
@@ -114,6 +100,11 @@ if (Meteor.isClient) {
                     // Indonesien Jakarta
                     //var x = 0.769;
                     //var y = 0.402;
+
+                    console.log(ratio.X);
+
+                    var scaleX = ((ratio.X * windowWidth) / canvasWidth);
+                    var scaleY = ((ratio.Y * windowHeight) / canvasHeight);
  
                     //console.log("Rgb Image to Device Ratio: " + ratio.X + "," + ratio.Y);
 
@@ -131,24 +122,37 @@ if (Meteor.isClient) {
                     //  sy *= 0.38;
                     //}
 
-                    var centerX = parseInt(width / 2);
-                    var centerY = parseInt(height / 2);
+                    //var centerX = parseInt(width / 2);
+                    //var centerY = parseInt(height / 2);
                     //var tx = -1 * (x * canvasWidth - (width / 2)) / sx;
                     //var ty = -1 * (y * canvasHeight - (height / 2)) / sy;
                     //var tx = -1 * x * canvasWidth + (width * x / 2);
                     //var ty = -1 * y * canvasHeight + (height * y / 2);
 
-                    var tx = -1 * x * canvasWidth + ((width / ratio.Y) / 2);
-                    var ty = -1 * y * canvasHeight + ((height / ratio.Y) / 2);
+                    var deviceCenterToDeviceLeft = ((windowWidth / ratio.Y) / 2);
+                    var deviceCenterToDeviceTop = ((windowHeight / ratio.Y) / 2);
 
-                    var translateTransform = 'translate(' + tx + 'px,' +ty + 'px)';
+                    var tx = -1 * x * canvasWidth;
+                    var ty = -1 * y * canvasHeight;
+
+                    var txd = tx + deviceCenterToDeviceLeft;
+                    var tyd = ty + deviceCenterToDeviceTop;
+
+                    
                     var rotateTransform = 'rotate(' + -(angle) + 'deg)';
-                    var scaleTransform = 'scale(' + ratio.Y + ',' + ratio.Y + ')';
+                    
 
                     //var transform = translateTransform + ' ' + rotateTransform; + ' ' + scaleTransform;
                     //var transform = translateTransform + ' ' + rotateTransform + ' ' + scaleTransform;
-                    var transform = scaleTransform + ' ' + translateTransform;
-                    var transformOrigin =  (tx + centerX) + 'px ' + (ty + centerY) + 'px 0'
+                    var transform = ' scale(' + scaleX + ',' + scaleY + ')';
+                    transform += ' translate(' + txd + 'px,' +tyd + 'px)';
+                    //transform += ' translate(' + (-1 * tx) + 'px,' + (-1 * ty) + 'px)';
+                    //transform += ' scale(' + 0.5 + ',' + 0.5 + ')';
+                    //transform += ' translate(' + (1 * tx) + 'px,' + (1 * ty) + 'px)';
+
+                    //console.log('asdf' + transform);
+
+                    //var transformOrigin =  (tx + centerX) + 'px ' + (ty + centerY) + 'px 0'
 
                     //var transformOrigin =  '0px 0px 0';
 
@@ -159,7 +163,7 @@ if (Meteor.isClient) {
                     //  top: ty + 'px'
                     //});
 
-                    console.log('transform ' + transform);
+                    //console.log('transform ' + transform);
 
                     break;
                 case 'Digital':
