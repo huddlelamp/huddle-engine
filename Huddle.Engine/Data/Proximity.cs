@@ -220,36 +220,36 @@ namespace Huddle.Engine.Data
 
         #endregion
 
-        #region DeviceToCameraRatio
+        #region RgbImageToDisplayRatio
 
         /// <summary>
-        /// The <see cref="DeviceToCameraRatio" /> property's name.
+        /// The <see cref="RgbImageToDisplayRatio" /> property's name.
         /// </summary>
-        public const string DeviceToCameraRatioPropertyName = "DeviceToCameraRatio";
+        public const string RgbImageToDisplayRatioPropertyName = "RgbImageToDisplayRatio";
 
-        private double _deviceToCameraRatio = 0.0;
+        private Ratio _rgbImageToDisplayRatio = Ratio.Empty;
 
         /// <summary>
-        /// Sets and gets the DeviceToCameraRatio property.
+        /// Sets and gets the RgbImageToDisplayRatio property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public double DeviceToCameraRatio
+        public Ratio RgbImageToDisplayRatio
         {
             get
             {
-                return _deviceToCameraRatio;
+                return _rgbImageToDisplayRatio;
             }
 
             set
             {
-                if (_deviceToCameraRatio == value)
+                if (_rgbImageToDisplayRatio.Equals(value))
                 {
                     return;
                 }
 
-                RaisePropertyChanging(DeviceToCameraRatioPropertyName);
-                _deviceToCameraRatio = value;
-                RaisePropertyChanged(DeviceToCameraRatioPropertyName);
+                RaisePropertyChanging(RgbImageToDisplayRatioPropertyName);
+                _rgbImageToDisplayRatio = value;
+                RaisePropertyChanged(RgbImageToDisplayRatioPropertyName);
             }
         }
 
@@ -272,7 +272,7 @@ namespace Huddle.Engine.Data
                 Movement = Movement,
                 Orientation = Orientation,
                 Presences = new List<Proximity>(Presences),
-                DeviceToCameraRatio = DeviceToCameraRatio
+                RgbImageToDisplayRatio = RgbImageToDisplayRatio
             };
         }
 

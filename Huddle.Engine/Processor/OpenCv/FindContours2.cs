@@ -630,7 +630,6 @@ namespace Huddle.Engine.Processor.OpenCv
                     Angle = rawObject.Shape.angle,
                     Shape = rawObject.Shape,
                     Polygon = rawObject.Polygon,
-                    DeviceToCameraRatio = rawObject.DeviceToCameraRatio,
                     Area = new Rect
                     {
                         X = bounds.X / (double)imageWidth,

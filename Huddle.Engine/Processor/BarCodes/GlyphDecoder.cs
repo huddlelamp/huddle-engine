@@ -37,18 +37,18 @@ namespace Huddle.Engine.Processor.BarCodes
         #region private fields
 
         // possible number of different glyphs in glyph set
-        private const int GLYPHCOUNT = 20;
-        private GlyphMetadata[] _glyphTable = new GlyphMetadata[GLYPHCOUNT];
+        private const int GlyphCount = 20;
+        private GlyphMetadata[] _glyphTable = new GlyphMetadata[GlyphCount];
 
         // number of simultaneous glyphs to search for 
-        private const int GLYPHSTOSEARCHFOR = 5;
-        private Dictionary<String, Glyph> _recognizedGlyphs = new Dictionary<string, Glyph>(GLYPHSTOSEARCHFOR);
-        private Dictionary<String, List<IntPoint>> _recognizedQuads = new Dictionary<String, List<IntPoint>>(GLYPHSTOSEARCHFOR);
+        private const int GlyphsToSearchFor = 5;
+        private readonly Dictionary<String, Glyph> _recognizedGlyphs = new Dictionary<string, Glyph>(GlyphsToSearchFor);
+        private readonly Dictionary<String, List<IntPoint>> _recognizedQuads = new Dictionary<String, List<IntPoint>>(GlyphsToSearchFor);
 
         // number of frames to wait for and to store in history 
         private const int GLYPHHISTORYFRAMES = 10;
 
-        private GlyphRecognizer _glyphRecognizer = null;
+        private readonly GlyphRecognizer _glyphRecognizer = null;
 
         private Image<Rgb, Byte> _lastFrame;
 
@@ -318,15 +318,17 @@ namespace Huddle.Engine.Processor.BarCodes
                     } while (line != null);
                 }
 
-                _glyphRecognizer = new GlyphRecognizer(glyphDatabase);
-                _glyphRecognizer.MaxNumberOfGlyphsToSearch = GLYPHSTOSEARCHFOR;
+                _glyphRecognizer = new GlyphRecognizer(glyphDatabase)
+                {
+                    MaxNumberOfGlyphsToSearch = GlyphsToSearchFor
+                };
 
                 PropertyChanged += (s, e) =>
                 {
                     switch (e.PropertyName)
                     {
                         case MinFramesPropertyName:
-                            _glyphTable = new GlyphMetadata[GLYPHCOUNT];
+                            _glyphTable = new GlyphMetadata[GlyphCount];
                             break;
                     }
                 };
@@ -346,10 +348,8 @@ namespace Huddle.Engine.Processor.BarCodes
 
             var devices = dataContainer.OfType<Device>().ToArray();
             var unknownDevices = devices.Where(d => !d.IsIdentified).ToArray();
-            if (!devices.Any() || !unknownDevices.Any())
-            {
-                return base.PreProcess(dataContainer);
-            }
+
+            if (!devices.Any()) return base.PreProcess(dataContainer);
 
             var outputImage = _lastFrame.Copy();
 
@@ -367,75 +367,15 @@ namespace Huddle.Engine.Processor.BarCodes
                 foreach (var device in unknownDevices)
                 //foreach (var device in devices)
                 {
-                    var area = device.Area;
+                    var marker = GetMarker(ref _lastFrame, device, ref outputImage);
+                    if (marker == null) continue;
 
-                    var roiExpandFactor = RoiExpandFactor;
+                    var rgbImageToDisplayRatio = GetRgbImageToDisplayRatio(ref grayImage, device, ref outputImage);
+                    device.RgbImageToDisplayRatio = rgbImageToDisplayRatio;
 
-                    var indentX = width * roiExpandFactor;
-                    var indentY = height * roiExpandFactor;
+                    marker.RgbImageToDisplayRatio = rgbImageToDisplayRatio;
 
-                    var offsetX = (int)(area.X * width);
-                    var offsetY = (int)(area.Y * height);
-
-                    var roiX = (int)Math.Max(0, offsetX - indentX);
-                    var roiY = (int)Math.Max(0, offsetY - indentY);
-                    var roiWidth = (int)Math.Min(width - roiX, area.Width * width + 2 * indentX);
-                    var roiHeight = (int)Math.Min(height - roiY, area.Height * height + 2 * indentY);
-
-                    var roi = new Rectangle(
-                        roiX,
-                        roiY,
-                        roiWidth,
-                        roiHeight
-                        );
-
-                    if (IsRenderContent)
-                    {
-                        outputImage.Draw(roi, Rgbs.Red, 2);
-                    }
-
-                    var imageWithROI = _lastFrame.Copy(roi);
-
-                    //FindMarker(imageWithROI, offsetX, offsetY, width, height, ref outputImage);
-
-                    grayImage.ROI = roi;
-
-                    Contour<Point> largestContour = null;
-                    using (var storage = new MemStorage())
-                    {
-                        for (var contours = grayImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL); contours != null; contours = contours.HNext)
-                        {
-                            var contour = contours.ApproxPoly(contours.Perimeter * 0.05);
-
-                            if (largestContour == null)
-                            {
-                                largestContour = contour;
-                                continue;
-                            }
-
-                            if (contour.Area > largestContour.Area)
-                            {
-                                largestContour = contour;
-                            }
-                        }
-
-                        if (largestContour != null)
-                        {
-                            var edges = DetermineLongestEdge(largestContour);
-
-                            if (IsRenderContent)
-                            {
-                                var oldROI = outputImage.ROI;
-                                outputImage.ROI = roi;
-                                outputImage.Draw(largestContour.GetMinAreaRect(storage), Rgbs.Cyan, 2);
-
-                                outputImage.Draw(edges[0], Rgbs.Red, 3);
-                                outputImage.Draw(edges[1], Rgbs.Green, 3);
-
-                                outputImage.ROI = oldROI;
-                            }
-                        }
-                    }
+                    Stage(marker);
                 }
 
                 outputImage.ROI = new Rectangle(0, 0, width, height);
@@ -501,7 +441,9 @@ namespace Huddle.Engine.Processor.BarCodes
 
                 if (!UseBlobs)
                 {
-                    FindMarker(_lastFrame, 0, 0, _lastFrame.Width, _lastFrame.Height, ref _lastFrame);
+                    var marker = FindMarker(_lastFrame, 0, 0, _lastFrame.Width, _lastFrame.Height, ref _lastFrame);
+
+                    Stage(marker);
 
                     if (IsRenderContent)
                     {
@@ -521,7 +463,33 @@ namespace Huddle.Engine.Processor.BarCodes
             return null;
         }
 
-        private void FindMarker(Image<Rgb, byte> image, int offsetX, int offsetY, int width, int height, ref Image<Rgb, byte> outputImage)
+        private Marker GetMarker(ref Image<Rgb, byte> image, Device device, ref Image<Rgb, byte> outputImage)
+        {
+            var width = image.Width;
+            var height = image.Height;
+            var area = device.Area;
+
+            var offsetX = (int)(area.X * width);
+            var offsetY = (int)(area.Y * height);
+
+            var roi = new Rectangle(
+                offsetX,
+                offsetY,
+                (int)(area.Width * width),
+                (int)(area.Height * height)
+                );
+
+            if (IsRenderContent)
+            {
+                outputImage.Draw(roi, Rgbs.Red, 2);
+            }
+
+            var imageWithROI = _lastFrame.Copy(roi);
+
+            return FindMarker(imageWithROI, offsetX, offsetY, width, height, ref outputImage);
+        }
+
+        private Marker FindMarker(Image<Rgb, byte> image, int offsetX, int offsetY, int width, int height, ref Image<Rgb, byte> outputImage)
         {
             if (_glyphRecognizer != null)
             {
@@ -653,14 +621,13 @@ namespace Huddle.Engine.Processor.BarCodes
                             if (IsRenderContent)
                                 outputImage.Draw(new Cross2DF(new PointF(centerX, centerY), 6, 6), Rgbs.Red, 1);
 
-                            // Stage data for later push
-                            Stage(new Marker(this, string.Format("Glyph{0}", name))
+                            var marker = new Marker(this, string.Format("Glyph{0}", name))
                             {
                                 Id = name,
                                 X = centerX / width,
                                 Y = centerY / height,
                                 Angle = degOrientation
-                            });
+                            };
 
                             if (IsRenderContent)
                             {
@@ -672,6 +639,8 @@ namespace Huddle.Engine.Processor.BarCodes
                                 Point labelPos = new Point(quad[0].X + offsetX, quad[0].Y + offsetY);
                                 outputImage.Draw(label, ref EmguFontBig, labelPos, Rgbs.Yellow);
                             }
+
+                            return marker;
                         }
                     }
                     else
@@ -680,11 +649,92 @@ namespace Huddle.Engine.Processor.BarCodes
                         _recognizedGlyphs[name] = null;
                     }
                 }
-
             }
+
+            return null;
         }
 
-        private LineSegment2D[] DetermineLongestEdge(Contour<Point> contour)
+        /// <summary>
+        /// Returns the ratio between the Rgb image size and blob size (in x and y). 
+        /// </summary>
+        /// <param name="grayscaleImage"></param>
+        /// <param name="unknownDevice"></param>
+        /// <param name="outputImage"></param>
+        /// <returns></returns>
+        private Ratio GetRgbImageToDisplayRatio(ref Image<Gray, byte> grayscaleImage, Device unknownDevice, ref Image<Rgb, byte> outputImage)
+        {
+            var width = grayscaleImage.Width;
+            var height = grayscaleImage.Height;
+            var area = unknownDevice.Area;
+
+            var roiExpandFactor = RoiExpandFactor;
+
+            var indentX = width * roiExpandFactor;
+            var indentY = height * roiExpandFactor;
+
+            var offsetX = (int)(area.X * width);
+            var offsetY = (int)(area.Y * height);
+
+            var roiX = (int)Math.Max(0, offsetX - indentX);
+            var roiY = (int)Math.Max(0, offsetY - indentY);
+            var roiWidth = (int)Math.Min(width - roiX, area.Width * width + 2 * indentX);
+            var roiHeight = (int)Math.Min(height - roiY, area.Height * height + 2 * indentY);
+
+            var roi = new Rectangle(
+                roiX,
+                roiY,
+                roiWidth,
+                roiHeight
+                );
+
+            grayscaleImage.ROI = roi;
+
+            Contour<Point> largestContour = null;
+            using (var storage = new MemStorage())
+            {
+                for (var contours = grayscaleImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, RETR_TYPE.CV_RETR_EXTERNAL); contours != null; contours = contours.HNext)
+                {
+                    var contour = contours.ApproxPoly(contours.Perimeter * 0.05);
+
+                    if (largestContour == null)
+                    {
+                        largestContour = contour;
+                        continue;
+                    }
+
+                    if (contour.Area > largestContour.Area)
+                    {
+                        largestContour = contour;
+                    }
+                }
+
+                if (largestContour != null)
+                {
+                    var edges = GetDeviceCoordinateSystem(largestContour);
+
+                    if (IsRenderContent)
+                    {
+                        var oldROI = outputImage.ROI;
+                        outputImage.ROI = roi;
+                        outputImage.Draw(largestContour.GetMinAreaRect(storage), Rgbs.Cyan, 2);
+
+                        outputImage.Draw(edges[0], Rgbs.Red, 3);
+                        outputImage.Draw(edges[1], Rgbs.Green, 3);
+
+                        outputImage.ROI = oldROI;
+                    }
+
+                    return new Ratio
+                    {
+                        X = edges[0].Length / width,
+                        Y = edges[1].Length / height
+                    };
+                }
+            }
+            return Ratio.Empty;
+        }
+
+        private LineSegment2D[] GetDeviceCoordinateSystem(Contour<Point> contour)
         {
             var pts = contour.ToArray();
             var edges = PointCollection.PolyLine(pts, true);

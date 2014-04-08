@@ -254,41 +254,6 @@ namespace Huddle.Engine.Data
 
         #endregion
 
-        #region DeviceToCameraRatio
-
-        /// <summary>
-        /// The <see cref="DeviceToCameraRatio" /> property's name.
-        /// </summary>
-        public const string DeviceToCameraRatioPropertyName = "DeviceToCameraRatio";
-
-        private double _deviceToCameraRatio = 0.0;
-
-        /// <summary>
-        /// Sets and gets the DeviceToCameraRatio property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double DeviceToCameraRatio
-        {
-            get
-            {
-                return _deviceToCameraRatio;
-            }
-
-            set
-            {
-                if (_deviceToCameraRatio == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(DeviceToCameraRatioPropertyName);
-                _deviceToCameraRatio = value;
-                RaisePropertyChanged(DeviceToCameraRatioPropertyName);
-            }
-        }
-
-        #endregion
-
         #endregion
 
         #region ctor
@@ -310,8 +275,7 @@ namespace Huddle.Engine.Data
                 Angle = Angle,
                 Area = Area,
                 Shape = Shape,
-                Polygon = Polygon,
-                DeviceToCameraRatio = DeviceToCameraRatio
+                Polygon = Polygon
             };
         }
 

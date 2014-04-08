@@ -243,6 +243,7 @@
     </Compile>
     <Compile Include="Data\BaseData.cs" />
     <Compile Include="Data\Marker.cs" />
+    <Compile Include="Data\Ratio.cs" />
     <Compile Include="Data\ROI.cs" />
     <Compile Include="Data\BlobData.cs" />
     <Compile Include="Data\DataContainer.cs" />
@@ -259,7 +260,7 @@
     <Compile Include="Controls\ExceptionMessageBox.xaml.cs">
       <DependentUpon>ExceptionMessageBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Domain\Device.cs" />
+    <Compile Include="Data\Device.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Extensions\DispatcherExtensions.cs" />
     <Compile Include="Extensions\NumericExtensions.cs" />

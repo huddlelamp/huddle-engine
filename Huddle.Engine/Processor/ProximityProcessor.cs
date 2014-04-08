@@ -374,7 +374,7 @@ namespace Huddle.Engine.Processor
                     Identity = device1.DeviceId,
                     Location = p1,
                     Orientation = device1.Angle,
-                    DeviceToCameraRatio = device1.DeviceToCameraRatio
+                    RgbImageToDisplayRatio = device1.RgbImageToDisplayRatio
                 };
 
                 #region Calculate Proximities
@@ -431,7 +431,7 @@ namespace Huddle.Engine.Processor
                         Location = p2,
                         Distance = (p2 - p1).Length,
                         Orientation = localAngle,
-                        DeviceToCameraRatio = device2.DeviceToCameraRatio
+                        RgbImageToDisplayRatio = device2.RgbImageToDisplayRatio
                     });
                 }
 
@@ -473,12 +473,11 @@ namespace Huddle.Engine.Processor
                 LastBlobAngle = blob.Angle,
                 Shape = blob.Polygon,
                 Area = blob.Area,
-                DeviceToCameraRatio = blob.DeviceToCameraRatio
             };
             AddDevice(device);
         }
 
-        private void UpdateDevice(BlobData blob, LocationData code = null)
+        private void UpdateDevice(BlobData blob, Marker marker = null)
         {
             var device = Devices.Single(d => d.BlobId == blob.Id);
             device.Key = "identified";
@@ -488,14 +487,12 @@ namespace Huddle.Engine.Processor
             device.Shape = blob.Polygon;
             device.Area = blob.Area;
 
-            // Do not update device to camera ratio (device ratio should not change)
-            device.DeviceToCameraRatio = blob.DeviceToCameraRatio;
-
-            if (code != null)
+            if (marker != null)
             {
-                device.DeviceId = code.Id;
+                device.DeviceId = marker.Id;
                 device.IsIdentified = true;
-                device.Angle = code.Angle;
+                device.Angle = marker.Angle;
+                device.RgbImageToDisplayRatio = marker.RgbImageToDisplayRatio;
             }
             else
             {
