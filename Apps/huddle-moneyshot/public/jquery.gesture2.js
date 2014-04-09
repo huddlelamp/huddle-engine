@@ -26,7 +26,10 @@
                 rotate: true,
 
                 // we can make this jQuery object responds to touch on another jQuery
-                touchtarget: null
+                touchtarget: null,
+
+                scaleX: 1.0,
+                scaleY: 1.0
             },
             options);
 
@@ -43,11 +46,19 @@
 
         // a simple drag handler
         var touch_handler = function (event) {
+
+            //var sxInv = options.scaleX; 
+            //var syInv = options.scaleY;
+            var sxInv = window.haesslichScaleX;
+            var syInv = window.haesslichScaleY;
+            var sx = 1 / sxInv; 
+            var sy = 1 / syInv;
+
             if (in_gesture || !__getvalue__(options.drag)) return; // do nothing when gesture is happening
             if (in_drag) {
                 var dx = ((event.touches.length == 0) ? event.pageX : event.touches[0].pageX) - original_x,
                     dy = ((event.touches.length == 0) ? event.pageY : event.touches[0].pageY) - original_y,
-                    new_css = "translate(" + dx + "px," + dy + "px) " + original_css;
+                    new_css = "scale(" + sx + "," + sy + ") translate(" + dx + "px," + dy + "px) scale(" + sxInv + "," + syInv + ")" + original_css;
                 _this.__transform__(new_css);
             } else {
                 if (in_drag = event.type == "_gesture2_touch_start") {
@@ -65,16 +76,25 @@
 
         // gesture handler to make the object move/scale/rotate
         var gesture_handler = function (event) {
+
+            //var sxInv = options.scaleX; 
+            //var syInv = options.scaleY;
+            var sxInv = window.haesslichScaleX;
+            var syInv = window.haesslichScaleY;
+            var sx = 1 / sxInv; 
+            var sy = 1 / syInv;
+
             in_drag = false;
             if (!__getvalue__(options.scale) && !__getvalue__(options.rotate)) return;
             if (in_gesture) {
                 var dx = event.pageX - original_x,
                     dy = event.pageY - original_y,
-                    new_css = (__getvalue__(options.drag) ? ("translate(" + event.pageX + "px," + event.pageY + "px) ") : ("translate(" + original_x + "px," + original_y + "px) ")) +
+                    new_css = "scale(" + sx + "," + sy + ") "
+                    new_css += (__getvalue__(options.drag) ? ("translate(" + event.pageX + "px," + event.pageY + "px) ") : ("translate(" + (original_x * sx) + "px," + (original_y * sy) + "px) ")) +
                         (__getvalue__(options.scale) ? ("scale(" + event.scale + ")") : "") +
                         (__getvalue__(options.rotate) ? ("rotate(" + event.rotation + "rad) ") : "") +
-                        "translate(" + (-original_x) + "px," + (-original_y) + "px) " +
-                        original_css;
+                        "translate(" + (-original_x * sx) + "px," + (-original_y * sy) + "px) " +
+                        original_css + " scale(" + sxInv + "," + syInv + ")";
                 _this.__transform__(new_css);
             } else {
                 in_gesture = true;
@@ -112,7 +132,9 @@
                 this.css("-ms-transform", "");
                 this.css("-o-transform", "");
                 this.css("-webkit-transform", "");
-                var offset = (-this.offset().left) + "px " + (-this.offset().top) + "px";
+                // set offset back to center of object
+                //var offset = (-this.offset().left) + "px " + (-this.offset().top) + "px";
+                var offset = "50% 50% 0";
                 this.css("transform-origin", offset);
                 this.css("-moz-transform-origin", offset);
                 this.css("-ms-transform-origin", offset);

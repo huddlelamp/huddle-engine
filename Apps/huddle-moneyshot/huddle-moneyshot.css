@@ -1,10 +1,24 @@
 /* CSS declarations go here */
+#world-canvas-wrapper {
+	position: fixed;
+    top: 0;
+    left: 0;
+
+	width: 100%;
+	height: 100%;
+	background-color: green;
+
+	overflow: hidden;
+}
+
 #world-canvas {
 	position: absolute;
 	width: 1280px;
 	height: 720px;
 
-	//background-image: url('World-Map-3.jpg');
+	//-webkit-transform-origin: 0px 0px 0px;
+	//-webkit-transform: scale(4.282120594911806,4.3428959215796725) translate(-60px,-60px);
+
 	background-image: url('world-map-2.jpg');
 	background-repeat: repeat;
 	background-size: contain;
@@ -21,7 +35,6 @@
 	background-color: gray;
 	border: 3px solid black;
 
-	//background-image: url('World-Map-3.jpg');
 	background-image: url('world-map-2.jpg');
 	background-repeat: repeat;
 	background-size: contain;
