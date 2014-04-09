@@ -156,6 +156,13 @@ if (Meteor.isClient) {
 
       $div = this.$('div');
 
+      $div.interactive({
+        peepholeMetadata: {
+          scaleX: 1 / 4.354254727017134,
+          scaleY: 1 / 4.314985689142452
+        }
+      });
+/*
       $div.gesture({
         drag: true,
         scale: true,
@@ -207,28 +214,8 @@ if (Meteor.isClient) {
       });
 
       $div.touchInit();
+      */
   };
-
-  Template.worldObject.events({
-    'click': function(e) {
-      console.log("click me more!!!");
-    },
-
-    'gesture_move2': function(e) {
-      console.log('asdfasfasf');
-        var id = this.id;
-        
-        var position = $(this).position();
-
-        Objects.update({_id: id}, {$set: {
-            x: position.left,
-            y: position.top
-          }}, 
-          function(res) {
-            return console.log(res);
-          });
-    }
-  });
 
   Template.worldCanvas.events({
     'click #world-canvas2': function(e) {
