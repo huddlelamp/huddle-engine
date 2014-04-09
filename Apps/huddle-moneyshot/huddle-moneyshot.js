@@ -154,12 +154,36 @@ if (Meteor.isClient) {
   Template.worldObject.rendered = function(e) {
     console.log("rendered world canvas: ");
 
-      $div = this.$('div');
+      $div = this.$('#' + this.data._id);
 
       $div.interactive({
+        visualProperties: this.data,
         peepholeMetadata: {
           scaleX: 1 / 4.354254727017134,
           scaleY: 1 / 4.314985689142452
+        },
+        modelUpdated: function(model) {
+          console.log('model updated' + this);
+
+          var id = this.get(0).id;
+        
+          var $visual = $(this);
+
+          var position = $visual.position();
+
+          var transformOrigin = $visual.css('-webkit-transform-origin');
+          var transform = $visual.css('-webkit-transform');
+
+          var vp = $visual.data('visualProperties');
+          
+          Objects.update({_id: id}, { $set: {
+              x: vp.x,
+              y: vp.y,
+              rotation: vp.rotation,
+              scale: vp.scale,
+              transform: transform,
+              transformOrigin: transformOrigin
+          }});
         }
       });
 /*

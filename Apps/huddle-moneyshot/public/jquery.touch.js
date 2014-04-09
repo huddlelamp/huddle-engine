@@ -80,7 +80,8 @@
                         pageX: event.pageX,
                         pageY: event.pageY,
                         screenX: event.screenX,
-                        screenY: event.screenY
+                        screenY: event.screenY,
+                        handled: false
                     };
                 } else if (event.changedTouches) {
                     // there might be more than 1 touch points in one native event in webkit browsers
@@ -93,7 +94,8 @@
                             pageX: event.changedTouches[i].pageX,
                             pageY: event.changedTouches[i].pageY,
                             screenX: event.changedTouches[i].screenX,
-                            screenY: event.changedTouches[i].screenY
+                            screenY: event.changedTouches[i].screenY,
+                            handled: false
                         };
                     }
                 } else {
@@ -106,7 +108,8 @@
                         pageX: event.pageX,
                         pageY: event.pageY,
                         screenX: event.screenX,
-                        screenY: event.screenY
+                        screenY: event.screenY,
+                        handled: false
                     };
                 }
 
@@ -121,11 +124,26 @@
 
                     // search the touch array to see if this is a touch we're handling
                     for (var j = 0; j < touches.length; j++) {
+
+                        // remove handled touches
+                        if (touches[j].handled) {
+                            // remove the current touch from touch array
+                            if (touches.length - 1 != j) {
+                                touches[j] = touches[touches.length - 1];
+                            }
+
+                            touches.pop();
+                            $(_this).data(options.prefix + "_touches", touches);
+                            
+                            continue;
+                        }
+
                         if (touches[j].id == touch.id) {
                             newTouch = false;
                             touches[j] = touch; // update the touch object
                             $(_this).data(options.prefix + "_touches", touches);
                             currentTouchIndex = j;
+
                             break;
                         }
                     }
