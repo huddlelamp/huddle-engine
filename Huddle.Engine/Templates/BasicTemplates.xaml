@@ -63,11 +63,38 @@
 
     <DataTemplate x:Key="GlyphDecoder" DataType="barCodes:GlyphDecoder">
         <StackPanel>
-            <Image Source="{Binding Path=OutputImage}" Width="320" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Binary Threshold Image"
+                          Grid.Column="0">
+                    <Image Source="{Binding Path=BinaryThresholdImageSource}" />
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=OutputImage}" />
+                </GroupBox>
+            </Grid>
+            
             <StackPanel Orientation="Horizontal">
                 <Label Content="MinFramesHistory"/>
                 <Slider Value="{Binding Path=MinFramesProperty}" Width="340" Height="25" Minimum="1" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="1" />
                 <TextBlock Text="{Binding Path=MinFramesProperty, StringFormat={}{0}}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Binary Threshold"/>
+                <Slider Value="{Binding Path=BinaryThreshold}" Width="340" Height="25" Minimum="0" Maximum="255" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=BinaryThreshold, StringFormat={}{0}}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="ROI Expand Factor"/>
+                <Slider Value="{Binding Path=RoiExpandFactor}" Width="340" Height="25" Minimum="0.000" Maximum="1.000" IsSnapToTickEnabled="False" TickFrequency="0.005" />
+                <TextBlock Text="{Binding Path=RoiExpandFactor, StringFormat={}{0:#.###}}"/>
             </StackPanel>
 
             <CheckBox Content="Use blobs to minimize scan area" VerticalAlignment="Center" IsChecked="{Binding Path=UseBlobs}" />

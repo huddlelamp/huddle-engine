@@ -220,6 +220,41 @@ namespace Huddle.Engine.Data
 
         #endregion
 
+        #region RgbImageToDisplayRatio
+
+        /// <summary>
+        /// The <see cref="RgbImageToDisplayRatio" /> property's name.
+        /// </summary>
+        public const string RgbImageToDisplayRatioPropertyName = "RgbImageToDisplayRatio";
+
+        private Ratio _rgbImageToDisplayRatio = Ratio.Empty;
+
+        /// <summary>
+        /// Sets and gets the RgbImageToDisplayRatio property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Ratio RgbImageToDisplayRatio
+        {
+            get
+            {
+                return _rgbImageToDisplayRatio;
+            }
+
+            set
+            {
+                if (_rgbImageToDisplayRatio.Equals(value))
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(RgbImageToDisplayRatioPropertyName);
+                _rgbImageToDisplayRatio = value;
+                RaisePropertyChanged(RgbImageToDisplayRatioPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         public Proximity(IProcessor source, string key)
@@ -236,7 +271,8 @@ namespace Huddle.Engine.Data
                 Location = Location,
                 Movement = Movement,
                 Orientation = Orientation,
-                Presences = new List<Proximity>(Presences)
+                Presences = new List<Proximity>(Presences),
+                RgbImageToDisplayRatio = RgbImageToDisplayRatio
             };
         }
 

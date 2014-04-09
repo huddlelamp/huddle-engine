@@ -2,8 +2,8 @@
 using System.Drawing;
 using Emgu.CV.Structure;
 using GalaSoft.MvvmLight;
+using Huddle.Engine.Processor.Complex.PolygonIntersection;
 using Huddle.Engine.Processor.OpenCv.Filter;
-using PolygonIntersection;
 
 namespace Huddle.Engine.Processor.OpenCv.Struct
 {
@@ -257,6 +257,76 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
                 RaisePropertyChanging(PointsPropertyName);
                 _points = value;
                 RaisePropertyChanged(PointsPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region DeviceToCameraRatio
+
+        /// <summary>
+        /// The <see cref="DeviceToCameraRatio" /> property's name.
+        /// </summary>
+        public const string DeviceToCameraRatioPropertyName = "DeviceToCameraRatio";
+
+        private double _deviceToCameraRatio = 1.0;
+
+        /// <summary>
+        /// Sets and gets the DeviceToCameraRatio property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double DeviceToCameraRatio
+        {
+            get
+            {
+                return _deviceToCameraRatio;
+            }
+
+            set
+            {
+                if (_deviceToCameraRatio == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DeviceToCameraRatioPropertyName);
+                _deviceToCameraRatio = value;
+                RaisePropertyChanged(DeviceToCameraRatioPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region LongestEdge
+
+        /// <summary>
+        /// The <see cref="LongestEdge" /> property's name.
+        /// </summary>
+        public const string LongestEdgePropertyName = "LongestEdge";
+
+        private LineSegment2D _longestEdge;
+
+        /// <summary>
+        /// Sets and gets the LongestEdge property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public LineSegment2D LongestEdge
+        {
+            get
+            {
+                return _longestEdge;
+            }
+
+            set
+            {
+                if (_longestEdge.Equals(value))
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(LongestEdgePropertyName);
+                _longestEdge = value;
+                RaisePropertyChanged(LongestEdgePropertyName);
             }
         }
 

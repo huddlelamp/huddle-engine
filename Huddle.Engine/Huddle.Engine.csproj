@@ -242,7 +242,9 @@
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\BaseData.cs" />
+    <Compile Include="Data\Display.cs" />
     <Compile Include="Data\Marker.cs" />
+    <Compile Include="Data\Ratio.cs" />
     <Compile Include="Data\ROI.cs" />
     <Compile Include="Data\BlobData.cs" />
     <Compile Include="Data\DataContainer.cs" />
@@ -259,7 +261,7 @@
     <Compile Include="Controls\ExceptionMessageBox.xaml.cs">
       <DependentUpon>ExceptionMessageBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Domain\Device.cs" />
+    <Compile Include="Data\Device.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Extensions\DispatcherExtensions.cs" />
     <Compile Include="Extensions\NumericExtensions.cs" />
@@ -284,6 +286,7 @@
     <Compile Include="Processor\BarCodes\ZXingHelper\ImageLuminanceSource.cs" />
     <Compile Include="Processor\Complex\BlobFusion.cs" />
     <Compile Include="Processor\Complex\BlobRenderer.cs" />
+    <Compile Include="Processor\Complex\FindDisplay.cs" />
     <Compile Include="Processor\Complex\PolygonIntersection\Polygon.cs" />
     <Compile Include="Processor\Complex\PolygonIntersection\Vector.cs" />
     <Compile Include="Processor\Complex\SyncFusion.cs" />
@@ -306,7 +309,7 @@
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
     <Compile Include="Processor\OpenCv\Filter\KalmanFilter.cs" />
     <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
-    <Compile Include="Processor\OpenCv\FindConvexHulls.cs" />
+    <Compile Include="Processor\OpenCv\FillConvexHulls.cs" />
     <Compile Include="Processor\OpenCv\Kalman.cs" />
     <Compile Include="Data\Hand.cs" />
     <Compile Include="Processor\OpenCv\Struct\RawObject.cs" />

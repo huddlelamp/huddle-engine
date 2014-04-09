@@ -8,7 +8,7 @@ using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
 {
-    public class Marker: LocationData
+    public class Display: LocationData
     {
         #region properties
 
@@ -49,13 +49,13 @@ namespace Huddle.Engine.Data
 
         #endregion
 
-        public Marker(IProcessor source, string key) : base(source, key)
+        public Display(IProcessor source, string key) : base(source, key)
         {
         }
 
         public override IData Copy()
         {
-            return new Marker(Source, Key)
+            return new Display(Source, Key)
             {
                 X = X,
                 Y = Y,

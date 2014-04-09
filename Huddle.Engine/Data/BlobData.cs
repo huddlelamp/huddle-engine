@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Emgu.CV.Structure;
 using Huddle.Engine.Processor;
-using PolygonIntersection;
+using Huddle.Engine.Processor.Complex.PolygonIntersection;
 
 namespace Huddle.Engine.Data
 {

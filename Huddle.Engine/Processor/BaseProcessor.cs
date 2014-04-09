@@ -21,12 +21,18 @@ namespace Huddle.Engine.Processor
     [KnownType("GetKnownTypes")]
     public abstract class BaseProcessor : ObservableObject, IProcessor, ILocator
     {
+        #region const
+
+        private const int QueueSize = 100;
+
+        #endregion
+
         #region member fields
 
         private Thread _processingThread;
 
         // A bounded collection. It can hold no more than 100 items at once.
-        private BlockingCollection<IDataContainer> _dataQueue = new BlockingCollection<IDataContainer>(100);
+        private BlockingCollection<IDataContainer> _dataQueue = new BlockingCollection<IDataContainer>(QueueSize);
 
         private bool _processing;
 
@@ -443,7 +449,7 @@ namespace Huddle.Engine.Processor
         public virtual void Start()
         {
             HasErrorState = false;
-            _dataQueue = new BlockingCollection<IDataContainer>(_dataQueue.BoundedCapacity);
+            _dataQueue = new BlockingCollection<IDataContainer>(QueueSize);
 
             if (_processing)
                 return;
@@ -452,7 +458,7 @@ namespace Huddle.Engine.Processor
 
             _processingThread = new Thread(() =>
             {
-                while (!_dataQueue.IsCompleted)
+                while (_dataQueue != null && !_dataQueue.IsCompleted)
                 {
                     IDataContainer dataContainer;
                     try
@@ -502,8 +508,10 @@ namespace Huddle.Engine.Processor
 
             _processing = false;
 
-            // Notify processing thread about completion.
-            _dataQueue.CompleteAdding();
+            _dataQueue = null;
+
+            //// Notify processing thread about completion.
+            //_dataQueue.CompleteAdding();
 
             //if (_processingThread != null)
             //    _processingThread.Join();
@@ -542,7 +550,7 @@ namespace Huddle.Engine.Processor
             // Pipe data through if processing is turned off
             if (!_processing)
             {
-                Publish(dataContainer);
+                //Publish(dataContainer);
                 return;
             }
 
@@ -559,7 +567,7 @@ namespace Huddle.Engine.Processor
                 {
                     if (_dataQueue.Count == _dataQueue.BoundedCapacity)
                     { 
-                        _dataQueue = new BlockingCollection<IDataContainer>(_dataQueue.BoundedCapacity);
+                        _dataQueue = new BlockingCollection<IDataContainer>(QueueSize);
                         HasErrorState = true;
                     }
 

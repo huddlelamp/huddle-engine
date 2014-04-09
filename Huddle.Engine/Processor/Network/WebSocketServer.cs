@@ -51,6 +51,7 @@ namespace Huddle.Engine.Processor.Network
                 _connectedClients.TryRemove(address, out client);
             };
 
+
             _webSocketServer.OnReceive += context =>
             {
                 var data = context.DataFrame.ToString();
@@ -99,7 +100,12 @@ namespace Huddle.Engine.Processor.Network
 
         public override void Stop()
         {
-            base.Stop();
+            if (_webSocketServer != null)
+            {
+                _webSocketServer.Stop();
+                _webSocketServer.Dispose();
+                _webSocketServer = null;
+            }
 
             // send disconnect??
             foreach (var client in _connectedClients.Values)
@@ -107,11 +113,7 @@ namespace Huddle.Engine.Processor.Network
                 //client.Send();
             }
 
-            if (_webSocketServer != null)
-            {
-                _webSocketServer.Stop();
-                _webSocketServer.Dispose();
-            }
+            base.Stop();
         }
 
         public override IData Process(IData data)
@@ -124,10 +126,12 @@ namespace Huddle.Engine.Processor.Network
             var devices = dataContainer.OfType<Device>().ToArray();
             var identifiedDevices = devices.Where(d => d.IsIdentified).ToArray();
 
+            var clients = _connectedClients.Values.ToArray();
+
             #region Reveal QrCode on unidentified clients
 
             var digital = new Digital(this, "Identify") { Value = true };
-            foreach (var client in _connectedClients.Values)
+            foreach (var client in clients)
             {
                 if (identifiedDevices.Any(d => Equals(d.DeviceId, client.DeviceId))) continue;
 
@@ -135,7 +139,7 @@ namespace Huddle.Engine.Processor.Network
             }
 
             var digital2 = new Digital(this, "Identify") { Value = false };
-            foreach (var client in _connectedClients.Values)
+            foreach (var client in clients)
             {
                 if (identifiedDevices.Any(d => Equals(d.DeviceId, client.DeviceId)))
                 {
@@ -151,7 +155,8 @@ namespace Huddle.Engine.Processor.Network
 
             foreach (var proximity in proximities)
             {
-                foreach (var client in _connectedClients.Values.Where(c => Equals(c.DeviceId, proximity.Identity)))
+                var proximity1 = proximity;
+                foreach (var client in clients.Where(c => Equals(c.DeviceId, proximity1.Identity)))
                 {
                     client.Send(proximity);
                 }

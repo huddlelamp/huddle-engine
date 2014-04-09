@@ -18,9 +18,9 @@ using Huddle.Engine.Data;
 using Huddle.Engine.Domain;
 using Huddle.Engine.Extensions;
 using Huddle.Engine.Processor.BarCodes;
+using Huddle.Engine.Processor.Complex.PolygonIntersection;
 using Huddle.Engine.Processor.OpenCv;
 using Huddle.Engine.Util;
-using PolygonIntersection;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
 using Point = System.Windows.Point;
@@ -373,7 +373,8 @@ namespace Huddle.Engine.Processor
                 {
                     Identity = device1.DeviceId,
                     Location = p1,
-                    Orientation = device1.Angle
+                    Orientation = device1.Angle,
+                    RgbImageToDisplayRatio = device1.RgbImageToDisplayRatio
                 };
 
                 #region Calculate Proximities
@@ -429,7 +430,8 @@ namespace Huddle.Engine.Processor
                         Identity = device2.DeviceId,
                         Location = p2,
                         Distance = (p2 - p1).Length,
-                        Orientation = localAngle
+                        Orientation = localAngle,
+                        RgbImageToDisplayRatio = device2.RgbImageToDisplayRatio
                     });
                 }
 
@@ -470,12 +472,12 @@ namespace Huddle.Engine.Processor
                 Y = blob.Y * Height,
                 LastBlobAngle = blob.Angle,
                 Shape = blob.Polygon,
-                Area = blob.Area
+                Area = blob.Area,
             };
             AddDevice(device);
         }
 
-        private void UpdateDevice(BlobData blob, LocationData code = null)
+        private void UpdateDevice(BlobData blob, Marker marker = null)
         {
             var device = Devices.Single(d => d.BlobId == blob.Id);
             device.Key = "identified";
@@ -485,11 +487,12 @@ namespace Huddle.Engine.Processor
             device.Shape = blob.Polygon;
             device.Area = blob.Area;
 
-            if (code != null)
+            if (marker != null)
             {
-                device.DeviceId = code.Id;
+                device.DeviceId = marker.Id;
                 device.IsIdentified = true;
-                device.Angle = code.Angle;
+                device.Angle = marker.Angle;
+                device.RgbImageToDisplayRatio = marker.RgbImageToDisplayRatio;
             }
             else
             {
