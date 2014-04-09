@@ -242,6 +242,7 @@
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\BaseData.cs" />
+    <Compile Include="Data\Display.cs" />
     <Compile Include="Data\Marker.cs" />
     <Compile Include="Data\Ratio.cs" />
     <Compile Include="Data\ROI.cs" />

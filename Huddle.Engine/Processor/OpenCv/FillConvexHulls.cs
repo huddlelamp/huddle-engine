@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Emgu.CV;
@@ -98,6 +99,7 @@ namespace Huddle.Engine.Processor.OpenCv
         /// Sets and gets the DebugImageSource property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [IgnoreDataMember]
         public BitmapSource DebugImageSource
         {
             get

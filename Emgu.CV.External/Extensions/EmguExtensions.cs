@@ -233,5 +233,52 @@ namespace Emgu.CV.External.Extensions
         {
             return Math.Sqrt(Math.Pow(self.X - point.X, 2) + Math.Pow(self.Y - point.Y, 2));
         }
+
+        public static bool IsRectangle(Contour<Point> contour, double toleranceAngle = 10.0)
+        {
+            if (contour.Total != 4) return false;
+
+            // determine if all the angles in the contour are within [80, 100] degree
+            var pts = contour.ToArray();
+            var edges = PointCollection.PolyLine(pts, true);
+
+            var isRectangle = true;
+            for (var i = 0; i < edges.Length; i++)
+            {
+                var edge = edges[(i + 1) % edges.Length];
+
+                var angle = Math.Abs(edge.GetExteriorAngleDegree(edges[i]));
+
+                if (Math.Abs(90.0 - angle) > toleranceAngle)
+                {
+                    isRectangle = false;
+                    break;
+                }
+            }
+
+            return isRectangle;
+        }
+
+        public static Rectangle GetInflatedBy(this Rectangle rectangle, float increaseByFactor, Rectangle maxRectangle)
+        {
+            var x = rectangle.X;
+            var y = rectangle.Y;
+            var width = rectangle.Width;
+            var height = rectangle.Height;
+            var factoredMarginX = width * increaseByFactor;
+            var factoredMarginY = height * increaseByFactor;
+
+            var roiX = Math.Max(0, x - factoredMarginX);
+            var roiY = Math.Max(0, y - factoredMarginY);
+            var roiWidth = Math.Min(maxRectangle.Width - roiX, width + (2 * factoredMarginX));
+            var roiHeight = Math.Min(maxRectangle.Height - roiY, height + (2 * factoredMarginY));
+
+            return new Rectangle(
+                (int)roiX,
+                (int)roiY,
+                (int)roiWidth,
+                (int)roiHeight
+                );
+        }
     }
 }

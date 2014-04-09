@@ -99,6 +99,7 @@
   <ItemGroup>
     <Compile Include="Extensions\EmguExtensions.cs" />
     <Compile Include="Structure\Bgrs.cs" />
+    <Compile Include="Structure\Grays.cs" />
     <Compile Include="Structure\Rgbs.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

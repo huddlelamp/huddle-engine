@@ -111,6 +111,76 @@ namespace Huddle.Engine.Data
 
         #endregion
 
+        #region RelativeX
+
+        /// <summary>
+        /// The <see cref="RelativeX" /> property's name.
+        /// </summary>
+        public const string RelativeXPropertyName = "RelativeX";
+
+        private double _relativeX = 0.0;
+
+        /// <summary>
+        /// Sets and gets the RelativeX property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double RelativeX
+        {
+            get
+            {
+                return _relativeX;
+            }
+
+            set
+            {
+                if (_relativeX == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(RelativeXPropertyName);
+                _relativeX = value;
+                RaisePropertyChanged(RelativeXPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region RelativeY
+
+        /// <summary>
+        /// The <see cref="RelativeY" /> property's name.
+        /// </summary>
+        public const string RelativeYPropertyName = "RelativeY";
+
+        private double _relativeY = 0.0;
+
+        /// <summary>
+        /// Sets and gets the RelativeY property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double RelativeY
+        {
+            get
+            {
+                return _relativeY;
+            }
+
+            set
+            {
+                if (_relativeY == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(RelativeYPropertyName);
+                _relativeY = value;
+                RaisePropertyChanged(RelativeYPropertyName);
+            }
+        }
+
+        #endregion
+
         #region Angle
 
         /// <summary>
