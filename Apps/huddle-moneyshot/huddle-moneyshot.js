@@ -82,6 +82,12 @@ if (Meteor.isClient) {
     //$overview.css('background-size', canvasBackgroundSize);
     $('#world-canvas-overview').append($overview);
 */
+
+    window.peepholeMetadata = {
+      scaleX: 1.0,
+      scaleY: 1.0
+    };
+
     var huddle = new Huddle(id, function (data) {
         if (data.Type) {
 
@@ -103,9 +109,8 @@ if (Meteor.isClient) {
                     var scaleX = ((ratio.X * windowWidth) / canvasWidth);
                     var scaleY = ((ratio.Y * windowHeight) / canvasHeight);
 
-                    window.echo = "asdf";
-                    window.haesslichScaleX = scaleX;
-                    window.haesslichScaleY = scaleY;
+                    window.peepholeMetadata.scaleX = 1 / ratio.X;
+                    window.peepholeMetadata.scaleY = 1 / ratio.Y
 
                     var deviceCenterToDeviceLeft = ((windowWidth / ratio.Y) / 2);
                     var deviceCenterToDeviceTop = ((windowHeight / ratio.Y) / 2);
@@ -158,12 +163,9 @@ if (Meteor.isClient) {
 
       $div.interactive({
         visualProperties: this.data,
-        peepholeMetadata: {
-          scaleX: 1 / 4.354254727017134,
-          scaleY: 1 / 4.314985689142452
-        },
+        peepholeMetadata: window.peepholeMetadata,
         modelUpdated: function(model) {
-          console.log('model updated' + this);
+          //console.log('model updated' + this);
 
           var id = this.get(0).id;
         

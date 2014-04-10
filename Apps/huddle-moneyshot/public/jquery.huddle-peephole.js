@@ -90,11 +90,6 @@
             scale: 1.0
           };
 
-        var scaleX = options.peepholeMetadata.scaleX;
-        var scaleY = options.peepholeMetadata.scaleY;
-        var scaleXInv = 1 / scaleX;
-        var scaleYInv = 1 / scaleY;
-
         var isScaleRotate = false;
 
         var dragHandler = function(e) {
@@ -118,8 +113,8 @@
             else if (e.type == '_gesture2_touch_move' || e.type == '_gesture2_touch_end') {
                 //console.log('_gesture2_touch_move');
 
-                var dx = (e.pageX - lastDragPosition.x) * scaleX;
-                var dy = (e.pageY - lastDragPosition.y) * scaleY;
+                var dx = (e.pageX - lastDragPosition.x) * peepholeMetadata.scaleX;
+                var dy = (e.pageY - lastDragPosition.y) * peepholeMetadata.scaleY;
                 
                 // update last drag position to calculate delta on next move
                 lastDragPosition = {
@@ -145,8 +140,7 @@
 
         var original_css;
 
-        var lastScale = 1.0;
-        var lastRotation = 0;
+        var gestureData;
 
         var saveTouches;
 
@@ -160,41 +154,27 @@
                 // deactivates drag handler
                 isScaleRotate = true;
 
-                lastScale = 1.0;
-                lastRotation = 0;
-
-                lastDragPosition = {
+                gestureData = {
                     x: e.pageX,
-                    y: e.pageY
+                    y: e.pageY,
+                    scale: vp.scale,
+                    rotation: vp.rotation
                 };
             }
             else if (e.type == '_gesture2_gesture_move') {
                 //console.log('_gesture2_gesture_move');
 
-                var dx = (e.pageX - lastDragPosition.x) * scaleX;
-                var dy = (e.pageY - lastDragPosition.y) * scaleY;
+                var dx = (e.pageX - gestureData.x) * peepholeMetadata.scaleX;
+                var dy = (e.pageY - gestureData.y) * peepholeMetadata.scaleY;
                 
                 // update last drag position to calculate delta on next move
-                lastDragPosition = {
-                    x: e.pageX,
-                    y: e.pageY
-                };
+                gestureData.x = e.pageX;
+                gestureData.y = e.pageY;
                 
                 var x = vp.x + dx;
                 var y = vp.y + dy;
-
-                var ds = (e.scale - lastScale);
-                var dr = (e.rotation - lastRotation);
-                
-                vp.x = x;
-                vp.y = y;
-                vp.scale += ds;
-                vp.rotation += dr;
-
-                lastScale = e.scale;
-                lastRotation = e.rotation;
-
-                //console.log('Delta Scale/Rotation: ' + ds + '/' + dr);
+                vp.scale = (gestureData.scale * e.scale);
+                vp.rotation = (gestureData.rotation + e.rotation);
 
                 doVisualTransform(null);
             }

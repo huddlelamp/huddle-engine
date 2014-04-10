@@ -16,9 +16,11 @@
 	width: 1280px;
 	height: 720px;
 
+	/*
 	-webkit-transform-origin: 0px 0px 0px;
 	-webkit-transform: scale(4.282120594911806,4.3428959215796725) translate(-60px,-60px);
-
+	*/
+	
 	background-image: url('world-map-2.jpg');
 	background-repeat: repeat;
 	background-size: contain;
