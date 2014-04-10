@@ -50,6 +50,8 @@
         $visual.data('visualProperties', vp);
 
         var doVisualTransform = function(transformPoint) {
+            var vp = $visual.data('visualProperties');
+
             var x = vp.x;
             var y = vp.y;
             var rotation = vp.rotation;
@@ -80,6 +82,7 @@
 
             if (modelUpdated != null && typeof modelUpdated == 'function') {
                 // call model updated function with that as context
+                var vp = $visual.data('visualProperties');
                 modelUpdated.call(that, vp);
             }
         };
@@ -112,6 +115,8 @@
             }
             else if (e.type == '_gesture2_touch_move' || e.type == '_gesture2_touch_end') {
                 //console.log('_gesture2_touch_move');
+
+                var vp = $visual.data('visualProperties');
 
                 var dx = (e.pageX - lastDragPosition.x) * peepholeMetadata.scaleX;
                 var dy = (e.pageY - lastDragPosition.y) * peepholeMetadata.scaleY;
@@ -149,6 +154,8 @@
             if (e.type == '_gesture2_gesture_start') {
                 //console.log('_gesture2_gesture_start');
 
+                var vp = $visual.data('visualProperties');
+
                 saveTouches = e.touches;
 
                 // deactivates drag handler
@@ -163,6 +170,8 @@
             }
             else if (e.type == '_gesture2_gesture_move') {
                 //console.log('_gesture2_gesture_move');
+
+                var vp = $visual.data('visualProperties');
 
                 var dx = (e.pageX - gestureData.x) * peepholeMetadata.scaleX;
                 var dy = (e.pageY - gestureData.y) * peepholeMetadata.scaleY;
