@@ -62,16 +62,16 @@
 
             var transform = '';
             if (transformPoint != null && transformPoint != 'undefined') {
-                offsetX = transformPoint.x;
-                offsetY = transformPoint.y;   
+                offsetX = -transformPoint.x;
+                offsetY = -transformPoint.y;   
 
                 transform = 'translate(' + offsetX + ',' + offsetY +') ';
             }
 
             transform += 'translate(' + x + 'px,' + y + 'px) ' +
                          'scale(' + scale + ') ' +
-                         'rotate(' + rotation + 'rad) '
-
+                         'rotate(' + rotation + 'rad)';
+            
             if (transformPoint && transformPoint != 'undefined') {
                 transform += ' translate(' + (-offsetX) + ',' + (-offsetY) +')';
             }
@@ -120,6 +120,11 @@
 
                 var dx = (e.pageX - lastDragPosition.x) * peepholeMetadata.scaleX;
                 var dy = (e.pageY - lastDragPosition.y) * peepholeMetadata.scaleY;
+
+                // adjust drag vector to device orientation
+                var angle = window.orientationDevice * Math.PI / 180.0;
+                var rotx = Math.cos(angle) * dx - Math.sin(angle) * dy;
+                var roty = Math.sin(angle) * dx + Math.cos(angle) * dy;
                 
                 // update last drag position to calculate delta on next move
                 lastDragPosition = {
@@ -127,11 +132,8 @@
                     y: e.pageY
                 };
                 
-                var x = vp.x + dx;
-                var y = vp.y + dy;
-
-                vp.x = x;
-                vp.y = y;
+                vp.x += rotx;
+                vp.y += roty;
 
                 doVisualTransform(null);
             }
@@ -161,11 +163,17 @@
                 // deactivates drag handler
                 isScaleRotate = true;
 
+                console.log(e.pageX);
+
                 gestureData = {
                     x: e.pageX,
                     y: e.pageY,
                     scale: vp.scale,
-                    rotation: vp.rotation
+                    rotation: vp.rotation,
+                    transformPoint: {
+                        x: 0,
+                        y: 0,
+                    }
                 };
             }
             else if (e.type == '_gesture2_gesture_move') {
@@ -180,12 +188,33 @@
                 gestureData.x = e.pageX;
                 gestureData.y = e.pageY;
                 
-                var x = vp.x + dx;
-                var y = vp.y + dy;
+                vp.x += dx;
+                vp.y += dy;
                 vp.scale = (gestureData.scale * e.scale);
                 vp.rotation = (gestureData.rotation + e.rotation);
 
-                doVisualTransform(null);
+                /*
+                var x = 0;
+                var y = 0;
+                var s = peepholeMetadata.scaleX;
+                var r = vp.rotation;
+
+                var v = Vector.create([e.pageX,e.pageY,0]);
+
+                console.log('device point: ' + v.elements[0] + ',' + v.elements[1]);
+
+                var M = $M([
+                  [s * Math.cos(r),-1 * s * Math.sin(r),x],
+                  [s * Math.sin(r),s * Math.cos(r),y],
+                  [0,0,1]
+                ]);
+                var invM = M.inverse();
+                var newVector = invM.multiply(v);
+
+                console.log('page coordinate to world coordinate: ' + newVector.elements[0] + ',' + newVector.elements[1]);
+                */
+                
+                doVisualTransform(gestureData.transformPoint);
             }
             else if (e.type == '_gesture2_gesture_end') {
                 //console.log('_gesture2_gesture_end')

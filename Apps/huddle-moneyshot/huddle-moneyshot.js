@@ -93,6 +93,7 @@ if (Meteor.isClient) {
       scaleX: 1.0,
       scaleY: 1.0
     };
+    var canvasScaleFactor = 1;
 
     var huddle = new Huddle(id, function (data) {
         if (data.Type) {
@@ -115,8 +116,10 @@ if (Meteor.isClient) {
                     var scaleX = ((ratio.X * windowWidth) / canvasWidth);
                     var scaleY = ((ratio.Y * windowHeight) / canvasHeight);
 
-                    window.peepholeMetadata.scaleX = 1 / ratio.X;
-                    window.peepholeMetadata.scaleY = 1 / ratio.Y
+                    window.peepholeMetadata.scaleX = 1 / (ratio.Y / canvasScaleFactor);
+                    window.peepholeMetadata.scaleY = 1 / (ratio.Y / canvasScaleFactor);
+
+                    window.orientationDevice = angle;
 
                     var deviceCenterToDeviceLeft = ((windowWidth / ratio.Y) / 2);
                     var deviceCenterToDeviceTop = ((windowHeight / ratio.Y) / 2);

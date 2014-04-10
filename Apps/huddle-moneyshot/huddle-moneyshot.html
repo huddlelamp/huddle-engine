@@ -11,6 +11,9 @@
 
   <!-- Touch support for mobile devices -->
   <!-- <script type="text/javascript" src="jquery.ui.touch-punch.min.js"></script>-->
+
+  <script type="text/javascript" src="sylvester.js"></script>
+
   <script type="text/javascript" src="jquery.touch.js"></script>
   <script type="text/javascript" src="jquery.gesture.js"></script>
   <script type="text/javascript" src="jquery.huddle-peephole.js"></script>
@@ -41,5 +44,11 @@
 </template>
 
 <template name="worldObject">
-  <div id="{{_id}}" class="world-object" style="width: {{width}}px; height: {{height}}px; -webkit-transform-origin: {{transformOrigin}}; -webkit-transform: {{transform}};"></div>
+  <div id="{{_id}}" class="world-object" style="width: {{width}}px; height: {{height}}px; -webkit-transform-origin: {{transformOrigin}}; -webkit-transform: {{transform}};">
+  	<!--<video id="video1" width="420" autoplay loop>
+    <source src="mov_bbb.mp4" type="video/mp4">
+    <source src="mov_bbb.ogg" type="video/ogg">
+    Your browser does not support HTML5 video.
+  </video>-->
+  </div>
 </template>
