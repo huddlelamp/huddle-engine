@@ -20,6 +20,7 @@
                 touchtarget: null,
 
                 visualProperties: {
+                    lockedBy: -1,
                     x: 0,
                     y: 0,
                     width: 100,
@@ -48,6 +49,15 @@
 
         var vp = options.visualProperties;
         $visual.data('visualProperties', vp);
+
+        var getParameterByName = function(name) {
+            name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+            return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+        // get device id -> used to lock objects
+        var deviceId = getParameterByName("id");
 
         var doVisualTransform = function(transformPoint) {
             var vp = $visual.data('visualProperties');
@@ -98,6 +108,11 @@
         var dragHandler = function(e) {
             if (isScaleRotate) return;
 
+            var vp = $visual.data('visualProperties');
+
+            if (vp.lockedBy &&
+                (vp.lockedBy != -1 && vp.lockedBy != deviceId)) return;
+
             for (var i = 0; i < e.touches.length; i++) {
                 if (e.touches[i].handled) {
                     console.log('I am a dirty touch :)');
@@ -112,11 +127,13 @@
                     x: e.pageX,
                     y: e.pageY
                 };
+
+                vp.lockedBy = deviceId;
+
+                doVisualTransform(null);
             }
             else if (e.type == '_gesture2_touch_move' || e.type == '_gesture2_touch_end') {
                 //console.log('_gesture2_touch_move');
-
-                var vp = $visual.data('visualProperties');
 
                 var dx = (e.pageX - lastDragPosition.x) * peepholeMetadata.scaleX;
                 var dy = (e.pageY - lastDragPosition.y) * peepholeMetadata.scaleY;
@@ -137,6 +154,12 @@
 
                 doVisualTransform(null);
             }
+
+            if (e.type == '_gesture2_touch_end') {
+                vp.lockedBy = -1;
+
+                doVisualTransform(null);
+            }
         };
 
         var startRotateScalePosition = {
@@ -153,17 +176,22 @@
 
         var rotateScaleHandler = function(e) {
 
+            var vp = $visual.data('visualProperties');
+
+            if (vp.lockedBy &&
+                (vp.lockedBy != -1 && vp.lockedBy != deviceId)) return;
+
             if (e.type == '_gesture2_gesture_start') {
                 //console.log('_gesture2_gesture_start');
-
-                var vp = $visual.data('visualProperties');
 
                 saveTouches = e.touches;
 
                 // deactivates drag handler
                 isScaleRotate = true;
 
-                console.log(e.pageX);
+                vp.lockedBy = deviceId;
+
+                doVisualTransform(null);
 
                 gestureData = {
                     x: e.pageX,
@@ -178,8 +206,6 @@
             }
             else if (e.type == '_gesture2_gesture_move') {
                 //console.log('_gesture2_gesture_move');
-
-                var vp = $visual.data('visualProperties');
 
                 var dx = (e.pageX - gestureData.x) * peepholeMetadata.scaleX;
                 var dy = (e.pageY - gestureData.y) * peepholeMetadata.scaleY;
@@ -213,7 +239,7 @@
 
                 console.log('page coordinate to world coordinate: ' + newVector.elements[0] + ',' + newVector.elements[1]);
                 */
-                
+
                 doVisualTransform(gestureData.transformPoint);
             }
             else if (e.type == '_gesture2_gesture_end') {
@@ -225,6 +251,10 @@
 
                 // activates drag handler
                 isScaleRotate = false;
+
+                vp.lockedBy = -1;
+
+                doVisualTransform(null);
             }
         };
 

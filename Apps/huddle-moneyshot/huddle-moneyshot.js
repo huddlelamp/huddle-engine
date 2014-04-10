@@ -188,6 +188,7 @@ if (Meteor.isClient) {
           var vp = $visual.data('visualProperties');
           
           Objects.update({_id: id}, { $set: {
+              lockedBy: vp.lockedBy,
               x: vp.x,
               y: vp.y,
               rotation: vp.rotation,
