@@ -82,6 +82,12 @@ if (Meteor.isClient) {
     //$overview.css('background-size', canvasBackgroundSize);
     $('#world-canvas-overview').append($overview);
 */
+  Objects.find({}).observe({
+    changed: function (newDocument, oldDocument) {
+      $visual = $('#' + newDocument._id);
+      $visual.data('visualProperties', newDocument);
+    },
+  });
 
     window.peepholeMetadata = {
       scaleX: 1.0,
