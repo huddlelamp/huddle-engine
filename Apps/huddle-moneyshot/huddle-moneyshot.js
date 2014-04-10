@@ -154,6 +154,7 @@ if (Meteor.isClient) {
       },
     });
 
+    // Start huddle
     hutHutHut("192.168.1.119", 4711);
   };
 
@@ -194,59 +195,6 @@ if (Meteor.isClient) {
           }});
         }
       });
-/*
-      $div.gesture({
-        drag: true,
-        scale: true,
-        rotate: true,
-        touchtarget: null,
-
-        scaleX: 4.354254727017134,
-        scaleY: 4.314985689142452
-      });
-
-      $div.gestureInit();
-
-      $div.on('touch_move', function(e) {
-        var id = this.id;
-        
-        var position = $(this).position();
-
-        var transformOrigin = $(this).css('-webkit-transform-origin');
-        var transform = $(this).css('-webkit-transform');
-        
-        Objects.update({_id: id}, {$set: {
-            x: position.left,
-            y: position.top,
-            angle: e.rotation,
-            scale: e.scale,
-            transform: transform,
-            transformOrigin: transformOrigin
-          }}); 
-      });
-
-      $div.on('gesture_move', function(e) {
-        console.log("I was moved with gesture");
-
-        var id = this.id;
-        
-        var position = $(this).position();
-
-        var transformOrigin = $(this).css('-webkit-transform-origin');
-        var transform = $(this).css('-webkit-transform');
-
-        Objects.update({_id: id}, {$set: {
-            x: position.left,
-            y: position.top,
-            angle: e.rotation,
-            scale: e.scale,
-            transform: transform,
-            transformOrigin: transformOrigin
-          }}); 
-      });
-
-      $div.touchInit();
-      */
   };
 
   Template.worldCanvas.events({
@@ -264,16 +212,6 @@ if (Meteor.isClient) {
 
       e.preventDefault();
     },
-
-    'mousedown .world-object': function(e) {
-      console.log('echo mouse down');
-    },
-
-    'mousemove .world-object': function(e) {
-      //console.log(e.clientX);
-
-
-    }
   });
 }
 
