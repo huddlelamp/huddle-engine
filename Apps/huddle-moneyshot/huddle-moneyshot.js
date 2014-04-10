@@ -1,6 +1,12 @@
 Objects = new Meteor.Collection("objects");
 
 if (Meteor.isClient) {
+  
+  /**
+   * Get url parameter, e.g., http://localhost:3000/?id=3 -> id = 3
+   *
+   * @name The parameter name.
+   */  
   function getParameterByName(name) {
       name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
       var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -8,92 +14,58 @@ if (Meteor.isClient) {
       return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
   }
 
-  UI.body.rendered = function () {
-    console.log("UI.body.rendered");
+  /**
+   * Starts huddle client and connects to the huddle tracking engine.
+   *
+   * @host Host address of the huddle tracking engine.
+   * @port Port of the huddle tracking engine.
+   */
+  function hutHutHut(host, port) {
 
-    // disable touch to avoid moving scroll view
-    document.ontouchstart = function(e) {
-      e.preventDefault();
-    };
+    var that = this;
 
-    //this.$('#world-canvas').visualizeTouches();
-    
+    var $worldCanvas = $('#world-canvas');
+    var canvasWidth = $worldCanvas.width();
+    var canvasHeight = $worldCanvas.height();
+    var windowWidth = $(window).width();
+    var windowHeight = $(window).height();
+
     var id = getParameterByName("id");
-    var debug = getParameterByName("debug");
-    if (debug == 'undefined')
-      debug = false;
-
     console.log("Client Id: " + id);
 
+    // set code for client id
     var glyphContainer = this.$('#glyph-container');
     var glyph = this.$('#glyph');
     glyph.css('background-image', 'url(glyphs/' + id + '.png)');
 
-    var windowWidth = $(window).width();
-    var windowHeight = $(window).height();
-
-    $worldCanvas = $('#world-canvas');
-    var canvasWidth = $worldCanvas.width();
-    var canvasHeight = $worldCanvas.height();
-
     var devicePixelRatio = window.devicePixelRatio || 1.0;
-    
-    // TEST BEGIN
-    /*
-    var ratio = 0.22;
-
-    var scaleX = 1 / ((canvasWidth * ratio) / width);
-
-    //var scaleX = 1 / ((canvasWidth * ratio) / width); 
-
-    var angle = 0.0;
-    var centerX = 2048;
-    var centerY = 1536;
-    var tx = 6000;
-    var ty = 2000;
-
-    console.log("test: " + scaleX);
-
-    var translateTransform = '';//'translate(-' + tx + 'px,-' + ty + 'px)';
-    var rotateTransform = '';//'rotate(' + -(angle) + 'deg)';
-    var scaleTransform = 'scale(' + scaleX + ',' + scaleX + ')';
-
-    var transform = translateTransform + ' ' + rotateTransform + ' ' + scaleTransform;
-    //var transform = scaleTransform + ' ' + rotateTransform + ' ' + scaleTransform;
-    var transformOrigin =  (tx + centerX) + 'px ' + (ty + centerY) + 'px 0'
-
-    
-    $worldCanvas.css('-webkit-transform-origin', '0% 0% 0');
-    $worldCanvas.css('-webkit-transform', transform);
-    */
-    /// TEST END
-
-/*
-    var $overview = $($worldCanvas.get(0).cloneNode(true));
-    //var canvasBackgroundImage = $overview.css('background-image');
-    //var canvasBackgroundRepeat = $overview.css('background-repeat');
-    //var canvasBackgroundSize = $overview.css('background-size');
-    $overview.attr('id', 'world-canvas-copy');
-    //$overview.css('-webkit-transform', 'scale(0.03,0.03)');
-    $overview.css('height', '100%');
-    //$overview.css('background-color', 'green');
-    //$overview.css('background-image', canvasBackgroundImage);
-    //$overview.css('background-repeat', canvasBackgroundRepeat);
-    //$overview.css('background-size', canvasBackgroundSize);
-    $('#world-canvas-overview').append($overview);
-*/
-  Objects.find({}).observe({
-    changed: function (newDocument, oldDocument) {
-      $visual = $('#' + newDocument._id);
-      $visual.data('visualProperties', newDocument);
-    },
-  });
-
     window.peepholeMetadata = {
       scaleX: 1.0,
       scaleY: 1.0
     };
-    var canvasScaleFactor = 1;
+    window.canvasScaleFactor = 1;
+
+    var transformCanvas = function(x, y, scaleX, scaleY, rotation, ratioX, ratioY) {
+
+      var deviceCenterToDeviceLeft = ((windowWidth / ratioY) / 2);
+      var deviceCenterToDeviceTop = ((windowHeight / ratioY) / 2);
+
+      var tx = -1 * x * canvasWidth;
+      var ty = -1 * y * canvasHeight;
+
+      var txd = tx + deviceCenterToDeviceLeft;
+      var tyd = ty + deviceCenterToDeviceTop;
+
+      var transform = 'scale(' + scaleX + ',' + scaleY + ') ' +
+                      'translate(' + txd + 'px,' +tyd + 'px)';
+      
+      // Translate to center, rotate around center point, and translate back
+      transform += 'translate(' + (-tx) + 'px,' + (-ty) + 'px) ' +
+                   'rotate(' + (-rotation) + 'deg) ' +
+                   'translate(' + tx + 'px,' + ty + 'px)';
+
+      $worldCanvas.css('-webkit-transform', transform);
+    };
 
     var huddle = new Huddle(id, function (data) {
         if (data.Type) {
@@ -121,25 +93,7 @@ if (Meteor.isClient) {
 
                     window.orientationDevice = angle;
 
-                    var deviceCenterToDeviceLeft = ((windowWidth / ratio.Y) / 2);
-                    var deviceCenterToDeviceTop = ((windowHeight / ratio.Y) / 2);
-
-                    var tx = -1 * x * canvasWidth;
-                    var ty = -1 * y * canvasHeight;
-
-                    var txd = tx + deviceCenterToDeviceLeft;
-                    var tyd = ty + deviceCenterToDeviceTop;
-
-                    var transform = ' scale(' + scaleX + ',' + scaleY + ')';
-                    transform += ' translate(' + txd + 'px,' +tyd + 'px)';
-                    
-                    // Translate to center, rotate around center point, and translate back
-                    transform += ' translate(' + (-1 * tx) + 'px,' + (-1 * ty) + 'px)';
-                    transform += 'rotate(' + -(angle) + 'deg)';
-                    transform += ' translate(' + (1 * tx) + 'px,' + (1 * ty) + 'px)';
-
-                    $worldCanvas.css('-webkit-transform-origin', '0px 0px 0px');
-                    $worldCanvas.css('-webkit-transform', transform);
+                    transformCanvas(x, y, scaleX, scaleY, angle, ratio.X, ratio.Y);
 
                     break;
                 case 'Digital':
@@ -154,11 +108,53 @@ if (Meteor.isClient) {
             }
         }
         else {
-            console.log("echo");
+            console.log("Huddle data type " + type + " not supported");
         }
       });
       huddle.reconnect = true;
-      huddle.connect("192.168.1.119", 4711);
+      huddle.connect(host, port);
+  }
+
+  /**
+   * Renders an overview of the world canvas.
+   */
+  function showOverview() {
+    var $overview = $($worldCanvas.get(0).cloneNode(true));
+    //var canvasBackgroundImage = $overview.css('background-image');
+    //var canvasBackgroundRepeat = $overview.css('background-repeat');
+    //var canvasBackgroundSize = $overview.css('background-size');
+    $overview.attr('id', 'world-canvas-copy');
+    //$overview.css('-webkit-transform', 'scale(0.03,0.03)');
+    $overview.css('height', '100%');
+    //$overview.css('background-color', 'green');
+    //$overview.css('background-image', canvasBackgroundImage);
+    //$overview.css('background-repeat', canvasBackgroundRepeat);
+    //$overview.css('background-size', canvasBackgroundSize);
+    $('#world-canvas-overview').append($overview);
+  }
+
+  UI.body.rendered = function() {
+    console.log("UI.body.rendered");
+
+    // disable touch to avoid moving scroll view
+    document.ontouchstart = function(e) {
+      e.preventDefault();
+    };
+
+    //this.$('#world-canvas').visualizeTouches();
+
+    window.debug = getParameterByName("debug");
+    if (debug == 'undefined')
+      debug = false;
+
+    Objects.find({}).observe({
+      changed: function (newDocument, oldDocument) {
+        $visual = $('#' + newDocument._id);
+        $visual.data('visualProperties', newDocument);
+      },
+    });
+
+    hutHutHut("192.168.1.119", 4711);
   };
 
   Template.worldCanvas.objects = function() {

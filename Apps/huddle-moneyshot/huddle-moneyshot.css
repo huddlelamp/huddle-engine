@@ -31,6 +31,10 @@
 	background-size: contain;
 
 	background-color: yellow;
+
+	transform-origin: 0 0;
+	-ms-transform-origin: 0 0; /* IE 9 */
+	-webkit-transform-origin: 0 0; /* Chrome, Safari, Opera */
 }
 
 #world-canvas-overview {
@@ -56,9 +60,9 @@
 	background-repeat: no-repeat;
 	box-shadow: 5px 5px 5px #222222;
 
-	transform-origin: 50% 50% 0;
-	-ms-transform-origin: 50% 50% 0; /* IE 9 */
-	-webkit-transform-origin: 50% 50% 0; /* Chrome, Safari, Opera */
+	transform-origin: 50% 50%;
+	-ms-transform-origin: 50% 50%; /* IE 9 */
+	-webkit-transform-origin: 50% 50%; /* Chrome, Safari, Opera */
 }
 
 #glyph-container {
