@@ -531,7 +531,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
             var now = DateTime.Now;
 
-            _hands.RemoveAll(p => (now - p.LastUpdate).TotalMilliseconds > 150);
+            _hands.RemoveAll(p => (now - p.LastUpdate).TotalMilliseconds > 500);
 
             var width = image.Width;
             var height = image.Height;
@@ -627,7 +627,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
                 var nx = x / (double)width;
                 var ny = y / (double)height;
-                UpdateHand(x, y, nx, ny, depth);
+                UpdateHand(x, y, nx, ny, width, height, depth);
 
                 segment.Dispose();
 
@@ -778,9 +778,11 @@ namespace Huddle.Engine.Processor.OpenCv
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="ny"></param>
-        /// <param name="depth"></param>
         /// <param name="nx"></param>
-        private void UpdateHand(int x, int y, double nx, double ny, float depth)
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="depth"></param>
+        private void UpdateHand(int x, int y, double nx, double ny, double width, double height, float depth)
         {
             var now = DateTime.Now;
             //depth = 255 - depth;
@@ -802,6 +804,9 @@ namespace Huddle.Engine.Processor.OpenCv
                     Depth = depth,
                     LastUpdate = now
                 };
+                hand.RelativeX = hand.PredictedCenter.X / width;
+                hand.RelativeY = hand.PredictedCenter.Y / height;
+
                 _hands.Add(hand);
             }
 
@@ -812,6 +817,8 @@ namespace Huddle.Engine.Processor.OpenCv
                 hand.Center = point;
                 hand.Depth = depth;
                 hand.LastUpdate = now;
+                hand.RelativeX = hand.PredictedCenter.X / width;
+                hand.RelativeY = hand.PredictedCenter.Y / height;
             }
             else
             {
@@ -823,6 +830,8 @@ namespace Huddle.Engine.Processor.OpenCv
                     Depth = depth,
                     LastUpdate = now
                 };
+                hand.RelativeX = hand.PredictedCenter.X / width;
+                hand.RelativeY = hand.PredictedCenter.Y / height;
                 _hands.Add(hand);
             }
         }
