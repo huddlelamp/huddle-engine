@@ -40,6 +40,8 @@ if (Meteor.isClient) {
 
     var devicePixelRatio = window.devicePixelRatio || 1.0;
     window.peepholeMetadata = {
+      canvasWidth: canvasWidth,
+      canvasHeight: canvasHeight,
       scaleX: 1.0,
       scaleY: 1.0
     };
@@ -67,48 +69,200 @@ if (Meteor.isClient) {
       $worldCanvas.css('-webkit-transform', transform);
     };
 
+    var ignoreProximity = true;
     var huddle = new Huddle(id, function (data) {
+
         if (data.Type) {
 
             if (debug) return;
 
+            if (!this.hands) {
+              this.counter = 0;
+              console.log("new hands array");
+              this.hands = [];
+            }
+
             switch (data.Type) {
                 case 'Proximity':
-                //return;
-                    var location = data.Data.Location.split(",");
+                  //return;
+
+                  //console.log("Received proximity data");
+
+                  if (ignoreProximity) return;
+
+                  var data = data.Data;
+
+                  var location = data.Location.split(",");
+                  var x = location[0];
+                  var y = location[1];
+                  var z = location[2]; // the z-axis is unknown for devices
+                  var angle = data.Orientation;
+                  var ratio = data.RgbImageToDisplayRatio;
+
+                  // Indonesien Jakarta
+                  //var x = 0.769;
+                  //var y = 0.402;
+
+                  var scaleX = ((ratio.X * windowWidth) / canvasWidth);
+                  var scaleY = ((ratio.Y * windowHeight) / canvasHeight);
+
+                  window.peepholeMetadata.scaleX = 1 / (ratio.Y / canvasScaleFactor);
+                  window.peepholeMetadata.scaleY = 1 / (ratio.Y / canvasScaleFactor);
+
+                  window.orientationDevice = angle;
+
+                  transformCanvas(x, y, scaleX, scaleY, angle, ratio.X, ratio.Y);
+
+                  this.counter++;
+                  //if (this.counter % 10 != 0) break;
+
+                  //console.log("THAT3: " + that);
+                  var currentHands = [];
+
+                  var presences = data.Presences;
+
+                  //console.log("I have " + presences.length + " presences");
+
+                  for (var i = 0; i < presences.length; i++) {
+                    var presence = presences[i];
+
+                    //console.log("Presence[" + i + "]: " + JSON.stringify(presence));
+
+                    //console.log("Presence Type: " + presence.Type);
+
+                    if (presence.Type != "Hand") continue;
+
+                    var currentHandId = presence.Identity;
+
+                    var eventType;
+
+                    var handIdx = -1;
+                    var length = this.hands.length;
+
+                    //console.log("length of hands: " + length);
+
+                    //console.log("Hand identity: " + presence.Identity);
+
+                    //continue;
+
+                    for (var j = 0; j < length; j++) {
+                      var hand = this.hands[j];
+                      //console.log("compare: " + hand.Identity + " == " + currentHandId);
+                      if (hand.Identity == currentHandId) {
+                        //console.log("found hand with id: " + j);
+                        handIdx = j;
+                        break;
+                      }
+                    }
+
+                    //console.log("Hand identity: " + presence.Identity + " at index: " + handIdx);
+                    //console.log('continue');
+
+                    //continue;
+                    
+                    if (handIdx > -1) {
+                      eventType = "move";
+                      this.hands.splice(handIdx, 1);
+
+                      //console.log('move hand: ' + presence.Identity);
+
+                      currentHands.push(presence);
+                    }
+                    else {
+                      eventType = "start";
+
+                      //console.log('start hand: ' + presence.Identity);
+
+                      currentHands.push(presence);
+                    }
+
+                    var location = presence.Location.split(",");
                     var x = location[0];
                     var y = location[1];
-                    var angle = data.Data.Orientation;
-                    var ratio = data.Data.RgbImageToDisplayRatio;
+                    var z = location[2]; // the z-axis is unknown for devices
+                  
+                    // the event we are triggering
+                    var pEvent = $.Event("presence_" + eventType);
 
-                    // Indonesien Jakarta
-                    //var x = 0.769;
-                    //var y = 0.402;
+                    // get the touch coordinates from the touch object
+                    pEvent = $.extend(
+                        pEvent,
+                        { 
+                            id: presence.Identity,
+                            x: x,
+                            y: y,
+                            z: z, // z-value is absolute (not normalized like x and y)
+                        });
 
-                    var scaleX = ((ratio.X * windowWidth) / canvasWidth);
-                    var scaleY = ((ratio.Y * windowHeight) / canvasHeight);
+                    // trigger the event in a try/catch block
+                    // because we do not want any exception to stop the current function
+                    try {
+                      $worldCanvas.children().trigger(pEvent);
+                      //$worldCanvas.trigger(pEvent);
+                    }
+                    catch (error) {
+                      console.log(error);
+                    }
+                  }
 
-                    window.peepholeMetadata.scaleX = 1 / (ratio.Y / canvasScaleFactor);
-                    window.peepholeMetadata.scaleY = 1 / (ratio.Y / canvasScaleFactor);
+                  // send end event for each hand that is not present
+                  for (var k = 0; k < this.hands.length; k++) {
 
-                    window.orientationDevice = angle;
+                    var hand = this.hands[k];
+                    var location = hand.Location.split(",");
+                    var x = location[0];
+                    var y = location[1];
+                    var z = location[2]; // the z-axis is unknown for devices
 
-                    transformCanvas(x, y, scaleX, scaleY, angle, ratio.X, ratio.Y);
+                    //console.log('end hand: ' + hand.Identity);
 
-                    break;
+                    // the event we are triggering
+                    var pEvent = $.Event("presence_end");
+
+                    // get the touch coordinates from the touch object
+                    pEvent = $.extend(
+                      pEvent,
+                      {
+                          id: hand.Identity,
+                          x: x,
+                          y: y,
+                          z: z, // z-value is absolute (not normalized like x and y)
+                      });
+
+                    // trigger the event in a try/catch block
+                    // because we do not want any exception to stop the current function
+                    try {
+                      $worldCanvas.children().trigger(pEvent);
+                      //$worldCanvas.trigger(pEvent);
+                    }
+                    catch (error) {
+                      console.log(error);
+                    }
+                  }
+
+                  this.hands = currentHands;//.splice();
+                  delete currentHands;
+
+                  //console.log("Hands: " + this.hands.length + ", Current Hands: " + currentHands.length);
+
+                  break;
                 case 'Digital':
-                    if (data.Data.Value)
-                      glyphContainer.show();
-                    else
-                      glyphContainer.hide();
-                    break;
+                  if (data.Data.Value) {
+                    glyphContainer.show();
+                    ignoreProximity = true;
+                  }
+                  else {
+                    ignoreProximity = false;
+                    glyphContainer.hide();
+                  }
+                  break;
                 case 'Broadcast':
-                    
-                    break;
+                  
+                  break;
             }
         }
         else {
-            console.log("Huddle data type " + type + " not supported");
+            console.log("Huddle data type " + data.Type + " not supported");
         }
       });
       huddle.reconnect = true;
@@ -154,6 +308,12 @@ if (Meteor.isClient) {
       },
     });
 
+    /*
+    $('#world-canvas').on('presence_move', function(e) {
+      console.log('presence moved: ' + e.id);
+    });
+*/
+
     // Start huddle
     hutHutHut("192.168.1.119", 4711);
   };
@@ -186,6 +346,8 @@ if (Meteor.isClient) {
           
           Objects.update({_id: id}, { $set: {
               lockedBy: vp.lockedBy,
+              lockedForAction: vp.lockedForAction,
+              lockedData: vp.lockedData,
               x: vp.x,
               y: vp.y,
               rotation: vp.rotation,

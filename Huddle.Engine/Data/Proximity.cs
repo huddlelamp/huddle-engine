@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Media.Media3D;
 using Huddle.Engine.Domain;
 using Huddle.Engine.Processor;
 
@@ -9,6 +11,41 @@ namespace Huddle.Engine.Data
     public class Proximity : BaseData
     {
         #region properties
+
+        #region Type
+
+        /// <summary>
+        /// The <see cref="Type" /> property's name.
+        /// </summary>
+        public const string TypePropertyName = "Type";
+
+        private string _type = string.Empty;
+
+        /// <summary>
+        /// Sets and gets the Type property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Type
+        {
+            get
+            {
+                return _type;
+            }
+
+            set
+            {
+                if (_type == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(TypePropertyName);
+                _type = value;
+                RaisePropertyChanged(TypePropertyName);
+            }
+        }
+
+        #endregion
 
         #region Distance
 
@@ -157,13 +194,13 @@ namespace Huddle.Engine.Data
         /// </summary>
         public const string LocationPropertyName = "Location";
 
-        private Point _location = new Point();
+        private Point3D _location = new Point3D();
 
         /// <summary>
         /// Sets and gets the Location property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public Point Location
+        public Point3D Location
         {
             get
             {
@@ -257,14 +294,15 @@ namespace Huddle.Engine.Data
 
         #endregion
 
-        public Proximity(IProcessor source, string key)
+        public Proximity(IProcessor source, string type, string key)
             : base(source, key)
         {
+            Type = type;
         }
 
         public override IData Copy()
         {
-            return new Proximity(Source, Key)
+            return new Proximity(Source, Type, Key)
             {
                 Distance = Distance,
                 Identity = Identity,
@@ -283,7 +321,7 @@ namespace Huddle.Engine.Data
 
         public override string ToString()
         {
-            return string.Format("{0}={{Identity={1},Location={2},Orientation={3},Distance={4},Movement={5}}}", GetType().Name, Identity, Location, Orientation, Distance, Movement);
+            return string.Format("{0}={{Type={1},Identity={2},Location={3},Orientation={4},Distance={5},Movement={6}}}", GetType().Name, Type, Identity, Location, Orientation, Distance, Movement);
         }
     }
 }

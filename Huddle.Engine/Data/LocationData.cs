@@ -1,9 +1,11 @@
-﻿using Huddle.Engine.Processor;
+﻿using System.Linq;
+using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
 {
     public abstract class LocationData : BaseData
     {
+
         #region properties
 
         #region Id

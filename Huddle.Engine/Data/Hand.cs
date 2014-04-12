@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using Huddle.Engine.Processor;
 using Huddle.Engine.Processor.OpenCv.Filter;
 
@@ -7,9 +8,17 @@ namespace Huddle.Engine.Data
 {
     public class Hand : LocationData
     {
-        #region private fields
+        #region private members
 
         private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
+
+        private const int SlidingSize = 5;
+        private int _slidingPointerX = 0;
+        private int _slidingPointerY = 0;
+        private int _slidingPointerDepth = 0;
+        private double[] _slidingX = new double[SlidingSize];
+        private double[] _slidingY = new double[SlidingSize];
+        private double[] _slidingDepth = new double[SlidingSize];
 
         #endregion
 
@@ -85,6 +94,80 @@ namespace Huddle.Engine.Data
 
         #endregion
 
+        #region RelativeX
+
+        /// <summary>
+        /// The <see cref="RelativeX" /> property's name.
+        /// </summary>
+        public new const string RelativeXPropertyName = "RelativeX";
+
+        private double _relativeX = 0.0;
+
+        /// <summary>
+        /// Sets and gets the RelativeX property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public new double RelativeX
+        {
+            get
+            {
+                return _relativeX;
+            }
+
+            set
+            {
+                _slidingX[++_slidingPointerX % SlidingSize] = value;
+
+                if (_relativeX == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(RelativeXPropertyName);
+                _relativeX = value;
+                RaisePropertyChanged(RelativeXPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region RelativeY
+
+        /// <summary>
+        /// The <see cref="RelativeY" /> property's name.
+        /// </summary>
+        public new const string RelativeYPropertyName = "RelativeY";
+
+        private double _relativeY = 0.0;
+
+        /// <summary>
+        /// Sets and gets the RelativeY property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public new double RelativeY
+        {
+            get
+            {
+                return _relativeY;
+            }
+
+            set
+            {
+                _slidingY[++_slidingPointerY % SlidingSize] = value;
+
+                if (_relativeY == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(RelativeYPropertyName);
+                _relativeY = value;
+                RaisePropertyChanged(RelativeYPropertyName);
+            }
+        }
+
+        #endregion
+
         #region Depth
 
         /// <summary>
@@ -107,6 +190,8 @@ namespace Huddle.Engine.Data
 
             set
             {
+                _slidingDepth[++_slidingPointerDepth % SlidingSize] = value;
+
                 if (_depth == value)
                 {
                     return;
@@ -115,6 +200,42 @@ namespace Huddle.Engine.Data
                 RaisePropertyChanging(DepthPropertyName);
                 _depth = value;
                 RaisePropertyChanged(DepthPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region SlidingX
+
+        public double SlidingX
+        {
+            get 
+            {
+                return _slidingPointerX < SlidingSize ? _slidingX[_slidingPointerX] : _slidingX.Average();
+            }
+        }
+
+        #endregion
+
+        #region SlidingY
+
+        public double SlidingY
+        {
+            get 
+            {
+                return _slidingPointerY < SlidingSize ? _slidingY[_slidingPointerY] : _slidingY.Average();
+            }
+        }
+
+        #endregion
+
+        #region SlidingDepth
+
+        public double SlidingDepth
+        {
+            get 
+            {
+                return _slidingPointerDepth < SlidingSize ? _slidingDepth[_slidingPointerDepth] : _slidingDepth.Average();
             }
         }
 
@@ -194,14 +315,25 @@ namespace Huddle.Engine.Data
 
         public override IData Copy()
         {
-            return new Hand(Source, Key, Id, Center)
+            var hand = new Hand(Source, Key, Id, Center)
             {
                 X = X,
                 Y = Y,
                 Angle = Angle,
                 LastUpdate = LastUpdate,
-                Depth = Depth
+                Depth = Depth,
+                Center = Center,
+                RelativeX = RelativeX,
+                RelativeY = RelativeY
             };
+            Array.Copy(_slidingX, hand._slidingX, SlidingSize);
+            Array.Copy(_slidingY, hand._slidingY, SlidingSize);
+            Array.Copy(_slidingDepth, hand._slidingDepth, SlidingSize);
+            hand._slidingPointerX = _slidingPointerX;
+            hand._slidingPointerY = _slidingPointerY;
+            hand._slidingPointerDepth = _slidingPointerDepth;
+
+            return hand;
         }
 
         public override void Dispose()

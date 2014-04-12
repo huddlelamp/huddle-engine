@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media.Media3D;
 using System.Xml.Serialization;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
@@ -369,10 +370,10 @@ namespace Huddle.Engine.Processor
             foreach (var device1 in identifiedDevices)
             {
                 var p1 = new Point(device1.X / Width, device1.Y / Height);
-                var proximity = new Proximity(this, device1.Key)
+                var proximity = new Proximity(this, "Device", device1.Key)
                 {
                     Identity = device1.DeviceId,
-                    Location = p1,
+                    Location = new Point3D(p1.X, p1.Y, 0),
                     Orientation = device1.Angle,
                     RgbImageToDisplayRatio = device1.RgbImageToDisplayRatio
                 };
@@ -425,10 +426,10 @@ namespace Huddle.Engine.Processor
 
                     var p2 = new Point(device2.X / Width, device2.Y / Height);
 
-                    proximity.Presences.Add(new Proximity(this, device2.Key)
+                    proximity.Presences.Add(new Proximity(this, "Device", device2.Key)
                     {
                         Identity = device2.DeviceId,
-                        Location = p2,
+                        Location = new Point3D(p2.X, p2.Y, 0),
                         Distance = (p2 - p1).Length,
                         Orientation = localAngle,
                         RgbImageToDisplayRatio = device2.RgbImageToDisplayRatio
@@ -436,8 +437,6 @@ namespace Huddle.Engine.Processor
                 }
 
                 #endregion
-
-                Stage(proximity);
 
                 foreach (var hand in dataContainer.OfType<Hand>().ToArray())
                 {
@@ -450,7 +449,16 @@ namespace Huddle.Engine.Processor
                     {
                         Log("Hand {0} close to {1}", hand.Id, device1.DeviceId);
                     }
+
+                    proximity.Presences.Add(new Proximity(this, "Hand", hand.Key)
+                    {
+                        Identity = "" + hand.Id,
+                        Distance = distance,
+                        Location = new Point3D(hand.SlidingX, hand.SlidingY, hand.SlidingDepth),
+                    });
                 }
+
+                Stage(proximity);
             }
 
             Stage(devices.ToArray<IData>());
