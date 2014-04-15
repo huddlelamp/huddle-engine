@@ -230,6 +230,8 @@ namespace Huddle.Engine.Processor
             //}
         }
 
+        private bool _isRecorderStarted = false;
+
         public override IData Process(IData data)
         {
             var imageData = data as RgbImageData;
@@ -266,14 +268,18 @@ namespace Huddle.Engine.Processor
                 //var captureOutput = new VideoWriter(@"test.avi", CvInvoke.CV_FOURCC('W', 'M', 'V', '3'), 1, width, height, true);
                 var videoWriter = new VideoWriter(
                     GetTempFilePath(_tmpRecordPath, videoMetadata.FileName),
-                    -1,
+                    CvInvoke.CV_FOURCC('D', 'I', 'V', 'X'),
                     Fps,
                     videoMetadata.Width,
                     videoMetadata.Height,
                     true);
 
                 _recorders.Add(videoMetadata, videoWriter);
+
+                _isRecorderStarted = true;
             }
+
+            if (!_isRecorderStarted) return;
 
             // TODO: The _recorders.Single may raise an exception if sequence is empty or multiple items in sequence match
             var recorder = _recorders.Single(kvp => Equals(kvp.Key.Key, imageData.Key)).Value;
@@ -284,6 +290,7 @@ namespace Huddle.Engine.Processor
                 Image<Rgb, byte> imageCopy = null;
                 try
                 {
+                    Console.WriteLine("Write image frame");
                     imageCopy = imageData.Image;
                     recorder.WriteFrame(imageCopy.Convert<Bgr, byte>());
                 }
@@ -293,6 +300,11 @@ namespace Huddle.Engine.Processor
                         imageCopy.Dispose();
                 }
             }
+        }
+
+        public override void Start()
+        {
+            //base.Start();
         }
 
         public override void Stop()
@@ -318,6 +330,8 @@ namespace Huddle.Engine.Processor
                 Directory.CreateDirectory(_tmpRecordPath);
 
             _isRecording = true;
+
+            base.Start();
         }
 
         private Capture _capture;

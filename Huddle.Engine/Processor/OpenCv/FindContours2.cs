@@ -17,7 +17,7 @@ using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
 {
-    [ViewTemplate("Find Contours 2", "FindContours")]
+    [ViewTemplate("Find Contours 2", "FindContours2")]
     public class FindContours2 : RgbProcessor
     {
         #region private fields
@@ -517,7 +517,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     {
                         outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
 
-                        if (currentContour.Total >= 4) //The contour has 4 vertices.
+                        if (currentContour.Total >= MinDetectRightAngles) //The contour has 4 vertices.
                         {
                             #region determine if all the angles in the contour are within [80, 100] degree
 
@@ -592,6 +592,10 @@ namespace Huddle.Engine.Processor.OpenCv
                             }
                         }
                     }
+                    else
+                    {
+                        //outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.Yellow, 2);
+                    }
                 }
             }
 
@@ -603,7 +607,7 @@ namespace Huddle.Engine.Processor.OpenCv
                         outputImage.FillConvexPoly(rawObject.Points, Rgbs.Yellow);
 
                     if (IsDrawContours)
-                        outputImage.Draw(rawObject.Shape, Rgbs.Red, 2);
+                        outputImage.Draw(rawObject.Shape, Rgbs.Yellow, 2);
 
                     if (IsDrawCenter)
                     {

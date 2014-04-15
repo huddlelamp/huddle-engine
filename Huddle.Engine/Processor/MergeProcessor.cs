@@ -8,7 +8,6 @@ using System.Windows.Media;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
-using Huddle.Engine.Domain;
 using Huddle.Engine.Extensions;
 using Huddle.Engine.Util;
 

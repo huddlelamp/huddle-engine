@@ -249,7 +249,8 @@ namespace Emgu.CV.External.Extensions
 
                 var angle = Math.Abs(edge.GetExteriorAngleDegree(edges[i]));
 
-                if (Math.Abs(90.0 - angle) > toleranceAngle)
+                var absAngle = Math.Abs(90.0 - angle);
+                if (absAngle > toleranceAngle)
                 {
                     isRectangle = false;
                     break;

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -19,7 +20,7 @@ using Huddle.Engine.Util;
 namespace Huddle.Engine.Processor
 {
     [KnownType("GetKnownTypes")]
-    public abstract class BaseProcessor : ObservableObject, IProcessor, ILocator
+    public abstract class BaseProcessor : ObservableObject, IProcessor, ILocator, ISnapshoter
     {
         #region const
 
@@ -590,7 +591,25 @@ namespace Huddle.Engine.Processor
             // Set new data to keep data container's meta information.
             dataContainer.Clear();
 
-            Parallel.ForEach(allData, data =>
+            //Parallel.ForEach(allData, data =>
+            //{
+            //    IData processedData = null;
+            //    try
+            //    {
+            //        processedData = Process(data);
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        Log("Processing error {0}", e.ToString());
+            //    }
+
+            //    if (processedData == null)
+            //        return;
+
+            //    dataContainer.Add(processedData);
+            //});
+
+            foreach (var data in allData)
             {
                 IData processedData = null;
                 try
@@ -603,10 +622,10 @@ namespace Huddle.Engine.Processor
                 }
 
                 if (processedData == null)
-                    return;
+                    continue;
 
                 dataContainer.Add(processedData);
-            });
+            };
 
             return dataContainer.Any() ? dataContainer : null;
         }
@@ -684,5 +703,14 @@ namespace Huddle.Engine.Processor
         {
             return ProcessorTypesProvider.GetProcessorTypes<BaseProcessor>();
         }
+
+        #region ISnapshoter implementation
+
+        public virtual Bitmap[] TakeSnapshots()
+        {
+            return null;
+        }
+
+        #endregion
     }
 }

@@ -109,7 +109,7 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
             set
             {
-                if (_center == value)
+               if (_center == value)
                 {
                     return;
                 }

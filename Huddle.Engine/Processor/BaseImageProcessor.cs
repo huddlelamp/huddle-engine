@@ -1,15 +1,14 @@
 ﻿using System;
+using System.Drawing;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
-using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.External.Extensions;
 using Emgu.CV.Structure;
-using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
+using Huddle.Engine.Extensions;
 
 namespace Huddle.Engine.Processor
 {
@@ -22,12 +21,17 @@ namespace Huddle.Engine.Processor
         public static MCvFont EmguFont = new MCvFont(FONT.CV_FONT_HERSHEY_SIMPLEX, 0.3, 0.3);
         public static MCvFont EmguFontBig = new MCvFont(FONT.CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0);
 
+        private static int VideoWriterId = 0;
+        public const int VideoWriterWidth = 1280;
+        public const int VideoWriterHeight = 720;
+        public const int VideoWriterFps = 25;
+
         #endregion
 
-        #region private fields
+        #region private members
 
-        private DispatcherOperation _preProcessRendering;
-        private DispatcherOperation _postProcessRendering;
+        private readonly bool _enableVideoWriter = false;
+        private readonly VideoWriter _videoWriter;
 
         #endregion
 
@@ -103,6 +107,26 @@ namespace Huddle.Engine.Processor
 
         #endregion
 
+        #region ctor
+
+        protected BaseImageProcessor()
+            : this(false)
+        {
+
+        }
+
+        protected BaseImageProcessor(bool enableVideoWriter)
+        {
+            _enableVideoWriter = enableVideoWriter;
+
+            if (_enableVideoWriter)
+                _videoWriter = new VideoWriter(string.Format("{0}_{1}.avi", GetType().Name, VideoWriterId++), CvInvoke.CV_FOURCC('D', 'I', 'V', 'X'), VideoWriterFps, VideoWriterWidth, VideoWriterHeight, true);
+        }
+
+        #endregion
+
+        #region Data Processing
+
         public override IData Process(IData data)
         {
             var imageData = data as BaseImageData<TColor, TDepth>;
@@ -160,6 +184,11 @@ namespace Huddle.Engine.Processor
                 return data;
             }
 
+            if (_enableVideoWriter && _videoWriter != null)
+            {
+                WriteImage(data.Image.Copy());
+            }
+
             if (IsRenderContent)
             {
                 var postProcessImage = data.Image.Copy();
@@ -182,11 +211,34 @@ namespace Huddle.Engine.Processor
             return data;
         }
 
+        private void WriteImage(Image<TColor, TDepth> image)
+        {
+            var bgrImage = image.Convert<Bgr, byte>();
+            image.Dispose();
+
+            var resizedImage = bgrImage.Resize(VideoWriterWidth, VideoWriterHeight, INTER.CV_INTER_CUBIC);
+            bgrImage.Dispose();
+
+            _videoWriter.WriteFrame(resizedImage);
+            //resizedImage.Dispose();
+        }
+
         public virtual Image<TColor, TDepth> PreProcess(Image<TColor, TDepth> image)
         {
             return image;
         }
 
         public abstract Image<TColor, TDepth> ProcessAndView(Image<TColor, TDepth> image);
+
+        #endregion
+
+        public override Bitmap[] TakeSnapshots()
+        {
+            return new[]
+            {
+                PreProcessImage.BitmapFromSource(),
+                PostProcessImage.BitmapFromSource()
+            };
+        }
     }
 }

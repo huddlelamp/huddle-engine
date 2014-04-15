@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media.Media3D;
-using Huddle.Engine.Domain;
 using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data

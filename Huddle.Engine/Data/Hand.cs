@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using Emgu.CV;
+using Emgu.CV.Structure;
 using Huddle.Engine.Processor;
 using Huddle.Engine.Processor.OpenCv.Filter;
 
@@ -13,9 +15,9 @@ namespace Huddle.Engine.Data
         private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
 
         private const int SlidingSize = 5;
-        private int _slidingPointerX = 0;
-        private int _slidingPointerY = 0;
-        private int _slidingPointerDepth = 0;
+        private int _slidingPointerX = -1;
+        private int _slidingPointerY = -1;
+        private int _slidingPointerDepth = -1;
         private double[] _slidingX = new double[SlidingSize];
         private double[] _slidingY = new double[SlidingSize];
         private double[] _slidingDepth = new double[SlidingSize];
@@ -276,6 +278,41 @@ namespace Huddle.Engine.Data
 
         #endregion
 
+        #region Segment
+
+        /// <summary>
+        /// The <see cref="Segment" /> property's name.
+        /// </summary>
+        public const string SegmentPropertyName = "Segment";
+
+        private Image<Gray, byte> _segment;
+
+        /// <summary>
+        /// Sets and gets the Segment property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Image<Gray, byte> Segment
+        {
+            get
+            {
+                return _segment;
+            }
+
+            set
+            {
+                if (_segment == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(SegmentPropertyName);
+                _segment = value;
+                RaisePropertyChanged(SegmentPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -324,7 +361,8 @@ namespace Huddle.Engine.Data
                 Depth = Depth,
                 Center = Center,
                 RelativeX = RelativeX,
-                RelativeY = RelativeY
+                RelativeY = RelativeY,
+                Segment = Segment != null ? Segment.Copy() : null
             };
             Array.Copy(_slidingX, hand._slidingX, SlidingSize);
             Array.Copy(_slidingY, hand._slidingY, SlidingSize);

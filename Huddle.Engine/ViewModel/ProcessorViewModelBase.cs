@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
@@ -10,6 +13,7 @@ using Huddle.Engine.Extensions;
 using Huddle.Engine.Model;
 using Huddle.Engine.Processor;
 using Huddle.Engine.Util;
+using Microsoft.Win32;
 
 namespace Huddle.Engine.ViewModel
 {
@@ -39,6 +43,8 @@ namespace Huddle.Engine.ViewModel
         public RelayCommand<SenderAwareEventArgs> DragSourceEndCommand { get; private set; }
 
         public RelayCommand<DragEventArgs> DropSourceCommand { get; private set; }
+
+        public RelayCommand TakeSnapshotCommand { get; private set; }
 
         #endregion
 
@@ -281,7 +287,7 @@ namespace Huddle.Engine.ViewModel
                     return;
 
                 var sender = args.Sender as IInputElement;
-                
+
                 var position = e.GetPosition(sender);
 
                 if (_dragLocator == null) return;
@@ -375,6 +381,8 @@ namespace Huddle.Engine.ViewModel
             #endregion
 
             RemoveCommand = new RelayCommand(OnRemove);
+
+            TakeSnapshotCommand = new RelayCommand(OnTakeSnapshot);
 
             #region Register for ViewModel Changes
 
@@ -534,5 +542,45 @@ namespace Huddle.Engine.ViewModel
         //    Sources.Clear();
         //    Targets.Clear();
         //}
+        private void OnTakeSnapshot()
+        {
+            var snapshoter = Model as ISnapshoter;
+
+            if (snapshoter != null)
+            {
+                var task = Task.Factory.StartNew<Bitmap[]>(snapshoter.TakeSnapshots);
+
+                task.ContinueWith(t =>
+                {
+                    var snapshotBitmaps = t.Result;
+
+                    if (snapshotBitmaps == null)
+                    {
+                        MessageBox.Show(string.Format("Snapshot function not implemented for {0}", Model.GetType().Name));
+                        return;
+                    }
+
+                    var i = 1;
+                    foreach (var bitmap in snapshotBitmaps)
+                    {
+                        var dialog = new SaveFileDialog
+                        {
+                            Title = string.Format("Snaptshot of Image {0}", i++),
+                            Filter = "Snapshot Image|*.png"
+                        };
+                        var result = dialog.ShowDialog(Application.Current.MainWindow);
+
+                        if (!result.Value) return;
+
+                        var filename = dialog.FileName;
+
+                        using (var newBitmap = new Bitmap(bitmap))
+                        {
+                            newBitmap.Save(filename, ImageFormat.Png);
+                        }
+                    }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
+            }
+        }
     }
 }

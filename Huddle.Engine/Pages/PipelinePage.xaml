@@ -107,8 +107,7 @@
 
                         <Label Grid.Column="0" Background="Red"
                                    AllowDrop="True"
-                                   Content="&#9654;IN" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="White" FontFamily="Courier"                                   
-                                   >
+                                   Content="&#9654;IN" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="White" FontFamily="Courier">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Drop">
                                     <command:EventToCommand Command="{Binding Path=DropSourceCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
@@ -161,17 +160,26 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
+                            
+                            <Button Content="Take Snapshot">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Click">
+                                        <command:EventToCommand Command="{Binding Path=TakeSnapshotCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </Button>
 
-                            <ContentPresenter Grid.Row="0" Content="{Binding Path=Model}"
+                            <ContentPresenter Grid.Row="1" Content="{Binding Path=Model}"
                                               ContentTemplateSelector="{StaticResource ResourceKey=ProcessorViewTemplateSelector}" />
 
                             <Expander Header="Logs"
-                                  Grid.Row="1">
+                                  Grid.Row="2">
                                 <ScrollViewer Width="400"
                                               Height="200"
                                               HorizontalScrollBarVisibility="Visible"
-                                              VerticalScrollBarVisibility="Visible"> 
+                                              VerticalScrollBarVisibility="Visible">
                                     <ItemsControl ItemsSource="{Binding Path=Model.Logs}"
                                               FontFamily="Courier New"
                                               Background="White">
@@ -279,12 +287,14 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0">
-                <Label Content="Processors" Style="{StaticResource ResourceKey=ListItemHeaderStyle}" />
-                <ListView ItemsSource="{Binding Path=ProcessorTypes}"
+            <ScrollViewer Grid.Column="0">
+                <StackPanel>
+                    <Label Content="Processors" Style="{StaticResource ResourceKey=ListItemHeaderStyle}" />
+                    <ListView ItemsSource="{Binding Path=ProcessorTypes}"
                           ItemTemplate="{StaticResource ResourceKey=ListViewTemplate}"
                           Margin="0" />
-            </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
 
             <Grid Grid.Column="1">
                 <xctk:Zoombox x:Name="ZoomCanvas" Background="Transparent"

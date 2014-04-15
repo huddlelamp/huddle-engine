@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -9,6 +10,7 @@ using System.ServiceModel.Syndication;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using AForge.Imaging.Filters;
 using AForge.Vision.GlyphRecognition;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -16,7 +18,6 @@ using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
-using Huddle.Engine.Domain;
 using Huddle.Engine.Extensions;
 using Huddle.Engine.Util;
 using Point = System.Drawing.Point;
@@ -46,6 +47,8 @@ namespace Huddle.Engine.Processor.Complex
 
         private readonly Dictionary<String, Glyph> _recognizedGlyphs = new Dictionary<string, Glyph>();
         private readonly Dictionary<String, Point[]> _recognizedQuads = new Dictionary<String, Point[]>();
+
+        private readonly Dictionary<long, DisplaySample> _blobFoundInRgbImage = new Dictionary<long, DisplaySample>();
 
         #endregion
 
@@ -87,6 +90,42 @@ namespace Huddle.Engine.Processor.Complex
 
         #endregion
 
+        #region BinaryThresholdImageBitmapSource
+
+        /// <summary>
+        /// The <see cref="BinaryThresholdImageBitmapSource" /> property's name.
+        /// </summary>
+        public const string BinaryThresholdImageBitmapSourcePropertyName = "BinaryThresholdImageBitmapSource";
+
+        private BitmapSource _binaryThresholdImageBitmapSource;
+
+        /// <summary>
+        /// Sets and gets the BinaryThresholdImageBitmapSource property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public BitmapSource BinaryThresholdImageBitmapSource
+        {
+            get
+            {
+                return _binaryThresholdImageBitmapSource;
+            }
+
+            set
+            {
+                if (_binaryThresholdImageBitmapSource == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(BinaryThresholdImageBitmapSourcePropertyName);
+                _binaryThresholdImageBitmapSource = value;
+                RaisePropertyChanged(BinaryThresholdImageBitmapSourcePropertyName);
+            }
+        }
+
+        #endregion
+
         #region DebugImageBitmapSource
 
         /// <summary>
@@ -118,41 +157,6 @@ namespace Huddle.Engine.Processor.Complex
                 RaisePropertyChanging(DebugImageBitmapSourcePropertyName);
                 _debugImageBitmapSource = value;
                 RaisePropertyChanged(DebugImageBitmapSourcePropertyName);
-            }
-        }
-
-        #endregion
-
-        #region IsUseRoiToFindDisplay
-
-        /// <summary>
-        /// The <see cref="IsUseRoiToFindDisplay" /> property's name.
-        /// </summary>
-        public const string IsUseRoiToFindDisplayPropertyName = "IsUseRoiToFindDisplay";
-
-        private bool _isUseRoiToFindDisplay = false;
-
-        /// <summary>
-        /// Sets and gets the IsUseRoiToFindDisplay property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public bool IsUseRoiToFindDisplay
-        {
-            get
-            {
-                return _isUseRoiToFindDisplay;
-            }
-
-            set
-            {
-                if (_isUseRoiToFindDisplay == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(IsUseRoiToFindDisplayPropertyName);
-                _isUseRoiToFindDisplay = value;
-                RaisePropertyChanged(IsUseRoiToFindDisplayPropertyName);
             }
         }
 
@@ -298,6 +302,41 @@ namespace Huddle.Engine.Processor.Complex
 
         #endregion
 
+        #region IsFindDisplayContinuously
+
+        /// <summary>
+        /// The <see cref="IsFindDisplayContiuously" /> property's name.
+        /// </summary>
+        public const string IsFindDisplayContiuouslyPropertyName = "IsFindDisplayContiuously";
+
+        private bool _isFindDisplayContiuously = false;
+
+        /// <summary>
+        /// Sets and gets the IsFindDisplayContiuously property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsFindDisplayContiuously
+        {
+            get
+            {
+                return _isFindDisplayContiuously;
+            }
+
+            set
+            {
+                if (_isFindDisplayContiuously == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsFindDisplayContiuouslyPropertyName);
+                _isFindDisplayContiuously = value;
+                RaisePropertyChanged(IsFindDisplayContiuouslyPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -376,11 +415,6 @@ namespace Huddle.Engine.Processor.Complex
                     lastRgbImageCopy.Dispose();
                     return bitmapSource;
                 }).ContinueWith(t => InputImageBitmapSource = t.Result);
-
-                if (!IsUseRoiToFindDisplay)
-                {
-
-                }
             }
 
             // Do not process if last Rgb image frame is not set
@@ -393,57 +427,24 @@ namespace Huddle.Engine.Processor.Complex
 
             var debugImage = _lastRgbImage.Copy();
 
-            if (unknownDevices.Any())
-            {
-                var binaryThreshold = BinaryThreshold;
+            // For debugging the flag IsFindDisplayContinuously can be set 'true' -> 'false' is recommended however
+            var devicesToFind = IsFindDisplayContiuously ? devices : unknownDevices;
 
+            if (devicesToFind.Any())
+            {
                 var colorImage = _lastRgbImage.Copy();
                 var grayscaleImage = _lastRgbImage.Copy().Convert<Gray, byte>();
 
                 var width = _lastRgbImage.Width;
                 var height = _lastRgbImage.Height;
 
-                foreach (var device in unknownDevices)
+                foreach (var device in devicesToFind)
                 {
-                    var deviceRoi = CalculateRoiFromNormalizedBounds(device.Area, colorImage);
-                    deviceRoi = deviceRoi.GetInflatedBy(RoiExpandFactor, colorImage.ROI);
-
-                    var imageRoi = colorImage.ROI;
-                    colorImage.ROI = deviceRoi;
-                    List<Point[]> quadrilaterals;
-                    var markers = GetMarkers(ref colorImage, deviceRoi, width, height, ref debugImage, out quadrilaterals);
-                    colorImage.ROI = imageRoi;
-
-                    var grayscaleImageRoi = grayscaleImage.ROI;
-                    grayscaleImage.ROI = deviceRoi;
-
-                    int i = 0;
-                    foreach (var marker in markers)
-                    {
-                        grayscaleImage.FillConvexPoly(quadrilaterals[i], Grays.White);
-
-                        // Overlap marker
-                        //if (IsRenderContent)
-                        //{
-                        //    var debugImageRoi = debugImage.ROI;
-                        //    debugImage.ROI = deviceRoi;
-                        //    debugImage.FillConvexPoly(quadrilaterals[i], Rgbs.ChiliPepper);
-                        //    debugImage.ROI = debugImageRoi;
-                        //}
-
-                        var display = FindDisplayInImage(ref grayscaleImage, deviceRoi, width, height, marker, ref debugImage);
-
-                        if (display != null)
-                            Stage(display);
-
-                        i++;
-                    }
-
-                    grayscaleImage.ROI = grayscaleImageRoi;
+                    ProcessDevice(device, colorImage, grayscaleImage, width, height, ref debugImage);
                 }
 
+                colorImage.Dispose();
                 grayscaleImage.Dispose();
-
                 Push();
             }
 
@@ -456,6 +457,10 @@ namespace Huddle.Engine.Processor.Complex
                 return bitmapSource;
             }).ContinueWith(t => DebugImageBitmapSource = t.Result);
 
+            //Stage(new RgbImageData(this, "DebugImage", debugImage));
+
+            debugImage.Dispose();
+
             return null;
         }
 
@@ -465,6 +470,73 @@ namespace Huddle.Engine.Processor.Complex
         }
 
         #region private methods
+
+        private void ProcessDevice(Device device, Image<Rgb, byte> colorImage, Image<Gray, byte> grayscaleImage, int width, int height, ref Image<Rgb, byte>  debugImage)
+        {
+            var deviceRoi = CalculateRoiFromNormalizedBounds(device.Area, colorImage);
+            deviceRoi = deviceRoi.GetInflatedBy(RoiExpandFactor, colorImage.ROI);
+
+            var imageRoi = colorImage.ROI;
+            colorImage.ROI = deviceRoi;
+            List<Point[]> quadrilaterals;
+            var markers = GetMarkers(ref colorImage, deviceRoi, width, height, ref debugImage, out quadrilaterals);
+            colorImage.ROI = imageRoi;
+
+            var grayscaleImageRoi = grayscaleImage.ROI;
+            grayscaleImage.ROI = deviceRoi;
+
+            var i = 0;
+            foreach (var marker in markers)
+            {
+                grayscaleImage.FillConvexPoly(quadrilaterals[i], Grays.White);
+
+                var display = FindDisplayInImage(ref grayscaleImage, deviceRoi, width, height, marker, ref debugImage);
+
+                if (display != null)
+                {
+                    if (IsRenderContent && IsFindDisplayContiuously)
+                    {
+                        var debugImageRoi = debugImage.ROI;
+                        debugImage.ROI = deviceRoi;
+
+                        var enclosingRectangle = display.EnclosingRectangle;
+                        DrawEdge(ref debugImage, enclosingRectangle.LongEdge, Rgbs.Red);
+                        DrawEdge(ref debugImage, enclosingRectangle.ShortEdge, Rgbs.Green);
+
+                        debugImage.ROI = debugImageRoi;
+                    }
+
+                    DisplaySample displaySample;
+                    if (_blobFoundInRgbImage.ContainsKey(device.BlobId))
+                    {
+                        displaySample = _blobFoundInRgbImage[device.BlobId];
+                    }
+                    else
+                    {
+                        displaySample = new DisplaySample();
+                        _blobFoundInRgbImage.Add(device.BlobId, displaySample);
+                    }
+
+                    if (displaySample.NeedsSample())
+                    {
+                        displaySample.Sample(display.EnclosingRectangle);
+                    }
+                    else
+                    {
+                        _blobFoundInRgbImage.Remove(device.BlobId);
+                        display.EnclosingRectangle = displaySample.GetBestSample();
+
+                        Stage(display);
+                    }
+
+                    //Stage(display);
+                }
+
+                i++;
+            }
+
+            grayscaleImage.ROI = grayscaleImageRoi;
+        }
 
         private IEnumerable<Marker> GetMarkers(ref Image<Rgb, byte> image, Rectangle roi, int width, int height, ref Image<Rgb, byte> debugImage, out List<Point[]> quadrilaterals)
         {
@@ -695,7 +767,8 @@ namespace Huddle.Engine.Processor.Complex
                 {
                     X = width / enclosingRectangle.LongEdge.Length,
                     Y = height / enclosingRectangle.ShortEdge.Length
-                }
+                },
+                EnclosingRectangle = enclosingRectangle
             };
         }
 
@@ -707,17 +780,18 @@ namespace Huddle.Engine.Processor.Complex
             #region Debug Binary Image
 
             // Binary Threshold Image
-            //var maskCopy = binaryThresholdImage.Copy();
-            //Task.Factory.StartNew(() =>
-            //{
-            //    var bitmapSource = maskCopy.ToBitmapSource(true);
-            //    maskCopy.Dispose();
-            //    return bitmapSource;
-            //}).ContinueWith(t => BinaryThresholdImageBitmapSource = t.Result);
+            var binaryThresholdImageCopy = binaryThresholdImage.Copy();
+            Task.Factory.StartNew(() =>
+            {
+                var bitmapSource = binaryThresholdImageCopy.ToBitmapSource(true);
+                binaryThresholdImageCopy.Dispose();
+                return bitmapSource;
+            }).ContinueWith(t => BinaryThresholdImageBitmapSource = t.Result);
 
             #endregion
 
             var floodFillImage = binaryThresholdImage.Copy();
+            binaryThresholdImage.Dispose();
 
             var imageWidth = floodFillImage.Width;
             var imageHeight = floodFillImage.Height;
@@ -775,7 +849,7 @@ namespace Huddle.Engine.Processor.Complex
                     if (contourBounds.Width + 5 >= roi.Width || contourBounds.Height + 5 >= roi.Height)
                         continue;
 
-                    if (!EmguExtensions.IsRectangle(contour, 3.0)) continue;
+                    if (!EmguExtensions.IsRectangle(contour, 10.0)) continue;
 
                     var edges = GetRightAngleEdges(contour);
 
@@ -845,10 +919,18 @@ namespace Huddle.Engine.Processor.Complex
             var centerX = minX + (maxX - minX) / 2;
             var centerY = minY + (maxY - minY) / 2;
 
-            debugImage.Draw(string.Format("{0:F1}", edge.Length), ref EmguFont, new Point(centerX, centerY), color);
+            debugImage.Draw(string.Format("{0:F1}", edge.Length), ref EmguFontBig, new Point(centerX, centerY), color);
         }
 
         #endregion
+
+        public override Bitmap[] TakeSnapshots()
+        {
+            return new[]
+            {
+                DebugImageBitmapSource.BitmapFromSource()
+            };
+        }
     }
 
     internal class GlyphMetadata
@@ -860,12 +942,37 @@ namespace Huddle.Engine.Processor.Complex
         public int aliveFrames = 0;
     }
 
-    internal class EnclosingRectangle
+    public class EnclosingRectangle
     {
         public Contour<Point> Contour { get; set; }
 
         public LineSegment2D LongEdge { get; set; }
 
         public LineSegment2D ShortEdge { get; set; }
+    }
+
+    internal class DisplaySample
+    {
+        internal const int Samples = 10;
+        internal int SampleCounter = 0;
+        internal EnclosingRectangle[] DisplaySamples = new EnclosingRectangle[Samples];
+
+        internal bool NeedsSample()
+        {
+            return SampleCounter < Samples;
+        }
+
+        internal void Sample(EnclosingRectangle rectangle)
+        {
+            DisplaySamples[SampleCounter] = rectangle;
+            SampleCounter++;
+        }
+
+        internal EnclosingRectangle GetBestSample()
+        {
+            var orderedEnclosingRectangles = DisplaySamples.OrderBy(r => r.LongEdge.Length).ToArray();
+
+            return orderedEnclosingRectangles[2];
+        }
     }
 }

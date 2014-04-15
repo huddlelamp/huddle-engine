@@ -267,7 +267,7 @@ namespace Huddle.Engine.Data
 
         public override IData Copy()
         {
-            return new BlobData(Source, Key)
+            var blob = new BlobData(Source, Key)
             {
                 Id = Id,
                 X = X,
@@ -277,6 +277,8 @@ namespace Huddle.Engine.Data
                 Shape = Shape,
                 Polygon = Polygon
             };
+            
+            return blob;
         }
 
         public override void Dispose()

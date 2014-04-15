@@ -1,15 +1,30 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Linq;
 using System.Windows;
-using GalaSoft.MvvmLight;
-using Huddle.Engine.Data;
+using Huddle.Engine.Extensions;
 using Huddle.Engine.Processor;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
+using Huddle.Engine.Processor.OpenCv.Filter;
 using Newtonsoft.Json;
 
-namespace Huddle.Engine.Domain
+namespace Huddle.Engine.Data
 {
     public class Device : BaseData
     {
+        #region private members
+
+        private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
+
+        private const int SlidingSize = 5;
+        private int _slidingPointerX = -1;
+        private int _slidingPointerY = -1;
+        private int _slidingPointerAngle = -1;
+        private readonly double[] _slidingX = new double[SlidingSize];
+        private readonly double[] _slidingY = new double[SlidingSize];
+        private readonly double[] _slidingAngle = new double[SlidingSize];
+
+        #endregion
+
         #region properties
 
         #region BlobId
@@ -140,6 +155,8 @@ namespace Huddle.Engine.Domain
 
             set
             {
+                _slidingX[++_slidingPointerX % SlidingSize] = value;
+                
                 if (_x == value)
                 {
                     return;
@@ -175,6 +192,8 @@ namespace Huddle.Engine.Domain
 
             set
             {
+                _slidingY[++_slidingPointerY % SlidingSize] = value;
+
                 if (_y == value)
                 {
                     return;
@@ -210,6 +229,8 @@ namespace Huddle.Engine.Domain
 
             set
             {
+                _slidingAngle[++_slidingPointerAngle % SlidingSize] = Math.Round(value);
+
                 if (_angle == value)
                 {
                     return;
@@ -218,6 +239,63 @@ namespace Huddle.Engine.Domain
                 RaisePropertyChanging(AnglePropertyName);
                 _angle = value;
                 RaisePropertyChanged(AnglePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region SlidingX
+
+        public double SlidingX
+        {
+            get
+            {
+                return _slidingPointerX < SlidingSize ? _slidingX[_slidingPointerX] : _slidingX.Median();
+                return EstimatedPoint.X;
+                return _slidingPointerX < SlidingSize ? _slidingX[_slidingPointerX] : _slidingX.Average();
+            }
+        }
+
+        #endregion
+
+        #region SlidingY
+
+        public double SlidingY
+        {
+            get
+            {
+                return _slidingPointerY < SlidingSize ? _slidingY[_slidingPointerY] : _slidingY.Median();
+                return EstimatedPoint.Y;
+                return _slidingPointerY < SlidingSize ? _slidingY[_slidingPointerY] : _slidingY.Average();
+            }
+        }
+
+        #endregion
+
+        #region SlidingAngle
+
+        public double SlidingAngle
+        {
+            get
+            {
+                return _slidingPointerAngle < SlidingSize ? _slidingAngle[_slidingPointerAngle] : _slidingAngle.Median();
+                return _slidingPointerAngle < SlidingSize ? _slidingAngle[_slidingPointerAngle] : _slidingAngle.Average();
+            }
+        }
+
+        #endregion
+
+        #region EstimatedPoint
+
+        public Point EstimatedPoint
+        {
+            get
+            {
+                const double factor = 10000.0;
+
+                var estimatedPoint = _kalmanFilter.GetEstimatedPoint(new System.Drawing.Point((int)(X * factor), (int)(Y * factor)));
+
+                return new Point(estimatedPoint.X / factor, estimatedPoint.Y / factor);
             }
         }
 
@@ -377,7 +455,7 @@ namespace Huddle.Engine.Domain
 
         public override IData Copy()
         {
-            return new Device(Source, Key)
+            var device = new Device(Source, Key)
             {
                 Angle = Angle,
                 DeviceId = DeviceId,
@@ -389,6 +467,14 @@ namespace Huddle.Engine.Domain
                 Area = Area,
                 RgbImageToDisplayRatio = RgbImageToDisplayRatio
             };
+            Array.Copy(_slidingX, device._slidingX, SlidingSize);
+            Array.Copy(_slidingY, device._slidingY, SlidingSize);
+            Array.Copy(_slidingAngle, device._slidingAngle, SlidingSize);
+            device._slidingPointerX = _slidingPointerX;
+            device._slidingPointerY = _slidingPointerY;
+            device._slidingPointerAngle = _slidingPointerAngle;
+
+            return device;
         }
 
         public override void Dispose()

@@ -43,9 +43,9 @@ namespace Huddle.Engine.Processor.Complex
 
                 Rgb color = Rgbs.White;
                 if (typeof(FindContours) == blob.Source.GetType())
+                    color = Rgbs.Red;
+                else if (typeof(FindContours3) == blob.Source.GetType())
                     color = Rgbs.Yellow;
-                else if (typeof(FindContours2) == blob.Source.GetType())
-                    color = Rgbs.TangerineTango;
 
                 var centerX = (int)(blob.X * width);
                 var centerY = (int)(blob.Y * height);
@@ -54,8 +54,10 @@ namespace Huddle.Engine.Processor.Complex
                 image.Draw(string.Format("Id {0}", blob.Id), ref EmguFontBig, new Point(centerX, centerY), Rgbs.White);
             }
 
-            Stage(new RgbImageData(this, "BlobRenderer", image));
+            Stage(new RgbImageData(this, "BlobRenderer", image.Copy()));
             Push();
+
+            image.Dispose();
 
             return null;
         }

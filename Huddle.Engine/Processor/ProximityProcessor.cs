@@ -16,7 +16,6 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
-using Huddle.Engine.Domain;
 using Huddle.Engine.Extensions;
 using Huddle.Engine.Processor.BarCodes;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
@@ -369,12 +368,12 @@ namespace Huddle.Engine.Processor
             var identifiedDevices0 = devices.Where(d => d.IsIdentified).ToArray();
             foreach (var device1 in identifiedDevices)
             {
-                var p1 = new Point(device1.X / Width, device1.Y / Height);
+                var p1 = new Point(device1.SlidingX / Width, device1.SlidingY / Height);
                 var proximity = new Proximity(this, "Device", device1.Key)
                 {
                     Identity = device1.DeviceId,
                     Location = new Point3D(p1.X, p1.Y, 0),
-                    Orientation = device1.Angle,
+                    Orientation = device1.SlidingAngle,
                     RgbImageToDisplayRatio = device1.RgbImageToDisplayRatio
                 };
 
@@ -404,7 +403,7 @@ namespace Huddle.Engine.Processor
                         globalAngle = 270 + globalAngle;
 
                     // subtract own angle
-                    var localAngle = globalAngle + (360 - device1.Angle); // angle -= (device1.Angle % 180);
+                    var localAngle = globalAngle + (360 - device1.SlidingAngle); // angle -= (device1.Angle % 180);
                     localAngle %= 360;
 
                     var log = new StringBuilder();
@@ -424,7 +423,7 @@ namespace Huddle.Engine.Processor
 
                     Log(log.ToString());
 
-                    var p2 = new Point(device2.X / Width, device2.Y / Height);
+                    var p2 = new Point(device2.SlidingX / Width, device2.SlidingY / Height);
 
                     proximity.Presences.Add(new Proximity(this, "Device", device2.Key)
                     {
@@ -440,8 +439,8 @@ namespace Huddle.Engine.Processor
 
                 foreach (var hand in dataContainer.OfType<Hand>().ToArray())
                 {
-                    var x = hand.X * 320 - device1.X;
-                    var y = hand.Y * 240 - device1.Y;
+                    var x = hand.SlidingX * 320 - device1.SlidingX;
+                    var y = hand.SlidingY * 240 - device1.SlidingY;
 
                     var distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
 

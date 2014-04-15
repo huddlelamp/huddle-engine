@@ -14,8 +14,8 @@ using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
 {
-    [ViewTemplate("Find Contours", "FindContours")]
-    public class FindContours : RgbProcessor
+    [ViewTemplate("Find Contours3", "FindContours")]
+    public class FindContours3 : RgbProcessor
     {
         #region private fields
 
@@ -487,7 +487,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #region ctor
 
-        public FindContours()
+        public FindContours3()
             : base(true)
         {
             
@@ -515,9 +515,9 @@ namespace Huddle.Engine.Processor.OpenCv
                 {
                     var currentContour = contours.ApproxPoly(contours.Perimeter * 0.05, storage);
 
-                    if (currentContour.Area > MinContourArea && currentContour.Area < MaxContourArea) //only consider contours with area greater than
+                    if (currentContour.Area > MinContourArea) //only consider contours with area greater than
                     {
-                        if (IsRenderContent && IsDrawAllContours)
+                        if (IsRenderContent && IsDrawAllContours && currentContour.Area < MaxContourArea)
                             outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
 
                         if (currentContour.Total >= 4) //The contour has 4 vertices.
@@ -633,7 +633,7 @@ namespace Huddle.Engine.Processor.OpenCv
                         outputImage.FillConvexPoly(rawObject.Points, Rgbs.Yellow);
 
                     if (IsDrawContours)
-                        outputImage.Draw(rawObject.Shape, Rgbs.Red, 2);
+                        outputImage.Draw(rawObject.Shape, Rgbs.Yellow, 2);
 
                     if (IsDrawCenter)
                     {

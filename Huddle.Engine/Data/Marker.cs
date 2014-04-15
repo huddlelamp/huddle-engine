@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Huddle.Engine.Processor;
+using Huddle.Engine.Processor.Complex;
 
 namespace Huddle.Engine.Data
 {
@@ -47,6 +48,41 @@ namespace Huddle.Engine.Data
 
         #endregion
 
+        #region EnclosingRectangle
+
+        /// <summary>
+        /// The <see cref="EnclosingRectangle" /> property's name.
+        /// </summary>
+        public const string EnclosingRectanglePropertyName = "EnclosingRectangle";
+
+        private EnclosingRectangle _enclosingRectangle;
+
+        /// <summary>
+        /// Sets and gets the EnclosingRectangle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public EnclosingRectangle EnclosingRectangle
+        {
+            get
+            {
+                return _enclosingRectangle;
+            }
+
+            set
+            {
+                if (_enclosingRectangle == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(EnclosingRectanglePropertyName);
+                _enclosingRectangle = value;
+                RaisePropertyChanged(EnclosingRectanglePropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         public Marker(IProcessor source, string key) : base(source, key)
@@ -57,10 +93,14 @@ namespace Huddle.Engine.Data
         {
             return new Marker(Source, Key)
             {
+                Id = Id,
                 X = X,
                 Y = Y,
                 Angle = Angle,
-                RgbImageToDisplayRatio = RgbImageToDisplayRatio
+                RgbImageToDisplayRatio = RgbImageToDisplayRatio,
+                EnclosingRectangle = EnclosingRectangle,
+                RelativeX = RelativeX,
+                RelativeY = RelativeY,
             };
         }
 

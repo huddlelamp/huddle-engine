@@ -627,7 +627,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
                 var nx = x / (double)width;
                 var ny = y / (double)height;
-                UpdateHand(x, y, nx, ny, width, height, depth);
+                UpdateHand(x, y, nx, ny, width, height, depth, mask);
 
                 segment.Dispose();
 
@@ -661,12 +661,12 @@ namespace Huddle.Engine.Processor.OpenCv
 
             if (IsRenderContent)
             {
-                foreach (var palm in _hands)
+                foreach (var hand in _hands)
                 {
-                    debugOutput.Draw(new CircleF(new PointF(palm.Center.X, palm.Center.Y), 5), Rgbs.Red, 3);
-                    debugOutput.Draw(new CircleF(new PointF(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), 5), Rgbs.Green, 3);
+                    debugOutput.Draw(new CircleF(new PointF(hand.Center.X, hand.Center.Y), 5), Rgbs.Red, 3);
+                    debugOutput.Draw(new CircleF(new PointF(hand.EstimatedCenter.X, hand.EstimatedCenter.Y), 5), Rgbs.Green, 3);
 
-                    debugOutput.Draw(string.Format("Id {0} ({1:F1})", palm.Id, palm.Depth), ref EmguFont, new Point(palm.EstimatedCenter.X, palm.EstimatedCenter.Y), Rgbs.TrueRed);
+                    debugOutput.Draw(string.Format("Id {0} ({1:F1})", hand.Id, hand.Depth), ref EmguFont, new Point(hand.EstimatedCenter.X, hand.EstimatedCenter.Y), Rgbs.TrueRed);
                 }
 
                 var debugOutputCopy = debugOutput.Copy();
@@ -678,9 +678,9 @@ namespace Huddle.Engine.Processor.OpenCv
                 }).ContinueWith(s => FloodFillMaskImageSource = s.Result);
             }
 
-            foreach (var palm in _hands)
+            foreach (var hand in _hands)
             {
-                Stage(palm.Copy());
+                Stage(hand.Copy());
             }
             Push();
 
@@ -782,7 +782,7 @@ namespace Huddle.Engine.Processor.OpenCv
         /// <param name="width"></param>
         /// <param name="height"></param>
         /// <param name="depth"></param>
-        private void UpdateHand(int x, int y, double nx, double ny, double width, double height, float depth)
+        private void UpdateHand(int x, int y, double nx, double ny, double width, double height, float depth, Image<Gray, byte> segment)
         {
             var now = DateTime.Now;
             //depth = 255 - depth;
@@ -796,13 +796,14 @@ namespace Huddle.Engine.Processor.OpenCv
             }
             else
             {
-                var id = GetNextId();
+                var id = NextId();
                 hand = new Hand(this, string.Format("Hand{0}", id), id, point)
                 {
                     X = nx,
                     Y = ny,
                     Depth = depth,
-                    LastUpdate = now
+                    LastUpdate = now,
+                    Segment = segment.Copy()
                 };
                 hand.RelativeX = hand.PredictedCenter.X / width;
                 hand.RelativeY = hand.PredictedCenter.Y / height;
@@ -819,16 +820,18 @@ namespace Huddle.Engine.Processor.OpenCv
                 hand.LastUpdate = now;
                 hand.RelativeX = hand.PredictedCenter.X / width;
                 hand.RelativeY = hand.PredictedCenter.Y / height;
+                hand.Segment = segment.Copy();
             }
             else
             {
-                var id = GetNextId();
+                var id = NextId();
                 hand = new Hand(this, string.Format("Hand{0}", id), id, point)
                 {
                     X = nx,
                     Y = ny,
                     Depth = depth,
-                    LastUpdate = now
+                    LastUpdate = now,
+                    Segment = segment.Copy()
                 };
                 hand.RelativeX = hand.PredictedCenter.X / width;
                 hand.RelativeY = hand.PredictedCenter.Y / height;
@@ -837,11 +840,6 @@ namespace Huddle.Engine.Processor.OpenCv
         }
 
         #endregion
-
-        private static long GetNextId()
-        {
-            return ++_id;
-        }
     }
 
     internal class SamplingException : Exception

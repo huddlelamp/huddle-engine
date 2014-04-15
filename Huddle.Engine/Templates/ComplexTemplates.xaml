@@ -69,18 +69,26 @@
                     <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="240" />
+                    <RowDefinition Height="240" />
+                </Grid.RowDefinitions>
 
                 <GroupBox Header="Input Image"
-                          Grid.Column="0">
-                    <Image Source="{Binding Path=InputImageBitmapSource}" />
+                          Grid.Row="0" Grid.Column="0">
+                    <Image Source="{Binding Path=InputImageBitmapSource, Mode=OneWay}" />
                 </GroupBox>
                 <GroupBox Header="Debug Image"
-                          Grid.Column="1">
-                    <Image Source="{Binding Path=DebugImageBitmapSource}" />
+                          Grid.Row="0" Grid.Column="1">
+                    <Image Source="{Binding Path=DebugImageBitmapSource, Mode=OneWay}" />
+                </GroupBox>
+                <GroupBox Header="Binary Threshold Image"
+                          Grid.Row="1" Grid.Column="0">
+                    <Image Source="{Binding Path=BinaryThresholdImageBitmapSource, Mode=OneWay}" />
                 </GroupBox>
             </Grid>
 
-            <!--<CheckBox Content="Use blobs to minimize scan area" VerticalAlignment="Center" IsChecked="{Binding Path=IsUseRoiToFindDisplay}" />-->
+            <CheckBox Content="Find Displays Contiuously" VerticalAlignment="Center" IsChecked="{Binding Path=IsFindDisplayContiuously}" />
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="MinFramesHistory"/>

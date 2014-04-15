@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AForge.Imaging;
 using Huddle.Engine.Data;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
 using Huddle.Engine.Processor.OpenCv;
@@ -27,7 +24,7 @@ namespace Huddle.Engine.Processor.Complex
             var colorToIds = new Dictionary<long, long>();
 
             var depthBlobs = dataContainer.ToArray().OfType<BlobData>().Where(b => b.Source.GetType() == typeof(FindContours)).ToArray();
-            var colorBlobs = dataContainer.ToArray().OfType<BlobData>().Where(b => b.Source.GetType() == typeof(FindContours2)).ToArray();
+            var colorBlobs = dataContainer.ToArray().OfType<BlobData>().Where(b => b.Source.GetType() == typeof(FindContours3)).ToArray();
 
             foreach (var depthBlob in depthBlobs)
             {

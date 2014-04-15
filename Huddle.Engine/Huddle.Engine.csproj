@@ -262,6 +262,7 @@
       <DependentUpon>ExceptionMessageBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\Device.cs" />
+    <Compile Include="Extensions\BitmapSourceExtensions.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Extensions\DispatcherExtensions.cs" />
     <Compile Include="Extensions\NumericExtensions.cs" />
@@ -291,14 +292,17 @@
     <Compile Include="Processor\Complex\PolygonIntersection\Vector.cs" />
     <Compile Include="Processor\Complex\SyncFusion.cs" />
     <Compile Include="Processor\Complex\HybridTracking.cs" />
+    <Compile Include="Processor\DataRenderer.cs" />
     <Compile Include="Processor\GenericImageProcessor.cs" />
     <Compile Include="Processor\BaseProcessor.cs" />
     <Compile Include="Processor\Benchmark.cs" />
     <Compile Include="Processor\DataTypeFilter.cs" />
     <Compile Include="Processor\DataViewer.cs" />
+    <Compile Include="Processor\ISnapshot.cs" />
     <Compile Include="Processor\ITakeLong.cs" />
     <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\WebSocketServer.cs" />
+    <Compile Include="Processor\OpenCv\FindContours3.cs" />
     <Compile Include="Processor\OpenCv\FindContours2.cs" />
     <Compile Include="Processor\OpenCv\FindConvexHulls2.cs" />
     <Compile Include="Processor\OpenCv\SubtractBackground.cs" />

@@ -78,7 +78,7 @@
                     <Image Source="{Binding Path=OutputImage}" />
                 </GroupBox>
             </Grid>
-            
+
             <StackPanel Orientation="Horizontal">
                 <Label Content="MinFramesHistory"/>
                 <Slider Value="{Binding Path=MinFramesProperty}" Width="340" Height="25" Minimum="1" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="1" />
@@ -366,6 +366,21 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>-->
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DataRenderer" DataType="processor:DataRenderer">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="640" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Image Source="{Binding Path=DebugOutputBitmapSource}" />
+                </GroupBox>
+            </Grid>
         </StackPanel>
     </DataTemplate>
 </ResourceDictionary>

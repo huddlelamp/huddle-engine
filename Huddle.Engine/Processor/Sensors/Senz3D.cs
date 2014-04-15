@@ -1400,8 +1400,8 @@ namespace Huddle.Engine.Processor.Sensors
                     pinfo.imageInfo.height = 480;
                 }
 
-                pinfo.frameRateMin.numerator = 15;
-                pinfo.frameRateMax.numerator = 30;
+                pinfo.frameRateMin.numerator = 1;
+                pinfo.frameRateMax.numerator = 25;
                 pinfo.frameRateMin.denominator = pinfo.frameRateMax.denominator = 1;
             }
             else
@@ -1409,7 +1409,7 @@ namespace Huddle.Engine.Processor.Sensors
                 pinfo.imageInfo.width = 320;
                 pinfo.imageInfo.height = 240;
 
-                pinfo.frameRateMin.numerator = 30;
+                pinfo.frameRateMin.numerator = 25;
                 pinfo.frameRateMin.denominator = 1;
             }
 

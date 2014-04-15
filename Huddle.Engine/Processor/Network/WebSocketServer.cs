@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Linq;
 using Alchemy.Classes;
 using Huddle.Engine.Data;
-using Huddle.Engine.Domain;
 using Huddle.Engine.Util;
 using Newtonsoft.Json;
 
@@ -103,8 +102,6 @@ namespace Huddle.Engine.Processor.Network
             if (_webSocketServer != null)
             {
                 _webSocketServer.Stop();
-                _webSocketServer.Dispose();
-                _webSocketServer = null;
             }
 
             // send disconnect??

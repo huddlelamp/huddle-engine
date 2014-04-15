@@ -17,7 +17,6 @@ using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Emgu.CV.External.Extensions;
 using Huddle.Engine.Data;
-using Huddle.Engine.Domain;
 using Huddle.Engine.Extensions;
 using Huddle.Engine.Util;
 using Point = System.Drawing.Point;

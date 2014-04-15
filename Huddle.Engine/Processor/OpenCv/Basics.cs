@@ -190,6 +190,7 @@ namespace Huddle.Engine.Processor.OpenCv
         #region ctor
 
         public Basics()
+            : base(true)
         {
             IsInitialized = false;
             MouseDownCommand = new RelayCommand<SenderAwareEventArgs>(args =>
