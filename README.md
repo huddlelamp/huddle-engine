@@ -126,3 +126,9 @@ Additional properties like the <code>FlipHorizontal</code> property can be bound
 	        </StackPanel>
 	    </DataTemplate>
 	</ResourceDictionary>
+
+# Notes about the different available notes #
+
+* In the Senz3D node is the calculation of the ROI of the RGB image within the depth image. This is sent once at the beginning to the Basics node as ROI data type to "cut" the right part.
+* Basics node tries to process every input, so that's why Basics needs some filtering before the node.
+*  
