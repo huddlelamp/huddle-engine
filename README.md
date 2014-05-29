@@ -129,6 +129,5 @@ Additional properties like the <code>FlipHorizontal</code> property can be bound
 
 # Notes about the different available notes #
 
-* In the Senz3D node is the calculation of the ROI of the RGB image within the depth image. This is sent once at the beginning to the Basics node as ROI data type to "cut" the right part.
-* Basics node tries to process every input, so that's why Basics needs some filtering before the node.
-*  
+* When started, the "Senz3D" node automatically determines the region that the RGB image has within the larger depth image using the UV map. The result is then sent a single time further down the pipeline and can be picked up by the "Basics" node as data of type ROI. The "Basics" node then uses just the region for which RGB and depth information is available.
+* The "Basics" node tries to process every input, so that's why "Basics" needs some data filtering before the node.
