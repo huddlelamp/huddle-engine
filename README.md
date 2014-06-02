@@ -1,10 +1,10 @@
-# Get Started in Minutes
+# Get Started in Minutes (Huddle Web Applications - Meteor)
 
 1. Install Meteor (https://atmospherejs.com)
 2. Install npm (package manager)
 3. Install Meteorite (https://atmospherejs.com)
 
-# Development
+# Development of Huddle Processors (C#/WPF Development)
 
 This section addresses the development a new processor and its integration into the tracking framework. It is split into the three parts *Processor Logic*, *Processor Properties*, and *Processor User Interface*. If each part is implemented as described, a processor can be integrated into a processing pipeline using the drag and drop user interface of the tracking framework.
 
