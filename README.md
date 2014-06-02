@@ -1,7 +1,7 @@
 # Get Started in Minutes (Huddle Web Applications - Meteor)
 
 1. Install Meteor (https://www.meteor.com)
-2. Install npm (package manager)
+2. Install npm (node package manager, part of NodeJS - http://nodejs.org)
 3. Install Meteorite (https://atmospherejs.com)
 
 # Development of Huddle Processors (C#/WPF Development)
