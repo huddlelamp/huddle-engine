@@ -1,6 +1,6 @@
 # Get Started in Minutes (Huddle Web Applications - Meteor)
 
-1. Install Meteor (https://atmospherejs.com)
+1. Install Meteor (https://www.meteor.com)
 2. Install npm (package manager)
 3. Install Meteorite (https://atmospherejs.com)
 
