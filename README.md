@@ -6,6 +6,9 @@
 
 # Development of Huddle Processors (C#/WPF Development)
 
+1. Install Emgu CV (http://www.emgu.com/ or direct from SourceForge.net http://sourceforge.net/projects/emgucv/)
+1.1 Huddle.Engine was implemented with Emgu CV version 2.4.9-alpha
+
 This section addresses the development a new processor and its integration into the tracking framework. It is split into the three parts *Processor Logic*, *Processor Properties*, and *Processor User Interface*. If each part is implemented as described, a processor can be integrated into a processing pipeline using the drag and drop user interface of the tracking framework.
 
 ## Processor Logic - Create a new Processor
