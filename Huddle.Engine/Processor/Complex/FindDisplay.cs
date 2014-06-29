@@ -857,7 +857,7 @@ namespace Huddle.Engine.Processor.Complex
                     {
                         var debugImageRoi = debugImage.ROI;
                         debugImage.ROI = roi;
-                        debugImage.Draw(contour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.Cyan, 3);
+                        debugImage.Draw(contour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.Cyan, 2);
                         debugImage.Draw(contour.GetMinAreaRect(storage), Rgbs.Cyan, 2);
 
                         DrawEdge(ref debugImage, edges[0], Rgbs.Red);
@@ -906,7 +906,7 @@ namespace Huddle.Engine.Processor.Complex
 
         private void DrawEdge(ref Image<Rgb, byte> debugImage, LineSegment2D edge, Rgb color)
         {
-            debugImage.Draw(edge, color, 3);
+            debugImage.Draw(edge, color, 10);
 
             var p1 = edge.P1;
             var p2 = edge.P2;
