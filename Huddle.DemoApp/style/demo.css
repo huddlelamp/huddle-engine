@@ -74,20 +74,32 @@ table {
     margin: 0 auto;
 }
 
+td {
+    padding: 10px;
+}
+
 #map-id-roadmap {
     background-image: url('roadmap0.png');
+    width: 300px;
+    height: 300px;
 }
 
 #map-id-hybrid {
     background-image: url('hybrid0.png');
+    width: 300px;
+    height: 300px;
 }
 
 #map-id-satellite {
     background-image: url('satellite0.png');
+    width: 300px;
+    height: 300px;
 }
 
 #map-id-terrain {
     background-image: url('terrain0.png');
+    width: 300px;
+    height: 300px;
 }
 
 #peephole-canvas {

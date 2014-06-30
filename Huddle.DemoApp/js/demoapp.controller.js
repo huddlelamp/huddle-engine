@@ -13,11 +13,11 @@
         };
         this.isUpdateProxemics = true;
 
-        this.activationAngle = 20;
+        this.activationAngle = 75;
 
-        this.createQrCodeView();
+        this.createGlyphView();
         this.huddle = this.createHuddle(host, port);
-        this.map = this.createMap();
+        this.map = this.createMap(this.deviceId);
         this.worldMapCenter = this.map.getCenter();
         this.latestWorldMapCenter = this.map.getCenter();
 
@@ -34,23 +34,47 @@
         this.initializeListeners();
     },
 
-    createQrCodeView: function () {
-        this.qrCodeContainer = $('<div id="qrcode-container" class="huddle-fullscreen"><div id="qrcode"></div></div>');
-        $('body').append(this.qrCodeContainer);
-
-        var windowWidth = $(window).width();
-        var windowHeight = $(window).height();
-
-        var qrCodeSize = windowWidth > windowHeight ? windowHeight : windowWidth;
-
-        $('#qrcode').qrcode({
-            width: qrCodeSize - 100,
-            height: qrCodeSize - 100,
-            text: this.deviceId
+    createGlyphView: function () {
+        this.glyphContainer = jQuery('<div id="huddle-glyph-container"></div>').appendTo('body');
+        this.glyphContainer.css({
+            'top': '0',
+            'left': '0',
+            'position': 'fixed',
+            'background-color': 'white',
+            'vertical-align': 'bottom',
+            'margin-left': 'auto',
+            'margin-right': 'auto',
+            'width': '100%',
+            'height': '100%'
         });
 
-        this.qrCodeContainer.width(windowWidth);
-        this.qrCodeContainer.height(windowHeight);
+        this.glyph = this.glyphContainer.append('<div id="huddle-glyph-' + this.deviceId + '"></div>');
+        this.glyph.css({
+            'left': '0',
+            'top': '0',
+            'width': '100%',
+            'height': '100%',
+            'background-size': 'contain',
+            'background-repeat': 'no-repeat',
+            'background-position': 'center',
+            'background-image': 'url(images/glyphs/' + this.deviceId + '.png)'
+        });
+
+        //var windowWidth = $(window).width();
+        //var windowHeight = $(window).height();
+
+        ////var qrCodeSize = windowWidth > windowHeight ? windowHeight : windowWidth;
+
+        ////$('#qrcode').qrcode({
+        ////    width: qrCodeSize - 100,
+        ////    height: qrCodeSize - 100,
+        ////    text: this.deviceId
+        ////});
+
+        //this.glyphContainer.width(windowWidth);
+        //this.glyphContainer.height(windowHeight);
+
+        this.glyphContainer.hide();
     },
 
     createHuddle: function (host, port) {
@@ -65,9 +89,9 @@
                         break;
                     case 'Digital':
                         if (data.Data.Value)
-                            controller.qrCodeContainer.show();
+                            controller.glyphContainer.show();
                         else
-                            controller.qrCodeContainer.hide();
+                            controller.glyphContainer.hide();
                         break;
                     case 'Broadcast':
                         if (data.panBy) {
@@ -100,19 +124,42 @@
         return huddle;
     },
 
-    createMap: function () {
+    createMap: function (deviceId) {
 
         var latitude = this.getParameterByName('lat');
-        if (!latitude || latitude == 'undefined')
-            latitude = 47.7083395;
+        if (!latitude || latitude == 'undefined') {
+            if (deviceId == 5) {
+                latitude = 47.6083395;
+            }
+            else {
+                latitude = 47.7083395;
+            }
+        }
 
         var longitude = this.getParameterByName('lng');
-        if (!longitude || longitude == 'undefined')
-            longitude = 9.1517065;
+        if (!longitude || longitude == 'undefined') {
+            if (deviceId == 3) {
+                longitude = 8.9317065;
+            } else {
+
+                longitude = 9.1517065;
+            }
+        }
 
         var zoom = this.getParameterByName('zoom');
         if (!zoom || zoom == 'undefined')
             zoom = 13;
+
+        switch (deviceId) {
+            case 3:
+                //latitude -= 5;
+                break;
+            case 4:
+                break;
+            case 5:
+                break;
+            default:
+        }
 
         var mapTypeId = this.getParameterByName('mtype');
         if (!mapTypeId || mapTypeId == 'undefined')
@@ -222,9 +269,24 @@
         var y = location[1];
         var angle = data.Orientation % 360;
 
+        var distant = false;
+        var presences = data.Presences;
+        for (var i = 0; i < presences.length; i++) {
+            console.log(presences[i]);
+
+            var distance = presences[i].Distance;
+            if (distance < 0.5) {
+                distant = false;
+                break;
+            } else {
+                distant = true;
+            }
+        }
+
         if (angle < 0)
             angle += 360;
 
+        //if (angle > this.activationAngle && angle < this.activationAngle + 45) {
         if (angle > this.activationAngle && angle < this.activationAngle + 45) {
             $('#tool-palette-container').show();
         }
@@ -232,7 +294,8 @@
             $('#tool-palette-container').hide();
         }
 
-        if (angle > (360 - this.activationAngle - 45) && angle < (360 - this.activationAngle)) {
+        //if (angle > (360 - this.activationAngle - 45) && angle < (360 - this.activationAngle)) {
+        if (distant) {
             $('#note-container').show();
         }
         else {
@@ -254,12 +317,12 @@
         this.mapOffset.x = offsetX;
         this.mapOffset.y = offsetY;
 
-        this.latestWorldMapCenter = new google.maps.LatLng(this.worldMapCenter.d - offsetX, this.worldMapCenter.e - offsetY);
+        this.latestWorldMapCenter = new google.maps.LatLng(this.worldMapCenter.A - offsetX, this.worldMapCenter.k - offsetY);
 
         //this.map.panTo(this.latestWorldMapCenter);
 
         //console.log("World: {0}".format(this.latestWorldMapCenter));
 
-        this.map.setCenter(this.latestWorldMapCenter);
+        //this.map.setCenter(this.latestWorldMapCenter);
     },
 });

@@ -326,7 +326,7 @@ namespace Huddle.Engine.Processor.OpenCv
             }
         }
 
-        #endregion
+        #endregion  
 
         #region IsDrawHandLocationSamples
 
