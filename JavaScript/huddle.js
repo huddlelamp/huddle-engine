@@ -3,12 +3,12 @@
  * var awesomeWorld = "Hello {0}! You are {1}.".format("World", "awesome");
  */
 String.prototype.format = function () {
-  var args = arguments;
-  return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function (m, n) {
-    if (m == "{{") { return "{"; }
-    if (m == "}}") { return "}"; }
-    return args[n];
-  });
+    var args = arguments;
+    return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function (m, n) {
+        if (m == "{{") { return "{"; }
+        if (m == "}}") { return "}"; }
+        return args[n];
+    });
 };
 
 // set web socket
@@ -45,12 +45,93 @@ function Huddle(id, ondata) {
     this.ondata = ondata;
     this.connected = false;
     this.reconnect = false;
+
+    this.glyph = createGlyph(this.id);
+};
+
+Huddle.prototype.glyphs = function () {
+    return [
+		{ id: 1, data: "0000001010001000100000000" },
+	 	{ id: 2, data: "0000001010011000100000000" },
+	 	{ id: 3, data: "0000000110011000100000000" },
+	 	{ id: 4, data: "0000001100001100100000000" },
+	 	{ id: 5, data: "0000001010011000001000000" },
+	 	{ id: 6, data: "0000000100011000011000000" },
+	 	{ id: 7, data: "0000001000010000111000000" },
+	 	{ id: 8, data: "0000001010010000111000000" },
+	 	{ id: 9, data: "0000001110001100001000000" },
+	 	{ id: 10, data: "0000001010011000101000000" },
+	 	{ id: 11, data: "0000001110010000001000000" },
+	 	{ id: 12, data: "0000000110000100110000000" },
+	 	{ id: 13, data: "0000001000010000011000000" },
+	 	{ id: 14, data: "0000000110000100100000000" },
+	 	{ id: 15, data: "0000001100001000001000000" },
+	 	{ id: 16, data: "0000001110000100010000000" },
+	 	{ id: 17, data: "0000001100001000101000000" },
+	 	{ id: 18, data: "0000001100001100110000000" },
+	 	{ id: 19, data: "0000000110001000100000000" },
+	 	{ id: 20, data: "0000000110001100100000000" }
+    ];
+};
+
+Huddle.prototype.createGlyph = function (id) {
+
+    var data = null;
+    for (var i = glyphs.length - 1; i >= 0; i--) {
+        if (glyphs[i].id == id) {
+            var glyphData = glyphs[i].data;
+
+            var dim = Math.sqrt(glyphData.length);
+
+            data = [];
+            var cols = [];
+
+            for (var j = 0; j < glyphData.length; j++) {
+                var c = parseInt(glyphData[j]);
+
+                if (j > 0 && j % dim == 0) {
+                    data.push(cols);
+                    cols = [];
+                }
+
+                cols.push(c);
+            };
+            data.push(cols);
+
+            break;
+        }
+    };
+
+    if (!data) return null;
+
+    var dimension = 420;
+    var box = 420 / (data.length + 2);
+
+    var canvas = document.createElement('canvas');
+    canvas.width = dimension;
+    canvas.height = dimension;
+
+    var ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, dimension, dimension);
+
+    for (var row = 0; row < data.length; row++) {
+        for (var col = 0; col < data[row].length; col++) {
+            ctx.fillStyle = data[row][col] ? "white" : "black";
+            ctx.fillRect(box + (box * col), box + (box * row), box, box);
+        }
+    }
+
+    var glyph = canvas.toDataURL("image/png");
+
+    return glyph;
 };
 
 /**
  * Connects to Huddle engine at host:port.
  */
-Huddle.prototype.connect = function(host, port) {
+Huddle.prototype.connect = function (host, port) {
     this.host = host;
     this.port = port;
 
@@ -68,7 +149,7 @@ Huddle.prototype.doConnect = function () {
 
     // send alive message every 10 seconds, otherwise web socket server closes
     // connection automatically
-    var aliveInterval = setInterval(function() {
+    var aliveInterval = setInterval(function () {
         if (huddle.connected) {
             var content = '"DeviceId": "{0}"'.format(huddle.id);
             huddle.send("Alive", content);
@@ -81,11 +162,10 @@ Huddle.prototype.doConnect = function () {
 
     this.socket = new WebSocket(this.wsUri);
 
-    this.socket.onopen = function() {
+    this.socket.onopen = function () {
         console.log("Huddle connection open");
 
-        if (huddle.reconnectTimeout)
-        {
+        if (huddle.reconnectTimeout) {
             clearTimeout(huddle.reconnectTimeout);
             huddle.reconnectTimeout = null;
         }
@@ -97,7 +177,7 @@ Huddle.prototype.doConnect = function () {
         huddle.send("Handshake", content);
     };
 
-    this.socket.onmessage = function(event) {
+    this.socket.onmessage = function (event) {
         //console.log("Huddle Message {0}".format(event));
 
         if (!event || !event.data) return;
@@ -114,40 +194,38 @@ Huddle.prototype.doConnect = function () {
 
         // handle pre-defined data types
         if (data.Type) {
-          switch (data.Type) {
-            case "Identify":
-              if (typeof(huddle.onidentify) == "function") {
-                huddle.onidentify(data.Data).bind(huddle);
-              }
-              return;
-            case "Proximity":
-              if (typeof(huddle.onproximity) == "function") {
-                huddle.onproximity(data.Data).bind(huddle);
-              }
-              return;
-          }
+            switch (data.Type) {
+                case "Identify":
+                    if (typeof (huddle.onidentify) == "function") {
+                        huddle.onidentify(data.Data);//.bind(huddle);
+                    }
+                    return;
+                case "Proximity":
+                    if (typeof (huddle.onproximity) == "function") {
+                        huddle.onproximity(data.Data);//.bind(huddle);
+                    }
+                    return;
+            }
         }
 
-        if (typeof(huddle.ondata) == "function") {
+        if (typeof (huddle.ondata) == "function") {
             huddle.ondata(data);
         }
     };
 
-    this.socket.onerror = function(event) {
+    this.socket.onerror = function (event) {
         console.error("Huddle Error {0}".format(event));
 
         huddle.connected = false;
 
-        if (huddle.reconnect)
-        {
-            huddle.reconnectTimeout = setTimeout(function()
-            {
+        if (huddle.reconnect) {
+            huddle.reconnectTimeout = setTimeout(function () {
                 huddle.doConnect(huddle.host, huddle.port);
             }, 1000);
         }
     };
 
-    this.socket.onclose = function(event) {
+    this.socket.onclose = function (event) {
         console.log("Huddle Closed {0}".format(event));
 
         huddle.connected = false;
@@ -157,7 +235,7 @@ Huddle.prototype.doConnect = function () {
 /**
  * Closes connection to Huddle engine.
  */
-Huddle.prototype.close = function() {
+Huddle.prototype.close = function () {
     if (this.socket)
         this.socket.close();
 };
@@ -166,44 +244,44 @@ Huddle.prototype.close = function() {
  * Show a glyph in full screen if display is not identified in Huddle engine
  * otherwise remove glyph.
  */
-Huddle.prototype.onidentifiy = function(data) {
-  if (data.value) {
-    var glyphContainer = jQuery('<div id="huddle-glyph-container"></div>').appendTo(jQuery('body'));
-    glyphContainer.css({
-      'top': '0',
-      'left': '0',
-      'position': 'fixed',
-      'background-color': 'white',
-      'vertical-align': 'bottom',
-      'margin-left': 'auto',
-      'margin-right': 'auto',
-      'width': '100%',
-      'height': '100%'
-    });
+Huddle.prototype.onidentifiy = function (data) {
+    if (data.value) {
+        var glyphContainer = jQuery('<div id="huddle-glyph-container"></div>').appendTo(jQuery('body'));
+        glyphContainer.css({
+            "top": "0",
+            "left": "0",
+            "position": "fixed",
+            "background-color": "white",
+            "vertical-align": "bottom",
+            "margin-left": "auto",
+            "margin-right": "auto",
+            "width": "100%",
+            "height": "100%"
+        });
 
-    var glyph = glyphContainer.append('<div id="huddle-glyph-{0}"></div>'.format(this.deviceId));
-    glyph.css({
-      'left': '0',
-      'top': '0',
-      'width': '100%',
-      'height': '100%',
-      'background-size': 'contain',
-      'background-repeat': 'no-repeat',
-      'background-position': 'center',
-      'background-image': 'url(glyphs/{0}.png)'.format(this.deviceId)
-    });
-  }
-  else {
-    jQuery('#huddle-glyph-container').remove();
-  }
+        var glyph = glyphContainer.append('<div id="huddle-glyph-{0}"></div>'.format(this.deviceId));
+        glyph.css({
+            "left": "0",
+            "top": "0",
+            "width": "100%",
+            "height": "100%",
+            "background-size": "contain",
+            "background-repeat": "no-repeat",
+            "background-position": "center",
+            "background-image": "url('" + this.glyph + "')"
+        });
+    }
+    else {
+        jQuery('#huddle-glyph-container').remove();
+    }
 };
 
 /**
  * The on proximity function is called each time a proximity data is received. This
  * function needs be overriden in the Huddle application.
  */
-Huddle.prototype.onproximity = function(data) {
-  // empty
+Huddle.prototype.onproximity = function (data) {
+    // empty
 }
 
 /**

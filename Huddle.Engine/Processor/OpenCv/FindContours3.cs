@@ -653,7 +653,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     //    outputImage.Draw(string.Format("Length {0:F1}", rawObject.LongestEdge.Length), ref EmguFont, rawObject.LongestEdge.P1, Rgbs.Green);
                     //}
 
-                    outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFont, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
+                    outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFontBig, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
                 }
 
                 var bounds = rawObject.Bounds;

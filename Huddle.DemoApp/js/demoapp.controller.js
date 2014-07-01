@@ -15,7 +15,6 @@
 
         this.activationAngle = 75;
 
-        this.createGlyphView();
         this.huddle = this.createHuddle(host, port);
         this.map = this.createMap(this.deviceId);
         this.worldMapCenter = this.map.getCenter();
@@ -34,90 +33,36 @@
         this.initializeListeners();
     },
 
-    createGlyphView: function () {
-        this.glyphContainer = jQuery('<div id="huddle-glyph-container"></div>').appendTo('body');
-        this.glyphContainer.css({
-            'top': '0',
-            'left': '0',
-            'position': 'fixed',
-            'background-color': 'white',
-            'vertical-align': 'bottom',
-            'margin-left': 'auto',
-            'margin-right': 'auto',
-            'width': '100%',
-            'height': '100%'
-        });
-
-        this.glyph = this.glyphContainer.append('<div id="huddle-glyph-' + this.deviceId + '"></div>');
-        this.glyph.css({
-            'left': '0',
-            'top': '0',
-            'width': '100%',
-            'height': '100%',
-            'background-size': 'contain',
-            'background-repeat': 'no-repeat',
-            'background-position': 'center',
-            'background-image': 'url(images/glyphs/' + this.deviceId + '.png)'
-        });
-
-        //var windowWidth = $(window).width();
-        //var windowHeight = $(window).height();
-
-        ////var qrCodeSize = windowWidth > windowHeight ? windowHeight : windowWidth;
-
-        ////$('#qrcode').qrcode({
-        ////    width: qrCodeSize - 100,
-        ////    height: qrCodeSize - 100,
-        ////    text: this.deviceId
-        ////});
-
-        //this.glyphContainer.width(windowWidth);
-        //this.glyphContainer.height(windowHeight);
-
-        this.glyphContainer.hide();
-    },
-
     createHuddle: function (host, port) {
         var controller = this;
 
-        var huddle = new Huddle(this.deviceId, function (data) {
-            if (data.Type) {
-                switch (data.Type) {
-                    case 'Proximity':
-                        if (controller.isUpdateProxemics)
-                            controller.processProximity(data.Data);//.bind(controller);
-                        break;
-                    case 'Digital':
-                        if (data.Data.Value)
-                            controller.glyphContainer.show();
-                        else
-                            controller.glyphContainer.hide();
-                        break;
-                    case 'Broadcast':
-                        if (data.panBy) {
-                            var x = data.panBy.x;
-                            var y = data.panBy.y;
+        var huddle = new Huddle(this.deviceId);
+        huddle.updateProximity = function (data) {
+            if (controller.isUpdateProxemics)
+                controller.processProximity(data);
+        };
+        huddle.message = function (data) {
+            if (data.panBy) {
+                var x = data.panBy.x;
+                var y = data.panBy.y;
 
-                            controller.map.panBy(x, y);
-                        }
-                        else if (data.mapTypeId) {
-                            controller.map.setMapTypeId(data.mapTypeId);
-                        }
-                        else if (data.worldMapCenter) {
-                            var wmc = data.worldMapCenter;
-
-                            controller.worldMapCenter = new google.maps.LatLng(wmc.lat, wmc.lng);
-                        }
-                        else {
-                            controller.isUpdateProxemics = data.isUpdateProxemics;
-                        }
-
-                        break;
-                }
-            } else {
-                console.log("echo");
+                controller.map.panBy(x, y);
             }
-        });
+            else if (data.mapTypeId) {
+                controller.map.setMapTypeId(data.mapTypeId);
+            }
+            else if (data.worldMapCenter) {
+                var wmc = data.worldMapCenter;
+
+                controller.worldMapCenter = new google.maps.LatLng(wmc.lat, wmc.lng);
+            }
+            else {
+                controller.isUpdateProxemics = data.isUpdateProxemics;
+            }
+        };
+        huddle.undefinedData = function (data) {
+            console.log("Undefined data: " + data);
+        };
         huddle.reconnect = true;
         huddle.connect(host, port);
 
@@ -264,6 +209,9 @@
     },
 
     processProximity: function (data) {
+
+        if (data.type == "")
+
         var location = data.Location.split(",");
         var x = location[0];
         var y = location[1];
