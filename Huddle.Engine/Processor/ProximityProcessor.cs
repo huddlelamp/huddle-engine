@@ -315,6 +315,14 @@ namespace Huddle.Engine.Processor
 
         public override IDataContainer PreProcess(IDataContainer dataContainer)
         {
+            var disconnected = dataContainer.OfType<Disconnected>().ToList();
+            if (disconnected.Count > 0)
+            {
+                // Remove all devices that are disconnected.
+                Devices.RemoveAll(device => disconnected.All(d => d.Value == device.DeviceId));
+                return null;
+            }
+
             // Update last update timer that will be used by timeout handling
             _lastUpdateTime = DateTime.Now;
 
@@ -369,7 +377,7 @@ namespace Huddle.Engine.Processor
             foreach (var device1 in identifiedDevices)
             {
                 var p1 = new Point(device1.SlidingX / Width, device1.SlidingY / Height);
-                var proximity = new Proximity(this, "Device", device1.Key)
+                var proximity = new Proximity(this, "Display", device1.Key)
                 {
                     Identity = device1.DeviceId,
                     Location = new Point3D(p1.X, p1.Y, 0),
@@ -425,7 +433,7 @@ namespace Huddle.Engine.Processor
 
                     var p2 = new Point(device2.SlidingX / Width, device2.SlidingY / Height);
 
-                    proximity.Presences.Add(new Proximity(this, "Device", device2.Key)
+                    proximity.Presences.Add(new Proximity(this, "Display", device2.Key)
                     {
                         Identity = device2.DeviceId,
                         Location = new Point3D(p2.X, p2.Y, 0),

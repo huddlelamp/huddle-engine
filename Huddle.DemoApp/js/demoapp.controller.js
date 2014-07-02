@@ -36,33 +36,26 @@
     createHuddle: function (host, port) {
         var controller = this;
 
-        var huddle = new Huddle(this.deviceId);
-        huddle.updateProximity = function (data) {
-            if (controller.isUpdateProxemics)
-                controller.processProximity(data);
-        };
-        huddle.message = function (data) {
-            if (data.panBy) {
-                var x = data.panBy.x;
-                var y = data.panBy.y;
+        var huddle = Huddle.client("")
+            .on("displaymove", function (data) {
+                if (controller.isUpdateProxemics)
+                    controller.processProximity(data);
+            })
+            .on("panBy", function (data) {
+                var x = data.x;
+                var y = data.y;
 
                 controller.map.panBy(x, y);
-            }
-            else if (data.mapTypeId) {
-                controller.map.setMapTypeId(data.mapTypeId);
-            }
-            else if (data.worldMapCenter) {
-                var wmc = data.worldMapCenter;
-
-                controller.worldMapCenter = new google.maps.LatLng(wmc.lat, wmc.lng);
-            }
-            else {
-                controller.isUpdateProxemics = data.isUpdateProxemics;
-            }
-        };
-        huddle.undefinedData = function (data) {
-            console.log("Undefined data: " + data);
-        };
+            })
+            .on("isUpdateProxemics", function(data) {
+                controller.isUpdateProxemics = data.value;
+            })
+            .on("mapTypeId", function (data) {
+                controller.map.setMapTypeId(data.mapId);
+            })
+            .on("worldMapCenter", function (data) {
+                controller.worldMapCenter = new google.maps.LatLng(data.lat, data.lng);
+            });
         huddle.reconnect = true;
         huddle.connect(host, port);
 
@@ -126,8 +119,8 @@
     changeMapType: function (mapTypeId) {
         this.map.setMapTypeId(mapTypeId);
 
-        var broadcast = '"mapTypeId": "{0}"'.format(mapTypeId);
-        this.huddle.broadcast(broadcast);
+        var msg = '{"mapId": "{0}"}'.format(mapTypeId);
+        this.huddle.broadcast("mapTypeId", msg);
     },
 
     initializeListeners: function () {
@@ -150,8 +143,8 @@
         controller.dragPosition.y = e.screenY;
 
         controller.isUpdateProxemics = false;
-        var broadcast = '"isUpdateProxemics": false';
-        controller.huddle.broadcast(broadcast);
+        var msg = '{"value": false}';
+        controller.huddle.broadcast("isUpdateProxemics", msg);
     },
 
     dragmove: function (e) {
@@ -169,8 +162,8 @@
 
         controller.map.panBy(deltaX, deltaY);
 
-        var broadcast = '"panBy": {{"x": {0}, "y": {1}}}'.format(deltaX, deltaY);
-        controller.huddle.broadcast(broadcast);
+        var msg = '{"x": {0}, "y": {1}}'.format(deltaX, deltaY);
+        controller.huddle.broadcast("panBy", msg);
     },
 
     dragend: function (e) {
@@ -182,7 +175,7 @@
 
         var localMapCenter = controller.map.getCenter();
 
-        var globalMapCenter = new google.maps.LatLng(localMapCenter.d + controller.mapOffset.x, localMapCenter.e + controller.mapOffset.y);
+        var globalMapCenter = new google.maps.LatLng(localMapCenter.lat() + controller.mapOffset.x, localMapCenter.lng() + controller.mapOffset.y);
 
         console.log("WorldMap: {0}, GlobalMap: {1}".format(localMapCenter.toString(), globalMapCenter.toString()));
 
@@ -191,14 +184,14 @@
 
         controller.worldMapCenter = globalMapCenter;
 
-        var broadcastWmc = '"worldMapCenter": {{"lat": {0}, "lng": {1}}}'.format(globalMapCenter.d, globalMapCenter.e);
-        controller.huddle.broadcast(broadcastWmc);
+        var broadcastWmc = '{"lat": {0}, "lng": {1}}'.format(globalMapCenter.lat(), globalMapCenter.lng());
+        controller.huddle.broadcast("worldMapCenter", broadcastWmc);
 
         controller.isDragging = false;
 
         controller.isUpdateProxemics = true;
-        var broadcast = '"isUpdateProxemics": true';
-        controller.huddle.broadcast(broadcast);
+        var msg = '{"value": true}';
+        controller.huddle.broadcast("isUpdateProxemics", msg);
     },
 
     getParameterByName: function (name) {
@@ -209,9 +202,6 @@
     },
 
     processProximity: function (data) {
-
-        if (data.Type != "Device") return;
-
         var location = data.Location.split(",");
         var x = location[0];
         var y = location[1];
@@ -220,7 +210,7 @@
         var distant = false;
         var presences = data.Presences;
         for (var i = 0; i < presences.length; i++) {
-            console.log(presences[i]);
+            //console.log(presences[i]);
 
             var distance = presences[i].Distance;
             if (distance < 0.5) {
@@ -265,7 +255,7 @@
         this.mapOffset.x = offsetX;
         this.mapOffset.y = offsetY;
 
-        this.latestWorldMapCenter = new google.maps.LatLng(this.worldMapCenter.k - offsetX, this.worldMapCenter.B - offsetY);
+        this.latestWorldMapCenter = new google.maps.LatLng(this.worldMapCenter.lat() - offsetX, this.worldMapCenter.lng() - offsetY);
 
         //this.map.panTo(this.latestWorldMapCenter);
 
