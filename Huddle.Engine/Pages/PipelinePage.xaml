@@ -317,7 +317,7 @@
                     <Grid Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
                           Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}">
 
-                        <ItemsControl ItemsSource="{Binding Path=Pipes, Mode=OneWay}"
+                        <ItemsControl x:Name="Pipes"  ItemsSource="{Binding Path=Pipes, Mode=OneWay}"
                                       ItemContainerStyleSelector="{StaticResource ResourceKey=ProcessorViewContainerStyleSelector}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -338,7 +338,7 @@
                                                                  Width="{Binding ElementName=ZoomCanvas, Path=ActualWidth}"
                                                                  Height="{Binding ElementName=ZoomCanvas, Path=ActualHeight}">
                                         <i:Interaction.Triggers>
-                                            <util:EventTriggerAdvanced EventName="StrokeCollected">
+                                            <util:EventTriggerAdvanced EventName="StrokeCollected" Sender="{Binding ElementName=Pipes}">
                                                 <command:EventToCommand Command="{Binding Path=StrokeCollectedCommand, Mode=OneWay}" PassEventArgsToCommand="True" />
                                             </util:EventTriggerAdvanced>
                                         </i:Interaction.Triggers>

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Huddle.Engine.View
@@ -13,6 +12,11 @@ namespace Huddle.Engine.View
         public PipeView()
         {
             InitializeComponent();
+        }
+
+        protected override GeometryHitTestResult HitTestCore(GeometryHitTestParameters hitTestParameters)
+        {
+            return new GeometryHitTestResult(this, HitTestPath.RenderedGeometry.FillContainsWithDetail(hitTestParameters.HitGeometry));
         }
     }
 }

@@ -42,15 +42,29 @@ namespace Huddle.Engine.Util
     {
         protected override void OnRoutedEvent(object sender, RoutedEventArgs args)
         {
-            base.OnEvent(new SenderAwareEventArgs() {Sender = sender, OriginalEventArgs = args});
+            base.OnEvent(new SenderAwareEventArgs { Sender = sender, OriginalEventArgs = args });
         }
     }
 
     public class EventTriggerAdvanced : EventTrigger
     {
+        #region Sender
+
+        public object Sender
+        {
+            get { return (object)GetValue(SenderProperty); }
+            set { SetValue(SenderProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Sender.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SenderProperty =
+            DependencyProperty.Register("Sender", typeof(object), typeof(EventTriggerAdvanced), new PropertyMetadata(null));
+
+        #endregion
+
         protected override void OnEvent(EventArgs eventArgs)
         {
-            base.OnEvent(new SenderAwareEventArgs() {Sender = Source, OriginalEventArgs = eventArgs});
+            base.OnEvent(new SenderAwareEventArgs { Sender = Sender ?? Source, OriginalEventArgs = eventArgs });
         }
     }
 

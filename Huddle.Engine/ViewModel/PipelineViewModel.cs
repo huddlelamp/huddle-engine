@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml;
@@ -359,12 +360,12 @@ namespace Huddle.Engine.ViewModel
 
         private void OnStrokeCollected(SenderAwareEventArgs e)
         {
-            var inkCanvas = e.Sender as AdvancedInkCanvas;
+            var container = e.Sender as FrameworkElement;
             var eventArgs = e.OriginalEventArgs as StrokeEventArgs;
 
             var pg = PathGeometry.CreateFromGeometry(eventArgs.Stroke.GetGeometry());
 
-            pg.Transform = new ScaleTransform(Model.Scale, Model.Scale);
+            //pg.Transform = new ScaleTransform(Model.Scale, Model.Scale);
 
             //if (eventArgs.Device == Device.Stylus)
             //{
@@ -387,7 +388,7 @@ namespace Huddle.Engine.ViewModel
             //    }
             //}
 
-            var elementsInGeometry = HitTestHelper.GetElementsInGeometry<PipeView>(pg, inkCanvas);
+            var elementsInGeometry = HitTestHelper.GetElementsInGeometry<PipeView>(pg, container);
 
             var linksToDelete = elementsInGeometry.Select(view => view.DataContext)
                 .OfType<PipeViewModel>().ToArray();
