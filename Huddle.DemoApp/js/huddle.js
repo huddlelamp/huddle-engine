@@ -277,7 +277,7 @@ Huddle.prototype.onData = function (data) {
                 return;
             case "Broadcast":
                 if (typeof (this.message) == "function") {
-                    this.message(data.Data);
+                    this.message(data);
                 }
                 return;
         }

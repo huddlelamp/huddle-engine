@@ -626,7 +626,7 @@ namespace Huddle.Engine.Processor.OpenCv
             }
 
             foreach (var rawObject in _objects)
-            {
+            { 
                 if (IsRenderContent)
                 {
                     if (IsFillContours)

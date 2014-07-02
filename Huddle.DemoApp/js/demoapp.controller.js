@@ -210,7 +210,7 @@
 
     processProximity: function (data) {
 
-        if (data.type == "")
+        if (data.Type != "Device") return;
 
         var location = data.Location.split(",");
         var x = location[0];
@@ -265,12 +265,12 @@
         this.mapOffset.x = offsetX;
         this.mapOffset.y = offsetY;
 
-        this.latestWorldMapCenter = new google.maps.LatLng(this.worldMapCenter.A - offsetX, this.worldMapCenter.k - offsetY);
+        this.latestWorldMapCenter = new google.maps.LatLng(this.worldMapCenter.k - offsetX, this.worldMapCenter.B - offsetY);
 
         //this.map.panTo(this.latestWorldMapCenter);
 
         //console.log("World: {0}".format(this.latestWorldMapCenter));
 
-        //this.map.setCenter(this.latestWorldMapCenter);
+        this.map.setCenter(this.latestWorldMapCenter);
     },
 });
