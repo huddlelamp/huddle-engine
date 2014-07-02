@@ -60,9 +60,12 @@
   <ItemGroup>
     <Content Include="huddletest.html" />
     <Content Include="app.html" />
+    <Content Include="huddle\huddle-client.js" />
+    <Content Include="huddle\huddle-common.js" />
+    <Content Include="huddle\huddle-debug.js" />
+    <Content Include="huddle\huddle-eventmanager.js" />
     <Content Include="js\demoapp.controller.js" />
     <Content Include="js\google.map.extensions.js" />
-    <Content Include="js\huddle.js" />
     <Content Include="js\jquery-2.1.0.min.js" />
     <Content Include="js\jquery.qrcode.min.js" />
     <Content Include="js\prototype.js" />

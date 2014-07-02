@@ -3,50 +3,23 @@
 <head>
 	<title>huddle.js</title>
 	<script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
-	<script type="text/javascript" src="js/huddle.js"></script>
+	<script type="text/javascript" src="huddle/huddle-common.js"></script>
+	<script type="text/javascript" src="huddle/huddle-debug.js"></script>
+	<script type="text/javascript" src="huddle/huddle-eventmanager.js"></script>
+	<script type="text/javascript" src="huddle/huddle-client.js"></script>
 	<script type="text/javascript">
-	var huddle = new Huddle(3, function(data) {
-		console.log(data);
-
-		if (data.DataType)
+		jQuery(function()
 		{
-			switch (data.DataType) {
-	            case 'Proximity':
-	                processProximity(data.Data);
-	                break;
-	            case 'Digital':
-	                if (data.Data.Value)
-	                    $('#qrcode-container').show();
-	                else
-	                    $('#qrcode-container').hide();
-	                break;
-        	}
-		}
-	});
-	huddle.reconnect = true;
-	huddle.connect("echo.websocket2.org");
-
-	var hostTestTimeout = setTimeout(function() {
-		clearTimeout(hostTestTimeout);
-		huddle.host = "echo.websocket.org";
-	}, 5000);
-
-	var interval = setInterval(function() {
-		if (huddle.connected) {
-			clearInterval(interval);
-
-			huddle.socket.send("Rocks really!");
-
-			var timeout = setTimeout(function() {
-				huddle.close();
-				clearTimeout(timeout);
-			}, 1000);
-		}
-	}, 1000);
-
+			var huddle = new org.huddle.HuddleClient(4);
+			huddle.on("proximity", function(e) {
+				console.log("############ " + e.a);
+			});
+			huddle.reconnect = true;
+			huddle.connect("localhost", 4711);
+		});
 	</script>
 </head>
 <body>
-
+	<div>asdf</div>
 </body>
 </html>

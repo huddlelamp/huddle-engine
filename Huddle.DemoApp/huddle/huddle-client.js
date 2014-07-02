@@ -1,23 +1,5 @@
 /**
- * Helper function to use string format, e.g., as known from C#
- * var awesomeWorld = "Hello {0}! You are {1}.".format("World", "awesome");
- *
- * TODO Enclose the format prototype function in Huddle JavaScript API.
- */
-String.prototype.format = function () {
-    var args = arguments;
-    return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function (m, n) {
-        if (m == "{{") { return "{"; }
-        if (m == "}}") { return "}"; }
-        return args[n];
-    });
-};
-
-// set web socket
-window.WebSocket = window.WebSocket || window.MozWebSocket;
-
-/**
- * An instance of Huddle handles the connection to a Huddle engine through a
+ * An instance of HuddleClient handles the connection to a Huddle engine through a
  * web socket connection. It offers properties to automatically reconnect on
  * connection errors. The device will get a continues stream of proximity data if
  * a connection to Huddle engine is established.
@@ -30,7 +12,7 @@ window.WebSocket = window.WebSocket || window.MozWebSocket;
  * DATA := Data that represents the given type of data, e.g., for Proximity
  * {
  *   Type: "TYPE",               // a string e.g., Device or Hand
- *   Identity: "IDENTITY",       // a string that represents the Huddle id
+ *   Identity: "IDENTITY",       // a string that represents the HuddleClient id
  *   Location: double[3],        // values are [0;1], Location[0] = x, Location[1] = y, Location[2] = z
  *   Orientation: double,        // value is [0;360]
  *   Distance: double,           // value is [0;1] and only set for presences in Presences property.
@@ -43,11 +25,19 @@ window.WebSocket = window.WebSocket || window.MozWebSocket;
  * }
  *
  * @class
- * @author Roman Rädle [firstname.lastname@outlook.com] replace 'ä' with 'ae'
+ * @author Roman RÃ¤dle [firstname.lastname@outlook.com] replace 'Ã¤' with 'ae'
  * @requires jQuery
  * @param {int} Device id.
  */
-function Huddle(id) {
+var Huddle = (function() {
+
+  // set web socket
+  var WebSocket = window.WebSocket || window.MozWebSocket;
+
+  /**
+   *
+   */
+  var client = function(id) {
     this.id = id;
     this.connected = false;
     this.reconnect = false;
@@ -76,12 +66,16 @@ function Huddle(id) {
 	 	{ id: 20, data: "0000000110001100100000000" }
     ];
 
-    this.glyph = this.createGlyph(this.id);
+      this.glyph = this._createGlyph(this.id);
 
     // DEBUG
-    this.identify({
+      this._identify({
         Value: true
     });
+
+      setInterval(function() {
+        EventManager.trigger("proximity", {a: "a", b: "b"});
+      }, 250);
 };
 
 /**
@@ -94,7 +88,7 @@ function Huddle(id) {
  *
  * TODO Make this function private!
  */
-Huddle.prototype.createGlyph = function (id) {
+  var _createGlyph = function (id) {
 
     var data = null;
     for (var i = this.glyphs.length - 1; i >= 0; i--) {
@@ -154,11 +148,11 @@ Huddle.prototype.createGlyph = function (id) {
  * @param {string} host Web socket server host name.
  * @param {int} [port=4711] Web socket server port.
  */
-Huddle.prototype.connect = function (host, port) {
+  var connect = function (host, port) {
     this.host = host;
     this.port = typeof port !== 'undefined' ? port : 4711;;
 
-    this.doConnect();
+      this._doConnect();
 };
 
 /**
@@ -171,7 +165,7 @@ Huddle.prototype.connect = function (host, port) {
  *
  * TODO Make this function private!
  */
-Huddle.prototype.doConnect = function () {
+  var _doConnect = function () {
     var huddle = this;
 
     // send alive message every 10 seconds, otherwise web socket server closes
@@ -187,10 +181,10 @@ Huddle.prototype.doConnect = function () {
     if (this.port)
         this.wsUri = "{0}:{1}".format(this.wsUri, this.port);
 
-    this.socket = new WebSocket(this.wsUri);
+      this.socket = new org.huddle.WebSocket(this.wsUri);
 
     this.socket.onopen = function () {
-        console.log("Huddle connection open");
+          Log.info("Huddle connection open");
 
         if (huddle.reconnectTimeout) {
             clearTimeout(huddle.reconnectTimeout);
@@ -220,23 +214,23 @@ Huddle.prototype.doConnect = function () {
         if (!data) return;
 
         // call onData function with huddle object as this
-        huddle.onData.call(huddle, data);
+          huddle._onData.call(huddle, data);
     };
 
     this.socket.onerror = function (event) {
-        console.error("Huddle Error {0}".format(event));
+          Log.error("Huddle Error {0}".format(event));
 
         huddle.connected = false;
 
         if (huddle.reconnect) {
             huddle.reconnectTimeout = setTimeout(function () {
-                huddle.doConnect(huddle.host, huddle.port);
+                  huddle._doConnect(huddle.host, huddle.port);
             }, 1000);
         }
     };
 
     this.socket.onclose = function (event) {
-        console.log("Huddle Closed {0}".format(event));
+          Log.info("Huddle Closed {0}".format(event));
 
         huddle.connected = false;
     };
@@ -247,7 +241,7 @@ Huddle.prototype.doConnect = function () {
  *
  * @this Huddle
  */
-Huddle.prototype.close = function () {
+  var close = function () {
     if (this.socket)
         this.socket.close();
 };
@@ -260,24 +254,20 @@ Huddle.prototype.close = function () {
  *
  * TODO Make this function private!
  */
-Huddle.prototype.onData = function (data) {
+  var _onData = function (data) {
 
     // handle pre-defined data types
     if (data.Type) {
         switch (data.Type) {
             case "Digital":
-                if (typeof (this.identify) == "function") {
-                    this.identify(data.Data);
-                }
+                  this._identify(data.Data);
                 return;
             case "Proximity":
-                if (typeof (this.updateProximity) == "function") {
-                    this.updateProximity(data.Data);
-                }
+                  this._updateProximity(data.Data);
                 return;
             case "Broadcast":
                 if (typeof (this.message) == "function") {
-                    this.message(data);
+                    this.message(data.Data);
                 }
                 return;
         }
@@ -296,7 +286,7 @@ Huddle.prototype.onData = function (data) {
  * @this Huddle
  * @param {Object} data The digital data as object literal.
  */
-Huddle.prototype.identify = function (data) {
+  var _identify = function (data) {
     if (data.Value) {
 
         // do not add a glyph container if it already exists
@@ -305,43 +295,44 @@ Huddle.prototype.identify = function (data) {
 
         var glyphContainer = jQuery('<div id="huddle-glyph-container"></div>').appendTo(jQuery('body'));
         glyphContainer.css({
-            'top': '0',
-            'left': '0',
-            'position': 'fixed',
-            'background-color': 'white',
-            'vertical-align': 'bottom',
-            'margin-left': 'auto',
-            'margin-right': 'auto',
-            'width': '100%',
-            'height': '100%'
+              "top": "0",
+              "left": "0",
+              "position": "fixed",
+              "background-color": "white",
+              "vertical-align": "bottom",
+              "margin-left": "auto",
+              "margin-right": "auto",
+              "width": "100%",
+              "height": "100%"
         });
 
         var glyph = glyphContainer.append('<div id="huddle-glyph-{0}"></div>'.format(this.id));
         glyph.css({
-            'left': '0',
-            'top': '0',
-            'width': '100%',
-            'height': '100%',
-            'background-size': 'contain',
-            'background-repeat': 'no-repeat',
-            'background-position': 'center',
-            'background-image': "url('" + this.glyph + "')"
+              "left": "0",
+              "top": "0",
+              "width": "100%",
+              "height": "100%",
+              "background-size": "contain",
+              "background-repeat": "no-repeat",
+              "background-position": "center",
+              "background-image": "url('" + this.glyph + "')"
         });
     }
     else {
         jQuery('#huddle-glyph-container').remove();
     }
+
+      EventManager.trigger("identify", data);
 };
 
 /**
- * The update proximity function is called each time a proximity data is received. This
- * function needs be overriden in the Huddle application.
+   * The update proximity function is called each time a proximity data is received.
  *
  * @this Huddle
  * @param {Object} data The proximity data as object literal.
  */
-Huddle.prototype.updateProximity = function (data) {
-    // empty
+  var _updateProximity = function (data) {
+      EventManager.trigger("proximity", data);
 };
 
 /**
@@ -351,8 +342,8 @@ Huddle.prototype.updateProximity = function (data) {
  * @this Huddle
  * @param {Object} data The undefined data as object literal.
  */
-Huddle.prototype.message = function (data) {
-    // empty
+  var _message = function (data) {
+      EventManager.trigger("message", data);
 };
 
 /**
@@ -362,7 +353,7 @@ Huddle.prototype.message = function (data) {
  * @this Huddle
  * @param {Object} data The undefined data as object literal.
  */
-Huddle.prototype.undefinedData = function (data) {
+  var undefinedData = function (data) {
     // empty
 };
 
@@ -372,10 +363,10 @@ Huddle.prototype.undefinedData = function (data) {
  * listen explicitly to broadcast messages.
  *
  * @this Huddle
- * @param message Message content.
+   * @param {string} message Message content.
  */
-Huddle.prototype.broadcast = function (message) {
-    this.send("Broadcast", message);
+  var broadcast = function (message) {
+      this._send("Broadcast", message);
 };
 
 /**
@@ -385,7 +376,26 @@ Huddle.prototype.broadcast = function (message) {
  * @param {string} type Message type.
  * @param {string} content Message content.
  */
-Huddle.prototype.send = function (type, content) {
+  var _send = function (type, content) {
     var message = '{{"Type": "{0}", {1}}}'.format(type, content);
     this.socket.send(message);
 };
+
+  /**
+   * Adds a callback for the specified event.
+   *
+   * @this Huddle
+   * @param {string} event Event name, e.g., proximity, identify, message
+   * @param {function} callback Callback function receives object as parameter.
+   */
+  var on = function(event, callback) {
+      EventManager.register(event, callback);
+  };
+
+  return {
+    connect: connect,
+    close: close,
+    broadcast: broadcast,
+    on: on
+  };
+})();
