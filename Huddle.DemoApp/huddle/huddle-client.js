@@ -57,6 +57,8 @@ var Huddle = (function ($) {
         this.connected = false;
         this.reconnect = false;
 
+        this.reconnectTimeout = null;
+
         return this;
     };
 
@@ -134,8 +136,6 @@ var Huddle = (function ($) {
      */
     var doConnect = function () {
 
-        var reconnectTimeout = null;
-
         // send alive message every 10 seconds, otherwise web socket server closes
         // connection automatically
         var sendAlive = function () {
@@ -144,7 +144,7 @@ var Huddle = (function ($) {
                 send("Alive", content);
             }
         }.bind(this);
-        var aliveInterval = setInterval(sendAlive, 10000);
+        var aliveInterval = null;
 
         var wsUri = "ws://{0}".format(this.host);
         if (this.port)
@@ -155,16 +155,21 @@ var Huddle = (function ($) {
         this.socket.onopen = function () {
             Log.info("Huddle connection open");
 
-            if (reconnectTimeout) {
-                clearTimeout(reconnectTimeout);
-                reconnectTimeout = null;
+            if (this.reconnectTimeout) {
+                clearInterval(this.reconnectTimeout);
+                this.reconnectTimeout = null;
             }
 
             this.connected = true;
 
-            var content = '"Name": "{0}"'.format(this.name);
+            // set a short timeout before send the handshake (this avoids 'Uncaught InvalidStateError: Failed to execute 'send' on 'WebSocket': Still in CONNECTING state'.
+            setTimeout(function () {
+                var content = '"Name": "{0}"'.format(this.name);
+                send("Handshake", content);
+            }, 500);
 
-            send("Handshake", content);
+            // start alive interval to avoid web socket from disconnect
+            aliveInterval = setInterval(sendAlive, 10000);
         }.bind(this);
 
         this.socket.onmessage = function (event) {
@@ -188,12 +193,17 @@ var Huddle = (function ($) {
         this.socket.onerror = function (event) {
             Log.error("Huddle Error {0}".format(event));
 
+            // stop alive interval on error.
+            if (aliveInterval) {
+                clearInterval(aliveInterval);
+            }
+
             this.connected = false;
 
-            // hide glyph
+            // TODO hide glyph
 
-            if (this.reconnect) {
-                reconnectTimeout = setTimeout(function () {
+            if (this.reconnect && !this.reconnectTimeout) {
+                this.reconnectTimeout = setInterval(function () {
                     doConnect(this.host, this.port);
                 }, 1000);
             }
@@ -202,12 +212,17 @@ var Huddle = (function ($) {
         this.socket.onclose = function (event) {
             Log.info("Huddle Closed {0}".format(event));
 
+            // stop alive interval on close.
+            if (aliveInterval) {
+                clearInterval(aliveInterval);
+            }
+
             this.connected = false;
 
-            // hide glyph
+            // TODO hide glyph
 
-            if (this.reconnect) {
-                reconnectTimeout = setTimeout(function () {
+            if (this.reconnect && !this.reconnectTimeout) {
+                this.reconnectTimeout = setInterval(function () {
                     doConnect(this.host, this.port);
                 }, 1000);
             }

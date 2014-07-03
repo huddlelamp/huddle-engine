@@ -6,3 +6,4 @@ packages/
 *.suo
 *.bak
 *.tmp
+*.user
