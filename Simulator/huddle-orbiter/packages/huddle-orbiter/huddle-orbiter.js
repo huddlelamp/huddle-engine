@@ -1,8 +1,10 @@
 HuddleOrbiter = function() {
-	
+
 };
 
 HuddleOrbiter.prototype.start = function(port) {
+	var orbiter = this;
+
 	if (this.server) {
 		console.log("Huddle Orbiter is already running on port " + this.port + ".  Stop running Huddle Orbiter first!");
 		return this;
@@ -29,32 +31,41 @@ HuddleOrbiter.prototype.start = function(port) {
 	var connected = 0;
 	var clients = {};
 
+	/**
+	 * Handles incoming connection requests.
+	 */
+	var onRequest = function (request) {
+			var connection = request.accept(null, request.origin);
+
+			++connected;
+
+			// Specific id for this client & increment count
+			var id = count++;
+
+			// Store the connection method so we can loop through & contact all clients
+			clients[id] = connection;
+
+			console.log('Connection accepted [' + id + ']. #' + connected + ' clients connected.');
+
+			orbiter.onConnected();
+
+			// Create event listener
+			connection.on('message', function (message) {
+					console.log(message.utf8Data);
+			});
+
+			connection.on('close', function ( reasonCode, description ) {
+					delete clients[id];
+					--connected;
+
+					console.log( ( new Date() ) + ' Peer ' + connection.remoteAddress + ' disconnected.' );
+
+					orbiter.onDisconnected();
+			});
+	}.bind(this);
+
 	// WebSocket server
-	this.wsServer.on( 'request', function ( request ) {
-	    var connection = request.accept( null, request.origin );
-	    
-	    ++connected;
-
-	    // Specific id for this client & increment count
-	    var id = count++;
-	    
-	    // Store the connection method so we can loop through & contact all clients
-	    clients[id] = connection;
-
-	    console.log('Connection accepted [' + id + ']. #' + connected + ' clients connected.');
-
-	    // Create event listener
-	    connection.on('message', function (message) {
-	        console.log(message.utf8Data);
-	    });
-
-	    connection.on('close', function ( reasonCode, description ) {
-	        delete clients[id];
-	        --connected;
-
-	        console.log( ( new Date() ) + ' Peer ' + connection.remoteAddress + ' disconnected.' );
-	    });
-	});
+	this.wsServer.on('request', onRequest);
 
 	setInterval(function() {
 		// The string message that was sent to us
@@ -82,4 +93,12 @@ HuddleOrbiter.prototype.stop = function() {
 
 		console.log("Closed Huddle Orbiter");
 	}
+};
+
+HuddleOrbiter.prototype.onConnected = function() {
+	console.log("onConnected");
+};
+
+HuddleOrbiter.prototype.onDisconnected = function() {
+
 };
