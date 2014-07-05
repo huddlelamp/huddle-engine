@@ -1,7 +1,14 @@
 HuddleOrbiter = function() {
 
+	// A dictionary where each entry represents a single event. The key is the
+	// event name. Each entry of the dictionary is an array of callbacks that
+	// should be called when the event is triggered.
+	this._events = {};
 };
 
+/**
+ *
+ */
 HuddleOrbiter.prototype.start = function(port) {
 	var orbiter = this;
 
@@ -47,36 +54,37 @@ HuddleOrbiter.prototype.start = function(port) {
 
 			console.log('Connection accepted [' + id + ']. #' + connected + ' clients connected.');
 
-			orbiter.onConnected();
+			// Meteor.bindEnvironment(orbiter.onConnected());
+			this._trigger("connect", {id: id});
 
 			// Create event listener
 			connection.on('message', function (message) {
 					console.log(message.utf8Data);
-			});
+			}.bind(this));
 
 			connection.on('close', function ( reasonCode, description ) {
 					delete clients[id];
 					--connected;
 
-					console.log( ( new Date() ) + ' Peer ' + connection.remoteAddress + ' disconnected.' );
+					console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
 
-					orbiter.onDisconnected();
-			});
+					this._trigger("disconnect", {id: id});
+			}.bind(this));
 	}.bind(this);
 
 	// WebSocket server
 	this.wsServer.on('request', onRequest);
 
-	setInterval(function() {
-		// The string message that was sent to us
-		var msgString = "{\"Type\":\"Glyph\",\"Id\":\"1\",\"GlyphData\":\"0000001010001000100000000\"}";
-
-		// Loop through all clients
-		for (var i in clients) {
-		    // Send a message to the client with the message
-		    clients[i].sendUTF(msgString);
-		}
-	}, 2500);
+	// setInterval(function() {
+	// 	// The string message that was sent to us
+	// 	var msgString = "{\"Type\":\"Glyph\",\"Id\":\"1\",\"GlyphData\":\"0000001010001000100000000\"}";
+	//
+	// 	// Loop through all clients
+	// 	for (var i in clients) {
+	// 	    // Send a message to the client with the message
+	// 	    clients[i].sendUTF(msgString);
+	// 	}
+	// }, 5000);
 
 	return this;
 };
@@ -95,10 +103,54 @@ HuddleOrbiter.prototype.stop = function() {
 	}
 };
 
-HuddleOrbiter.prototype.onConnected = function() {
-	console.log("onConnected");
+
+/**
+* Adds a callback for the specified event.
+*
+* @this HuddleOrbiter
+* @param {string} event Event name, e.g., proximity, identify, message
+* @param {function} callback Callback function receives object as parameter.
+*/
+HuddleOrbiter.prototype.on = function (event, callback) {
+		this._register(event, callback);
+		return this;
 };
 
-HuddleOrbiter.prototype.onDisconnected = function() {
+/**
+* Registers the given callback function for the given event. When the event is triggered, the callback will be executed.
+*
+* @param {string} event The name of the event
+* @param {function} callback The callback function to call when the event is triggered
+*
+* @memberof HuddleOrbiter
+*/
+HuddleOrbiter.prototype._register = function(event, callback) {
 
+	if (typeof(event) !== "string") throw "Event name must be a string";
+	if (typeof(callback) !== "function") throw "Event callback must be a function";
+
+	if (!this._events[event]) this._events[event] = [];
+	this._events[event].push(callback);
+};
+
+/**
+* Triggers the given events, calling all callback functions that have registered for the event.
+*
+* @param {string} event The name of the event to trigger
+*
+* @memberof HuddleOrbiter
+*/
+HuddleOrbiter.prototype._trigger = function(event) {
+
+	if (!this._events[event]) return;
+
+	//Get all arguments passed to trigger() and remove the event
+	var args = Array.prototype.slice.call(arguments);
+	args.shift();
+
+	for (var i = 0; i < this._events[event].length; i++)
+	{
+		var callback = this._events[event][i];
+		callback.apply(null, args);
+	}
 };

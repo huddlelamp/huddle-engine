@@ -155,6 +155,8 @@ window.Huddle = (function ($) {
         this.socket.onopen = function () {
             Log.info("Huddle connection open");
 
+            console.log("did connect");
+
             if (this.reconnectTimeout) {
                 clearInterval(this.reconnectTimeout);
                 this.reconnectTimeout = null;
@@ -190,8 +192,8 @@ window.Huddle = (function ($) {
             onData(data);
         }.bind(this);
 
-        this.socket.onerror = function (event) {
-            Log.error("Huddle Error {0}".format(event));
+        var onClose = function (event) {
+            Log.info("Huddle Closed {0}".format(event));
 
             // stop alive interval on error.
             if (aliveInterval) {
@@ -209,24 +211,12 @@ window.Huddle = (function ($) {
             }
         }.bind(this);
 
-        this.socket.onclose = function (event) {
-            Log.info("Huddle Closed {0}".format(event));
-
-            // stop alive interval on close.
-            if (aliveInterval) {
-                clearInterval(aliveInterval);
-            }
-
-            this.connected = false;
-
-            // TODO hide glyph
-
-            if (this.reconnect && !this.reconnectTimeout) {
-                this.reconnectTimeout = setInterval(function () {
-                    doConnect(this.host, this.port);
-                }, 1000);
-            }
+        var onError = function (event) {
+            Log.error("Huddle Error {0}".format(event));
         }.bind(this);
+
+        this.socket.onclose = onClose;
+        this.socket.onerror = onError;
     }.bind(this);
 
     /**

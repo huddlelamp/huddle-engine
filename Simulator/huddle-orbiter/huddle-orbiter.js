@@ -11,6 +11,10 @@ if (Meteor.isClient) {
     return Clients.find().count();
   };
 
+  Template.hello.clients = function() {
+    return Clients.find();
+  }
+
   Template.hello.greetings = function () {
     return "Hallo Johannes";
   };
@@ -24,7 +28,7 @@ if (Meteor.isClient) {
             console.log(data);
         });
         huddle.reconnect = true;
-        huddle.connect("localhost", 4711);
+        huddle.connect("192.168.2.110", 4711);
   };
 
   Template.hello.events({
@@ -68,6 +72,7 @@ if (Meteor.isServer) {
     //};
   });
 
+  Clients.remove({});
 
     var orbiter;
 
@@ -77,19 +82,15 @@ if (Meteor.isServer) {
 
         if (!orbiter) {
           orbiter = new HuddleOrbiter();
-          // Meteor.publish("connectedDevices", function() {
-          //   //orbiter.onConnected = function() {
-          //     connectedDevices = 42;
-          //   //};
-          // });
-
-          orbiter.onConnected = function() {
-            console.log("connected");
-            Clients.insert({
-              id: 1,
-              name: "HuddleDevice"
-            });
-          };
+            orbiter.on("connect", Meteor.bindEnvironment(function(event) {
+              Clients.insert({
+                id: event.id,
+                name: "HuddleDevice"
+              });
+            }));
+            orbiter.on("disconnect", Meteor.bindEnvironment(function(event) {
+              Clients.remove({id: event.id});
+            }));
         }
 
         try {
