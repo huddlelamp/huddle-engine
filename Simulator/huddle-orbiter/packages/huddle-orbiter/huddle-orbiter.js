@@ -36,7 +36,7 @@ HuddleOrbiter.prototype.start = function(port) {
 
 	var count = 0;
 	var connected = 0;
-	var clients = {};
+	this._clients = {};
 
 	/**
 	 * Handles incoming connection requests.
@@ -50,7 +50,7 @@ HuddleOrbiter.prototype.start = function(port) {
 			var id = count++;
 
 			// Store the connection method so we can loop through & contact all clients
-			clients[id] = connection;
+			this._clients[id] = connection;
 
 			console.log('Connection accepted [' + id + ']. #' + connected + ' clients connected.');
 
@@ -63,7 +63,7 @@ HuddleOrbiter.prototype.start = function(port) {
 			}.bind(this));
 
 			connection.on('close', function ( reasonCode, description ) {
-					delete clients[id];
+					delete this._clients[id];
 					--connected;
 
 					console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
@@ -80,9 +80,9 @@ HuddleOrbiter.prototype.start = function(port) {
 	// 	var msgString = "{\"Type\":\"Glyph\",\"Id\":\"1\",\"GlyphData\":\"0000001010001000100000000\"}";
 	//
 	// 	// Loop through all clients
-	// 	for (var i in clients) {
+	// 	for (var i in this._clients) {
 	// 	    // Send a message to the client with the message
-	// 	    clients[i].sendUTF(msgString);
+	// 	    this._clients[i].sendUTF(msgString);
 	// 	}
 	// }, 5000);
 
@@ -101,6 +101,8 @@ HuddleOrbiter.prototype.stop = function() {
 
 		console.log("Closed Huddle Orbiter");
 	}
+
+	delete this._clients;
 };
 
 
@@ -152,5 +154,26 @@ HuddleOrbiter.prototype._trigger = function(event) {
 	{
 		var callback = this._events[event][i];
 		callback.apply(null, args);
+	}
+};
+
+HuddleOrbiter.prototype.send = function(object) {
+
+	var msg = JSON.stringify(object);
+
+	// Loop through all clients
+	for (var i in this._clients) {
+	    // Send a message to the client with the message
+	    this._clients[i].sendUTF(msg);
+	}
+};
+
+HuddleOrbiter.prototype.sendGlyph = function() {
+	var msg = "{\"Type\":\"Glyph\",\"Id\":\"1\",\"GlyphData\":\"0000001010001000100000000\"}";
+
+	// Loop through all clients
+	for (var i in this._clients) {
+			// Send a message to the client with the message
+			this._clients[i].sendUTF(msg);
 	}
 };

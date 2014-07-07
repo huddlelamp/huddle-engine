@@ -7,4 +7,8 @@ standard-app-packages
 insecure
 jquery
 huddle-orbiter
-bootstrap
+jquery-ui
+iron-router
+bootstrap-3
+accounts-ui-bootstrap-3
+accounts-password

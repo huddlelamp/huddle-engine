@@ -1,5 +1,6 @@
 <head>
-  <title>Huddle Orbiter App</title>
+  <title>Huddle Orbiter</title>
+  <script type="text/javascript" src="jquery.ui.rotatable.js"></script>
 
   <!-- Production Code -->
   <!--<script type="text/javascript" src="huddle-0.9.0.min.js"></script>-->
@@ -9,44 +10,72 @@
   <script type="text/javascript" src="02_huddle-debug.js"></script>
   <script type="text/javascript" src="03_huddle-eventmanager.js"></script>
   <script type="text/javascript" src="04_huddle-client.js"></script>
-
-  <!-- Latest compiled and minified CSS -->
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-
-  <!-- Optional theme -->
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
 </head>
 
 <body>
-  {{> hello}}
+
 </body>
 
-<template name="hello">
-  <h1>Huddle Orbiter</h1>
+<template name="layout">
+  <div class="container">
+    <header>
+      {{> navigation}}
+    </header>
+    {{> yield}}
+  </div>
+</template>
 
-  {{greetings}}
+<template name="notFound">
+  Not Found
+</template>
 
-  <input id="orbiter-port" type="text" value="4711" />
-  <input id="orbiter-start" type="button" value="Start" />
-  <input id="orbiter-stop" type="button" value="Stop" />
-  <input id="orbiter-reconnect" type="checkbox" checked />
+<template name="navigation">
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <a class="navbar-brand" href="/">HuddleOrbiter</a>
+      </div>
 
-  <input id="cmd-client-host" type="text" value="localhost" />
-  <input id="cmd-client-port" type="text" value="4711" />
-  <input id="cmd-client-identify" type="button" value="Identify" />
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li class="{{active 'orbit'}}"><a href="{{pathFor 'orbit'}}">Orbit</a></li>
+          <li class="{{active 'settings'}}"><a href="{{pathFor 'settings'}}">Settings</a></li>
+        </ul>
 
-  <a href="#">Connected Devices <span class="badge">{{connectedClients}}</span></a>
+        <ul class="nav navbar-nav navbar-right">
+          {{> loginButtons}}
+        </ul>
+      </div>
+    </div>
+  </nav>
+</template>
 
-  <div class="input-group">
-    <input type="text" class="form-control">
-    <span class="input-group-btn">
-      <button class="btn btn-default" type="button">Go!</button>
-    </span>
-  </div><!-- /input-group -->
+<template name="test2">
+  <div class="container-fluid">
+  <!-- Button trigger modal -->
+  <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+    Launch demo modal
+  </button>
 
-  <div id="orbit">
-    {{#each clients}}
-      <div style="width: 100px; height: 50px; background-color: green;">{{id}}</div>
-    {{/each}}
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
   </div>
 </template>

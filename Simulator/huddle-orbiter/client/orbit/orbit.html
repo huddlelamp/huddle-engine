@@ -1,0 +1,25 @@
+<!--
+  Orbit template.
+-->
+<template name="orbit">
+  <div id="orbit">
+    {{#each clients}}
+      {{> display}}
+    {{/each}}
+  </div>
+</template>
+
+<!--
+  Display template.
+-->
+<template name="display">
+  {{!-- <div id="{{_id}}" class="orbit-client" style="position: relative; left: {{left}}; top: {{top}}; -webkit-transform: rotate({{angle}}rad);">--}}
+  <div id="{{_id}}" class="orbit-client">
+    <div class="orbit-client-color"></div>
+    <div class="orbit-client-background"></div>
+    <div>
+      <div>{{id}}</div>
+      <div><input class="cmd-client-identify" type="button" value="Identify" /></div>
+    </div>
+  </div>
+</template>

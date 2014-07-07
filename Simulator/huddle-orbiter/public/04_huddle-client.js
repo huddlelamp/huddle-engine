@@ -24,9 +24,9 @@
  *                           },
  * }
  *
- * @class
  * @author Roman Rädle [firstname.lastname@outlook.com] replace 'ä' with 'ae'
  * @requires jQuery
+ * @namespace Huddle
  * @param {int} Device id.
  */
 window.Huddle = (function ($) {
@@ -49,11 +49,14 @@ window.Huddle = (function ($) {
     var glyph;
 
     /**
+     * TODO Document me!!!
+     * 
      * @param {string} name Client name. Does not necessarily need to be a unique name.
      */
     this.client = function (name) {
         this.name = typeof name !== 'undefined' ? name : "";
 
+        this.running = false;
         this.connected = false;
         this.reconnect = false;
 
@@ -67,6 +70,7 @@ window.Huddle = (function ($) {
      * encoded image/png.
      *
      * @this Huddle
+     * @private
      * @param {string} data Glyph data as a serial of 0/1.
      * @returns {string} Glyph as base64 encoded image/png.
      */
@@ -121,6 +125,8 @@ window.Huddle = (function ($) {
         this.host = host;
         this.port = typeof port !== 'undefined' ? port : 4711;
 
+        this.running = true;
+
         doConnect();
 
         return this;
@@ -133,6 +139,7 @@ window.Huddle = (function ($) {
      * automatically re-establish connection if reconnect property is set to true.
      *
      * @this Huddle
+     * @private
      */
     var doConnect = function () {
 
@@ -154,8 +161,6 @@ window.Huddle = (function ($) {
 
         this.socket.onopen = function () {
             Log.info("Huddle connection open");
-
-            console.log("did connect");
 
             if (this.reconnectTimeout) {
                 clearInterval(this.reconnectTimeout);
@@ -204,7 +209,7 @@ window.Huddle = (function ($) {
 
             // TODO hide glyph
 
-            if (this.reconnect && !this.reconnectTimeout) {
+            if (this.running && this.reconnect && !this.reconnectTimeout) {
                 this.reconnectTimeout = setInterval(function () {
                     doConnect(this.host, this.port);
                 }, 1000);
@@ -220,11 +225,19 @@ window.Huddle = (function ($) {
     }.bind(this);
 
     /**
-     * Closes connection to Huddle engine.
+     * Disconnects from Huddle engine.
      *
      * @this Huddle
      */
-    this.close = function () {
+    this.disconnect = function () {
+
+        this.running = false;
+
+        if (this.reconnectTimeout) {
+            clearInterval(this.reconnectTimeout);
+            this.reconnectTimeout = null;
+        }
+
         if (this.socket)
             this.socket.close();
 
@@ -235,6 +248,7 @@ window.Huddle = (function ($) {
      * Receives the raw data stream from Huddle engine.
      *
      * @this Huddle
+     * @private
      * @param {Object} data The proximity data as object literal.
      */
     var onData = function (data) {
@@ -273,6 +287,7 @@ window.Huddle = (function ($) {
      * otherwise remove glyph.
      *
      * @this Huddle
+     * @private
      * @param {Object} data The digital data as object literal.
      */
     var identifyDevice = function (data) {
@@ -317,6 +332,7 @@ window.Huddle = (function ($) {
        * The update proximity function is called each time a proximity data is received.
      *
      * @this Huddle
+     * @private
      * @param {Object} data The proximity data as object literal.
      */
     var updateProximity = function (data) {
@@ -337,6 +353,7 @@ window.Huddle = (function ($) {
      * data types are needed.
      *
      * @this Huddle
+     * @private
      * @param {Object} data The undefined data as object literal.
      */
     var messageReceived = function (event, data) {
@@ -348,6 +365,7 @@ window.Huddle = (function ($) {
      * data types are needed.
      *
      * @this Huddle
+     * @private
      * @param {Object} data The undefined data as object literal.
      */
     var undefinedData = function (data) {
@@ -372,6 +390,7 @@ window.Huddle = (function ($) {
      * Send message to Huddle engine.
      *
      * @this Huddle
+     * @private
      * @param {string} type Message type.
      * @param {string} content Message content.
      */
