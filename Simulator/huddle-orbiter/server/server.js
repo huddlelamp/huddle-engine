@@ -22,8 +22,13 @@ if (Meteor.isServer) {
             Type: "Display",
             Identity: 1,
             Location: [x, y, z],
+            Orientation: 0,
             Distance: 0,
             Movement: 0,
+            RgbImageToDisplayRatio: {
+              X: 4.0,
+              Y: 4.0
+            },
             Presences: [],
           }
         });

@@ -7,3 +7,4 @@ packages/
 *.bak
 *.tmp
 *.user
+.DS_Store

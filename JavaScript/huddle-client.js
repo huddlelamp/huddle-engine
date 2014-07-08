@@ -11,7 +11,7 @@
  * TYPE := Type of data, e.g., Proximity, Digital, or Broadcast
  * DATA := Data that represents the given type of data, e.g., for Proximity
  * {
- *   Type: "TYPE",               // a string e.g., Device or Hand
+ *   Type: "TYPE",               // a string e.g., Display or Hand
  *   Identity: "IDENTITY",       // a string that represents the HuddleClient id
  *   Location: double[3],        // values are [0;1], Location[0] = x, Location[1] = y, Location[2] = z
  *   Orientation: double,        // value is [0;360]
@@ -50,7 +50,7 @@ window.Huddle = (function ($) {
 
     /**
      * TODO Document me!!!
-     * 
+     *
      * @param {string} name Client name. Does not necessarily need to be a unique name.
      */
     this.client = function (name) {
@@ -265,7 +265,10 @@ window.Huddle = (function ($) {
 
                     return;
                 case DataTypes.IdentifyDevice:
-                    identifyDevice(data.Data);
+                    if (data.Data.Type && data.Data.Type == "ShowRed")
+                      showRed(data.Data);
+                    else
+                      identifyDevice(data.Data);
                     return;
                 case DataTypes.Proximity:
                     updateProximity(data.Data);
@@ -283,7 +286,7 @@ window.Huddle = (function ($) {
     }.bind(this);
 
     /**
-     * Show a glyph in full screen if display is not identified in Huddle engine
+     * Shows a glyph in full screen if display is not identified in Huddle engine
      * otherwise remove glyph.
      *
      * @this Huddle
@@ -321,11 +324,45 @@ window.Huddle = (function ($) {
                 "background-position": "center",
                 "background-image": "url('" + glyph + "')"
             });
-        } else {
+        }
+        else {
             $('#huddle-glyph-container').remove();
         }
 
         EventManager.trigger("identify", data);
+    }.bind(this);
+
+    /**
+     * Shows a red background in full screen. This is a function that is required
+     * by the experimental Huddle engine based on RGB tracking only.
+     *
+     * @this Huddle
+     * @private
+     * @param {Object} data The digital data as object literal.
+     */
+    var showRed = function (data) {
+        if (data.Value) {
+
+            // do not add a register container if it already exists
+            if ($('#huddle-register-container').length)
+                return;
+
+            var $glyphContainer = $('<div id="huddle-register-container"></div>').appendTo($('body'));
+            $glyphContainer.css({
+                "top": "0",
+                "left": "0",
+                "position": "fixed",
+                "background-color": "red",
+                "vertical-align": "bottom",
+                "margin-left": "auto",
+                "margin-right": "auto",
+                "width": "100%",
+                "height": "100%"
+            });
+      }
+      else {
+          $('#huddle-register-container').remove();
+      }
     }.bind(this);
 
     /**
