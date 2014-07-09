@@ -290,7 +290,7 @@ namespace Huddle.Engine.Processor.BarCodes
 
             try
             {
-                using (StreamReader sr = new StreamReader("tagdefinition.txt"))
+                using (StreamReader sr = new StreamReader("Resources/TagDefinitions.txt"))
                 {
                     String line;
                     do

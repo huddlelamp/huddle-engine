@@ -31,7 +31,7 @@ namespace Huddle.Engine.Processor.Network
 
         public WebSocketServer()
         {
-            using (var reader = new StreamReader("tagdefinition.txt"))
+            using (var reader = new StreamReader("Resources/TagDefinitions.txt"))
             {
                 String line;
                 do
