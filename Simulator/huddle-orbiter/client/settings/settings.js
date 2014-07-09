@@ -1,10 +1,26 @@
 if (Meteor.isClient) {
 
+  Deps.autorun(function() {
+    Meteor.subscribe("settings-subscription");
+  });
+
   /**
    *
    */
   Template.settings.connectedClients = function () {
     return Clients.find().count();
+  };
+
+  /**
+   *
+   */
+  Template.orbiterConnection.isServerRunning = function() {
+    var serverSettings = Settings.findOne({type: "server"});
+
+    if (serverSettings)
+      return serverSettings.isRunning;
+    else
+      return false;
   };
 
   /**

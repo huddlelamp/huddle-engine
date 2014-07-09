@@ -1,5 +1,23 @@
 if (Meteor.isClient) {
 
+  var matrixBack = function(tr) {
+    var values = tr.split('(')[1].split(')')[0].split(',');
+    var a = values[0];
+    var b = values[1];
+    var c = values[2];
+    var d = values[3];
+
+    var scale = Math.sqrt(a*a + b*b);
+
+    console.log('Scale: ' + scale);
+
+    // arc sin, convert from radians to degrees, round
+    var sin = b/scale;
+    // next line works for 30deg but not 130deg (returns 50);
+    // var angle = Math.round(Math.asin(sin) * (180/Math.PI));
+    return Math.round(Math.atan2(b, a) * (180/Math.PI));
+  };
+
   /**
    *
    */
@@ -17,15 +35,19 @@ if (Meteor.isClient) {
         var $this = $(this);
         var position = $this.position();
 
-        // console.log(position.left);
+        var $orbit = $('#orbit');
 
-        var orbitWidth = $("#orbit").width();
-        var orbitHeight = $('#orbit').height();
+        var orbitWidth = $orbit.width();
+        var orbitHeight = $orbit.height();
 
         var x = position.left / orbitWidth;
         var y = position.top / orbitHeight;
 
-        // console.log(x + "," + y);
+        // var translateR = transform.match(/translate\((-?\d+(?:\.\d*)?)(?:px)?,(?: )?(-?\d+(?:\.\d*)?)(?:px)?\)/);
+        // var rotateR = transform.match(/rotate\((-?\d+(?:\.\d*)?)(?:rad)?\)/);
+        // var scaleR = transform.match(/scale\((-?\d+(?:\.\d*)?),(?: )?(-?\d+(?:\.\d*)?)?\)/);
+
+        //console.log(x + "," + y + ", rot: " + rotateR);
 
         Clients.update({_id: id}, { $set: {
               x: x,
@@ -37,6 +59,7 @@ if (Meteor.isClient) {
 
       }
     });
+    $(client).css('position', 'absolute');
 
     $(client).rotatable({
       start: function(event, ui) {
@@ -44,6 +67,20 @@ if (Meteor.isClient) {
       },
       rotate: function(event, ui) {
 
+        var id = this.id;
+        var $this = $(this);
+        var transform = $this.css('-webkit-transform');
+
+        console.log(transform);
+
+        if (!transform || transform === "none") return;
+
+        var angle = matrixBack(transform);
+
+        Clients.update({_id: id}, { $set: {
+              angle: angle
+            }
+          });
       },
       stop: function(event, ui) {
 
@@ -62,13 +99,29 @@ if (Meteor.isClient) {
    *
    */
   Template.display.events({
-    'click .cmd-client-identify': function() {
-
-      var id = 1;
-
-      Meteor.call("identifyClient", id, function(error, result) {
+    'click .cmd-client-identify-on': function() {
+      var id = this.id;
+      Meteor.call("identifyDevice", id, true, function(error, result) {
         console.log(result);
       });
     },
+    'click .cmd-client-identify-off': function() {
+      var id = this.id;
+      Meteor.call("identifyDevice", id, false, function(error, result) {
+        console.log(result);
+      });
+    },
+    'click .cmd-client-showred-on': function() {
+      var id = this.id;
+      Meteor.call("showColor", id, "red", true, function(error, result) {
+        console.log(result);
+      });
+    },
+    'click .cmd-client-showred-off': function() {
+      var id = this.id;
+      Meteor.call("showColor", id, "red", false, function(error, result) {
+        console.log(result);
+      });
+    }
   });
 }

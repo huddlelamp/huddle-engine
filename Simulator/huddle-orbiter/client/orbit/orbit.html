@@ -13,13 +13,32 @@
   Display template.
 -->
 <template name="display">
-  {{!-- <div id="{{_id}}" class="orbit-client" style="position: relative; left: {{left}}; top: {{top}}; -webkit-transform: rotate({{angle}}rad);">--}}
   <div id="{{_id}}" class="orbit-client">
-    <div class="orbit-client-color"></div>
-    <div class="orbit-client-background"></div>
-    <div>
-      <div>{{id}}</div>
-      <div><input class="cmd-client-identify" type="button" value="Identify" /></div>
+    <img class="orbit-client-background" src="images/ipad.png" id="{{_id}}"  style="background-image: -webkit-radial-gradient(center, 9em 100px, green, transparent);">
+    <div style="position: absolute; top: 20px">
+
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-4 col-md-offset-1">Id</div>
+          <div class="col-md-6 col-md-offset-1">{{id}}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 col-md-offset-1">Identify</div>
+          <div class="col-md-6 col-md-offset-1 btn-group">
+            <button type="button" class="cmd-client-identify-on btn btn-default btn-xs">On</button>
+            <button type="button" class="cmd-client-identify-off btn btn-default btn-xs">Off</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 col-md-offset-1">ShowRed</div>
+          <div class="col-md-6 col-md-offset-1 btn-group">
+            <button type="button" class="cmd-client-showred-on btn btn-default btn-xs">On</button>
+            <button type="button" class="cmd-client-showred-off btn btn-default btn-xs">Off</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

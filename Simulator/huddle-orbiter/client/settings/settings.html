@@ -1,6 +1,7 @@
 <!-- Settings template -->
 <template name="settings">
   <div>Connected Devices <span class="badge">{{connectedClients}}</span></div>
+  <div>Hello {{serverIsRunning}}</div>
 
   <div class="container-fluid">
     <div class="row">
@@ -20,8 +21,13 @@
     <input id="orbiter-port" class="form-control" type="text" placeholder="4711" value="4711" />
   </div>
   <div class="form-group">
-    <button id="orbiter-start" class="btn btn-primary" type="button">Start</button>
-    <button id="orbiter-stop" class="btn btn-primary" type="button">Stop</button>
+    {{#unless isServerRunning}}
+      <button id="orbiter-start" class="btn btn-primary" type="button">Start</button>
+      <button id="orbiter-stop" class="btn btn-primary" type="button" disabled>Stop</button>
+    {{else}}
+      <button id="orbiter-start" class="btn btn-primary" type="button" disabled>Start</button>
+      <button id="orbiter-stop" class="btn btn-primary" type="button">Stop</button>
+    {{/unless}}
   </div>
 </template>
 

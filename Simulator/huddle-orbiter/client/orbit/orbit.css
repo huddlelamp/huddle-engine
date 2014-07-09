@@ -12,35 +12,34 @@
   height: 150px;
 }
 
-.orbit-client > div.orbit-client-background {
+/*.orbit-client > div.orbit-client-background {
   position: absolute;
   left: 0;
   top: 0;
 
   width: 200px;
   height: 150px;
-  background-image: url('../../device.png');
+  background-image: url('../../images/device.png');
   background-size: 100%;
   background-repeat: no-repeat;
-}
+}*/
 
-.orbit-client > div.orbit-client-color {
+.orbit-client > img.orbit-client-background {
   position: absolute;
-  left: 0;
-  top: 0;
-
   width: 200px;
   height: 150px;
-  background-color: green;
-  opacity: 0.5;
+}
+
+.orbit-client > div > button {
+  position: absolute;
 }
 
 .ui-rotatable-handle {
-  position: relative;
+  position: absolute;
   height: 16px;
   width: 16px;
   cursor: pointer;
-  background-image: url(rotate.png);
+  background-image: url('../images/rotate.png');
   background-size: 100%;
   left: 2px;
   top: 2px;

@@ -163,17 +163,62 @@ HuddleOrbiter.prototype.send = function(object) {
 
 	// Loop through all clients
 	for (var i in this._clients) {
-	    // Send a message to the client with the message
-	    this._clients[i].sendUTF(msg);
-	}
-};
-
-HuddleOrbiter.prototype.sendGlyph = function() {
-	var msg = "{\"Type\":\"Glyph\",\"Id\":\"1\",\"GlyphData\":\"0000001010001000100000000\"}";
-
-	// Loop through all clients
-	for (var i in this._clients) {
 			// Send a message to the client with the message
 			this._clients[i].sendUTF(msg);
 	}
+};
+
+HuddleOrbiter.prototype.sendToId = function(id, object) {
+
+	var msg = JSON.stringify(object);
+
+  // Send a message to the client with the message
+  this._clients[id].sendUTF(msg);
+};
+
+HuddleOrbiter.prototype.sendGlyph = function(id) {
+	var msgObject = {
+		Type: "Glyph",
+		Id: id,
+		GlyphData: "0000001010011100101000000"
+	};
+
+	this.sendToId(id, msgObject);
+};
+
+HuddleOrbiter.prototype.identifyDevice = function(id, enabled) {
+	var msgObject = {
+		Type: "Digital",
+		Data: {
+			Type: "IdentifyDevice",
+			Value: enabled
+		}
+	};
+
+	this.sendToId(id, msgObject);
+};
+
+HuddleOrbiter.prototype.showRed = function(id, enabled) {
+	var msgObject = {
+		Type: "Digital",
+		Data: {
+			Type: "ShowRed",
+			Value: enabled
+		}
+	};
+
+	this.sendToId(id, msgObject);
+};
+
+HuddleOrbiter.prototype.showColor = function(id, color, enabled) {
+	var msgObject = {
+		Type: "Digital",
+		Data: {
+			Type: "ShowColor",
+			Color: color,
+			Value: enabled
+		}
+	};
+
+	this.sendToId(id, msgObject);
 };

@@ -2,7 +2,7 @@ if (Meteor.isClient) {
   var huddle;
 
   Deps.autorun(function() {
-    Meteor.subscribe("clients-count");
+    Meteor.subscribe("clients-subscription");
   });
 
   Template.navigation.helpers({

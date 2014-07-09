@@ -3,26 +3,35 @@ if (Meteor.isServer) {
 
     var orbiter;
 
-    Meteor.publish("clients-count", function() {
+    Clients.remove({});
+    Meteor.publish("clients-subscription", function() {
       return Clients.find();
     });
 
-    Clients.remove({});
+    Settings.remove({});
+    Meteor.publish("settings-subscription", function() {
+      return Settings.find();
+    });
+
     Clients.find().observe({
       changed: function(newDocument, oldDocument) {
         // console.log('changed doc');
 
-        var x = oldDocument.x;
-        var y = oldDocument.y;
-        var z = oldDocument.z;
+        var id = newDocument.id;
+        var x = newDocument.x;
+        var y = newDocument.y;
+        var z = newDocument.z;
+        var angle = newDocument.angle;
 
-        orbiter.send({
+        console.log(id);
+
+        orbiter.sendToId(id, {
           Type: "Proximity",
           Data: {
             Type: "Display",
             Identity: 1,
             Location: [x, y, z],
-            Orientation: 0,
+            Orientation: angle,
             Distance: 0,
             Movement: 0,
             RgbImageToDisplayRatio: {
@@ -58,8 +67,26 @@ if (Meteor.isServer) {
 
         try {
           orbiter.start(port);
+
+          Settings.update(
+            { type: "server" },
+            {
+              type: "server",
+              isRunning: true
+            },
+            { upsert: true }
+          );
         }
         catch (err) {
+          Settings.update(
+            { type: "server" },
+            {
+              type: "server",
+              isRunning: false
+            },
+            { upsert: true }
+          );
+
           return err;
         }
 
@@ -68,19 +95,30 @@ if (Meteor.isServer) {
       stopOrbiter: function() {
         if (orbiter) {
           orbiter.stop();
+
+          Settings.update(
+            { type: "server" },
+            {
+              type: "server",
+              isRunning: false
+            },
+            { upsert: true }
+          );
+
           return true;
         }
         return false;
       },
-      identifyClient: function(id) {
-        // orbiter.send({
-        //   Type: "Digital",
-        //   Data: {
-        //     Key: "Identify",
-        //     Value: true,
-        //   }
-        // });
-        orbiter.sendGlyph();
+      identifyDevice: function(id, enabled) {
+        if (enabled) {
+          orbiter.sendGlyph(id, enabled);
+        }
+        else {
+          orbiter.identifyDevice(id, enabled);
+        }
+      },
+      showColor: function(id, color, enabled) {
+        orbiter.showColor(id, color, enabled);
       }
     });
   });

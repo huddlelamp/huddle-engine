@@ -458,8 +458,8 @@ window.Huddle = (function ($) {
 
                     return;
                 case DataTypes.IdentifyDevice:
-                    if (data.Data.Type && data.Data.Type == "ShowRed")
-                      showRed(data.Data);
+                    if (data.Data.Type && data.Data.Type == "ShowColor")
+                      showColor(data.Data);
                     else
                       identifyDevice(data.Data);
                     return;
@@ -526,14 +526,14 @@ window.Huddle = (function ($) {
     }.bind(this);
 
     /**
-     * Shows a red background in full screen. This is a function that is required
+     * Shows a colored background in full screen. This is a function that is required
      * by the experimental Huddle engine based on RGB tracking only.
      *
      * @this Huddle
      * @private
      * @param {Object} data The digital data as object literal.
      */
-    var showRed = function (data) {
+    var showColor = function (data) {
         if (data.Value) {
 
             // do not add a register container if it already exists
@@ -545,7 +545,7 @@ window.Huddle = (function ($) {
                 "top": "0",
                 "left": "0",
                 "position": "fixed",
-                "background-color": "red",
+                "background-color": data.Color,
                 "vertical-align": "bottom",
                 "margin-left": "auto",
                 "margin-right": "auto",
