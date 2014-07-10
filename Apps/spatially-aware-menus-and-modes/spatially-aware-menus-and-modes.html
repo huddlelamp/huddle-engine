@@ -1,0 +1,60 @@
+<head>
+  <title>Huddle Spatially-Aware Menus and Modes</title>
+  <meta charset="utf-8" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBjtVU9d89l5tYFTku6FB5kPyHUoYQ_ClA&sensor=false"></script>
+  <script type="text/javascript" src="js/google.map.extensions.js"></script>
+  <script type="text/javascript" src="js/jquery.sketch.js"></script>
+  <script type="text/javascript" src="js/huddle-0.9.1.js"></script>
+  <script type="text/javascript" src="js/app-controller.js"></script>
+</head>
+
+<body>
+  {{> main}}
+</body>
+
+<template name="main">
+  <div id="map-container" class="huddle-fullscreen"></div>
+
+  <div id="tool-palette-container" class="huddle-fullscreen">
+      <div id="tool-palette">
+          <table>
+              <tr>
+                  <td style="font-size: 44px; padding: 10px;" width="10">
+                      Roadmap
+                      <div id="map-id-roadmap" class="toggle-button">
+                          <div id="roadmap-map"></div>
+                      </div>
+                  </td>
+                  <td style="font-size: 44px; padding: 10px;" width="10">
+                      Satellite
+                      <div id="map-id-satellite" class="toggle-button">
+                          <div id="satellite-map"></div>
+                      </div>
+                  </td>
+              </tr>
+              <tr>
+                  <td style="font-size: 44px; padding: 10px;" width="10">
+                      Hybrid
+                      <div id="map-id-hybrid" class="toggle-button">
+                          <div id="hybrid-map"></div>
+                      </div>
+                  </td>
+                  <td style="font-size: 44px; padding: 10px;" width="10">
+                      Terrain
+                      <div id="map-id-terrain" class="toggle-button">
+                          <div id="terrain-map"></div>
+                      </div>
+                  </td>
+              </tr>
+          </table>
+      </div>
+  </div>
+
+  <div id="note-container" class="huddle-fullscreen">
+      <div id="tools"></div>
+      <canvas id="note"></canvas>
+  </div>
+</template>
