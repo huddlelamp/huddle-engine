@@ -113,13 +113,13 @@ if (Meteor.isClient) {
     },
     'click .cmd-client-showred-on': function() {
       var id = this.id;
-      Meteor.call("showColor", id, "red", true, function(error, result) {
+      Meteor.call("showColor", id, "rgb(255,0,0)", true, function(error, result) {
         console.log(result);
       });
     },
     'click .cmd-client-showred-off': function() {
       var id = this.id;
-      Meteor.call("showColor", id, "red", false, function(error, result) {
+      Meteor.call("showColor", id, "", false, function(error, result) {
         console.log(result);
       });
     }
