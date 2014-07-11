@@ -1,24 +1,26 @@
 <!-- Settings template -->
 <template name="settings">
-  <div>Connected Devices <span class="badge">{{connectedClients}}</span></div>
-  <div>Hello {{serverIsRunning}}</div>
-
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-3 col-md-offset-2">
-        {{> orbiterConnection}}
-      </div>
-      <div class="col-md-4 col-md-offset-1">
-        {{> clientConnection}}
+  {{#if isUser}}
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-3 col-md-offset-2">
+          {{> orbiterConnection}}
+        </div>
+        <!-- <div class="col-md-4 col-md-offset-1">
+          {{> clientConnection}}
+        </div> -->
       </div>
     </div>
-  </div>
+  {{/if}}
 </template>
 
 <template name="orbiterConnection">
   <div class="form-group">
-    <label for="orbiter-port">Orbiter Port</label>
-    <input id="orbiter-port" class="form-control" type="text" placeholder="4711" value="4711" />
+    <div>Connected Devices <span class="badge">{{connectedClients}}</span></div>
+  </div>
+  <div class="form-group">
+    <label for="orbiter-port">Huddle Port</label>
+    <input id="orbiter-port" class="form-control" type="text" placeholder="assigned after first start" value={{orbiterPort}} disabled />
   </div>
   <div class="form-group">
     {{#unless isServerRunning}}

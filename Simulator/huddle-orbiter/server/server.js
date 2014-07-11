@@ -1,6 +1,26 @@
 if (Meteor.isServer) {
   Meteor.startup(function () {
 
+    // if (Meteor.users.findOne("7aq2jG6QFhwLFE8Jb"))
+    //     Roles.addUsersToRoles("7aq2jG6QFhwLFE8Jb", ['admin']);
+
+    //// create a couple of roles if they don't already exist (THESE ARE NOT NEEDED -- just for the demo)
+    // if(!Meteor.roles.findOne({name: "secret"}))
+    //     Roles.createRole("secret");
+    //
+    // if(!Meteor.roles.findOne({name: "double-secret"}))
+    //     Roles.createRole("double-secret");
+
+    Meteor.publish("user-data", function () {
+      if (this.userId) {
+        return Meteor.users.find({_id: this.userId},
+                                 {fields: {'settings': 1}});
+      }
+      else {
+        this.ready();
+      }
+    });
+
     var orbiter;
 
     Clients.remove({});
@@ -11,6 +31,36 @@ if (Meteor.isServer) {
     Settings.remove({});
     Meteor.publish("settings-subscription", function() {
       return Settings.find();
+    });
+
+    Clients.allow({
+      insert: function (userId, doc) {
+        // the user must be logged in, and the document must be owned by the user
+        return true;
+      },
+      update: function (userId, doc, fields, modifier) {
+        // can only change your own documents
+        return true;
+      },
+      remove: function (userId, doc) {
+        // can only remove your own documents
+        return true;
+      },
+    });
+
+    Settings.allow({
+      insert: function (userId, doc) {
+        // the user must be logged in, and the document must be owned by the user
+        return true;
+      },
+      update: function (userId, doc, fields, modifier) {
+        // can only change your own documents
+        return true;
+      },
+      remove: function (userId, doc) {
+        // can only remove your own documents
+        return true;
+      },
     });
 
     Clients.find().observe({
@@ -66,7 +116,12 @@ if (Meteor.isServer) {
         }
 
         try {
-          orbiter.start(port);
+
+          // If port is null or empty HuddleOrbiter will start on a random port
+          // which will be returned afterwards.
+          port = orbiter.start(port);
+
+          console.log("Server PORT: " + port);
 
           Settings.update(
             { type: "server" },
@@ -90,7 +145,7 @@ if (Meteor.isServer) {
           return err;
         }
 
-        return true;
+        return port;
       },
       stopOrbiter: function() {
         if (orbiter) {
@@ -121,5 +176,15 @@ if (Meteor.isServer) {
         orbiter.showColor(id, color, enabled);
       }
     });
+  });
+
+  Meteor.users.allow({
+    update: function(userId, user, fields, modifier) {
+      if (userId != user._id) return false;
+
+      if (fields.length == 1 && fields[0] == "settings") return true;
+
+      return false;
+    }
   });
 }

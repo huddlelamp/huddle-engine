@@ -17,17 +17,33 @@ HuddleOrbiter.prototype.start = function(port) {
 		return this;
 	}
 
-	this.port = port;
-
-	console.log("Starting Huddle Orbiter on port " + port);
+	// create a future to return only when listening port is know (see listening function below).
+	var Future = Npm.require('fibers/future');
+	var future = new Future();
 
 	var WebSocketServer = Npm.require('websocket').server;
 	var http = Npm.require('http');
 
-	this.server = http.createServer(function(request, response) {});
-	this.server.listen(port, function() {
-	    console.log((new Date()) + ' Server is listening on port ' + port);
-	});
+	this.server = http.createServer(function(request, response) { });
+
+	/**
+	 * Listener for server.
+	 */
+	var listening = function() {
+		var address = this.server.address();
+		this.port = address.port;
+
+		console.log("HuddleOrbiter is listening on port " + this.port);
+
+		future.return(this.port);
+	}.bind(this);
+
+	if (port) {
+		this.server.listen(port, listening);
+	}
+	else {
+		this.server.listen(listening);
+	}
 
 	// create the server
 	this.wsServer = new WebSocketServer( {
@@ -75,18 +91,8 @@ HuddleOrbiter.prototype.start = function(port) {
 	// WebSocket server
 	this.wsServer.on('request', onRequest);
 
-	// setInterval(function() {
-	// 	// The string message that was sent to us
-	// 	var msgString = "{\"Type\":\"Glyph\",\"Id\":\"1\",\"GlyphData\":\"0000001010001000100000000\"}";
-	//
-	// 	// Loop through all clients
-	// 	for (var i in this._clients) {
-	// 	    // Send a message to the client with the message
-	// 	    this._clients[i].sendUTF(msgString);
-	// 	}
-	// }, 5000);
-
-	return this;
+	// return only when listening po
+	return future.wait();
 };
 
 HuddleOrbiter.prototype.stop = function() {

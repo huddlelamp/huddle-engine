@@ -10,12 +10,20 @@ if (Meteor.isClient) {
   // matches '/about' and automatically renders
   // template 'about'
   Router.map(function () {
+    this.route('home', {
+      path: "/"
+    });
+
     this.route('orbit', {
       path: "/orbit"
     });
 
     this.route('settings', {
       path: "/settings"
+    });
+
+    this.route('accounts', {
+      path: "/admin/accounts"
     });
 
     this.route('notFound', {

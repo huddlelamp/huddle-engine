@@ -3,6 +3,8 @@
     "jquery-ui": {},
     "iron-router": {},
     "bootstrap-3": {},
-    "accounts-ui-bootstrap-3": {}
+    "accounts-ui-bootstrap-3": {},
+    "roles": {},
+    "accounts-admin-ui-bootstrap-3": {}
   }
 }

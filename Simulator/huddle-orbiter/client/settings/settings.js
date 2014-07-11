@@ -4,10 +4,24 @@ if (Meteor.isClient) {
     Meteor.subscribe("settings-subscription");
   });
 
+  Deps.autorun(function() {
+    Meteor.subscribe("user-data");
+  });
+
+  Template.settings.helpers({
+    // check if user is an admin
+    isUser: function() {
+      if (Roles.userIsInRole(Meteor.user(), ['admin','user']))
+        return true;
+      else
+        Router.go('home');
+    }
+  });
+
   /**
    *
    */
-  Template.settings.connectedClients = function () {
+  Template.orbiterConnection.connectedClients = function () {
     return Clients.find().count();
   };
 
@@ -23,21 +37,34 @@ if (Meteor.isClient) {
       return false;
   };
 
+  Template.orbiterConnection.orbiterPort = function() {
+    var user = Meteor.user();
+
+    if (user) {
+      if (typeof(user.settings) !== 'undefined') {
+        var userSettings = user.settings;
+        return userSettings.orbiterPort;
+      }
+    }
+
+    return null;
+  };
+
   /**
    *
    */
-  Template.settings.events({
+  Template.orbiterConnection.events({
     'click #orbiter-start': function () {
-
       var port = parseInt($('#orbiter-port').val());
 
-      // template data, if any, is available in 'this'
-      //if (typeof console !== 'undefined')
-      //  console.log("Start huddle orbiter on port " + port);
-
-      Meteor.call('startOrbiter', port, function(error, result) {
-        if (result) {
+      Meteor.call('startOrbiter', port, function(error, orbiterPort) {
+        if (orbiterPort) {
           console.log("Huddle Orbiter started successfully.");
+
+          var user = Meteor.user();
+          if (user) {
+            Meteor.users.update({_id: user._id}, { $set: { 'settings.orbiterPort': orbiterPort } }, { multi: true } );
+          }
         }
         else {
           console.log("Could not start Huddle Orbiter because " + error);
@@ -54,6 +81,12 @@ if (Meteor.isClient) {
         }
       });
     },
+  });
+
+  /**
+   *
+   */
+  Template.clientConnection.events({
     'click #cmd-client-connect': function() {
 
       var host = $('#cmd-client-host').val();

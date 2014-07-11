@@ -1,5 +1,15 @@
 if (Meteor.isClient) {
 
+  Template.orbit.helpers({
+    // check if user is an admin
+    isUser: function() {
+      if (Roles.userIsInRole(Meteor.user(), ['admin','user']))
+        return true;
+      else
+        Router.go('home');
+    }
+  });
+
   var matrixBack = function(tr) {
     var values = tr.split('(')[1].split(')')[0].split(',');
     var a = values[0];

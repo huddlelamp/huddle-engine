@@ -2,11 +2,13 @@
   Orbit template.
 -->
 <template name="orbit">
-  <div id="orbit">
-    {{#each clients}}
-      {{> display}}
-    {{/each}}
-  </div>
+  {{#if isUser}}
+    <div id="orbit">
+      {{#each clients}}
+        {{> display}}
+      {{/each}}
+    </div>
+  {{/if}}
 </template>
 
 <!--
