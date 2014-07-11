@@ -6,7 +6,7 @@ if (Meteor.isClient) {
    * Get url parameter, e.g., http://localhost:3000/?id=3 -> id = 3
    *
    * @name The parameter name.
-   */  
+   */
   var getParameterByName = function(name) {
       name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
       var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -52,7 +52,7 @@ if (Meteor.isClient) {
 
       var transform = 'scale(' + scaleX + ',' + scaleY + ') ' +
                       'translate(' + txd + 'px,' +tyd + 'px)';
-      
+
       // Translate to center, rotate around center point, and translate back
       transform += 'translate(' + (-tx) + 'px,' + (-ty) + 'px) ' +
                    'rotate(' + (-rotation) + 'deg) ' +
@@ -116,7 +116,7 @@ if (Meteor.isClient) {
   						break;
   					}
   				}
-  	        
+
   				if (handIdx > -1) {
   					eventType = "move";
   					this.hands.splice(handIdx, 1);
@@ -138,7 +138,7 @@ if (Meteor.isClient) {
   				// get the touch coordinates from the touch object
   				pEvent = $.extend(
   					pEvent,
-  					{ 
+  					{
   						id: presence.Identity,
   						x: x,
   						y: y,
@@ -189,7 +189,6 @@ if (Meteor.isClient) {
   			this.hands = currentHands;//.splice();
   			delete currentHands;
     	});
-      huddle.reconnect = true;
       huddle.connect(host, port);
   }
 
@@ -212,7 +211,7 @@ if (Meteor.isClient) {
         $visual = $('#' + newDocument._id);
         $visual.data('visualProperties', newDocument);
       },
-    }); 
+    });
 
     /*
     $('#world-canvas').on('presence_move', function(e) {
@@ -240,7 +239,7 @@ if (Meteor.isClient) {
           //console.log('model updated' + this);
 
           var id = this.get(0).id;
-        
+
           var $visual = $(this);
 
           var position = $visual.position();
@@ -249,7 +248,7 @@ if (Meteor.isClient) {
           var transform = $visual.css('-webkit-transform');
 
           var vp = $visual.data('visualProperties');
-          
+
           Objects.update({_id: id}, { $set: {
               lockedBy: vp.lockedBy,
               lockedForAction: vp.lockedForAction,
@@ -268,7 +267,7 @@ if (Meteor.isClient) {
   Template.worldCanvas.events({
     'click #world-canvas2': function(e) {
       console.log('clicked canvas');
- 
+
       Objects.insert({
         x: e.offsetX,
         y: e.offsetY,

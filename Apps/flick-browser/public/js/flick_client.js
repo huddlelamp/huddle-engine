@@ -37,7 +37,6 @@ Client.prototype = {
   connect: function(host, port) {
     this.huddle.on('proximity', this.onReceivedHuddleProximityData.bind(this));
     this.huddle.on('message', this.onReceivedHuddleBroadcastData.bind(this));
-    this.huddle.reconnect = true;
     this.huddle.connect(host, port);
 
     this.initWebview();

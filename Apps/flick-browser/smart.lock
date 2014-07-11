@@ -2,13 +2,19 @@
   "meteor": {},
   "dependencies": {
     "basePackages": {
-      "jquery-ui": {}
+      "jquery-ui": {},
+      "huddle": {}
     },
     "packages": {
       "jquery-ui": {
         "git": "https://github.com/TimHeckel/meteor-jquery-ui.git",
         "tag": "v1.9.2",
         "commit": "c437d45edcf1367df8d5ffa8bad2867758030bd2"
+      },
+      "huddle": {
+        "git": "https://github.com/raedle/meteor-huddle.git",
+        "tag": "v0.9.2-1",
+        "commit": "12a77abe21111a202d8e25aeb534cace918eaa50"
       }
     }
   }

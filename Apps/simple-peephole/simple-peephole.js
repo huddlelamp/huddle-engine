@@ -54,7 +54,6 @@ if (Meteor.isClient) {
           $('#peephole-canvas').css('left', -offsetLeft + "px");
           $('#peephole-canvas').css('top', -offsetTop + "px");
         });
-        huddle.reconnect = true;
         huddle.connect("localhost", 4711);
     });
   };

@@ -56,7 +56,6 @@
           .on("worldMapCenter", function (data) {
               controller.worldMapCenter = new google.maps.LatLng(data.lat, data.lng);
           });
-      huddle.reconnect = true;
       huddle.connect(host, port);
 
       return huddle;
