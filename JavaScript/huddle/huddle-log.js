@@ -1,11 +1,14 @@
+/* global Log */
 "use strict";
 
 /**
  * Gives us some nice debug convenience functions
  *
- * @namespace Debug
+ * @author Mario Schreiner
+ * @author Roman Rädle
+ * @namespace Log
  */
-window.Log = (function() {
+var Log = (function() {
 
   /**
    * true if info mode is on, otherwise false
@@ -102,3 +105,6 @@ window.Log = (function() {
     debug: debug
   };
 })();
+
+// make Log globally available
+window.Log = Log;

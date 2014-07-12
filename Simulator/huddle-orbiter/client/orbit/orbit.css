@@ -7,7 +7,17 @@
   margin: 0 auto;
 }
 
-.orbit-client {
+.orbit-client-unknown {
+  width: 200px;
+  height: 150px;
+}
+
+.orbit-client-iPhone {
+  width: 75px;
+  height: 50px;
+}
+
+.orbit-client-iPad {
   width: 200px;
   height: 150px;
 }
@@ -26,8 +36,8 @@
 
 .orbit-client > img.orbit-client-background {
   position: absolute;
-  width: 200px;
-  height: 150px;
+  /*width: 200px;
+  height: 150px;*/
 }
 
 .orbit-client > div > button {

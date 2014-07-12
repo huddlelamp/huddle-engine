@@ -75,7 +75,28 @@ HuddleOrbiter.prototype.start = function(port) {
 
 			// Create event listener
 			connection.on('message', function (message) {
-					console.log(message.utf8Data);
+
+					if (!message || !message.utf8Data) return;
+
+						var msg = message.utf8Data;
+
+						// console.log(msg);
+
+            try {
+                var object = JSON.parse(msg);
+
+								if (!object) return;
+
+								if (!object.Type) {
+									console.log("Message does not have the required Type property '" + msg + "'");
+								}
+
+								// call onData function with huddle object as this
+								this._trigger(object.Type, {id: id, data: object.Data});
+            }
+						catch (exception) {
+                console.log("Could not parse message. Invalid JSON '" + msg + "'");
+            }
 			}.bind(this));
 
 			connection.on('close', function (reasonCode, description) {

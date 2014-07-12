@@ -4,9 +4,11 @@
 /**
  * Manages events throughout Connichiwa. Allows all parts of Connichiwa to register for and trigger events.
  *
+ * @author Mario Schreiner
+ * @author Roman Rädle
  * @namespace EventManager
  */
-window.EventManager = (function()
+var EventManager = (function()
 {
   /**
    * A dictionary where each entry represents a single event. The key is the event name. Each entry of the dictionary is an array of callbacks that should be called when the event is triggered.
@@ -59,3 +61,6 @@ window.EventManager = (function()
     trigger  : trigger
   };
 })();
+
+// make EventManager globally available
+window.EventManager = EventManager;

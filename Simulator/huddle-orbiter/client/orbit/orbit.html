@@ -15,8 +15,9 @@
   Display template.
 -->
 <template name="display">
-  <div id="{{_id}}" class="orbit-client">
-    <img class="orbit-client-background" src="images/ipad.png" id="{{_id}}"  style="background-image: -webkit-radial-gradient(center, 9em 100px, green, transparent);">
+  <div id="{{_id}}" class="orbit-client orbit-client-{{deviceType}}">
+    <div class="orbit-client-{{deviceType}}" style="background-image: url('images/devices/{{deviceType}}.png'); background-size: contain;"></div>
+    <!-- <img class="orbit-client-background" src="images/devices/{{deviceType}}.png" style="background-image: -webkit-radial-gradient(center, 9em 100px, green, transparent);"> -->
     <div style="position: absolute; top: 20px">
 
       <div class="container-fluid">

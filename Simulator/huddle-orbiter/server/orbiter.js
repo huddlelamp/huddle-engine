@@ -14,18 +14,35 @@ if (Meteor.isServer) {
       if (!_orbiters[user._id]) {
         _orbiters[user._id] = new HuddleOrbiter()
           .on("connect", Meteor.bindEnvironment(function(event) {
+            // Clients.insert({
+            //   id: event.id,
+            //   userId: user._id,
+            //   name: "HuddleDevice",
+            //   x: 0,
+            //   y: 0,
+            //   z: 0,
+            //   angle: 0,
+            // });
+          }))
+          .on("disconnect", Meteor.bindEnvironment(function(event) {
+            Clients.remove({id: event.id});
+          }))
+          .on("Handshake", Meteor.bindEnvironment(function(event) {
+
+            var data = event.data;
+
+            console.log(data);
+
             Clients.insert({
               id: event.id,
+              deviceType: data.DeviceType,
               userId: user._id,
-              name: "HuddleDevice",
+              name: data.Name,
               x: 0,
               y: 0,
               z: 0,
               angle: 0,
             });
-          }))
-          .on("disconnect", Meteor.bindEnvironment(function(event) {
-            Clients.remove({id: event.id});
           }));
       }
 

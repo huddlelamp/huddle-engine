@@ -29,9 +29,6 @@ if (Meteor.isClient) {
             var angle = data.Orientation;
 
             data.Presences.forEach(function(presence) {
-
-              console.log(presence.Orientation);
-
                 var id2 = presence.Identity;
                 var location2 = presence.Location;
                 var x2 = location2[0];
@@ -40,13 +37,24 @@ if (Meteor.isClient) {
                 var $presence = $('#presence-' + id2);
 
                 if (!$presence.length) {
-                    $('<div id="presence-' + id2 + '" class="huddle-presence">' + id2 + '</div>').appendTo($('#presences-container'));
-                } else {
-                    $presence.html(JSON.stringify(presence));
+                    $('<div id="presence-' + id2 + '" class="huddle-presence"></div>').appendTo($('#presences-container'));
+                }
+                else {
+                    // $presence.html(JSON.stringify(presence));
 
-                    $presence.css('height', ($(window).height()) + "px");
-                    $presence.css('top', "-" + ($(window).height() / 2) + "px");
-                    $presence.rotate(presence.Orientation);
+                    var containerWidth = $('#presences-container').width();
+                    var containerHeight = $('#presences-container').height();
+
+                    var presenceWidth = $presence.width();
+
+                    var presenceLeft = (containerWidth / 2) - (presenceWidth / 2);
+                    var presenceTop = (containerHeight / 2);
+
+                    // $presence.css('height', presenceHeight + "px");
+                    $presence.css('left', presenceLeft + "px");
+                    $presence.css('top', presenceTop + "px");
+                    $presence.css('height', $(window).width() + "px");
+                    $presence.rotate(presence.Orientation - 180);
                 }
             });
 
@@ -62,18 +70,20 @@ if (Meteor.isClient) {
           huddle.connect(host, port);
       };
 
-      $('#connection-dialog').modal({
-        backdrop: false,
-        keyboard: true,
-        show: true
-      });
-      $('#connection-dialog').on('hidden.bs.modal', function (e) {
-        var host = $('#client-host').val();
-        var port = parseInt($('#client-port').val());
-        var name = $('#client-name').val();
+      hutHutHut("huddle-orbiter.proxemicinteractions.org", 58629, "MyHuddle");
 
-        hutHutHut(host, port, name);
-      });
+      // $('#connection-dialog').modal({
+      //   backdrop: false,
+      //   keyboard: true,
+      //   show: true
+      // });
+      // $('#connection-dialog').on('hidden.bs.modal', function (e) {
+      //   var host = $('#client-host').val();
+      //   var port = parseInt($('#client-port').val());
+      //   var name = $('#client-name').val();
+      //
+      //   hutHutHut(host, port, name);
+      // });
     });
   }
 }
