@@ -78,8 +78,10 @@ HuddleOrbiter.prototype.start = function(port) {
 					console.log(message.utf8Data);
 			}.bind(this));
 
-			connection.on('close', function ( reasonCode, description ) {
-					delete this._clients[id];
+			connection.on('close', function (reasonCode, description) {
+					if (id && this._clients[id]) {
+							delete this._clients[id];
+					}
 					--connected;
 
 					console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');

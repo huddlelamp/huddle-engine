@@ -1,4 +1,8 @@
 if (Meteor.isClient) {
+
+  // initialize event hooks
+  Hooks.init();
+
   var huddle;
 
   Deps.autorun(function() {

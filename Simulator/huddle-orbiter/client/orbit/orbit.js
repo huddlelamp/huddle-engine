@@ -3,10 +3,16 @@ if (Meteor.isClient) {
   Template.orbit.helpers({
     // check if user is an admin
     isUser: function() {
-      if (Roles.userIsInRole(Meteor.user(), ['admin','user']))
+      if (Roles.userIsInRole(Meteor.user(), ['user','admin']))
         return true;
       else
         Router.go('home');
+    }
+  });
+
+  Template.display.helpers({
+    isDeveloperUser: function() {
+      return Roles.userIsInRole(Meteor.user(), ['developer','admin']);
     }
   });
 

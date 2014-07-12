@@ -13,3 +13,5 @@ accounts-ui-bootstrap-3
 accounts-password
 roles
 accounts-admin-ui-bootstrap-3
+event-hooks
+headers

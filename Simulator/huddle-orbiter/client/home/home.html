@@ -1,3 +1,12 @@
 <template name="home">
-  I am home!
+  <div class="jumbotron">
+    <h1>Example</h1>
+    {{#if currentUser}}
+      <pre class="language-javascript"><code class=" language-javascript">var huddle = Huddle.client("MyHuddle")
+  .on("proximity", function(data) {
+    console.log(data);
+  })
+  .connect("{{host}}", {{port}});</code></pre>
+    {{/if}}
+  </div>
 </template>
