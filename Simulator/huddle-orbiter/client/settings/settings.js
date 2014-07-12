@@ -21,13 +21,6 @@ if (Meteor.isClient) {
   /**
    *
    */
-  Template.orbiterConnection.connectedClients = function () {
-    return Clients.find().count();
-  };
-
-  /**
-   *
-   */
   Template.orbiterConnection.isServerRunning = function() {
     var serverSettings = Settings.findOne({type: "server"});
 
