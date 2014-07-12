@@ -70,20 +70,20 @@ if (Meteor.isClient) {
           huddle.connect(host, port);
       };
 
-      hutHutHut("huddle-orbiter.proxemicinteractions.org", 58629, "MyHuddle");
+      // hutHutHut("huddle-orbiter.proxemicinteractions.org", 58629, "MyHuddle");
 
-      // $('#connection-dialog').modal({
-      //   backdrop: false,
-      //   keyboard: true,
-      //   show: true
-      // });
-      // $('#connection-dialog').on('hidden.bs.modal', function (e) {
-      //   var host = $('#client-host').val();
-      //   var port = parseInt($('#client-port').val());
-      //   var name = $('#client-name').val();
-      //
-      //   hutHutHut(host, port, name);
-      // });
+      $('#connection-dialog').modal({
+        backdrop: false,
+        keyboard: true,
+        show: true
+      });
+      $('#connection-dialog').on('hidden.bs.modal', function (e) {
+        var host = $('#client-host').val();
+        var port = parseInt($('#client-port').val());
+        var name = $('#client-name').val();
+
+        hutHutHut(host, port, name);
+      });
     });
   }
 }
