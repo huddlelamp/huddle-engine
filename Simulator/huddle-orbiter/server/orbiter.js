@@ -111,35 +111,107 @@ if (Meteor.isServer) {
       }
     });
 
-    Clients.find().observe({
-      changed: function(newDocument, oldDocument) {
-        var userId = newDocument.userId;
-        var id = newDocument.id;
-        var x = newDocument.x;
-        var y = newDocument.y;
-        var z = newDocument.z;
-        var angle = newDocument.angle;
+    /**
+     * Update proximity and send it to client
+     */
+    var updateProximity = function(newClient) {
+      var userId = newClient.userId;
+      var id = newClient.id;
+      var x = newClient.x;
+      var y = newClient.y;
+      var z = newClient.z;
+      var angle = newClient.angle;
 
-        // console.log(userId);
+      var proximity = {
+          Type: "Display",
+          Identity: id,
+          Location: [x, y, z],
+          Orientation: angle,
+          Distance: 0,
+          Movement: 0,
+          RgbImageToDisplayRatio: {
+            X: 4.0,
+            Y: 4.0
+          },
+          Presences: [],
+        };
 
-        _orbiters[userId].sendToId(id, {
-          Type: "Proximity",
-          Data: {
-            Type: "Display",
-            Identity: 1,
-            Location: [x, y, z],
-            Orientation: angle,
-            Distance: 0,
-            Movement: 0,
-            RgbImageToDisplayRatio: {
-              X: 4.0,
-              Y: 4.0
-            },
-            Presences: [],
-          }
-        });
-      }
-    });
+      var clients = Clients.find();
+
+      clients.forEach(function(client) {
+        // console.log(client._id);
+
+        if (client._id === newClient._id) return;
+
+        var cx = client.x;
+        var cy = client.y;
+        var cz = client.z;
+
+        var dx = cx - x;
+        var dy = cy - y;
+
+        var distance = Math.sqrt(dx * dx + dy * dy);
+
+        var radiansToDegree = function(angle) {
+            return angle * (180.0 / Math.PI);
+        };
+
+        // device2 to device1 angle
+        var globalAngle = radiansToDegree(Math.atan(dy / dx));
+
+        if (dx >= 0 && dy < 0)
+            globalAngle = 90 + globalAngle;
+        else if (dx >= 0 && dy >= 0)
+            globalAngle = 90 + globalAngle;
+        else if (dx < 0 && dy >= 0)
+            globalAngle = 270 + globalAngle;
+        else if (dx < 0 && dy < 0)
+            globalAngle = 270 + globalAngle;
+
+        // subtract own angle
+        var localAngle = globalAngle + (360 - newClient.angle); // angle -= (device1.Angle % 180);
+        localAngle %= 360;
+
+        var presence = {
+          Type: "Display",
+          Identity: client.id,
+          Location: [cx, cy, cz],
+          Orientation: localAngle,
+          Distance: distance,
+          Movement: 0,
+          RgbImageToDisplayRatio: {
+            X: 4.0,
+            Y: 4.0
+          },
+          Presences: [],
+        };
+
+        proximity.Presences.push(presence);
+      });
+
+      _orbiters[userId].sendToId(id, {
+        Type: "Proximity",
+        Data: proximity
+      });
+    };
+
+    Meteor.setInterval(function() {
+      // console.log('echo');
+
+      var clients = Clients.find();
+
+      // console.log(clients.count());
+
+      clients.forEach(function (client) {
+        updateProximity(client, clients);
+      });
+    }, 1000 / 30);
+
+    // Clients.find().observe({
+    //   changed: function(newClient, oldClient) {
+    //     // updateProximity(newClient);
+    //   }
+    // });
 
     Hooks.onLoggedIn = function(userId) {
       console.log('User ' + userId + ' logged in.');

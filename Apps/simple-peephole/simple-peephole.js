@@ -29,8 +29,11 @@ if (Meteor.isClient) {
             var angle = data.Orientation;
 
             data.Presences.forEach(function(presence) {
+
+              console.log(presence.Orientation);
+
                 var id2 = presence.Identity;
-                var location2 = presence.Location.split(",");
+                var location2 = presence.Location;
                 var x2 = location2[0];
                 var y2 = location2[1];
 
