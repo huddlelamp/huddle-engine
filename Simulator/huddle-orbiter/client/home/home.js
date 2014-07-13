@@ -1,10 +1,10 @@
 if (Meteor.isClient) {
-  Template.home.host = function() {
+  Template.exampleUsage.host = function() {
     var headerHost = headers.get('host').split(':');
     return headerHost[0];
   };
 
-  Template.home.port = function() {
+  Template.exampleUsage.port = function() {
     var user = Meteor.user();
 
     if (typeof(user.settings) !== 'undefined') {
@@ -13,5 +13,11 @@ if (Meteor.isClient) {
     }
 
     return null;
+  };
+
+  Template.exampleUsage.rendered = function() {
+    $('pre code').each(function(i, block) {
+      hljs.highlightBlock(block);
+    });
   };
 }

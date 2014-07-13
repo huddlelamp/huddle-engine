@@ -9,7 +9,9 @@
       "roles": {},
       "accounts-admin-ui-bootstrap-3": {},
       "event-hooks": {},
-      "headers": {}
+      "headers": {},
+      "highlightjs": {},
+      "huddle": {}
     },
     "packages": {
       "jquery-ui": {
@@ -51,6 +53,16 @@
         "git": "https://github.com/gadicohen/meteor-headers.git",
         "tag": "v0.0.24",
         "commit": "3c09e682895e13c71ca0114baf3c09ee9c507709"
+      },
+      "highlightjs": {
+        "git": "https://github.com/Sewdn/meteor-highlightjs",
+        "tag": "v0.1.0",
+        "commit": "35405f12afdf7f42f82a57a6045dcf00b92eb2d0"
+      },
+      "huddle": {
+        "git": "https://github.com/raedle/meteor-huddle.git",
+        "tag": "v0.9.3-2",
+        "commit": "f3196efc6e429847f7e7819f4a83e19461aa76e3"
       },
       "blaze-layout": {
         "git": "https://github.com/EventedMind/blaze-layout.git",

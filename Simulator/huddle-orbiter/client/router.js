@@ -22,6 +22,14 @@ if (Meteor.isClient) {
       path: "/settings"
     });
 
+    this.route('faq', {
+      path: "/faq"
+    });
+
+    this.route('help', {
+      path: "/help"
+    });
+
     this.route('accounts', {
       path: "/admin/accounts"
     });
