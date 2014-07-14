@@ -80,26 +80,25 @@ if (Meteor.isClient) {
         if (!$presence.length) {
           $('<div id="presence-' + id2 + '" presence-id="' + id2 + '" class="huddle-presence"></div>').appendTo($('#presences-container'));
         }
-        else {
-          var containerWidth = $('#presences-container').width();
-          var containerHeight = $('#presences-container').height();
 
-          var presenceWidth = $presence.width();
+        var containerWidth = $('#presences-container').width();
+        var containerHeight = $('#presences-container').height();
 
-          var presenceLeft = (containerWidth / 2) - (presenceWidth / 2);
-          var presenceTop = (containerHeight / 2);
+        var presenceWidth = $presence.width();
 
-          // $presence.css('height', presenceHeight + "px");
-          $presence.css('left', presenceLeft + "px");
-          $presence.css('top', presenceTop + "px");
-          $presence.css('height', $(window).width() + "px");
-          $presence.rotate(presence.Orientation - 180);
-        }
+        var presenceLeft = (containerWidth / 2) - (presenceWidth / 2);
+        var presenceTop = (containerHeight / 2);
+
+        // $presence.css('height', presenceHeight + "px");
+        $presence.css('left', presenceLeft + "px");
+        $presence.css('top', presenceTop + "px");
+        $presence.css('height', $(window).width() + "px");
+        $presence.rotate(presence.Orientation - 180);
       });
 
       // removes all presences that are not available anymore
       $('.huddle-presence').each(function(index, value) {
-        var presenceId = $(this).attr('presence-id');
+        var presenceId = parseInt($(this).attr('presence-id'));
         if ($.inArray(presenceId, currentIds) < 0) {
           $(this).remove();
         }
