@@ -348,7 +348,7 @@ namespace Huddle.Engine.Processor.Complex
 
             try
             {
-                using (var stream = new StreamReader("tagdefinition.txt"))
+                using (var stream = new StreamReader("Resources/TagDefinitions.txt"))
                 {
                     String line;
                     do

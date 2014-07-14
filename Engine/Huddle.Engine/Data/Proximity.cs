@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media.Media3D;
+using Huddle.Engine.Converter;
 using Huddle.Engine.Processor;
+using Newtonsoft.Json;
 
 namespace Huddle.Engine.Data
 {
@@ -199,6 +201,7 @@ namespace Huddle.Engine.Data
         /// Sets and gets the Location property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
+        [JsonConverter(typeof(Point3DToJsonArrayConverter))]
         public Point3D Location
         {
             get

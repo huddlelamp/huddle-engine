@@ -251,6 +251,7 @@
     <Compile Include="Controls\RemovableExpander.xaml.cs">
       <DependentUpon>RemovableExpander.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converter\Point3DToJsonArrayConverter.cs" />
     <Compile Include="Data\BaseData.cs" />
     <Compile Include="Data\Disconnected.cs" />
     <Compile Include="Data\Display.cs" />

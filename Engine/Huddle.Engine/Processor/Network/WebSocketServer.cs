@@ -118,7 +118,10 @@ namespace Huddle.Engine.Processor.Network
                     switch (type as string)
                     {
                         case "Handshake":
-                            var name = response.Name.Value;
+                            var handshake = response.Data;
+                            var name = handshake.Name.Value;
+                            var deviceType = handshake.DeviceType.Value;
+
                             var client = _connectedClients[context.ClientAddress.ToString()];
                             client.Name = name;
                             break;
