@@ -3,14 +3,32 @@ if (Meteor.isClient) {
   Template.main.rendered = function() {
     console.log("rendered");
 
+    var maxLines = 100;
+    var lines = 0;
+
     var huddle = Huddle.client("MyHuddle")
     .on("proximity", function(data) {
       // console.log(data);
-      $('#log').val(function(_, val) {
-        return JSON.stringify(data) + "\r\n" + val;
+      $('#console').val(function(_, val) {
+
+        ++lines;
+
+        if (lines > maxLines) {
+          val = val.substring(val.indexOf('\n') + 1, val.length);
+        }
+
+        var json = JSON.stringify(data);
+        if (val.trim() == "") {
+            return json;
+        }
+        else {
+          return val + "\r\n" + json;
+        }
       });
+
+      $('#console').scrollTop($('#console')[0].scrollHeight);
     })
-    .connect("merkur184.inf.uni-konstanz.de", 58629);
+    .connect("huddle-orbiter.proxemicinteractions.org", 58629);
   };
 }
 

@@ -38,6 +38,7 @@ var Huddle = (function ($) {
     var DataTypes = {
         Glyph: "Glyph",
         IdentifyDevice: "Digital",
+        ShowColor: "ShowColor",
         Proximity: "Proximity",
         Message: "Message"
     };
@@ -276,7 +277,7 @@ var Huddle = (function ($) {
 
                     return;
                 case DataTypes.IdentifyDevice:
-                    if (data.Data.Type && data.Data.Type == "ShowColor")
+                    if (data.Data.Type && data.Data.Type == DataTypes.ShowColor)
                       showColor(data.Data);
                     else
                       identifyDevice(data.Data);
@@ -374,6 +375,11 @@ var Huddle = (function ($) {
       else {
           $('#huddle-register-container').remove();
       }
+
+      // send acknowledge back to server to indicate that message was received
+      sendJSONObject("Acknowledge", data);
+
+      EventManager.trigger("showColor", data);
     }.bind(this);
 
     /**

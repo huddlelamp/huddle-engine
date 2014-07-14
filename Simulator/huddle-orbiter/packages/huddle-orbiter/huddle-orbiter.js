@@ -80,7 +80,7 @@ HuddleOrbiter.prototype.start = function(port) {
 
 						var msg = message.utf8Data;
 
-						// console.log(msg);
+						console.log("Message received from client [" + id + "]: " + msg);
 
             try {
                 var object = JSON.parse(msg);
