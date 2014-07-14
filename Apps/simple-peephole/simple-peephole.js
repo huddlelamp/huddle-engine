@@ -1,6 +1,18 @@
 if (Meteor.isClient) {
 
-  var Peephole = {};
+  var Peephole = {
+    /**
+     * Get url parameter, e.g., http://localhost:3000/?id=3 -> id = 3
+     *
+     * @name The parameter name.
+     */
+     getParameterByName: function(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+     }
+  };
 
   /**
    * Adds an additional function rotate as jQuery function.
@@ -99,18 +111,10 @@ if (Meteor.isClient) {
         });
         huddle.connect(host, port);
     };
-  }
 
-  /**
-   * Render the connection dialog.
-   */
-  Template.connectionDialog.rendered = function() {
-
-    var host = Session.get("clientHost");
-    var port = Session.get("clientPort");
-    var name = Session.get("clientName");
-
-    console.log(host);
+    var host = Peephole.getParameterByName("host");
+    var port = parseInt(Peephole.getParameterByName("port"));
+    var name = Peephole.getParameterByName("name");
 
     if (host && port && name) {
       Peephole.hutHutHut(host, port, name);
@@ -121,20 +125,20 @@ if (Meteor.isClient) {
         keyboard: false,
         show: true
       });
-      $('#connection-dialog').on('hidden.bs.modal', function (e) {
-        var host = $('#client-host').val();
-        var port = parseInt($('#client-port').val());
-        var name = $('#client-name').val();
-
-        Session.set("clientHost", host);
-        Session.set("clientPort", port);
-        Session.set("clientName", name);
-
-        console.log("ASDF: " + Session.get("clientHost"));
-
-        Peephole.hutHutHut(host, port, name);
-      });
     }
+  }
+
+  /**
+   * Render the connection dialog.
+   */
+  Template.connectionDialog.rendered = function() {
+    $('#connection-dialog').on('hidden.bs.modal', function (e) {
+      var host = $('#client-host').val();
+      var port = parseInt($('#client-port').val());
+      var name = $('#client-name').val();
+
+      Peephole.hutHutHut(host, port, name);
+    });
   };
 }
 
