@@ -1,7 +1,7 @@
 bin/
 obj/
-publish/
-packages/
+/publish/
+/packages/
 *.pfx
 *.suo
 *.bak
