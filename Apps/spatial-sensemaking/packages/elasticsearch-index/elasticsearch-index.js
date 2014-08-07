@@ -6,63 +6,135 @@ var MAX_BUFFER = 5*1024*1024; // 5MB
 
 if (Meteor.isServer) {
 
+  /**
+   * Helper function to use string format, e.g., as known from C#
+   * var awesomeWorld = "Hello {0}! You are {1}.".format("World", "awesome");
+   *
+   * TODO Enclose the format prototype function in HuddleClient JavaScript API.
+   * Source: http://stackoverflow.com/questions/1038746/equivalent-of-string-format-in-jquery
+   */
+  String.prototype.format = function () {
+      var args = arguments;
+      return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function (m, n) {
+          if (m == "{{") { return "{"; }
+          if (m == "}}") { return "}"; }
+          return args[n];
+      });
+  };
+
   var childProcess = Npm.require('child_process');
 
-  // childProcess.execFile(
-  //   '/bin/bash',
-  //   ['-c', ("exec curl -X PUT localhost:9200/test/attachment/phantomjs /dev/stdin <<'END'\n" + phantomScript + "\n")],
-  //   {
-  //     timeout: REQUEST_TIMEOUT,
-  //     maxBuffer: MAX_BUFFER
-  //   }, function (error, stdout, stderr) {
-  //
-  //     var startFlag = "###START###";
-  //     var endFlag = "###END###";
-  //
-  //     var startIdx = stdout.indexOf(startFlag) + startFlag.length;
-  //     var endIdx = stdout.indexOf(endFlag);
-  //
-  //     var html = stdout.substring(startIdx, endIdx);
-  //
-  //     if (!error) {
-  //       var compressedHtml = html.replace(/(\r\n|\n|\r)/gm,"");
-  //       callback(compressedHtml);
-  //     }
-  //   });
+  var execCurl = function(cmd, callback) {
+    var bash = "curl " + cmd;
+
+    childProcess.execFile(
+      '/bin/bash',
+      ['-c', (bash)],
+      {
+        timeout: REQUEST_TIMEOUT,
+        maxBuffer: MAX_BUFFER
+      }, function (error, stdout, stderr) {
+
+        if (error) {
+          if (typeof callback == 'function')
+            callback(error, undefined);
+        }
+        else {
+          if (typeof callback == 'function')
+            callback(undefined, stdout);
+        }
+      });
+  };
 
   _.extend(ES, {
 
+    host: "localhost",
+    port: 9200,
+    server: function() {
+      return ES.host + ":" + ES.port
+    },
+
     index: {
-      addFile: function(fileInfo) {
+
+      /**
+       * Adds index.
+       *
+       * @param {string} index Index name.
+       */
+      create: function(index) {
+        var data = {
+          settings: {
+            number_of_shards: 3,
+            number_of_replicas: 2
+          }
+        }
+
+        var cmd = "-XPUT 'http://{0}/{1}/' -d '{2}'".format(
+          ES.server(),
+          index,
+          JSON.stringify(data);
+        );
+
+        console.log(cmd);
+      },
+
+      /**
+       * Deletes index.
+       *
+       * @param {string} index Index name.
+       */
+      delete: function(index) {
+        var cmd = "-XDELETE 'http://{0}/{1}/'".format(
+          ES.server(),
+          index
+        );
+
+        execCurl(cmd, function(err, result) {
+          if (err) {
+            console.log(err);
+          }
+          else {
+            console.log("Index " + index + " deleted");
+          }
+        });
+      },
+
+      /**
+       * Add file to index.
+       *
+       * @param {string} index Index name.
+       * @param {FileInfo} File info.
+       */
+      addFile: function(index, fileInfo) {
 
         var buffer = new Buffer(fileInfo.source);
         var base64 = buffer.toString('base64');
 
         // console.log(base64);
 
-        var bash = "curl -X POST \"localhost:9200/test/attachment/\" -d '{\"file\": \"" + base64 + "\"}'";
+        var cmd = "-XPOST 'http://{0}/{1}/attachment/' -d '{\"file\": \"{2}\"}'".format(
+          ES.server(),
+          index,
+          base64
+        );
 
-        if (true) {
-          childProcess.execFile(
-            '/bin/bash',
-            ['-c', (bash)],
-            {
-              timeout: REQUEST_TIMEOUT,
-              maxBuffer: MAX_BUFFER
-            }, function (error, stdout, stderr) {
-
-              if (error) {
-                console.log(error);
-              }
-              else {
-                console.log(stdout);
-              }
-            });
-        }
-
-        // console.log(bash);
+        execCurl(cmd, function(err, result) {
+          if (err) {
+            console.log(err);
+          }
+          else {
+            console.log("Added " + fileInfo.name + " to index " + index);
+          }
+        });
       },
-      removeFile: function(fileInfo) {
+
+      /**
+       * Remove file from index.
+       *
+       * @param {string} index Index name.
+       * @param {FileInfo} File info.
+       */
+      removeFile: function(index, fileInfo) {
         console.log('echo');
       },
     },

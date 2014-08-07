@@ -31,5 +31,23 @@ if (Meteor.isClient) {
         });
       }
     },
+
+    'click #index-create': function(e, tmpl) {
+
+      var index = tmpl.$('#index-name').val();
+
+      Meteor.call("createIndex", index, function(err, result) {
+
+      });
+    },
+
+    'click #index-delete': function(e, tmpl) {
+
+      var index = tmpl.$('#index-name').val();
+
+      Meteor.call("deleteIndex", index, function(err, result) {
+
+      });
+    },
   });
 }
