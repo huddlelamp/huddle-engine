@@ -169,23 +169,20 @@ if (Meteor.isClient) {
 
   Template.main.events({
     'click #broadcast-btn': function(e, tmpl) {
-      var message = tmpl.$('#message').val();
-      var obj = {
-        message: message
-      };
+      var $message = tmpl.$('#message');
 
-      huddle.broadcast("myMessage", JSON.stringify(obj));
-      tmpl.$('#message').val("");
+      var message = $message.val();
+      huddle.broadcast("myMessage", { message: message });
+      $message.val("");
     },
     'keyup #message': function(e, tmpl) {
       if (e.keyCode == 13) {
-        var message = tmpl.$('#message').val();
-        var obj = {
-          message: message
-        };
 
-        huddle.broadcast("myMessage", JSON.stringify(obj));
-        tmpl.$('#message').val("");
+        var $message = tmpl.$('#message');
+
+        var message = $message.val();
+        huddle.broadcast("myMessage", { message: message });
+        $message.val("");
       }
     },
   })

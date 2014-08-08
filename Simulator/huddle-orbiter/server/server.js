@@ -40,14 +40,4 @@ if (Meteor.isServer) {
       return Settings.find();
     });
   });
-
-  Meteor.users.allow({
-    update: function(userId, user, fields, modifier) {
-      if (userId != user._id) return false;
-
-      if (fields.length == 1 && fields[0] == "settings") return true;
-
-      return false;
-    }
-  });
 }

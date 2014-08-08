@@ -42,6 +42,8 @@ if (Meteor.isServer) {
               y: 0,
               z: 0,
               angle: 0,
+              ratioX: 0,
+              ratioY: 0,
             });
           }));
       }
@@ -138,6 +140,8 @@ if (Meteor.isServer) {
       var y = newClient.y;
       var z = newClient.z;
       var angle = newClient.angle;
+      var ratioX = newClient.ratioX;
+      var ratioY = newClient.ratioY;
 
       var proximity = {
           Type: "Display",
@@ -147,8 +151,8 @@ if (Meteor.isServer) {
           Distance: 0,
           Movement: 0,
           RgbImageToDisplayRatio: {
-            X: 4.0,
-            Y: 4.0
+            X: ratioX,
+            Y: ratioY,
           },
           Presences: [],
         };
@@ -197,8 +201,8 @@ if (Meteor.isServer) {
           Distance: distance,
           Movement: 0,
           RgbImageToDisplayRatio: {
-            X: 4.0,
-            Y: 4.0
+            X: client.ratioX,
+            Y: client.ratioY,
           },
           Presences: [],
         };

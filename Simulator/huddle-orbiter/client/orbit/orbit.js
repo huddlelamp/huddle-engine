@@ -1,15 +1,5 @@
 if (Meteor.isClient) {
 
-  Template.orbit.helpers({
-    // check if user is an admin
-    isUser: function() {
-      if (Roles.userIsInRole(Meteor.user(), ['user','admin']))
-        return true;
-      else
-        Router.go('home');
-    }
-  });
-
   Template.display.helpers({
     isDeveloperUser: function() {
       return Roles.userIsInRole(Meteor.user(), ['developer','admin']);
@@ -58,19 +48,18 @@ if (Meteor.isClient) {
         var x = (position.left + (width / 2)) / orbitWidth;
         var y = (position.top + (height / 2)) / orbitHeight;
 
-        // var translateR = transform.match(/translate\((-?\d+(?:\.\d*)?)(?:px)?,(?: )?(-?\d+(?:\.\d*)?)(?:px)?\)/);
-        // var rotateR = transform.match(/rotate\((-?\d+(?:\.\d*)?)(?:rad)?\)/);
-        // var scaleR = transform.match(/scale\((-?\d+(?:\.\d*)?),(?: )?(-?\d+(?:\.\d*)?)?\)/);
-
-        //console.log(x + "," + y + ", rot: " + rotateR);
-
         // set bounds for x and y between 0 and 1.
         x = x.clamp(0.0, 1.0);
         y = y.clamp(0.0, 1.0);
 
+        var ratioX = orbitWidth / width;
+        var ratioY = orbitHeight / height;
+
         Clients.update({_id: id}, { $set: {
               x: x,
               y: y,
+              ratioX: ratioX,
+              ratioY: ratioY,
             }
           });
       },

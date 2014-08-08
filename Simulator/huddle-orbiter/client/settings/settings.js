@@ -8,16 +8,6 @@ if (Meteor.isClient) {
     Meteor.subscribe("user-data");
   });
 
-  Template.settings.helpers({
-    // check if user is an admin
-    isUser: function() {
-      if (Roles.userIsInRole(Meteor.user(), ['user','admin']))
-        return true;
-      else
-        Router.go('home');
-    }
-  });
-
   /**
    *
    */
