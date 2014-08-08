@@ -13,9 +13,23 @@
   <div id="peephole-canvas">
     <!--<iframe width="3840" height="2160" src="//www.youtube.com/embed/wHYZoqRie8Q" frameborder="0"></iframe>-->
   </div>
-  <div id="presences-container"></div>
+  <!-- <div id="presences-container"></div> -->
 
   {{> connectionDialog}}
+
+  <div class="message-pane">
+
+    <div class="input-group message-input">
+      <input id="message" class="form-control" type="text" placeholder="Message" />
+      <span class="input-group-btn">
+        <button type="button" id="broadcast-btn" class="btn btn-primary">Broadcast</button>
+      </span>
+    </div>
+
+    <div class="incoming-message-container">
+      <textarea id="incoming-messages"></textarea>
+    </div>
+  </div>
 </template>
 
 <template name="connectionDialog">

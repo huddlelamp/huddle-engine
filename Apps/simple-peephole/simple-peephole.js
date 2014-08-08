@@ -1,5 +1,7 @@
 if (Meteor.isClient) {
 
+  var huddle;
+
   var Peephole = {
     /**
      * Get url parameter, e.g., http://localhost:3000/?id=3 -> id = 3
@@ -113,7 +115,11 @@ if (Meteor.isClient) {
      * @param {string} [name] Huddle client's name.
      */
     Peephole.hutHutHut = function(host, port, name) {
-      var huddle = Huddle.client(name)
+
+      var maxLines = 100;
+      var lines = 0;
+
+      huddle = Huddle.client(name)
         .on("proximity", function(data) {
 
           // move canvas
@@ -121,6 +127,26 @@ if (Meteor.isClient) {
 
           // render presence indicators
           Peephole.renderPresences(data.Presences);
+        })
+        .on("myMessage", function(data) {
+          $('#incoming-messages').val(function(_, val) {
+
+            ++lines;
+
+            if (lines > maxLines) {
+              val = val.substring(val.indexOf('\n') + 1, val.length);
+            }
+
+            var json = JSON.stringify(data);
+            if (val.trim() == "") {
+                return json;
+            }
+            else {
+              return val + "\r\n" + json;
+            }
+          });
+
+          $('#incoming-messages').scrollTop($('#incoming-messages')[0].scrollHeight);
         });
         huddle.connect(host, port);
     };
@@ -140,6 +166,29 @@ if (Meteor.isClient) {
       });
     }
   }
+
+  Template.main.events({
+    'click #broadcast-btn': function(e, tmpl) {
+      var message = tmpl.$('#message').val();
+      var obj = {
+        message: message
+      };
+
+      huddle.broadcast("myMessage", JSON.stringify(obj));
+      tmpl.$('#message').val("");
+    },
+    'keyup #message': function(e, tmpl) {
+      if (e.keyCode == 13) {
+        var message = tmpl.$('#message').val();
+        var obj = {
+          message: message
+        };
+
+        huddle.broadcast("myMessage", JSON.stringify(obj));
+        tmpl.$('#message').val("");
+      }
+    },
+  })
 
   /**
    * Render the connection dialog.
