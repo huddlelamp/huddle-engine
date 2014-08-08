@@ -14,3 +14,6 @@
 /profile
 /persistent-session
 /reactive-store
+/iron-layout
+/iron-core
+/iron-dynamic-template

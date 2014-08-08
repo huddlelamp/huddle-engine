@@ -153,7 +153,7 @@ if (Meteor.isServer) {
           Presences: [],
         };
 
-      var clients = Clients.find();
+      var clients = Clients.find({ userId: userId });
 
       clients.forEach(function(client) {
         // console.log(client._id);

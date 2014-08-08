@@ -8,8 +8,8 @@
     "packages": {
       "huddle": {
         "git": "https://github.com/raedle/meteor-huddle.git",
-        "tag": "v0.9.3-2",
-        "commit": "f3196efc6e429847f7e7819f4a83e19461aa76e3"
+        "tag": "v0.9.3-4",
+        "commit": "bdb369e12dc345a595c7925e6a96bd246735cc3b"
       },
       "bootstrap-3": {
         "git": "https://github.com/mangasocial/meteor-bootstrap-3.git",

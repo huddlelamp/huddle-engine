@@ -25,8 +25,6 @@ if (Meteor.isClient) {
 
     var scale = Math.sqrt(a*a + b*b);
 
-    console.log('Scale: ' + scale);
-
     // arc sin, convert from radians to degrees, round
     var sin = b/scale;
     // next line works for 30deg but not 130deg (returns 50);
@@ -50,20 +48,26 @@ if (Meteor.isClient) {
         var id = this.id;
         var $this = $(this);
         var position = $this.position();
+        var width = $this.width();
+        var height = $this.height();
 
         var $orbit = $('#orbit');
 
         var orbitWidth = $orbit.width();
         var orbitHeight = $orbit.height();
 
-        var x = position.left / orbitWidth;
-        var y = position.top / orbitHeight;
+        var x = (position.left + (width / 2)) / orbitWidth;
+        var y = (position.top + (height / 2)) / orbitHeight;
 
         // var translateR = transform.match(/translate\((-?\d+(?:\.\d*)?)(?:px)?,(?: )?(-?\d+(?:\.\d*)?)(?:px)?\)/);
         // var rotateR = transform.match(/rotate\((-?\d+(?:\.\d*)?)(?:rad)?\)/);
         // var scaleR = transform.match(/scale\((-?\d+(?:\.\d*)?),(?: )?(-?\d+(?:\.\d*)?)?\)/);
 
         //console.log(x + "," + y + ", rot: " + rotateR);
+
+        // set bounds for x and y between 0 and 1.
+        x = x.clamp(0.0, 1.0);
+        y = y.clamp(0.0, 1.0);
 
         Clients.update({_id: id}, { $set: {
               x: x,
