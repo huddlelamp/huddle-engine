@@ -52,7 +52,6 @@ if (Meteor.isClient) {
         var height = $this.height();
 
         var $orbit = $('#orbit');
-
         var orbitWidth = $orbit.width();
         var orbitHeight = $orbit.height();
 
@@ -91,7 +90,7 @@ if (Meteor.isClient) {
         var $this = $(this);
         var transform = $this.css('-webkit-transform');
 
-        console.log(transform);
+        // console.log(transform);
 
         if (!transform || transform === "none") return;
 
