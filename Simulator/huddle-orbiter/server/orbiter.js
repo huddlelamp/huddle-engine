@@ -215,7 +215,8 @@ if (Meteor.isServer) {
     Meteor.setInterval(function() {
       // console.log('echo');
 
-      var clients = Clients.find();
+      var userId = Meteor.userId;
+      var clients = Clients.find({ userId: userId });
 
       // console.log(clients.count());
 

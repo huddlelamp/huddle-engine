@@ -89,6 +89,23 @@ HuddleOrbiter.prototype.start = function(port) {
 
 								if (!object.Type) {
 									console.log("Message does not have the required Type property '" + msg + "'");
+									return;
+								}
+
+								// If a message is received then it is returned to all other clients
+								// immediately. Messages will be processed on each client individually
+								// and are triggered as an on message's Type event.
+								if (object.Type === "Message") {
+									// Loop through all clients
+									for (var i in this._clients) {
+
+											// ignore sender
+											if (i == id) continue;
+
+											// Send a message to the client with the message
+											this._clients[i].sendUTF(msg);
+									}
+									return;
 								}
 
 								// call onData function with huddle object as this
