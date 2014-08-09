@@ -30,6 +30,8 @@ if (Meteor.isServer) {
   var curl = function(cmd, callback) {
     var bash = "curl " + cmd;
 
+    // console.log(bash);
+
     ChildProcess.execFile(
       '/bin/bash',
       ['-c', (bash)],
@@ -125,9 +127,8 @@ if (Meteor.isServer) {
        * Returns the index statistics.
        */
       stats: function() {
-        var cmd = "-X '{0}/{1}/_stats'".format(
-          ES.server(),
-          index
+        var cmd = "'{0}/_stats'".format(
+          ES.server()
         );
 
         return executeCmd(cmd);

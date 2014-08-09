@@ -72,6 +72,10 @@ if (Meteor.isClient) {
       Meteor.call("deleteIndex", index, logResult);
     },
 
+    'click #index-stats': function(e, tmpl) {
+      Meteor.call("statsIndex", logResult);
+    },
+
     'click #index-attachments-enabled': function(e, tmpl) {
 
       var index = tmpl.$('#index-name').val();

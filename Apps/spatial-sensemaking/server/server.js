@@ -21,6 +21,13 @@ if (Meteor.isServer) {
       },
 
       /**
+       * Get index stats.
+       */
+      statsIndex: function() {
+        return ES.index.stats();
+      },
+
+      /**
        * Enables attachments for index.
        *
        * @param {string} index Index name.
