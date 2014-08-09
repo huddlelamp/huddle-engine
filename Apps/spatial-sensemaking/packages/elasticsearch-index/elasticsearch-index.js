@@ -14,20 +14,23 @@ if (Meteor.isServer) {
    * Source: http://stackoverflow.com/questions/1038746/equivalent-of-string-format-in-jquery
    */
   String.prototype.format = function () {
-      var args = arguments;
-      return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function (m, n) {
-          if (m == "{{") { return "{"; }
-          if (m == "}}") { return "}"; }
-          return args[n];
-      });
+    var args = arguments;
+    return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function (m, n) {
+        if (m == "{{") { return "{"; }
+        if (m == "}}") { return "}"; }
+        return args[n];
+    });
   };
 
-  var childProcess = Npm.require('child_process');
+  var ChildProcess = Npm.require('child_process');
 
-  var execCurl = function(cmd, callback) {
+  // Required to send async function calls sync to clients.
+  var Future = Npm.require('fibers/future');
+
+  var curl = function(cmd, callback) {
     var bash = "curl " + cmd;
 
-    childProcess.execFile(
+    ChildProcess.execFile(
       '/bin/bash',
       ['-c', (bash)],
       {
@@ -46,13 +49,37 @@ if (Meteor.isServer) {
       });
   };
 
+  var executeCmd = function(cmd) {
+    var future = new Future();
+
+    curl(cmd, function(err, result) {
+
+      if (err) {
+        console.error(err);
+        future.return(err);
+      }
+      else {
+        future.return(result);
+      }
+    });
+
+    return future.wait();
+  }
+
   _.extend(ES, {
 
+    protocol: null,
     host: "localhost",
     port: 9200,
     server: function() {
-      return ES.host + ":" + ES.port
+      var url = ES.host + ":" + ES.port;
+
+      if (ES.protocol)
+        url = ES.protocol + "://" + url;
+
+      return url;
     },
+    attachmentName: "attachment",
 
     index: {
 
@@ -64,18 +91,20 @@ if (Meteor.isServer) {
       create: function(index) {
         var data = {
           settings: {
-            number_of_shards: 3,
-            number_of_replicas: 2
+            index: {
+              number_of_shards: 1,
+              number_of_replicas: 0
+            }
           }
-        }
+        };
 
-        var cmd = "-XPUT 'http://{0}/{1}/' -d '{2}'".format(
+        var cmd = "-X PUT '{0}/{1}/' -d '{2}'".format(
           ES.server(),
           index,
-          JSON.stringify(data);
+          JSON.stringify(data)
         );
 
-        console.log(cmd);
+        return executeCmd(cmd);
       },
 
       /**
@@ -84,63 +113,144 @@ if (Meteor.isServer) {
        * @param {string} index Index name.
        */
       delete: function(index) {
-        var cmd = "-XDELETE 'http://{0}/{1}/'".format(
+        var cmd = "-X DELETE '{0}/{1}/'".format(
           ES.server(),
           index
         );
 
-        execCurl(cmd, function(err, result) {
-          if (err) {
-            console.log(err);
-          }
-          else {
-            console.log("Index " + index + " deleted");
-          }
-        });
+        return executeCmd(cmd);
       },
 
       /**
-       * Add file to index.
+       * Returns the index statistics.
+       */
+      stats: function() {
+        var cmd = "-X '{0}/{1}/_stats'".format(
+          ES.server(),
+          index
+        );
+
+        return executeCmd(cmd);
+      },
+
+      /**
+       * Enables attachments for index.
        *
        * @param {string} index Index name.
-       * @param {FileInfo} File info.
+       * @param {boolean} enable Enable index (true/false).
        */
-      addFile: function(index, fileInfo) {
+      enableAttachments: function(index, enable) {
+        var data = {
+          attachment: {
+            properties: {
+              file: {
+                type: "attachment",
+                fields: {
+                  title: {
+                    store: "yes"
+                  },
+                  file: {
+                    term_vector: "with_positions_offsets",
+                    store: "yes"
+                  }
+                }
+              }
+            }
+          }
+        };
 
-        var buffer = new Buffer(fileInfo.source);
+        var cmd = "-X PUT '{0}/{1}/{2}/_mapping' -d '{3}'".format(
+          ES.server(),
+          index,
+          ES.attachmentName,
+          JSON.stringify(data)
+        );
+
+        return executeCmd(cmd);
+      },
+
+      /**
+       * Adds attachment to index.
+       *
+       * @param {string} index Index name.
+       * @param {FileInfo} file File info.
+       */
+      addAttachment: function(index, file) {
+
+        if (file == null)
+          throw "file is empty";
+
+        var buffer = new Buffer(file.source);
         var base64 = buffer.toString('base64');
 
         // console.log(base64);
 
-        var cmd = "-XPOST 'http://{0}/{1}/attachment/' -d '{\"file\": \"{2}\"}'".format(
+        var data = {
+          file: base64
+        };
+
+        var cmd = "-X POST '{0}/{1}/{2}/' -d '{3}'".format(
           ES.server(),
           index,
-          base64
+          ES.attachmentName,
+          JSON.stringify(data)
         );
 
-        execCurl(cmd, function(err, result) {
-          if (err) {
-            console.log(err);
-          }
-          else {
-            console.log("Added " + fileInfo.name + " to index " + index);
-          }
-        });
+        return executeCmd(cmd);
       },
 
       /**
-       * Remove file from index.
+       * Removes file from index.
        *
        * @param {string} index Index name.
        * @param {FileInfo} File info.
        */
       removeFile: function(index, fileInfo) {
-        console.log('echo');
+        throw "Not yet implemented";
+      },
+
+      /**
+       * Searches the index using the given query.
+       *
+       * @param {string} index Index name.
+       * @param {string} query Search query.
+       */
+      search: function(index, query) {
+        // curl "localhost:9200/_search?pretty=true" -d '{
+        //   "fields" : ["title"],
+        //   "query" : {
+        //     "query_string" : {
+        //       "query" : "amplifier"
+        //     }
+        //   },
+        //   "highlight" : {
+        //     "fields" : {
+        //       "file" : {}
+        //     }
+        //   }
+        // }'
+
+        var data = {
+          fields: ["title"],
+          query: {
+            query_string: {
+              query: "amplifier"
+            }
+          },
+          highlight: {
+            fields: {
+              file: {}
+            }
+          }
+        };
+
+        var cmd = "'{0}/_search?pretty=true' -d '{1}'".format(
+          ES.server(),
+          JSON.stringify(data)
+        );
+
+        return executeCmd(cmd);
       },
     },
   });
-
-  // console.log(ES.index.addFile({
-  //   source: "asdf4 4t34tq4aa 34 43 q4#44^6754^5"
-  // }));
 }

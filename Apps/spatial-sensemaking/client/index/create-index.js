@@ -1,4 +1,29 @@
 if (Meteor.isClient) {
+
+  var logResult = function(err, result) {
+    if (err) {
+      console.error(err);
+    }
+    else {
+
+      try {
+        var message = JSON.parse(result);
+
+        if (message.error) {
+          console.log(message.error)
+        }
+        else {
+          console.log(result);
+        }
+      }
+      catch (e) {
+        console.error(e);
+      }
+
+      console.log(result);
+    }
+  };
+
   Template.createIndex.events({
     'submit form': function(e, tmpl) {
       e.preventDefault();
@@ -19,12 +44,13 @@ if (Meteor.isClient) {
         // Read file into memory.
         FileInfo.read(file, function(err, file) {
 
-          Meteor.call('addDocumentToIndex', file, function(err, result) {
+          Meteor.call('addAttachmentToIndex', "test", file, function(err, result) {
 
             if (err) {
               throw err;
             }
             else {
+              logResult(err, result);
               form.reset();
             }
           });
@@ -36,18 +62,24 @@ if (Meteor.isClient) {
 
       var index = tmpl.$('#index-name').val();
 
-      Meteor.call("createIndex", index, function(err, result) {
-
-      });
+      Meteor.call("createIndex", index, logResult);
     },
 
     'click #index-delete': function(e, tmpl) {
 
       var index = tmpl.$('#index-name').val();
 
-      Meteor.call("deleteIndex", index, function(err, result) {
+      Meteor.call("deleteIndex", index, logResult);
+    },
 
-      });
+    'click #index-attachments-enabled': function(e, tmpl) {
+
+      var index = tmpl.$('#index-name').val();
+      var enabled = tmpl.$('#index-attachments-enabled').prop('checked');
+
+      console.log(enabled);
+
+      Meteor.call("enableAttachmentsForIndex", index, enabled, logResult);
     },
   });
 }

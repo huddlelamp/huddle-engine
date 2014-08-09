@@ -3,6 +3,10 @@ Router.map(function(){
     path: '/create-index'
   });
 
+  this.route('searchIndex', {
+    path: '/search-index'
+  });
+
   this.route('home', {
     path: '*'
   });
