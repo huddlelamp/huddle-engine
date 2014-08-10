@@ -40,7 +40,7 @@ if (Meteor.isClient) {
         try {
           var message = JSON.parse(result);
 
-          // console.log(message);
+          console.log(message);
 
           var indices = [];
           for (var name in message.indices) {
@@ -61,29 +61,29 @@ if (Meteor.isClient) {
   };
 
   ///////////////////////////////////////////////
-  // TEMPLATE 'index'
+  // TEMPLATE 'elasticSearchAdmin'
   ///////////////////////////////////////////////
 
   /**
-   * Created function for template 'index'.
+   * Created function for template 'elasticSearchAdmin'.
    */
-  Template.index.created = function() {
+  Template.elasticSearchAdmin.created = function() {
     refreshIndices();
   };
 
   /**
-   * Helpers for template 'index'.
+   * Helpers for template 'elasticSearchAdmin'.
    */
-  Template.index.helpers({
+  Template.elasticSearchAdmin.helpers({
     indices: function() {
       return Session.get("indices") || [];
     },
   });
 
   /**
-   * Events for template 'index'.
+   * Events for template 'elasticSearchAdmin'.
    */
-  Template.index.events({
+  Template.elasticSearchAdmin.events({
 
     'click #index-create': function(e, tmpl) {
       var $indexName = tmpl.$('#index-name');
@@ -129,13 +129,13 @@ if (Meteor.isClient) {
   });
 
   ///////////////////////////////////////////////
-  // TEMPLATE 'indexDeleteModal'
+  // TEMPLATE 'elasticSearchAdminDeleteIndexModal'
   ///////////////////////////////////////////////
 
   /**
-   * Helpers for template 'indexDeleteModal'.
+   * Helpers for template 'elasticSearchAdminDeleteIndexModal'.
    */
-  Template.indexDeleteModal.helpers({
+  Template.elasticSearchAdminDeleteIndexModal.helpers({
   	name: function() {
   		return this.name;
   	},
@@ -145,9 +145,9 @@ if (Meteor.isClient) {
   });
 
   /**
-   * Events for template 'indexDeleteModal'.
+   * Events for template 'elasticSearchAdminDeleteIndexModal'.
    */
-  Template.indexDeleteModal.events({
+  Template.elasticSearchAdminDeleteIndexModal.events({
   	'click .btn-index-delete': function(e, tmpl) {
 
       Meteor.call('deleteIndex', this.name, function(error) {
@@ -167,13 +167,13 @@ if (Meteor.isClient) {
   });
 
   ///////////////////////////////////////////////
-  // TEMPLATE 'indexAddDocumentsModal'
+  // TEMPLATE 'elasticSearchAdminAddDocumentsToIndexModal'
   ///////////////////////////////////////////////
 
   /**
-   * Helpers for template 'indexAddDocumentsModal'.
+   * Helpers for template 'elasticSearchAdminAddDocumentsToIndexModal'.
    */
-  Template.indexAddDocumentsModal.helpers({
+  Template.elasticSearchAdminAddDocumentsToIndexModal.helpers({
     name: function() {
       return this.name;
     },
@@ -183,9 +183,9 @@ if (Meteor.isClient) {
   });
 
   /**
-   * Events for template 'indexAddDocumentsModal'.
+   * Events for template 'elasticSearchAdminAddDocumentsToIndexModal'.
    */
-  Template.indexAddDocumentsModal.events({
+  Template.elasticSearchAdminAddDocumentsToIndexModal.events({
 
     'click .btn-add-documents': function(e, tmpl) {
       e.preventDefault();

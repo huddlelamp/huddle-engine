@@ -5,7 +5,7 @@
       "bootstrap-3": {},
       "elasticsearch": {},
       "iron-router": {},
-      "easy-search": {}
+      "fancybox": {}
     },
     "packages": {
       "bootstrap-3": {
@@ -23,10 +23,10 @@
         "tag": "v0.8.2",
         "commit": "05415a8891ea87a00fb1e2388585f2ca5a38e0da"
       },
-      "easy-search": {
-        "git": "https://github.com/matteodem/meteor-easy-search.git",
-        "tag": "v1.0.3",
-        "commit": "3d8918724bb25608c0cd58387aa1cb6ab091cd53"
+      "fancybox": {
+        "git": "https://github.com/matteodem/meteor-fancybox.git",
+        "tag": "v0.5.0",
+        "commit": "0dee721f3655f8b40fd89ab733fff44642bb5e79"
       },
       "log": {
         "git": "https://github.com/andrewreedy/meteor-log.git",

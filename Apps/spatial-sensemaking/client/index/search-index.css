@@ -1,0 +1,12 @@
+.document-result {
+  margin-top: 40px;
+}
+
+.document-highlight em {
+  background-color: yellow;
+  font-style: normal;
+}
+
+/*.media {
+  top: 60px;
+}*/

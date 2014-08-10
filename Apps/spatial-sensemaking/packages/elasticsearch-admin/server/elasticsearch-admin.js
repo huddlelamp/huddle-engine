@@ -27,19 +27,14 @@ if (Meteor.isServer) {
   // Required to send async function calls sync to clients.
   var Future = Npm.require('fibers/future');
 
-  var curl = function(cmd, callback) {
-    var bash = "curl " + cmd;
-
-    console.log(bash);
-
+  var exec = function(cmd, callback) {
     ChildProcess.execFile(
       '/bin/bash',
-      ['-c', (bash)],
+      ['-c', (cmd)],
       {
         timeout: REQUEST_TIMEOUT,
         maxBuffer: MAX_BUFFER
       }, function (error, stdout, stderr) {
-
         if (error) {
           if (typeof callback == 'function')
             callback(error, undefined);
@@ -49,6 +44,11 @@ if (Meteor.isServer) {
             callback(undefined, stdout);
         }
       });
+  };
+
+  var curl = function(cmd, callback) {
+    var bash = "curl " + cmd;
+    exec(bash, callback);
   };
 
   var executeCmd = function(cmd) {
@@ -71,7 +71,7 @@ if (Meteor.isServer) {
   _.extend(ES, {
 
     protocol: "http",
-    host: "localhost",
+    host: "merkur184.inf.uni-konstanz.de",
     port: 9200,
     server: function() {
       var url = ES.host + ":" + ES.port;
@@ -82,6 +82,21 @@ if (Meteor.isServer) {
       return url;
     },
     attachmentName: "attachment",
+
+    startServer: function() {
+      throw "Not yet implemented";
+
+      exec("elasticsearch", function(err, result) {
+        if (err) {
+          console.error(err);
+        }
+        else {
+          console.log(result);
+        }
+      });
+
+      console.log("start server");
+    },
 
     index: {
 
@@ -115,23 +130,49 @@ if (Meteor.isServer) {
        * @param {string} index Index name.
        */
       delete: function(index) {
-        var cmd = "-X DELETE '{0}/{1}/'".format(
+        var future = new Future();
+
+        var url = "{0}/{1}/".format(
           ES.server(),
           index
         );
 
-        return executeCmd(cmd);
+        HTTP.del(url, function(err, result) {
+          if (err) {
+            console.error(err);
+            future.return(err);
+          }
+          else {
+            future.return(JSON.stringify(result.data));
+          }
+        });
+
+        return future.wait();
       },
 
       /**
        * Returns the index statistics.
        */
       stats: function() {
-        var cmd = "'{0}/_stats'".format(
+        var future = new Future();
+
+        var url = "{0}/_stats".format(
           ES.server()
         );
 
-        return executeCmd(cmd);
+        console.log(url);
+
+        HTTP.get(url, function(err, result) {
+          if (err) {
+            console.error(err);
+            future.return(err);
+          }
+          else {
+            future.return(JSON.stringify(result.data));
+          }
+        });
+
+        return future.wait();
       },
 
       /**
@@ -193,14 +234,36 @@ if (Meteor.isServer) {
 
         // console.log(JSON.stringify(data));
 
-        var cmd = "-X POST '{0}/{1}/{2}/' -d '{3}'".format(
+        // var cmd = "-X POST '{0}/{1}/{2}/' -d '{3}'".format(
+        //   ES.server(),
+        //   index,
+        //   ES.attachmentName,
+        //   JSON.stringify(data)
+        // );
+        //
+        // return executeCmd(cmd);
+
+        var future = new Future();
+
+        var url = "{0}/{1}/{2}/".format(
           ES.server(),
           index,
-          ES.attachmentName,
-          JSON.stringify(data)
+          ES.attachmentName
         );
 
-        return executeCmd(cmd);
+        HTTP.post(url, {
+          data: data
+        }, function(err, result) {
+          if (err) {
+            console.error(err);
+            future.return(err);
+          }
+          else {
+            future.return(JSON.stringify(result.data));
+          }
+        });
+
+        return future.wait();
       },
 
       /**
@@ -236,6 +299,8 @@ if (Meteor.isServer) {
 
         var data = {
           fields: [],
+          from: 0,
+          size: 500,
           query: {
             match: {
               file: query

@@ -1,0 +1,9 @@
+{
+  "public": {
+    "es_protocol": "http",
+    "es_host": "localhost",
+    "es_port": 9200,
+    "es_index": "egon",
+    "es_attachment_path": "attachment"
+  }
+}

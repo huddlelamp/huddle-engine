@@ -11,5 +11,6 @@ elasticsearch
 iron-router
 underscore
 file-info
-elasticsearch-index
-easy-search
+elasticsearch-admin
+http
+fancybox

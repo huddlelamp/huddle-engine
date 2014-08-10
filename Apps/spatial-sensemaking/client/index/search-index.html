@@ -1,26 +1,42 @@
 <template name="searchIndex">
-  {{> esAutosuggest index="tags" placeholder="Add tags"}}
-
   <div class="container">
+
+    <div class="page-header">
+      <h1>Index <small>Elastic Search Indices</small></h1>
+    </div>
+
     <div class="row">
-      <div class="input-group">
-        <input id="search-index" class="form-control" type="text" placeholder="Index name" />
+      <div class="col-md-10 col-md-offset-1 input-group">
         <input id="search-query" class="form-control" type="text" placeholder="Search..." />
         <span class="input-group-btn">
-          <button type="button" id="broadcast-btn" class="btn btn-primary">
+          <button type="button" id="search-btn" class="btn btn-primary">
             <span class="glyphicon glyphicon-search"></span> Search</button>
         </span>
       </div>
     </div>
 
     <div class="row">
-      {{#each hits}}
-        <div style="margin: 10px; border: 1px solid black;">
-          {{#each this}}
-            <div style="margin: 10px; background-color: gray;">{{this}}</div>
-          {{/each}}
-        </div>
-      {{/each}}
+      <div class="col-md-10 col-md-offset-1 input-group">
+        {{#with hits}}
+          {{length}} results
+        {{/with}}
+      </div>
     </div>
+
+    {{#each hits}}
+      <div class="row document-result">
+        <div class="col-md-10 col-md-offset-1 media">
+          <a class="pull-left hit" href="#">
+            <img class="media-object" src="../../images/yoda.png" alt="May the 4th be with you ;)">
+          </a>
+          <div class="media-body">
+            <h4 class="media-heading">May the 4th be with you ;)</h4>
+            {{#each highlight.file}}
+              <div class="document-highlight">{{{this}}}</div>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+    {{/each}}
   </div>
 </template>

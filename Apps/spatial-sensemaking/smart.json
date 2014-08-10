@@ -3,6 +3,6 @@
     "bootstrap-3": {},
     "elasticsearch": {},
     "iron-router": {},
-    "easy-search": {}
+    "fancybox": {}
   }
 }

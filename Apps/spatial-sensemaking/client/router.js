@@ -1,18 +1,20 @@
-Router.map(function(){
+if (Meteor.isClient) {
+  Router.map(function() {
 
-  this.route('index', {
-    path: '/index'
-  });
+    this.route('indexAdmin', {
+      path: '/admin/index'
+    });
 
-  this.route('createIndex', {
-    path: '/create-index'
-  });
+    this.route('createIndex', {
+      path: '/create-index'
+    });
 
-  this.route('searchIndex', {
-    path: '/search-index'
-  });
+    this.route('searchIndex', {
+      path: '/search-index'
+    });
 
-  this.route('home', {
-    path: '*'
+    this.route('home', {
+      path: '*'
+    });
   });
-});
+}
