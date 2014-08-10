@@ -10,7 +10,10 @@ if (Meteor.isClient) {
         var message = JSON.parse(result);
 
         if (message.error) {
-          console.log(message.error)
+          console.error(message.error)
+        }
+        else if (message.acknowledged) {
+          console.log(message.acknowledged);
         }
         else {
           console.log(result);
@@ -19,14 +22,14 @@ if (Meteor.isClient) {
       catch (e) {
         console.error(e);
       }
-
-      console.log(result);
     }
   };
 
   Template.createIndex.events({
     'submit form': function(e, tmpl) {
       e.preventDefault();
+
+      var indexName = tmpl.$('#index-name').val();
 
       // Grab the file input control so we can get access to the selected files.
       var fileInput = tmpl.find('input[type=file]');
@@ -44,10 +47,10 @@ if (Meteor.isClient) {
         // Read file into memory.
         FileInfo.read(file, function(err, file) {
 
-          Meteor.call('addAttachmentToIndex', "test", file, function(err, result) {
+          Meteor.call('addAttachmentToIndex', indexName, file, function(err, result) {
 
             if (err) {
-              throw err;
+              Errors.throw(err.reason);
             }
             else {
               logResult(err, result);

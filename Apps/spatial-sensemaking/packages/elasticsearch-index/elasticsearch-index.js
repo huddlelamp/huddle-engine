@@ -30,7 +30,7 @@ if (Meteor.isServer) {
   var curl = function(cmd, callback) {
     var bash = "curl " + cmd;
 
-    // console.log(bash);
+    console.log(bash);
 
     ChildProcess.execFile(
       '/bin/bash',
@@ -70,7 +70,7 @@ if (Meteor.isServer) {
 
   _.extend(ES, {
 
-    protocol: null,
+    protocol: "http",
     host: "localhost",
     port: 9200,
     server: function() {
@@ -181,14 +181,17 @@ if (Meteor.isServer) {
         if (file == null)
           throw "file is empty";
 
+        if (file.source)
+          console.log('file has source');
+
         var buffer = new Buffer(file.source);
         var base64 = buffer.toString('base64');
-
-        // console.log(base64);
 
         var data = {
           file: base64
         };
+
+        // console.log(JSON.stringify(data));
 
         var cmd = "-X POST '{0}/{1}/{2}/' -d '{3}'".format(
           ES.server(),
@@ -232,10 +235,10 @@ if (Meteor.isServer) {
         // }'
 
         var data = {
-          fields: ["title"],
+          fields: [],
           query: {
-            query_string: {
-              query: "amplifier"
+            match: {
+              file: query
             }
           },
           highlight: {
@@ -245,10 +248,13 @@ if (Meteor.isServer) {
           }
         };
 
-        var cmd = "'{0}/_search?pretty=true' -d '{1}'".format(
+        var cmd = "-X GET '{0}/{1}/_search?pretty=true' -d '{2}'".format(
           ES.server(),
+          index,
           JSON.stringify(data)
         );
+
+        // console.log(cmd);
 
         return executeCmd(cmd);
       },
