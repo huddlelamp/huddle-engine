@@ -1,9 +1,11 @@
 {
   "public": {
-    "es_protocol": "http",
-    "es_host": "localhost",
-    "es_port": 9200,
-    "es_index": "egon",
-    "es_attachment_path": "attachment"
+    "elasticSearch": {
+      "protocol": "http",
+      "host": "192.168.2.110",
+      "port": 9200,
+      "index": "egon",
+      "attachmentsPath": "attachment"
+    }
   }
 }

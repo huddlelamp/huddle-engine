@@ -1,35 +1,28 @@
 if (Meteor.isClient) {
 
-  var getESUrl = function() {
-
-    var s = Meteor.settings.public;
-
-    var protocol = s.es_protocol;
-    var host = s.es_host;
-    var port = s.es_port;
-    var index = s.es_index;
-    var attachmentPath = s.es_attachment_path;
-
-    var url = host + ":" + port + "/" + index + "/" + attachmentPath + "/";
-
-    if (protocol) {
-      url = protocol + "://" + url;
-    }
-    return url;
-  };
-
   var search = function(query) {
 
-    var indexName = Meteor.settings.public.es_index;
-
-    Meteor.call('searchIndex', indexName, query, function(err, result) {
+    ElasticSearch.query({
+      fields: [],
+      from: 0,
+      size: 20,
+      query: {
+        match: {
+          file: query
+        }
+      },
+      highlight: {
+        fields: {
+          file: {}
+        }
+      }
+    }, function(err, result) {
       if (err) {
         console.error(err);
       }
       else {
-        var res = JSON.parse(result);
-        var hits = res.hits.hits;
-        Session.set("hits", hits);
+        var hits = result.data.hits;
+        Session.set("hits", hits.hits);
       }
     });
   };
@@ -54,11 +47,8 @@ if (Meteor.isClient) {
     },
 
     'click .hit': function(e, tmpl) {
-      var url = getESUrl();
 
-      HTTP.get(url + this._id, {
-        timeout: 30000
-      }, function(err, result) {
+      ElasticSearch.get(this._id, function(err, result) {
         if (err) {
           console.error(err);
         }

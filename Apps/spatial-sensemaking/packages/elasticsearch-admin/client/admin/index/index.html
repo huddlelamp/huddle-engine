@@ -15,50 +15,64 @@
     </div>
   </div>
 
-  <!-- <div class="row accounts-search">
-      <div class="col-sm-offset-4 col-sm-8 col-md-offset-6 col-md-6 col-lg-offset-8 col-lg-4">
-          <div class="input-group">
-              <input type="text" class="form-control search-input-filter" value="{{searchFilter}}">
-              <span class="input-group-btn">
-                  <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
-              </span>
-          </div>
-      </div>
-  </div> -->
-
   <div class="row">
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Name</th>
-          <th>Attachments</th>
-          <th>Documents</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each indices}}
-          <tr>
-            <td>
-              <span data-toggle="modal" href="#index-delete-modal" class="glyphicon glyphicon-trash clickable index-delete"></span>
-              <!-- <span data-toggle="modal" href="#infoaccount" class="glyphicon glyphicon-info-sign clickable"></span> -->
-            </td>
-            <td>{{name}}</td>
-            <td>
-              <input class="index-attachments-enabled" index-name="{{name}}" type="checkbox" />
-            </td>
-            <td>
-              <span data-toggle="modal" href="#index-add-documents-modal" class="glyphicon glyphicon-plus-sign clickable index-add-documents"></span>
-              {{total.docs.count}}
-            </td>
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
+    {{#elasticSearchAdminTable heading="Indices" footer="Most recent data available." searchable=false}}
+      {{#each indices}}
+        {{> elasticSearchAdminTableRow}}
+      {{/each}}
+    {{/elasticSearchAdminTable}}
   </div>
 
   {{> elasticSearchAdminDeleteIndexModal}}
   {{> elasticSearchAdminAddDocumentsToIndexModal}}
+</template>
+
+<template name="elasticSearchAdminTable">
+  <h2>{{this.heading}}</h2>
+
+  {{#if this.searchable}}
+    <div class="row table-search">
+        <div class="col-sm-offset-4 col-sm-8 col-md-offset-6 col-md-6 col-lg-offset-8 col-lg-4">
+            <div class="input-group">
+                <input type="text" class="form-control search-input-filter" value="{{searchFilter}}">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
+                </span>
+            </div>
+        </div>
+    </div>
+  {{/if}}
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Name</th>
+        <th>Attachments</th>
+        <th>Documents</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{> UI.contentBlock}}
+    </tbody>
+  </table>
+  <p>{{this.footer}}</p>
+</template>
+
+<template name="elasticSearchAdminTableRow">
+  <tr>
+    <td>
+      <span data-toggle="modal" href="#index-delete-modal" class="glyphicon glyphicon-trash clickable index-delete"></span>
+    </td>
+    <td>{{name}}</td>
+    <td>
+      <input class="index-attachments-enabled" index-name="{{name}}" type="checkbox" />
+    </td>
+    <td>
+      <span data-toggle="modal" href="#index-add-documents-modal" class="glyphicon glyphicon-plus-sign clickable index-add-documents"></span>
+      {{total.docs.count}}
+    </td>
+  </tr>
 </template>
 
 <template name="elasticSearchAdminDeleteIndexModal">

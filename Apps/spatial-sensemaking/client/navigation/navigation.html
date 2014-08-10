@@ -1,0 +1,48 @@
+<template name="navigation">
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <a class="navbar-brand" href="/">Spatial Sensemaking</a>
+      </div>
+
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li class="{{active 'searchIndex'}}">
+            <a href="{{pathFor 'searchIndex'}}">
+              <span class="glyphicon glyphicon-search"></span> Search
+            </a>
+          </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-right">
+          {{#if isUser}}
+          <li class="{{active 'task'}}">
+            <a href="{{pathFor 'task'}}">
+              <span class="glyphicon glyphicon-tasks"></span> Task</a>
+          </li>
+          {{/if}}
+          {{#if isAdminUser}}
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li class="{{active 'accounts'}}">
+                  <a href="{{pathFor 'accounts'}}">
+                    <span class="glyphicon glyphicon-user"></span> Accounts
+                  </a>
+                </li>
+                <li class="{{active 'index'}}">
+                  <a href="{{pathFor 'index'}}">
+                    <span class="glyphicon glyphicon-list-alt"></span> Index
+                  </a>
+                </li>
+              </ul>
+            </li>
+          {{/if}}
+          {{> loginButtons}}
+        </ul>
+      </div>
+    </div>
+  </nav>
+</template>

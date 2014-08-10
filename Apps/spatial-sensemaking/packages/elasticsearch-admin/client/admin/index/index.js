@@ -1,46 +1,17 @@
 if (Meteor.isClient) {
 
-  var logResult = function(err, result) {
-    if (err) {
-      console.error(err);
-    }
-    else {
-
-      try {
-        var message = JSON.parse(result);
-
-        if (message.error) {
-          console.error(message.error)
-        }
-        else if (message.acknowledged) {
-          // console.log(message.acknowledged);
-        }
-        else {
-          console.log(result);
-        }
-      }
-      catch (e) {
-        console.error(e);
-      }
-    }
-
-    refreshIndices();
-  };
-
   /**
    * Refreshes indices and reactively updates the user interface.
    */
   var refreshIndices = function() {
-    Meteor.call('statsIndex', function(err, result) {
+    ElasticSearch.stats(function(err, result) {
 
       if (err) {
         console.error(err);
       }
       else {
         try {
-          var message = JSON.parse(result);
-
-          console.log(message);
+          var message = result.data;
 
           var indices = [];
           for (var name in message.indices) {
@@ -88,16 +59,22 @@ if (Meteor.isClient) {
     'click #index-create': function(e, tmpl) {
       var $indexName = tmpl.$('#index-name');
       var index = $indexName.val();
-      Meteor.call("createIndex", index, logResult);
-      $indexName.val("");
+
+      ElasticSearch.createIndex(index, function(err, result) {
+        refreshIndices();
+        $indexName.val("");
+      });
     },
 
     'keyup #index-name': function(e, tmpl) {
       if (e.keyCode == 13) {
         var $indexName = tmpl.$('#index-name');
         var index = $indexName.val();
-        Meteor.call("createIndex", index, logResult);
-        $indexName.val("");
+
+        ElasticSearch.createIndex(index, function(err, result) {
+          refreshIndices();
+          $indexName.val("");
+        });
       }
     },
 
@@ -116,7 +93,9 @@ if (Meteor.isClient) {
       var selector = 'input[type=checkbox][index-name="' + indexName + '"]';
       var enabled = tmpl.find(selector).checked;
 
-      Meteor.call("enableAttachmentsForIndex", indexName, enabled, logResult);
+      ElasticSearch.enableAttachments(indexName, function(err, result) {
+        console.log(result);
+      });
     },
 
     'click .index-add-documents': function(e, tmpl) {
@@ -150,19 +129,10 @@ if (Meteor.isClient) {
   Template.elasticSearchAdminDeleteIndexModal.events({
   	'click .btn-index-delete': function(e, tmpl) {
 
-      Meteor.call('deleteIndex', this.name, function(error) {
-  			if (error) {
-  				// optionally use a meteor errors package
-  				if (typeof Errors === "undefined")
-  					Log.error('Error: ' + error.reason);
-  				else {
-  					Errors.throw(error.reason);
-  				}
-  			}
-
+      ElasticSearch.deleteIndex(this.name, function(err, result) {
         refreshIndices();
-  			$("#index-delete-modal").modal("hide");
-  		});
+        $("#index-delete-modal").modal("hide");
+      });
   	},
   });
 
@@ -198,34 +168,24 @@ if (Meteor.isClient) {
       // We'll assign each file in the loop to this variable.
       var file;
 
-      var url = "http://localhost:9200/" + indexName + "/attachment/";
-
-      for (var i = 0; i < fileInput.files.length; i++) {
+      for (var i = fileInput.files.length - 1; i >= 0; i--) {
 
         file = fileInput.files[i];
 
-        // Read file into memory.
-        FileInfo.read(file, function(err, fileInfo) {
-          console.log(fileInfo);
+        ElasticSearch.addAttachment(indexName, file, function(err, result) {
+          if (err) {
+            console.error(err);
+          }
+          else {
+            console.log(result);
+          }
 
-          var data = {
-            file: btoa(fileInfo.source)
-          };
-
-          HTTP.post(url, {
-            data: data
-          }, function(err, result) {
-            if (err) {
-              console.error(err);
-            }
-            else {
-              console.log(result);
-            }
-          });
+          if (i <= 0) {
+            refreshIndices();
+            tmpl.$("#index-add-documents-modal").modal("hide");
+          }
         });
       }
-
-      tmpl.$("#index-add-documents-modal").modal("hide");
     },
   });
 }
