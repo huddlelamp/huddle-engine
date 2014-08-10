@@ -198,23 +198,29 @@ if (Meteor.isClient) {
       // We'll assign each file in the loop to this variable.
       var file;
 
+      var url = "http://localhost:9200/" + indexName + "/attachment/";
+
       for (var i = 0; i < fileInput.files.length; i++) {
 
         file = fileInput.files[i];
 
         // Read file into memory.
-        FileInfo.read(file, function(err, file) {
+        FileInfo.read(file, function(err, fileInfo) {
+          console.log(fileInfo);
 
-          Meteor.call('addAttachmentToIndex', indexName, file, function(err, result) {
+          var data = {
+            file: btoa(fileInfo.source)
+          };
 
+          HTTP.post(url, {
+            data: data
+          }, function(err, result) {
             if (err) {
               console.error(err);
             }
             else {
-              logResult(err, result);
-              $(fileInput).val("");
+              console.log(result);
             }
-            refreshIndices();
           });
         });
       }
