@@ -62,15 +62,18 @@
 <template name="elasticSearchAdminTableRow">
   <tr>
     <td>
+      <input type="radio" name="active-index" class="active-index" value="{{name}}" checked="{{isIndexActive name}}" />
       <span data-toggle="modal" href="#index-delete-modal" class="glyphicon glyphicon-trash clickable index-delete"></span>
     </td>
     <td>{{name}}</td>
     <td>
-      <input class="index-attachments-enabled" index-name="{{name}}" type="checkbox" />
+      <input class="index-attachments-enabled" index-name="{{name}}" type="checkbox" checked="{{isAttachmentsEnabled name}}" />
     </td>
     <td>
-      <span data-toggle="modal" href="#index-add-documents-modal" class="glyphicon glyphicon-plus-sign clickable index-add-documents"></span>
-      {{total.docs.count}}
+      {{#if isAttachmentsEnabled name}}
+        <span data-toggle="modal" href="#index-add-documents-modal" class="glyphicon glyphicon-plus-sign clickable index-add-documents"></span>
+        {{total.docs.count}}
+      {{/if}}
     </td>
   </tr>
 </template>

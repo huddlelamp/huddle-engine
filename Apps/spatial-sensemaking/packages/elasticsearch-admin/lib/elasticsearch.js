@@ -87,34 +87,38 @@ if (Meteor.isClient) {
     };
 
     /**
-     * Enables attachments for index.
+     * Puts a mapping to index.
+     *
+     * @param {string} name Index name.
+     * @param {Object} mapping Mapping.
+     * @param {Function} callback Callback function(err, result) { }
+     */
+    this.putMapping = function(name, mapping, callback) {
+      var url = "{0}/{1}/{2}/_mapping".format(getBaseUrl(), name, this.options.attachmentsPath);
+      HTTP.put(url, { data: mapping }, callback);
+    }
+
+    /**
+     * Deletes a mapping from index.
+     *
+     * @param {string} name Index name.
+     * @param {string} mapping Mapping name.
+     * @param {Function} callback Callback function(err, result) { }
+     */
+    this.deleteMapping = function(name, callback) {
+      var url = "{0}/{1}/{2}/_mapping".format(getBaseUrl(), name, this.options.attachmentsPath);
+      HTTP.del(url, callback);
+    };
+
+    /**
+     * Returns the mapping for an index.
      *
      * @param {string} name Index name.
      * @param {Function} callback Callback function(err, result) { }
      */
-    this.enableAttachments = function(name, callback) {
-      var data = {
-        attachment: {
-          properties: {
-            file: {
-              type: "attachment",
-              fields: {
-                title: {
-                  store: "yes"
-                },
-                file: {
-                  term_vector: "with_positions_offsets",
-                  store: "yes"
-                }
-              }
-            }
-          }
-        }
-      };
-
+    this.getMapping = function(name, callback) {
       var url = "{0}/{1}/{2}/_mapping".format(getBaseUrl(), name, this.options.attachmentsPath);
-
-      HTTP.put(url, { data: data }, callback);
+      HTTP.get(url, callback);
     };
 
     /**
@@ -125,8 +129,7 @@ if (Meteor.isClient) {
      * @param {Function} callback Callback function(err, result) { }
      */
     this.addAttachment = function(name, attachment, callback) {
-
-      var url = "{0}/{1}/{2}/".format(getBaseUrl(), name, this.options.attachmentsPath);
+      var url = "{0}/{1}/{2}".format(getBaseUrl(), name, this.options.attachmentsPath);
 
       // Read file into memory.
       FileInfo.read(attachment, function(err, file) {
@@ -140,6 +143,9 @@ if (Meteor.isClient) {
         }
 
         var data = {
+          _name: attachment.name,
+          _content_type: attachment.type,
+          _content_length: attachment.size,
           file: btoa(source)
         };
 
@@ -156,7 +162,9 @@ if (Meteor.isClient) {
      * @param {Function} callback Callback function(err, result) { }
      */
     this.query = function(query, callback) {
-      var url = "{0}/{1}/_search?pretty=true".format(getBaseUrl(), this.options.index);
+      var index = IndexSettings.getActiveIndex();
+
+      var url = "{0}/{1}/_search?pretty=true".format(getBaseUrl(), index);
 
       HTTP.post(url, { data: query }, callback);
     };
@@ -168,7 +176,9 @@ if (Meteor.isClient) {
      * @param {Function} callback Callback function(err, result) { }
      */
     this.get = function(id, callback) {
-      var url = "{0}/{1}/{2}/{3}".format(getBaseUrl(), this.options.index, this.options.attachmentsPath, id);
+      var index = IndexSettings.getActiveIndex();
+
+      var url = "{0}/{1}/{2}/{3}".format(getBaseUrl(), index, this.options.attachmentsPath, id);
 
       HTTP.get(url, callback);
     };

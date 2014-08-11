@@ -31,6 +31,13 @@ if (Meteor.isClient) {
     hits: function() {
       return Session.get("hits") || [];
     },
+
+    urlToDocument: function(id) {
+      var s = Meteor.settings.public.elasticSearch;
+
+      var url = s.protocol + "://" + s.host + ":" + s.port + "/" + IndexSettings.getActiveIndex() + "/" + s.attachmentsPath + "/" + id;
+      return url;
+    },
   });
 
   Template.searchIndex.events({

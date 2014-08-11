@@ -59,6 +59,12 @@ if (Meteor.isClient) {
         Meteor.setTimeout(function() {
           refreshIndices();
           tmpl.$('#index-add-documents-modal').modal('hide');
+          tmpl.$('#index-add-documents-progressbar').css({
+            width: '0%'
+          }).
+          html('');
+          var $fileInput = tmpl.$('input[type=file]');
+          $fileInput.val("");
         }, 1000);
       }
     });
@@ -119,18 +125,6 @@ if (Meteor.isClient) {
       Session.set('indexInScope', this);
     },
 
-    'click .index-attachments-enabled': function(e, tmpl) {
-
-      var indexName = this.name;
-
-      var selector = 'input[type=checkbox][index-name="' + indexName + '"]';
-      var enabled = tmpl.find(selector).checked;
-
-      ElasticSearch.enableAttachments(indexName, function(err, result) {
-        console.log(result);
-      });
-    },
-
     'click .index-add-documents': function(e, tmpl) {
 		  Session.set('indexInScope', this);
     },
@@ -138,6 +132,90 @@ if (Meteor.isClient) {
     'click .glyphicon-pencil': function(e, tmpl) {
 	    Session.set('indexInScope', this);
     }
+  });
+
+  ///////////////////////////////////////////////
+  // TEMPLATE 'elasticSearchAdminTableRow'
+  ///////////////////////////////////////////////
+
+  /**
+   * Helpers for template 'elasticSearchAdminTableRow'.
+   */
+  Template.elasticSearchAdminTableRow.helpers({
+    'isIndexActive': function(name) {
+      var activeIndex = IndexSettings.getActiveIndex();
+      return activeIndex === name;
+    },
+
+    'isAttachmentsEnabled': function(name) {
+      ElasticSearch.getMapping(name, function(err, result) {
+        var mapping = result.data;
+
+        var isAttachmentsEnabled = false;
+        if (mapping.hasOwnProperty(name)) {
+          var m = mapping[name];
+          isAttachmentsEnabled = (m.mappings && m.mappings.attachment);
+        }
+
+        Session.set(name + "Mapping", isAttachmentsEnabled);
+      });
+      return Session.get(name + "Mapping");
+    },
+  });
+
+  /**
+   * Events for template 'elasticSearchAdminTableRow'.
+   */
+  Template.elasticSearchAdminTableRow.events({
+    'click .active-index': function(e, tmpl) {
+      IndexSettings.setActiveIndex(this.name);
+    },
+
+    'click .index-attachments-enabled': function(e, tmpl) {
+      var indexName = this.name;
+
+      var selector = 'input[type=checkbox][index-name="' + indexName + '"]';
+      var enabled = tmpl.find(selector).checked;
+
+      if (enabled) {
+        ElasticSearch.putMapping(indexName, {
+          attachment: {
+            properties: {
+              file: {
+                type: "attachment",
+                fields: {
+                  file: { term_vector: "with_positions_offsets", store: "yes" },
+                  title: { store: "yes" },
+                  date: { store: "yes" },
+                  author: { store: "yes" },
+                  keywords: { store: "yes" },
+                  content_type: { store: "yes" },
+                  content_length: { store: "yes" },
+                  language: { store: "yes" },
+                }
+              }
+            }
+          }
+        }, function(err, result) {
+          if (err) {
+            console.log(err);
+          }
+          else {
+            Session.set(indexName + "Mapping", true);
+          }
+        });
+      }
+      else {
+        ElasticSearch.deleteMapping(indexName, function(err, result) {
+          if (err) {
+            console.log(err);
+          }
+          else {
+            Session.set(indexName + "Mapping", false);
+          }
+        });
+      }
+    },
   });
 
   ///////////////////////////////////////////////

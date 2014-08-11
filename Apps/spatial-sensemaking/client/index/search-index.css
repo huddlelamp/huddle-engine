@@ -2,6 +2,11 @@
   margin-top: 40px;
 }
 
+.document-highlight {
+  border: 1px solid black;
+  margin: 5px;
+}
+
 .document-highlight em {
   background-color: yellow;
   font-style: normal;

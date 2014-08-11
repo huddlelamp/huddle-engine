@@ -30,7 +30,7 @@
             <img class="media-object" src="../../images/yoda.png" alt="May the 4th be with you ;)">
           </a>
           <div class="media-body">
-            <h4 class="media-heading">May the 4th be with you ;)</h4>
+            <h4 class="media-heading">Document ID: {{_id}} (<a href="{{urlToDocument _id}}" target="_blank">Raw Document in Index</a>)</h4>
             {{#each highlight.file}}
               <div class="document-highlight">{{{this}}}</div>
             {{/each}}
