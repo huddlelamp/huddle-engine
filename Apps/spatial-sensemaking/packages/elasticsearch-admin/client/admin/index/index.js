@@ -1,6 +1,20 @@
 if (Meteor.isClient) {
 
   /**
+   * Check if index server is alive.
+   */
+  // Meteor.setInterval(function() {
+  //   ElasticSearch.ping(function(err, result) {
+  //     if (err) {
+  //       Session.set("index-server-status", "label-danger");
+  //     }
+  //     else {
+  //       Session.set("index-server-status", "label-success");
+  //     }
+  //   });
+  // }, 1000);
+
+  /**
    * Refreshes indices and reactively updates the user interface.
    */
   var refreshIndices = function() {
@@ -87,6 +101,10 @@ if (Meteor.isClient) {
   Template.elasticSearchAdmin.helpers({
     indices: function() {
       return Session.get("indices") || [];
+    },
+
+    pingIndexServer: function() {
+      return Session.get("index-server-status");
     },
   });
 

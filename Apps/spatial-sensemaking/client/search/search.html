@@ -15,26 +15,25 @@
       </div>
     </div>
 
-    <div class="row">
+    <div class="row result-info">
       <div class="col-md-10 col-md-offset-1 input-group">
-        {{#with hits}}
-          {{length}} results
+        {{#with results}}
+          {{hits.total}} results ({{toSeconds took}} seconds)
         {{/with}}
       </div>
     </div>
 
-    {{#each hits}}
+    {{#each results.hits.hits}}
       <div class="row document-result">
-        <div class="col-md-10 col-md-offset-1 media">
-          <a class="pull-left hit" href="#">
-            <img class="media-object" src="../../images/yoda.png" alt="May the 4th be with you ;)">
-          </a>
-          <div class="media-body">
-            <h4 class="media-heading">Document ID: {{_id}} (<a href="{{urlToDocument _id}}" target="_blank">Raw Document in Index</a>)</h4>
+        <div class="col-md-10 col-md-offset-1">
+          <h4>
+            <a href="#" class="hit">{{_id}}</a> (<a href="{{urlToDocument _id}}" target="_blank">Raw Document in Index</a>)
+          </h4>
+          <ul>
             {{#each highlight.file}}
-              <div class="document-highlight">{{{this}}}</div>
+              <li class="document-highlight">{{{this}}}</li>
             {{/each}}
-          </div>
+          </ul>
         </div>
       </div>
     {{/each}}

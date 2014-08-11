@@ -1,0 +1,27 @@
+.result-info {
+  margin-top: 10px;
+  color: gray;
+  font-size: 0.9em;
+}
+
+.document-result {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.document-highlight {
+  /*border: 1px solid black;*/
+  margin: 5px;
+  font-size: 0.9em;
+}
+
+.document-highlight em {
+  /*background-color: yellow;*/
+  /*color: black;*/
+  font-style: normal;
+  font-weight: bold;
+}
+
+/*.media {
+  top: 60px;
+}*/

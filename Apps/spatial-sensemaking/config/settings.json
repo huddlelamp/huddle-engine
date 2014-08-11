@@ -2,7 +2,7 @@
   "public": {
     "elasticSearch": {
       "protocol": "http",
-      "host": "spatial-sensemaking.proxemicinteractions.org",
+      "host": "localhost",
       "port": 9200,
       "index": "egon",
       "attachmentsPath": "attachment"

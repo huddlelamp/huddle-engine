@@ -34,6 +34,16 @@ if (Meteor.isClient) {
     }.bind(this);
 
     /**
+     * Ping elastic search server.
+     *
+     * @param {Function} callback Callback function(err, result) { }
+     */
+    this.ping = function(callback) {
+      var url = "{0}/?ping".format(getBaseUrl());
+      HTTP.get(url, callback);
+    };
+
+    /**
      * Creates an index.
      *
      * @param {string} name Index name.
@@ -181,10 +191,6 @@ if (Meteor.isClient) {
       var url = "{0}/{1}/{2}/{3}".format(getBaseUrl(), index, this.options.attachmentsPath, id);
 
       HTTP.get(url, callback);
-    };
-
-    this.ping = function() {
-      console.log('ping');
     };
 
     return this;
