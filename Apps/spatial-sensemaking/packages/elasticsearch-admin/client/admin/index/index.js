@@ -31,6 +31,39 @@ if (Meteor.isClient) {
     });
   };
 
+  /**
+   * Adds an attachment to the index.
+   */
+  var addAttachmentToIndex = function(name, files, count, processed, tmpl) {
+    ElasticSearch.addAttachment(name, files[processed], function(err, result) {
+      if (err) {
+        console.error(err);
+      }
+      else {
+        // console.log(result);
+      }
+
+      ++processed;
+      var progress = parseInt((processed / count) * 100);
+
+      tmpl.$('#index-add-documents-progressbar')
+        .css({
+          width: progress + "%"
+        })
+        .html(processed + ' of ' + count + ' files uploaded (' + progress + '%)');
+
+      if (count > processed) {
+        addAttachmentToIndex(name, files, count, processed, tmpl);
+      }
+      else {
+        Meteor.setTimeout(function() {
+          refreshIndices();
+          tmpl.$('#index-add-documents-modal').modal('hide');
+        }, 1000);
+      }
+    });
+  };
+
   ///////////////////////////////////////////////
   // TEMPLATE 'elasticSearchAdmin'
   ///////////////////////////////////////////////
@@ -167,24 +200,12 @@ if (Meteor.isClient) {
 
       // We'll assign each file in the loop to this variable.
       var file;
+      var files = fileInput.files;
+      var count = files.length;
+      var processed = 0;
 
-      for (var i = fileInput.files.length - 1; i >= 0; i--) {
-
-        file = fileInput.files[i];
-
-        ElasticSearch.addAttachment(indexName, file, function(err, result) {
-          if (err) {
-            console.error(err);
-          }
-          else {
-            console.log(result);
-          }
-
-          if (i <= 0) {
-            refreshIndices();
-            tmpl.$("#index-add-documents-modal").modal("hide");
-          }
-        });
+      if (files.length > 0) {
+        addAttachmentToIndex(indexName, files, count, 0, tmpl);
       }
     },
   });
