@@ -34,7 +34,7 @@ if (Meteor.isClient) {
 
         //Check for opening quotes
         if (term.charAt(0) === "'" || term.charAt(0) === '"') {
-          quotesOpen = term.charAt(0);
+          quoteOpen = term.charAt(0);
           term = term.substring(1, term.length);
         } else {
           var entry = {
@@ -52,9 +52,9 @@ if (Meteor.isClient) {
         term += " " + terms[i];
 
         //Check if the phrase ends here
-        if (term.charAt(term.length-1) === quotesOpen) {
+        if (term.charAt(term.length-1) === quoteOpen) {
           term = term.substring(0, term.length-1);
-          quotesOpen = undefined;
+          quoteOpen = undefined;
 
           var phraseEntry = {
             multi_match: {
