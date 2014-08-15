@@ -1,0 +1,12 @@
+<template name="documentPopup">
+
+  <br />
+
+  {{#if starImage}}
+    <img src="/images/{{starImage}}" style="width: 32px;" class="favoritedStar"/><br /><br />
+  {{/if}}
+  
+  {{#if content}}
+    {{{content}}}
+  {{/if}}
+</template>

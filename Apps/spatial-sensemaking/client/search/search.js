@@ -4,71 +4,23 @@ if (Meteor.isClient) {
 
     var SEARCH_FIELDS = ["file^10", "_name"];
 
-    var terms = query.split(" ");
-
     var must = [];
     var must_not = [];
 
-    var term;
-    var quoteOpen;
-    var not = false;
-
-    //Some rather complex code for building queries, but here we go...
-    //We walk over every (space-separated) term. Every term is converted into an
-    //entry usable by elasticsearch. The entries are added to must/must_not, when:
-    //    * A normal term is simply added to the must array
-    //    * A term prefixed by '-' is added to the must_not arrya
-    //    * If a term begins with a quote, it starts a phrase. The term is not added yet
-    //    * The next term ending with a quote ends the phrase. The entire phrase is added 
-    //      to either must or must_not with the type "phrase"
-    for (var i = 0; i < terms.length; i++) {
-      if (quoteOpen === undefined) {
-        term = terms[i];
-        not = false;
-
-        //Check for negation prefix
-        if (term.charAt(0) === '-') {
-          term = term.substring(1, term.length);
-          not = true;
+    //Create an elasticsearch-entry for each term in the query
+    processQuery(query, function(term, isNegated, isPhrase) {
+      var entry = {
+        multi_match: {
+          query: term,
+          fields: SEARCH_FIELDS
         }
+      };
 
-        //Check for opening quotes
-        if (term.charAt(0) === "'" || term.charAt(0) === '"') {
-          quoteOpen = term.charAt(0);
-          term = term.substring(1, term.length);
-        } else {
-          var entry = {
-            multi_match: {
-              query: term,
-              fields: SEARCH_FIELDS
-            }
-          };
+      if (isPhrase) entry.multi_match.type = "phrase";
 
-          if (not)  must_not.push(entry);
-          else      must.push(entry);
-        }
-      } else {
-        //A phrase is still open, add the term to the existing phrase
-        term += " " + terms[i];
-
-        //Check if the phrase ends here
-        if (term.charAt(term.length-1) === quoteOpen) {
-          term = term.substring(0, term.length-1);
-          quoteOpen = undefined;
-
-          var phraseEntry = {
-            multi_match: {
-              query: term,
-              fields: SEARCH_FIELDS,
-              type: "phrase"
-            }
-          };
-
-          if (not)  must_not.push(phraseEntry);
-          else      must.push(phraseEntry);
-        }
-      }
-    }
+      if (isNegated)  must_not.push(entry);
+      else            must.push(entry);
+    });
 
     //elasticsearch can't handle empty must/must_not blocks
     var bool = {};
@@ -95,18 +47,43 @@ if (Meteor.isClient) {
       else {
         var results = result.data;
 
-        console.log(results);
+        for (var i = 0; i < results.hits.hits.length ; i++) {
+          var result = results.hits.hits[i];
 
+          var cursor = DocumentMeta.find({_id: result._id});
+          result.documentMeta = cursor.fetch()[0];
+
+          cursor.observe({
+            added: function(result) { return function(newDocument) {
+              result.documentMeta = newDocument;
+              Session.set("results", results);
+            }; }(result),
+
+            changed: function(result) { return function(newDocument) {
+              result.documentMeta = newDocument;
+              Session.set("results", results);
+            }; }(result),
+
+            removed: function(result) { return function(newDocument) {
+              result.documentMeta = newDocument;
+              Session.set("results", results);
+            }; }(result),
+          });
+        }
+
+        console.log(results);
+        Session.set("lastQuery", query);
+        lastQuery = query;
         Session.set("results", results);
       }
     });
   };
 
-  Template.searchIndex.helpers({
-    results: function() {
-      return Session.get("results") || [];
-    },
+  Template.searchIndex.results = function() {
+    return Session.get("results") || [];
+  };
 
+  Template.searchIndex.helpers({
     'toSeconds': function(ms) {
       var time = new Date(ms);
       return time.getSeconds() + "." + time.getMilliseconds();
@@ -135,34 +112,24 @@ if (Meteor.isClient) {
 
     'click .hit': function(e, tmpl) {
 
-      ElasticSearch.get(this._id, function(err, result) {
-        if (err) {
-          console.error(err);
-        }
-        else {
-          var attachment = result.data;
-
-          var source = attachment._source;
-          var contentType = source._content_type;
-          var file = source.file;
-
-          // console.log(contentType);
-
-          var content = atob(file);
-
-          var html;
-          if (contentType == "image/jpeg") {
-            html = '<img src="data:' + contentType + ';base64,' + file + '" />'
-          }
-          else {
-            html = '<div><pre>' + content + '</pre></div>';
-          }
-
-          $.fancybox(html, {
-            title: "Alderwood Daily News Articles"
-          });
-        }
+      $.fancybox({
+        type: "iframe",
+        href: "/documentPopup/"+this._id+"/"+Session.get("lastQuery"),
+        autoSize: false,
+        autoResize: false,
+        height: "90%",
+        width: "720px"
       });
+      
     },
+
+    'click .favoritedStar': function(e, tmpl) {
+      if (this.documentMeta && this.documentMeta.favorited) {
+        DocumentMeta._upsert(this._id, {$set: {favorited: false}});
+      } else {
+        DocumentMeta._upsert(this._id, {$set: {favorited: true}});
+      }
+      
+    }
   });
 }

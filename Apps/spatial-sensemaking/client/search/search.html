@@ -18,7 +18,7 @@
     <div class="row result-info">
       <div class="col-md-10 col-md-offset-1 input-group">
         {{#with results}}
-          {{hits.total}} results ({{toSeconds took}} seconds)
+          Found {{hits.total}} results <!-- ({{toSeconds took}} seconds) -->
         {{/with}}
       </div>
     </div>
@@ -26,8 +26,13 @@
     {{#each results.hits.hits}}
       <div class="row document-result">
         <div class="col-md-10 col-md-offset-1">
+        {{#if documentMeta.favorited}}
+          <img src="/images/star_enabled.png" style="width: 32px;" class="favoritedStar"/>
+        {{else}}
+          <img src="/images/star_disabled.png" style="width: 32px;" class="favoritedStar"/>
+        {{/if}}
           <h4>
-            <a href="#" class="hit">{{_id}}</a> (<a href="{{urlToDocument _id}}" target="_blank">Raw Document in Index</a>)
+            <a href="#" class="hit">{{_id}}</a> (<a href="{{urlToDocument _id}}" target="_blank">Raw Document</a>)
           </h4>
           <ul>
             {{#each highlight.file}}

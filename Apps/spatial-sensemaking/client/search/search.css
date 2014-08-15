@@ -15,7 +15,8 @@
   font-size: 0.9em;
 }
 
-.document-highlight em {
+.document-highlight em,
+pre em {
   /*background-color: yellow;*/
   /*color: black;*/
   font-style: normal;
