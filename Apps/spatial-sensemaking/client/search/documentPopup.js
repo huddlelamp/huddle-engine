@@ -30,6 +30,18 @@ if (Meteor.isClient){
     else return 'star_disabled.png';
   };
 
+
+  Template.documentPopup.comment = function() {
+    var doc = Session.get("document");
+    if (doc === undefined) return;
+
+    var meta = DocumentMeta.findOne({_id: doc._id});
+
+    if (meta) return meta.comment;
+
+    return "";
+  };
+
   Template.documentPopup.content = function() {
     var doc = Session.get("document");
     if (doc === undefined) return;
@@ -62,6 +74,11 @@ if (Meteor.isClient){
       } else {
         DocumentMeta._upsert(doc._id, {$set: {favorited: true}});
       }
-    }
+    },
+
+    'click #saveCommentButton': function(e, tmpl) {
+      var doc = Session.get("document");
+      DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
+    },
   });
 }
