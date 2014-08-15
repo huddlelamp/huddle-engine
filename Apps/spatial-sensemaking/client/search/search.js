@@ -129,7 +129,6 @@ if (Meteor.isClient) {
       } else {
         DocumentMeta._upsert(this._id, {$set: {favorited: true}});
       }
-      
     }
   });
 }
