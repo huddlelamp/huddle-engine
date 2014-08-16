@@ -3,23 +3,51 @@
     body {
       margin: 0;
       padding: 0;
-      width: 700px;
+      width: 722px;
       height: 860px;
       overflow: hidden;
     }
 
-    #textContent {
-      display: inline-block;
-      margin: 0 auto;
-      width: 100%;
+    #contentWrapper {
+      position: relative
+      display: block;
+      margin: 10px auto;
+      width: 700px;
       overflow: scroll;
       -webkit-overflow-scrolling: touch;
       height: 688px;
+      background-color: #f5f5f5;
+      padding: 10px;
+    }
+
+    #textContent, .textSelectionWrapper  {
+      position: relative;
+      white-space:pre-wrap;
+      /*word-wrap: normal;
+      word-break: normal;*/
+      border: 0;
+      padding: 0;
+      margin: 0;
+    }
+
+    .textSelectionWrapper {
+      background: transparent;
+      pointer-events: none;
+      position: absolute;
+      top: 0px; 
+      left: 0px; 
+      margin: 20px; /* same as #contentWrapper padding + #contentWrapper margin */
+      width: 680px;
+    }
+
+    .textSelection {
+      max-width: 100%;
     }
 
     .container {
       margin: 0 !important;
-      width: auto !important;
+      width: 100% !important;
+      padding: 0 !important;
       overflow: hidden;
     }
 
@@ -29,14 +57,21 @@
     }
 
     #contentArea {
+      width: 722px;
       height: 688px;
     }
   </style>
 
   <div id="contentArea">
-    {{#if content}}
-      {{{content}}}
-    {{/if}}
+    
+      <div id="contentWrapper">
+        <pre id="textContent">{{{content}}}</pre>
+
+        {{#each textHighlights}}
+          <pre class="textSelectionWrapper" style="top: -{{scrollOffset}}px;">{{{highlightWrapper this}}}</pre>
+        {{/each}}
+      </div>
+    
   </div>
 
   <div id="editArea">
