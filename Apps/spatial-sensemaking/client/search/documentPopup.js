@@ -158,10 +158,12 @@ if (Meteor.isClient){
         endOffset = temp;
       }
 
+      var color = $(e.target).css("background-color");
+
       var doc = Session.get("document");
       DocumentMeta._upsert(doc._id, {
         $push: {
-          textHighlights: [ startOffset, endOffset ] 
+          textHighlights: [ startOffset, endOffset, color ] 
         } 
       });
     },
@@ -200,6 +202,7 @@ if (Meteor.isClient){
 
       var startOffset = highlight[0];
       var endOffset = highlight[1];
+      var color = highlight[2];
       
       var text = $("#textContent").text();
       if (text === undefined) return;
@@ -212,7 +215,7 @@ if (Meteor.isClient){
       textBeforeStart = textBeforeStart.replace(/[^\n]/g, " ");
       highlightText += textBeforeStart;
 
-      highlightText += '<span class="textSelection">';
+      highlightText += '<span class="textSelection" style="background-color: '+color+';">';
       var selectedText = text.slice(startOffset, endOffset);
       selectedText = selectedText.replace(/[^\n]/g, " ");
       highlightText += selectedText;
