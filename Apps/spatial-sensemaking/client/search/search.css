@@ -16,12 +16,20 @@
 }
 
 .document-highlight em,
-pre em {
+#textContent em {
   /*background-color: yellow;*/
   /*color: black;*/
   font-style: normal;
   font-weight: bold;
 }
+
+.textSelection {
+  background-color: rgba(255, 127, 0, 0.3);
+}
+
+/*.fancybox-wrap { 
+  overflow-x: hidden;
+}*/
 
 /*.media {
   top: 60px;

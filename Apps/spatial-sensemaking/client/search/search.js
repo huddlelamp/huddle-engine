@@ -117,8 +117,8 @@ if (Meteor.isClient) {
         href: "/documentPopup/"+this._id+"/"+Session.get("lastQuery"),
         autoSize: false,
         autoResize: false,
-        height: "90%",
-        width: "720px"
+        height: "952px",
+        width: "722px"
       });
       
     },
@@ -129,6 +129,6 @@ if (Meteor.isClient) {
       } else {
         DocumentMeta._upsert(this._id, {$set: {favorited: true}});
       }
-    }
+    },
   });
 }

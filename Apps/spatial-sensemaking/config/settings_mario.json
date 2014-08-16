@@ -1,0 +1,11 @@
+{
+  "public": {
+    "elasticSearch": {
+      "protocol": "http",
+      "host": "134.34.222.10",
+      "port": 9200,
+      "index": "egon",
+      "attachmentsPath": "attachment"
+    }
+  }
+}
