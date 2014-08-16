@@ -27,9 +27,17 @@
       <div class="row document-result">
         <div class="col-md-10 col-md-offset-1">
         {{#if documentMeta.favorited}}
-          <img src="/images/star_enabled.png" style="width: 32px;" class="favoritedStar"/>
+          <img src="/images/star_enabled.png" class="favoritedStar icon"/>
         {{else}}
-          <img src="/images/star_disabled.png" style="width: 32px;" class="favoritedStar"/>
+          <img src="/images/star_disabled.png" class="favoritedStar icon"/>
+        {{/if}}
+
+        {{#if hasComment}}
+          <img src="/images/comment.png" class="icon"/>
+        {{/if}}
+
+        {{#if wasWatched}}
+          <img src="/images/watched.png" class="icon"/>
         {{/if}}
           <h4>
             <a href="#" class="hit">{{_id}}</a> (<a href="{{urlToDocument _id}}" target="_blank">Raw Document</a>)

@@ -9,6 +9,9 @@ if (Meteor.isClient){
         }
         else {
           result = result.data;     
+
+          DocumentMeta._upsert(result._id, {$set: {watched: true}});
+
           Session.set("lastQuery", Router._currentController.params._lastQuery);
           Session.set("document", result);   
         }

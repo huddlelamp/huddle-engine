@@ -71,9 +71,7 @@ if (Meteor.isClient) {
           });
         }
 
-        console.log(results);
         Session.set("lastQuery", query);
-        lastQuery = query;
         Session.set("results", results);
       }
     });
@@ -81,6 +79,16 @@ if (Meteor.isClient) {
 
   Template.searchIndex.results = function() {
     return Session.get("results") || [];
+  };
+
+  Template.searchIndex.hasComment = function() {
+    var meta = DocumentMeta.findOne({_id : this._id});
+    return (meta && ((meta.comment && meta.comment.length > 0) || (meta.textHighlights && meta.textHighlights.length > 0)));
+  };
+
+  Template.searchIndex.wasWatched = function() {
+    var meta = DocumentMeta.findOne({_id : this._id});
+    return (meta && meta.watched);
   };
 
   Template.searchIndex.helpers({
