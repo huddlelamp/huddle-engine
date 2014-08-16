@@ -151,6 +151,8 @@ if (Meteor.isClient){
 
       $("#textContent").contents().each(nodeOffsetCount);
 
+      if (doneAnchor === false || doneFocus === false) return;
+
       //If the selection is made backwards, the offset might be swapped
       if (startOffset > endOffset) {
         var temp = startOffset;
