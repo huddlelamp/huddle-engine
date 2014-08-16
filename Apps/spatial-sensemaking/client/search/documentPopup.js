@@ -2,14 +2,6 @@ if (Meteor.isClient){
   var range;
   Template.documentPopup.rendered = function() {
     window.setTimeout(function() {
-  //     console.log("attaching to "+  $("#textContent").length);
-  // $("#contentWrapper").on('scroll', function() {
-  //   console.log("rofl");
-  //   var scroll = $("#contentWrapper").scrollTop();
-  //     console.log(scroll);
-  //     $(".textSelectionWrapper").scrollTop(scroll);
-  //   });
-
       //TODO guess there is a better way to access params, but I havn't found it yet ^^
       ElasticSearch.get(Router._currentController.params._id, function(err, result) {
         if (err) {
@@ -95,9 +87,6 @@ if (Meteor.isClient){
         });
       }
 
-      // console.log("EEK");
-      // console.log(content.replace(/\n/g, "LOL"));
-
       //Rangy can't really handle &nbsp; because it is counted as a single character (a space)
       //Because of that, we simply replace every &nbsp; with spaces
       //Worst case, a few spaces are lost, but guess that's not so bad
@@ -106,11 +95,11 @@ if (Meteor.isClient){
       pre.html(content);
       pre.html(pre.html().replace(/&nbsp;/g, " "));
 
+      //Meteor updates the highlights too early - #textContent's content is not set then
+      //Because of that, we use a custom dependency that is triggered in the next run loop
       Meteor.setTimeout(function() { contentDependency.changed(); } , 1);
-      // Session.set("textContent", pre.text());
 
       return pre.html();
-      // return pre[0].outerHTML;
     }
   };
 
@@ -132,6 +121,9 @@ if (Meteor.isClient){
     'click .textHighlighter': function(e, tmpl) {
       if (range === undefined) return;
 
+      //We need to figure out start/endOffset relative to the beginning of #textContent, so we know
+      //where to place the text highlight. Walk recursively over all children of #textContent 
+      //and count the length of all text nodes until we arrive at the anchor/focusNode
       var startOffset = 0;
       var endOffset = 0;
       var currentOffset = 0;  
@@ -163,8 +155,6 @@ if (Meteor.isClient){
         endOffset = temp;
       }
 
-      // createTextHighlight(startOffset, endOffset);
-
       var doc = Session.get("document");
       DocumentMeta._upsert(doc._id, {
         $push: {
@@ -175,7 +165,7 @@ if (Meteor.isClient){
 
     'scroll #contentWrapper': function(e) {
       //Not quite sure why scrolling the selection wrappers does not work, but setting
-      //top seems to be a good more-or-less good solution
+      //top seems to be a more-or-less good solution
       var scroll = $("#contentWrapper").scrollTop();
       Session.set("scrollOffset", scroll);
     },
@@ -202,10 +192,8 @@ if (Meteor.isClient){
   });
 
   Template.documentPopup.helpers({
-    'highlightWrapper': function(highlight) {
+    'highlightContent': function(highlight) {
       contentDependency.depend();
-
-      // console.log(this);
 
       var startOffset = highlight[0];
       var endOffset = highlight[1];
@@ -214,16 +202,15 @@ if (Meteor.isClient){
       if (text === undefined) return;
       var highlightText = "";
 
-      // console.log(text.replace(/\n/g, "LOL"));
-
+      //To create the content of a text highlight overlay, we basically copy #textContent
+      //We then replace very non-newline character with a space (thank you monospace font!)
+      //Also, obviously, we insert the text highlight where it belongs
       var textBeforeStart = text.slice(0, startOffset);
       textBeforeStart = textBeforeStart.replace(/[^\n]/g, " ");
-      // console.log(textBeforeStart.replace(/\n/g, "LOL"));
       highlightText += textBeforeStart;
 
       highlightText += '<span class="textSelection">';
       var selectedText = text.slice(startOffset, endOffset);
-      // console.log(selectedText.replace(/\n/g, "LOL"));
       selectedText = selectedText.replace(/[^\n]/g, " ");
       highlightText += selectedText;
       highlightText += '</span>';
@@ -232,11 +219,7 @@ if (Meteor.isClient){
       textAfterEnd = textAfterEnd.replace(/[^\n]/g, " ");
       highlightText += textAfterEnd;
 
-      var pre = $("<pre></pre>");
-      pre.addClass("textSelectionWrapper");
-      pre.html(highlightText);
-      return pre.html();
-      // return pre[0].outerHTML;
+      return highlightText;
     }
   });
 }
