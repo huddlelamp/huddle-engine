@@ -69,12 +69,25 @@
       height: 40px;
       margin-right: 10px;
     }
+
+    #selectedSnippetHighlight {
+      opacity: 0;
+      -webkit-transition: opacity 0.7s;
+    }
+
+    .snippetHighlighter {
+      display: inline;
+      background-color: red;
+      opacity: 0.3;
+    }
   </style>
 
   <div id="contentArea">
     
       <div id="contentWrapper">
         <pre id="textContent">{{{content}}}</pre>
+
+        <pre class="textSelectionWrapper" style="top: -{{scrollOffset}}px;" id="selectedSnippetHighlight">{{{selectedSnippetContent}}}</pre>
 
         {{#each textHighlights}}
           <pre class="textSelectionWrapper" style="top: -{{scrollOffset}}px;">{{{highlightContent this}}}</pre>

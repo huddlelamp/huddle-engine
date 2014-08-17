@@ -40,11 +40,11 @@
           <img src="/images/watched.png" class="icon"/>
         {{/if}}
           <h4>
-            <a href="#" class="hit">{{_id}}</a> (<a href="{{urlToDocument _id}}" target="_blank">Raw Document</a>)
+            <a href="#" class="hit">{{_id}}</a> (<a href="{{urlToDocument _id}}" target="_blank">raw document</a>)
           </h4>
           <ul>
             {{#each highlight.file}}
-              <li class="document-highlight">{{{this}}}</li>
+              <li class="document-highlight" documentid="{{../_id}}">{{{this}}}</li>
             {{/each}}
           </ul>
         </div>

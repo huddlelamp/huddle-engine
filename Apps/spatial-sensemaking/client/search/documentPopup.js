@@ -3,7 +3,7 @@ if (Meteor.isClient){
   Template.documentPopup.rendered = function() {
     window.setTimeout(function() {
       //TODO guess there is a better way to access params, but I havn't found it yet ^^
-      ElasticSearch.get(Router._currentController.params._id, function(err, result) {
+      ElasticSearch.get(decodeURIComponent(Router._currentController.params._id), function(err, result) {
         if (err) {
           console.error(err);
         }
@@ -12,7 +12,8 @@ if (Meteor.isClient){
 
           DocumentMeta._upsert(result._id, {$set: {watched: true}});
 
-          Session.set("lastQuery", Router._currentController.params._lastQuery);
+          Session.set("lastQuery", decodeURIComponent(Router._currentController.params._lastQuery));
+          Session.set("selectedSnippet", decodeURIComponent(Router._currentController.params._selectedSnippet));
           Session.set("document", result);   
         }
       });
@@ -99,6 +100,78 @@ if (Meteor.isClient){
     return meta.textHighlights || [];
   };
 
+  Template.documentPopup.selectedSnippetContent = function() {
+    //When the content changes and we have a selectedSnippet, scroll to that snippet
+    contentDependency.depend();
+    
+    var snippetTime = Session.get('selectedSnippetSetTime');
+    var now = Date.now();
+    if (!snippetTime) {
+      var snippet = encodeContent(Session.get('selectedSnippet'));
+      var text = $("#textContent").html();
+      if (snippet && snippet.length > 0 && text && text.length > 0) {
+        //for some reason, if the snippet is at the very end of the file content it 
+        //has an additional line break at the end. Because of that, remove line ends
+        //from the end of the snippet
+        var endsWithBreak = snippet.indexOf(String.fromCharCode(0x0A), snippet.length-1) !== -1;
+        if (endsWithBreak) snippet = snippet.slice(0, snippet.length-1);
+
+        var startOffset = text.indexOf(snippet);
+        var endOffset = startOffset + snippet.length;
+
+        if (startOffset < 0 || endOffset < 0) return;
+
+        text = [ text.slice(0, startOffset), '<span class="snippetHighlighter">', text.slice(startOffset, endOffset), '</span>', text.slice(endOffset) ].join('');
+
+        Session.set('selectedSnippetSetTime', now);
+
+        //Put the text into a temporary element, walk over it and replace the text
+        //with spaces
+        var newText = "";
+        var test = function() {
+          if (this.nodeType === 3)  {
+            newText += $(this).text().replace(/[^\n]/g, " ");
+          }
+          else {
+            var tags = this.outerHTML.split($(this).html());
+            var startTag = tags[0];
+            var endTag = tags[1];
+            newText += startTag;
+            $(this).contents().each(test);
+            newText += endTag;
+          }
+        };
+        var div = $("<div></div>");
+        div.html(text);
+        div.contents().each(test);
+        text = newText;
+
+        //highlight the snippet when it arrived in the DOM (next run loop)
+        Meteor.setTimeout(function() { 
+          $(".snippetHighlighter").first().get(0).scrollIntoView(false);
+          var scroll = $("#contentWrapper").scrollTop();
+          Session.set("scrollOffset", scroll);
+
+          //Show the highlight, wait for the CSS transition to finish, then hide it
+          $("#selectedSnippetHighlight").css("opacity", 1.0);
+          Meteor.setTimeout(function() { 
+            $("#selectedSnippetHighlight").css("opacity", 0.0);
+          }, 1200);
+        }, 1);
+
+        return text;
+      }
+
+      return "";
+    } else {
+      if ((now-snippetTime) < 5000) {
+        return $("#selectedSnippetHighlight").html();
+      } 
+
+      return "";
+    } 
+  };
+
   /** Return the content of this document as HTML code. If the content is text, it will 
       contain highlights based on the query stored in the "lastQuery" session variable **/
   var contentDependency = new Deps.Dependency();
@@ -120,19 +193,11 @@ if (Meteor.isClient){
         });
       }
 
-      //Rangy can't really handle &nbsp; because it is counted as a single character (a space)
-      //Because of that, we simply replace every &nbsp; with spaces
-      //Worst case, a few spaces are lost, but guess that's not so bad
-      var pre = $("<pre></pre>");
-      pre.attr("id", "textContent");
-      pre.html(content);
-      pre.html(pre.html().replace(/&nbsp;/g, " "));
-
       //Meteor updates the text highlights too early - #textContent's content is not set then
       //Because of that, we use a custom dependency that is triggered in the next run loop
-      Meteor.setTimeout(function() { contentDependency.changed(); } , 1);
+      Meteor.setTimeout(function() { contentDependency.changed(); }, 1);
 
-      return pre.html();
+      return encodeContent(content);
     }
   };
 
@@ -356,6 +421,14 @@ if (Meteor.isClient){
 
     if (count === 0) Session.set('selectedHighlightsCount', undefined);
     else Session.set('selectedHighlightsCount', count);
+  };
+
+  /** Encodes file content for displaying **/
+  var encodeContent = function(text) {
+    var pre = $("<pre></pre>");
+    pre.html(text);
+    pre.html(pre.html().replace(/&nbsp;/g, " "));
+    return pre.html();
   };
 
   /** Returns the intersection between two ranges or undefined if they don't intersect **/

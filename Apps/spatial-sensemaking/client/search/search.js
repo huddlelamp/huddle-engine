@@ -122,13 +122,26 @@ if (Meteor.isClient) {
 
       $.fancybox({
         type: "iframe",
-        href: "/documentPopup/"+this._id+"/"+Session.get("lastQuery"),
+        href: "/documentPopup/"+encodeURIComponent(this._id)+"/"+encodeURIComponent(Session.get("lastQuery")),
         autoSize: false,
         autoResize: false,
         height: "952px",
         width: "722px"
       });
       
+    },
+
+    'click .document-highlight': function(e, tmpl) {
+      
+      $.fancybox({
+        type: "iframe",
+        href: "/documentPopup/"+encodeURIComponent($(e.currentTarget).attr("documentid"))+"/"+encodeURIComponent(Session.get("lastQuery"))+"/"+encodeURIComponent(this),
+        autoSize: false,
+        autoResize: false,
+        height: "952px",
+        width: "722px"
+      });
+
     },
 
     'click .favoritedStar': function(e, tmpl) {

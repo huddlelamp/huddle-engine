@@ -17,7 +17,7 @@ if (Meteor.isClient) {
 
     this.route('documentPopup', {
       layoutTemplate: 'contentOnlyLayout',
-      path: '/documentPopup/:_id/:_lastQuery',
+      path: '/documentPopup/:_id/:_lastQuery/:_selectedSnippet?',
       template: 'documentPopup',
     });
 
