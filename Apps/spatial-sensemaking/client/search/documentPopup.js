@@ -126,25 +126,25 @@ if (Meteor.isClient){
         Session.set('selectedSnippetSetTime', now);
 
         //Put the text into a temporary element, walk over it and replace the text
-        //with spaces
-        var newText = "";
-        var test = function() {
+        //with spaces while keeping HTML tags
+        var spacedText = "";
+        var spaceText = function() {
           if (this.nodeType === 3)  {
-            newText += $(this).text().replace(/[^\n]/g, " ");
+            spacedText += $(this).text().replace(/[^\n]/g, " ");
           }
           else {
             var tags = this.outerHTML.split($(this).html());
             var startTag = tags[0];
             var endTag = tags[1];
-            newText += startTag;
-            $(this).contents().each(test);
-            newText += endTag;
+            spacedText += startTag;
+            $(this).contents().each(spaceText);
+            spacedText += endTag;
           }
         };
         var div = $("<div></div>");
         div.html(text);
-        div.contents().each(test);
-        text = newText;
+        div.contents().each(spaceText);
+        text = spacedText;
 
         //highlight the snippet when it arrived in the DOM (next run loop)
         Meteor.setTimeout(function() { 
@@ -276,6 +276,35 @@ if (Meteor.isClient){
           textHighlights: updatedHighlights
         } 
       });
+    },
+
+    'click #deleteHighlights': function() {
+      //Check if the current selection intersects any existing highlights
+      var relativeRange = currentSelectionRelativeTo($("#textContent"));
+      if (relativeRange === undefined) return;
+
+      var startOffset = relativeRange[0];
+      var endOffset = relativeRange[1];
+
+      var doc = Session.get("document");
+      var meta = DocumentMeta.findOne({ _id: doc._id });   
+      var newHighlights = [];
+      if (meta && meta.textHighlights) {
+        for (var i = 0; i < meta.textHighlights.length; i++) {
+          var intersection = rangeIntersection(startOffset, endOffset, meta.textHighlights[i][0], meta.textHighlights[i][1]);
+          if (intersection === undefined) {
+            newHighlights.push(meta.textHighlights[i]);
+          }
+        }
+      }
+
+      DocumentMeta._upsert(doc._id, {
+        $set: {
+          textHighlights: newHighlights
+        } 
+      });
+
+      rangy.getSelection(0).removeAllRanges();
     },
 
     /** Called whenever the file content is scrolled. I am not quite sure why we have to bind
