@@ -92,6 +92,9 @@
       <div class="textHighlighter" style="background-color: purple;"></div>
       <div class="textHighlighter" style="background-color: slategray;"></div>
       <div class="textHighlighter" style="background-color: sienna;"></div>
+      {{#if selectedHighlightsCount}}
+        Delete {{selectedHighlightsCount}} {{pluralize selectedHighlightsCount 'highlight' 'highlights'}}
+      {{/if}}
       <br /><br />
     {{/if}}
 
