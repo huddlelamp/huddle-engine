@@ -160,12 +160,101 @@ if (Meteor.isClient){
         endOffset = temp;
       }
 
+      // console.log("new range is "+startOffset+", "+endOffset);
+
       var color = $(e.target).css("background-color");
+
+      function getIntersection(s1, e1, s2, e2) {
+        if (s2 <= s1 && e2 >= s1) {
+          if (e2 > e1) return [s1, e1];
+          return [s1, e2];
+        }
+
+        if (s1 <= s2 && e1 >= s2) {
+          if (e1 > e2) return [s2, e2];
+          return [s2, e1];
+        }
+
+        return undefined;
+
+        // if (s2 <= e1 && e2 >= e1) {
+        //   return [s2, e1];
+        // }
+      } 
+
+      //Check if the new selection intersects an existing selection
+      //If so, overwrite the intersecting area
+      var doc = Session.get("document");
+      var meta = DocumentMeta.findOne({ _id: doc._id });      
+      var updatedHighlights = [];
+      if (meta && meta.textHighlights) {
+        console.log(meta.textHighlights);
+        for (var i = 0; i < meta.textHighlights.length; i++) {
+          // console.log("Checking "+meta.textHighlights[i][0]+", "+meta.textHighlights[i][1])
+          var intersection = getIntersection(startOffset, endOffset, meta.textHighlights[i][0], meta.textHighlights[i][1]);
+          
+          // console.log("intersection is "+intersection);
+
+          //If the highlight is not intersected, keep it
+          if (intersection === undefined) {
+            updatedHighlights.push(meta.textHighlights[i]);
+            continue;
+          }
+
+          //If there is an intersection and both highlights have the same color
+          //we merge them. To do that, we alter the new highlight (will be added later)
+          //and remove the old highlight
+          if (color === meta.textHighlights[i][2]) {
+            startOffset = Math.min(startOffset, meta.textHighlights[i][0]);
+            endOffset = Math.max(endOffset, meta.textHighlights[i][1]);
+            continue;
+          }
+
+          //If the entire highlight is intersected, it is removed
+          if (intersection[0] === meta.textHighlights[i][0] && 
+            intersection[1] === meta.textHighlights[i][1]) {
+            // console.log("removing highlight");
+            continue;
+          }
+
+          //If the intersection is in the middle of the highlight, we need to split it
+          if (intersection[0] > meta.textHighlights[i][0] && 
+            intersection[1] < meta.textHighlights[i][1]) {
+            // console.log("splitting");
+            var left = meta.textHighlights[i].slice(0);
+            var right = meta.textHighlights[i].slice(0);
+            left[1] = intersection[0];
+            right[0] = intersection[1];
+            updatedHighlights.push(left);
+            updatedHighlights.push(right);
+
+          }
+
+          //If the start of the highlight is intersected, cut something from the old highlight
+          if (intersection[0] === meta.textHighlights[i][0] && 
+            intersection[1] < meta.textHighlights[i][1]) {
+            // console.log("cutting start");
+            meta.textHighlights[i][0] = intersection[1];
+            updatedHighlights.push(meta.textHighlights[i]);
+          }
+
+          //If the end of the highlight is intersected, cut something from the old highlight
+          if (intersection[0] > meta.textHighlights[i][0] && 
+            intersection[1] === meta.textHighlights[i][1]) {
+            // console.log("cutting end");
+            meta.textHighlights[i][1] = intersection[0];
+            updatedHighlights.push(meta.textHighlights[i]);
+          }
+        }
+      }
+
+      updatedHighlights.push([ startOffset, endOffset, color ]);
+      console.log(updatedHighlights);
 
       var doc = Session.get("document");
       DocumentMeta._upsert(doc._id, {
-        $push: {
-          textHighlights: [ startOffset, endOffset, color ] 
+        $set: {
+          textHighlights: updatedHighlights
         } 
       });
     },
