@@ -2,6 +2,8 @@ if (Meteor.isClient) {
 
   var search = function(query) {
 
+    Session.set('querySuggestions', []);
+
     var SEARCH_FIELDS = ["file^10", "_name"];
 
     var must = [];
@@ -47,6 +49,13 @@ if (Meteor.isClient) {
       else {
         var results = result.data;
 
+        var observer = function(result) { 
+          return function(newDocument) {
+            result.documentMeta = newDocument;
+            Session.set("results", results);
+          }; 
+        };
+
         for (var i = 0; i < results.hits.hits.length ; i++) {
           var result = results.hits.hits[i];
 
@@ -54,31 +63,35 @@ if (Meteor.isClient) {
           result.documentMeta = cursor.fetch()[0];
 
           cursor.observe({
-            added: function(result) { return function(newDocument) {
-              result.documentMeta = newDocument;
-              Session.set("results", results);
-            }; }(result),
-
-            changed: function(result) { return function(newDocument) {
-              result.documentMeta = newDocument;
-              Session.set("results", results);
-            }; }(result),
-
-            removed: function(result) { return function(newDocument) {
-              result.documentMeta = newDocument;
-              Session.set("results", results);
-            }; }(result),
+            added   : observer(result),
+            changed : observer(result),
+            removed : observer(result),
           });
         }
 
         Session.set("lastQuery", query);
         Session.set("results", results);
+
+        var pastQuery = PastQueries.findOne({ query: query });
+        if (pastQuery === undefined) {
+          var newDoc = {
+            query : query,
+            count : 1
+          };
+          PastQueries.insert(newDoc);
+        } else {
+          PastQueries.update({_id: pastQuery._id}, { $inc: {count: 1}});
+        }
       }
     });
   };
 
   Template.searchIndex.results = function() {
     return Session.get("results") || [];
+  };
+
+  Template.searchIndex.querySuggestions = function() {
+    return Session.get("querySuggestions") || [];
   };
 
   Template.searchIndex.hasComment = function() {
@@ -106,16 +119,37 @@ if (Meteor.isClient) {
   });
 
   Template.searchIndex.events({
+    'keydown #search-query': function(e, tmpl) {
+      
+    },
+
     'click #search-btn': function(e, tmpl) {
       var query = tmpl.$('#search-query').val();
       search(query);
     },
 
     'keyup #search-query': function(e, tmpl) {
+      //On enter, start the search
       if (e.keyCode == 13) {
         var query = tmpl.$('#search-query').val();
         search(query);
+      //On every other key, try to fetch some query suggestions
+      } else {
+        console.log("---");
+        var query = tmpl.$('#search-query').val();
+
+        var regexp = new RegExp('.*'+query+'.*', 'i');
+        var suggestions = PastQueries.find(
+          { query : { $regex: regexp } }, 
+          { sort  : [["count", "desc"]] }
+        );
+        Session.set('querySuggestions', suggestions.fetch());
       }
+    },
+
+    'click .querySuggestion': function(e, tmpl) {
+      tmpl.$('#search-query').val(this.query);
+      search(this.query);
     },
 
     'click .hit': function(e, tmpl) {
