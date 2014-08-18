@@ -1,4 +1,5 @@
 processQuery = function(query, mapFunction) {
+  console.log(query);
   var terms = query.split(" ");
 
   var term;
@@ -10,6 +11,8 @@ processQuery = function(query, mapFunction) {
   //'-' before a term negates it 
   //Single or double quotes around space-seperated terms combine them into a phrase
   for (var i = 0; i < terms.length; i++) {
+    // if (terms[i].trim().length === 0) continue;
+
     if (quoteOpen === undefined) {
       term = terms[i];
       not = false;
@@ -25,7 +28,8 @@ processQuery = function(query, mapFunction) {
         quoteOpen = term.charAt(0);
         term = term.substring(1, term.length);
       } else {
-        mapFunction(term, not, false);
+        mapFunction(term, not, false, (i < terms.length-1));
+        term = undefined;
       }
     } else {
       //A phrase is still open, add the term to the existing phrase
@@ -36,9 +40,15 @@ processQuery = function(query, mapFunction) {
         term = term.substring(0, term.length-1);
         quoteOpen = undefined;
 
-        mapFunction(term, not, true);
+        mapFunction(term, not, true, true);
+        term = undefined;
       }
     }
   }
-}
+
+  //If we have an unfinished phrase open, send it as well
+    if (quoteOpen !== undefined && term !== undefined) {
+      mapFunction(term, not, true, false);
+    }
+};
   

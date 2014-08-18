@@ -29,6 +29,8 @@ if (Meteor.isClient) {
     if (must.length > 0) bool.must = must;
     if (must_not.length > 0) bool.must_not = must_not;
 
+    console.log(bool);
+
     var q = {
       fields: ["file"],
       from: 0,
@@ -129,14 +131,33 @@ if (Meteor.isClient) {
     },
 
     'keyup #search-query': function(e, tmpl) {
+      var query = tmpl.$('#search-query').val();
+      if (query.trim().length === 0) {
+        // $("#search-tag-wrapper").empty();
+        return;
+      }
+
       //On enter, start the search
       if (e.keyCode == 13) {
-        var query = tmpl.$('#search-query').val();
         search(query);
       //On every other key, try to fetch some query suggestions
       } else {
-        console.log("---");
-        var query = tmpl.$('#search-query').val();
+        // $("#search-tag-wrapper").empty();
+        // tmpl.$('#search-query').val("");
+        var unfinishedTerms = "";
+        processQuery(query, function(term, isNegated, isPhrase, isFinished) {
+          console.log(term+": "+isNegated+", "+isPhrase+", "+isFinished);
+          if (isFinished) {
+            // $("#search-tag-wrapper").append("<span class='search-tag'>"+term+"</span>");
+          } else {
+            if (isPhrase) unfinishedTerms+= '"';
+            unfinishedTerms += term+" ";
+            // tmpl.$('#search-query').val(tmpl.$('#search-query').val()+" "+term);
+          }
+        });
+
+        unfinishedTerms = unfinishedTerms.trim();
+        // tmpl.$('#search-query').val(unfinishedTerms);
 
         var regexp = new RegExp('.*'+query+'.*', 'i');
         var suggestions = PastQueries.find(
