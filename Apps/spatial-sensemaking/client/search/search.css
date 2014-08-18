@@ -1,3 +1,22 @@
+#deviceIndicatorWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /*background-color: rgba(255,0,0, 0.05);
+  border: 1px solid rgba(255,0,0,0.5);*/
+}
+
+.deviceIndicator {
+  position: absolute;
+  border-radius: 50%;
+  background-color: blue;
+  width: 60px;
+  height: 60px;
+  opacity: 0.7;
+}
+
 #search-query-wrapper {
   /*display: inline-block; */
   border: 1px solid #357ebd; 

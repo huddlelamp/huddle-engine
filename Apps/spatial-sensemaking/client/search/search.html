@@ -5,6 +5,12 @@
       <h1>Search <small>for Evidence</small></h1>
     </div>
 
+    <div id="deviceIndicatorWrapper">
+      {{#each otherDevices}}
+        <span class="deviceIndicator" style="{{devicePositionCSS}}"></span>
+      {{/each}}
+    </div>
+
     <div class="row">
       <div class="col-md-10 col-md-offset-1 input-group">
         <!--<span id="search-query-wrapper">

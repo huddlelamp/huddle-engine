@@ -8,7 +8,8 @@
       "fancybox": {},
       "roles": {},
       "accounts-ui-bootstrap-3": {},
-      "accounts-admin-ui-bootstrap-3": {}
+      "accounts-admin-ui-bootstrap-3": {},
+      "huddle": {}
     },
     "packages": {
       "bootstrap-3": {
@@ -45,6 +46,11 @@
         "git": "https://github.com/hharnisc/meteor-accounts-admin-ui-bootstrap-3.git",
         "tag": "v0.2.6",
         "commit": "fe74692303daf73d440f2729010bcf1557af62ca"
+      },
+      "huddle": {
+        "git": "https://github.com/raedle/meteor-huddle.git",
+        "tag": "v0.9.3-7",
+        "commit": "7abc9682810c5cd418c2f28a31c42b723468e55d"
       },
       "log": {
         "git": "https://github.com/andrewreedy/meteor-log.git",
