@@ -217,7 +217,7 @@ if (Meteor.isClient){
           $("#selectedSnippetHighlight").css("opacity", 1.0);
           Meteor.setTimeout(function() { 
             $("#selectedSnippetHighlight").css("opacity", 0.0);
-          }, 1200);
+          }, 2000);
         }, 1);
 
         return text;

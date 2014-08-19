@@ -377,11 +377,28 @@ if (Meteor.isClient) {
         if (documentID === undefined) return;
         huddle.broadcast("showdocument", { target: targetID, documentID: documentID } );
       }
-
-      
-
-      // console.log(text);
-      // console.log(win.range);
     }
+  });
+
+  Huddle.on("showdocument", function(data) {
+    console.log("wohoo");
+    var thisDevice = Session.get('thisDevice');
+    if (data.target !== thisDevice.id) return;
+
+    $.fancybox({
+      type: "iframe",
+      href: "/documentPopup/"+encodeURIComponent(data.documentID)+"/"+encodeURIComponent(Session.get("lastQuery")),
+      autoSize: false,
+      autoResize: false,
+      height: "952px",
+      width: "722px"
+    });
+  });
+
+  Huddle.on("addtextsnippet", function(data) {
+    var thisDevice = Session.get('thisDevice');
+    if (data.target !== thisDevice.id) return;
+
+    console.warn("TODO, SHOULD ADD A SNIPPET: "+data.snippet);
   });
 }

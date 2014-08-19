@@ -19,6 +19,7 @@ if (Meteor.isClient) {
       layoutTemplate: 'contentOnlyLayout',
       path: '/documentPopup/:_id/:_lastQuery/:_selectedSnippet?',
       template: 'documentPopup',
+      // onBeforeAction: function() { console.log("HIER UND SO"); Session.set('preventHuddle', true); }
     });
 
     this.route('task', {
