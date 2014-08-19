@@ -114,33 +114,33 @@ if (Meteor.isClient) {
     'devicePositionCSS': function() {
       var indicatorSize = 60;
 
+      /** Returns the point of intersection of two lines.
+          The lines are defined by their beginning and end points **/
       var intersect = function(p1, p2, p3, p4) {
+        //Slopes
         var m1 = (p1.y-p2.y)/(p1.x-p2.x);
         var m2 = (p3.y-p4.y)/(p3.x-p4.x);
 
+        //If a line is axis-parallel its slope is 0
         if (isNaN(m1) || !isFinite(m1)) m1 = 0;
         if (isNaN(m2) || !isFinite(m2)) m2 = 0;
 
-        // if (m1 === 0 && m2 === 0) {
-        //   //First line is parallel to x, second parallel to y
-        //   if ((p1.y-p2.y) === 0 && (p3.x-p4.x) === 0) {
-        //     return { x: p3.x, y: p1.y };
-        //   }
-        //   //Other way around
-        //   if ((p1.x-p2.x) === 0 && (p3.y-p4.y) === 0) {
-        //     return { x: p1.x, y: p3.y };
-        //   }
-        // }
-
+        //If the two lines are parallel they don't intersect
+        //If both lines have a slope of 0 they are orthogonal
         if (m1 === m2 && m1 !== 0) return undefined;
 
+        // y = mx + c   =>   c = y - mx
         var c1 = p1.y - m1 * p1.x;
         var c2 = p3.y - m2 * p3.x;
 
+        // y = m1 * x + c1 and y = m2 * x + c2   =>   x = (c2-c1)/(m1-m2)
+        // Special case: If one of the two lines is y-parallel 
         var ix = (c2-c1)/(m1-m2);
         if ((p1.x-p2.x) === 0) ix = p1.x;
         if ((p3.x-p4.x) === 0) ix = p3.x;
 
+        // y can now be figured out by inserting x into y = mx + c
+        // Again special case: If a line is x-parallel
         var iy = m1 * ix + c1;
         if ((p1.y-p2.y) === 0) iy = p1.y;
         if ((p3.y-p4.y) === 0) iy = p3.y;
@@ -148,6 +148,7 @@ if (Meteor.isClient) {
         return { x: ix, y: iy };
       };
 
+      /** Checks if point p is inside the boundaries of the given device **/
       function insideDevice(p, device) {
         return (
           p.y >= device.topLeft.y && 
@@ -157,6 +158,7 @@ if (Meteor.isClient) {
         );
       }
 
+      /** Distance between two points **/
       function pointDist(p1, p2) {
         return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
       }
@@ -164,30 +166,25 @@ if (Meteor.isClient) {
       var thisDevice = Session.get('thisDevice');
       var otherDevice = this;
 
-      // console.log(thisDevice);
-
+      //Get the intersection with each of the four device boundaries
       var intersectLeft   = intersect(thisDevice.center, otherDevice.center, thisDevice.topLeft,    thisDevice.bottomLeft);
       var intersectTop    = intersect(thisDevice.center, otherDevice.center, thisDevice.topLeft,    thisDevice.topRight);
       var intersectRight  = intersect(thisDevice.center, otherDevice.center, thisDevice.topRight,   thisDevice.bottomRight);
       var intersectBottom = intersect(thisDevice.center, otherDevice.center, thisDevice.bottomLeft, thisDevice.bottomRight);
-      
-      // console.log("----");
-      // console.log(thisDevice);
-      // console.log(intersectLeft);
-      // console.log(intersectTop);
-      // console.log(intersectRight);
-      // console.log(intersectBottom);
 
+      //Get the distance of each intersection and the other device
+      //We need this to figure out which intersection to use
+      //If an intersection is outside of the device it must be invalid      
       var leftDist   = insideDevice(intersectLeft,   thisDevice) ? pointDist(intersectLeft,   otherDevice.center) : 4000;
       var topDist    = insideDevice(intersectTop,    thisDevice) ? pointDist(intersectTop,    otherDevice.center) : 4000;
       var rightDist  = insideDevice(intersectRight,  thisDevice) ? pointDist(intersectRight,  otherDevice.center) : 4000;
       var bottomDist = insideDevice(intersectBottom, thisDevice) ? pointDist(intersectBottom, otherDevice.center) : 4000;
 
-      // console.log(leftDist);
-      // console.log(topDist);
-      // console.log(rightDist);
-      // console.log(bottomDist);
-
+      //Figure out the final x/y coordinates of the device indicator
+      //This is done by using the boundary intersection that is closest and valid
+      //Then, one coordinate will be converted from world coords into device pixels
+      //The other coordinate is simply set so that half the indicator is visible,
+      //which gives us a nice half-circle
       var finalX;
       var finalY;
       if (leftDist <= topDist && leftDist <= rightDist && leftDist <= bottomDist) {
@@ -204,17 +201,12 @@ if (Meteor.isClient) {
         finalX = $(window).width() * ((intersectBottom.x - thisDevice.bottomLeft.x) / thisDevice.width);
       }
 
+      //Dirty hack to cover some edge cases
+      //Make sure the x/y are inside the device boundaries, so the indicator is
+      //visible
       finalX = Math.max(-(indicatorSize/2.0), Math.min($(window).width()-(indicatorSize/2.0), finalX));
       finalY = Math.max(-(indicatorSize/2.0), Math.min($(window).height()-(indicatorSize/2.0), finalY));
-      // var test = (intersectLeft.y - thisDevice.topLeft.y);
-
-      //device height = 1/data.ratio.y;
-      // test/height = percent
-      // device height * percent = wohoo
-      // window.height * (test/(1/data.ratio.y))
-      // test = $(window).height() * (test/(1/thisDevice.ratio.y));
-
-      // console.log(intersectLeft.y+" - "+thisDevice.topLeft.y+" || "+test);
+      
       return 'top: '+finalY+'px; left: '+finalX+'px;';
     },
 
