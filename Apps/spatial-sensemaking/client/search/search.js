@@ -113,9 +113,12 @@ if (Meteor.isClient) {
   Template.searchIndex.helpers({
     'thisDeviceBorderColorCSS': function() {
       var thisDevice = Session.get('thisDevice');
+      if (thisDevice === undefined || !thisDevice.id) return;
+      
       var info = DeviceInfo.findOne({ _id: thisDevice.id });
+      if (info === undefined || !info.color) return;
 
-      return 'border-image: radial-gradient(rgb('+info.color.r+', '+info.color.g+', '+info.color.b+') 50%, rgba('+info.color.r+', '+info.color.g+', '+info.color.b+', 0.1) 100%, rgba('+info.color.r+', '+info.color.g+', '+info.color.b+', 0.1)) 1%;';
+      return 'border-image: radial-gradient(rgb('+info.color.r+', '+info.color.g+', '+info.color.b+') 25%, rgba('+info.color.r+', '+info.color.g+', '+info.color.b+', 0.35) 100%, rgba('+info.color.r+', '+info.color.g+', '+info.color.b+', 0.35)) 1%;';
       // return 'border-color: rgb('+info.color.r+', '+info.color.g+', '+info.color.b+');';
     },
 
@@ -213,6 +216,7 @@ if (Meteor.isClient) {
       //Then, one coordinate will be converted from world coords into device pixels
       //The other coordinate is simply set so that half the indicator is visible,
       //which gives us a nice half-circle
+      //Furthermore, we calculate the indicator size based on the distance
       var top;
       var right;
       var bottom;
@@ -244,6 +248,17 @@ if (Meteor.isClient) {
       if (right  !== undefined) css += 'right: '+right+'px; ';
       if (bottom !== undefined) css += 'bottom: '+bottom+'px; ';
       if (left   !== undefined) css += 'left: '+left+'px; ';
+
+      /*console.log("SETTING DROP FOR "+$(".deviceIndicator").length);
+      $(".deviceIndicator").bind("dragover dragenter", function(e) {
+        event.dataTransfer.dropEffect = "copy";
+        event.preventDefault();
+      });
+
+      $(".deviceIndicator").bind("drop", function() {
+        console.log("DROOOp");
+        event.preventDefault();
+      });*/
 
       return css;
     },
@@ -287,7 +302,6 @@ if (Meteor.isClient) {
         // tmpl.$('#search-query').val("");
         var unfinishedTerms = "";
         processQuery(query, function(term, isNegated, isPhrase, isFinished) {
-          console.log(term+": "+isNegated+", "+isPhrase+", "+isFinished);
           if (isFinished) {
             // $("#search-tag-wrapper").append("<span class='search-tag'>"+term+"</span>");
           } else {
@@ -347,5 +361,23 @@ if (Meteor.isClient) {
         DocumentMeta._upsert(this._id, {$set: {favorited: true}});
       }
     },
+
+    'touchdown .deviceIndicator, click .deviceIndicator': function(e, tmpl) {
+      console.log("sowhat from yes");
+      e.preventDefault();
+
+      var iframe = $("iframe").first().get(0);
+      var win = iframe.contentWindow || iframe;
+
+      var text = win.getSelectedContent();
+      if (text === undefined) return;
+
+      console.log(text);
+      var targetID = $(e.currentTarget).attr("deviceid");
+      huddle.broadcast("textsnippet", { target: targetID, snippet: text } );
+
+      // console.log(text);
+      // console.log(win.range);
+    }
   });
 }

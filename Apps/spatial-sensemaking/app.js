@@ -1,8 +1,9 @@
 if (Meteor.isClient) {
+  window.huddle = undefined;
 
   var firstProximityData = true;
 
-  $(function() {
+  // $(function() {
     var transformDeviceData = function(data) {
       var newData = {
         id: data.Identity.toString(),
@@ -43,7 +44,7 @@ if (Meteor.isClient) {
       return newData;
     };
 
-    var huddle = Huddle.client("MyHuddleName")
+    huddle = Huddle.client("MyHuddleName")
       .on("proximity", function(data) {
         Session.set('thisDevice', transformDeviceData(data));
 
@@ -64,12 +65,18 @@ if (Meteor.isClient) {
 
           firstProximityData = false;
         }
+      })
+      .on("textsnippet", function(data) {
+        var thisDevice = Session.get('thisDevice');
+        if (data.target !== thisDevice.id) return;
+
+        console.warn("TODO, SHOULD ADD A SNIPPET: "+data.snippet);
       });
     huddle.connect("huddle-orbiter.proxemicinteractions.org", 47060);
-  });
+  // });
 
   function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+  }
 
 }

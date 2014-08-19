@@ -1,5 +1,4 @@
 processQuery = function(query, mapFunction) {
-  console.log(query);
   var terms = query.split(" ");
 
   var term;

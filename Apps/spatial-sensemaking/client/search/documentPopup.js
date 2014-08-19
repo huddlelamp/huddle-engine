@@ -1,5 +1,62 @@
+/** Define explicitly in window so search.js can access it **/
+window.range = undefined;
+
+window.getSelectedContent = function() {
+  elem = $("#textContent");
+  var selected = currentSelectionRelativeTo(elem);
+  if (selected === undefined) return;
+
+  var text = $(elem).text();
+
+  return text.slice(selected[0], selected[1]);
+};
+
+/** Takes the current selection (stored in range) and returns it relative to the start of the
+    given element. The returned range will be the offset from the first visible character in
+    the element. HTML code is not counted. **/
+window.currentSelectionRelativeTo = function(elem) {
+  if (range === undefined) return undefined;
+
+  //We need to figure out start/endOffset relative to the beginning of #textContent, so we know
+  //where to place the text highlight. Walk recursively over all children of #textContent 
+  //and count the length of all text nodes until we arrive at the anchor/focusNode
+  var startOffset = 0;
+  var endOffset = 0;
+  var currentOffset = 0;  
+  var doneAnchor = false;
+  var doneFocus = false;
+  var countOffset = function() {
+    if (this === range.anchorNode) {
+      startOffset = currentOffset + range.startOffset;
+      doneAnchor = true;
+    }
+
+    if (this === range.focusNode) {
+      endOffset = currentOffset + range.endOffset;
+      doneFocus = true;
+    }
+
+    if (doneAnchor && doneFocus) return; 
+
+    if (this.nodeType === 3)  currentOffset += this.length;
+    else                      $(this).contents().each(countOffset);
+  };
+
+  $(elem).contents().each(countOffset);
+
+  if (doneAnchor === false || doneFocus === false) return undefined;
+
+  //If the selection is made backwards, the offset might be swapped
+  if (startOffset > endOffset) {
+    var temp = startOffset;
+    startOffset = endOffset;
+    endOffset = temp;
+  }
+
+  return [startOffset, endOffset];
+};
+
 if (Meteor.isClient){
-  var range;
   Template.documentPopup.rendered = function() {
     window.setTimeout(function() {
       //TODO guess there is a better way to access params, but I havn't found it yet ^^
@@ -14,7 +71,7 @@ if (Meteor.isClient){
 
           Session.set("lastQuery", decodeURIComponent(Router._currentController.params._lastQuery));
           Session.set("selectedSnippet", decodeURIComponent(Router._currentController.params._selectedSnippet));
-          Session.set("document", result);   
+          Session.set("document", result); 
         }
       });
     }, 1000); //TODO IndexSettings is not available otherwise
@@ -29,7 +86,7 @@ if (Meteor.isClient){
       
       if (selection.rangeCount === 0 || selection.isCollapsed) {
         noSelectionCount++;
-        if (noSelectionCount >= 2) range = undefined;
+        if (noSelectionCount >= 5) range = undefined;
       } else {
         noSelectionCount = 0;
 
@@ -40,6 +97,8 @@ if (Meteor.isClient){
           anchorNode  : newRange.startContainer,
           focusNode   : newRange.endContainer,
         };
+
+        Session.set("atest", range);
       }
 
       countSelectedHighlights();
@@ -205,7 +264,7 @@ if (Meteor.isClient){
     /** Called when a text highlighter is clicked. If a valid selection was made in the file content,
         this will create a text highlight for that selection. Intersecting highlights will be taken
         care of **/
-    'click .textHighlighter': function(e, tmpl) {
+    'touchdown .textHighlighter, click .textHighlighter': function(e, tmpl) {
       var relativeRange = currentSelectionRelativeTo($("#textContent"));
       var startOffset = relativeRange[0];
       var endOffset = relativeRange[1];
@@ -335,7 +394,7 @@ if (Meteor.isClient){
     'click #saveCommentButton': function(e, tmpl) {
       var doc = Session.get("document");
       DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
-    },
+    }
   });
 
   Template.documentPopup.helpers({
@@ -380,50 +439,7 @@ if (Meteor.isClient){
     }
   });
 
-  /** Takes the current selection (stored in range) and returns it relative to the start of the
-      given element. The returned range will be the offset from the first visible character in
-      the element. HTML code is not counted. **/
-  var currentSelectionRelativeTo = function(elem) {
-    if (range === undefined) return undefined;
-
-    //We need to figure out start/endOffset relative to the beginning of #textContent, so we know
-    //where to place the text highlight. Walk recursively over all children of #textContent 
-    //and count the length of all text nodes until we arrive at the anchor/focusNode
-    var startOffset = 0;
-    var endOffset = 0;
-    var currentOffset = 0;  
-    var doneAnchor = false;
-    var doneFocus = false;
-    var countOffset = function() {
-      if (this === range.anchorNode) {
-        startOffset = currentOffset + range.startOffset;
-        doneAnchor = true;
-      }
-
-      if (this === range.focusNode) {
-        endOffset = currentOffset + range.endOffset;
-        doneFocus = true;
-      }
-
-      if (doneAnchor && doneFocus) return; 
-
-      if (this.nodeType === 3)  currentOffset += this.length;
-      else                      $(this).contents().each(countOffset);
-    };
-
-    $(elem).contents().each(countOffset);
-
-    if (doneAnchor === false || doneFocus === false) return undefined;
-
-    //If the selection is made backwards, the offset might be swapped
-    if (startOffset > endOffset) {
-      var temp = startOffset;
-      startOffset = endOffset;
-      endOffset = temp;
-    }
-
-    return [startOffset, endOffset];
-  };
+  
 
   /** Counts how many highlights are intersected by the current text selection and writes the
       result to the selectedHighlightsCount session variable **/
