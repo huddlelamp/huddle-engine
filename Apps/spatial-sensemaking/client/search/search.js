@@ -363,18 +363,22 @@ if (Meteor.isClient) {
     },
 
     'touchdown .deviceIndicator, click .deviceIndicator': function(e, tmpl) {
-      console.log("sowhat from yes");
       e.preventDefault();
 
       var iframe = $("iframe").first().get(0);
       var win = iframe.contentWindow || iframe;
 
-      var text = win.getSelectedContent();
-      if (text === undefined) return;
-
-      console.log(text);
       var targetID = $(e.currentTarget).attr("deviceid");
-      huddle.broadcast("textsnippet", { target: targetID, snippet: text } );
+      var text = win.getSelectedContent();
+      if (text !== undefined) {
+        huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+      } else {
+        var documentID = win.documentID;
+        if (documentID === undefined) return;
+        huddle.broadcast("showdocument", { target: targetID, documentID: documentID } );
+      }
+
+      
 
       // console.log(text);
       // console.log(win.range);

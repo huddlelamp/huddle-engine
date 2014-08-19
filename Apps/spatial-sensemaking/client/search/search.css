@@ -111,14 +111,14 @@
   width: 32px;
 }
 
-.fancybox-overlay {
+/*.fancybox-overlay {
   background: transparent;
   pointer-events: none;
 }
 
 .fancybox-overlay * {
   pointer-events: auto;
-}
+}*/
 
 /*.fancybox-wrap { 
   overflow-x: hidden;

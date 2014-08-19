@@ -66,7 +66,13 @@ if (Meteor.isClient) {
           firstProximityData = false;
         }
       })
-      .on("textsnippet", function(data) {
+      .on("showdocument", function(data) {
+        var thisDevice = Session.get('thisDevice');
+        if (data.target !== thisDevice.id) return;
+
+        console.warn("TODO, SHOW DOCUMENT: "+data.documentID);
+      })
+      .on("addtextsnippet", function(data) {
         var thisDevice = Session.get('thisDevice');
         if (data.target !== thisDevice.id) return;
 

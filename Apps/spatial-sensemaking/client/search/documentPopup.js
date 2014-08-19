@@ -1,5 +1,6 @@
 /** Define explicitly in window so search.js can access it **/
 window.range = undefined;
+window.documentID = undefined;
 
 window.getSelectedContent = function() {
   elem = $("#textContent");
@@ -69,6 +70,7 @@ if (Meteor.isClient){
 
           DocumentMeta._upsert(result._id, {$set: {watched: true}});
 
+          documentID = result._id;
           Session.set("lastQuery", decodeURIComponent(Router._currentController.params._lastQuery));
           Session.set("selectedSnippet", decodeURIComponent(Router._currentController.params._selectedSnippet));
           Session.set("document", result); 
