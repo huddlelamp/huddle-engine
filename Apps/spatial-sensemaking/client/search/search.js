@@ -112,155 +112,15 @@ if (Meteor.isClient) {
 
   Template.searchIndex.helpers({
     'thisDeviceBorderColorCSS': function() {
-      var thisDevice = Session.get('thisDevice');
-      if (thisDevice === undefined || !thisDevice.id) return;
-      
-      var info = DeviceInfo.findOne({ _id: thisDevice.id });
-      if (info === undefined || !info.color) return;
-
-      return 'border-image: radial-gradient(rgb('+info.color.r+', '+info.color.g+', '+info.color.b+') 25%, rgba('+info.color.r+', '+info.color.g+', '+info.color.b+', 0.35) 100%, rgba('+info.color.r+', '+info.color.g+', '+info.color.b+', 0.35)) 1%;';
-      // return 'border-color: rgb('+info.color.r+', '+info.color.g+', '+info.color.b+');';
+      return window.thisDeviceBorderColorCSS();
     },
 
     'deviceColorCSS': function() {
-      var info = DeviceInfo.findOne({ _id: this.id });
-      if (info === undefined || !info.color) return "";
-
-      return 'background-color: rgb('+info.color.r+', '+info.color.g+', '+info.color.b+');';
+      return window.deviceColorCSS(this);
     },
 
     'deviceSizePositionCSS': function() {
-      var indicatorSize = 60;
-
-      /** Returns the point of intersection of two lines.
-          The lines are defined by their beginning and end points **/
-      var intersect = function(p1, p2, p3, p4) {
-        //Slopes
-        var m1 = (p1.y-p2.y)/(p1.x-p2.x);
-        var m2 = (p3.y-p4.y)/(p3.x-p4.x);
-
-        //If a line is axis-parallel its slope is 0
-        if (isNaN(m1) || !isFinite(m1)) m1 = 0;
-        if (isNaN(m2) || !isFinite(m2)) m2 = 0;
-
-        //If the two lines are parallel they don't intersect
-        //If both lines have a slope of 0 they are orthogonal
-        if (m1 === m2 && m1 !== 0) return undefined;
-
-        // y = mx + c   =>   c = y - mx
-        var c1 = p1.y - m1 * p1.x;
-        var c2 = p3.y - m2 * p3.x;
-
-        // y = m1 * x + c1 and y = m2 * x + c2   =>   x = (c2-c1)/(m1-m2)
-        // Special case: If one of the two lines is y-parallel 
-        var ix = (c2-c1)/(m1-m2);
-        if ((p1.x-p2.x) === 0) ix = p1.x;
-        if ((p3.x-p4.x) === 0) ix = p3.x;
-
-        // y can now be figured out by inserting x into y = mx + c
-        // Again special case: If a line is x-parallel
-        var iy = m1 * ix + c1;
-        if ((p1.y-p2.y) === 0) iy = p1.y;
-        if ((p3.y-p4.y) === 0) iy = p3.y;
-
-        return { x: ix, y: iy };
-      };
-
-      /** Checks if point p is inside the boundaries of the given device **/
-      function insideDevice(p, device) {
-        return (
-          p.y >= device.topLeft.y && 
-          p.y <= device.bottomLeft.y &&
-          p.x >= device.topLeft.x &&
-          p.x <= device.topRight.x
-        );
-      }
-
-      /** Distance between two points **/
-      function pointDist(p1, p2) {
-        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
-      }
-
-      var thisDevice = Session.get('thisDevice');
-      var otherDevice = this;
-
-      //Get the intersection with each of the four device boundaries
-      var intersectLeft   = intersect(thisDevice.center, otherDevice.center, thisDevice.topLeft,    thisDevice.bottomLeft);
-      var intersectTop    = intersect(thisDevice.center, otherDevice.center, thisDevice.topLeft,    thisDevice.topRight);
-      var intersectRight  = intersect(thisDevice.center, otherDevice.center, thisDevice.topRight,   thisDevice.bottomRight);
-      var intersectBottom = intersect(thisDevice.center, otherDevice.center, thisDevice.bottomLeft, thisDevice.bottomRight);
-
-      // console.log("-----");
-      // console.log(thisDevice);
-      // console.log(intersectLeft);
-      // console.log(intersectTop);
-      // console.log(intersectRight);
-      // console.log(intersectBottom);
-
-
-      //Get the distance of each intersection and the other device
-      //We need this to figure out which intersection to use
-      //If an intersection is outside of the device it must be invalid      
-      var leftDist   = insideDevice(intersectLeft,   thisDevice) ? pointDist(intersectLeft,   otherDevice.center) : 4000;
-      var topDist    = insideDevice(intersectTop,    thisDevice) ? pointDist(intersectTop,    otherDevice.center) : 4000;
-      var rightDist  = insideDevice(intersectRight,  thisDevice) ? pointDist(intersectRight,  otherDevice.center) : 4000;
-      var bottomDist = insideDevice(intersectBottom, thisDevice) ? pointDist(intersectBottom, otherDevice.center) : 4000;
-
-      // console.log(leftDist);
-      // console.log(topDist);
-      // console.log(rightDist);
-      // console.log(bottomDist);
-
-      //Figure out the final x/y coordinates of the device indicator
-      //This is done by using the boundary intersection that is closest and valid
-      //Then, one coordinate will be converted from world coords into device pixels
-      //The other coordinate is simply set so that half the indicator is visible,
-      //which gives us a nice half-circle
-      //Furthermore, we calculate the indicator size based on the distance
-      var top;
-      var right;
-      var bottom;
-      var left;
-      if (leftDist <= topDist && leftDist <= rightDist && leftDist <= bottomDist) {
-        indicatorSize = 60 * (1.0-leftDist) + 40;
-        var percent = ((intersectLeft.y - thisDevice.topLeft.y) / thisDevice.height);
-        top = $(window).height() * percent - (indicatorSize/2.0);
-        left = -(indicatorSize/2.0);
-      } else if (topDist <= leftDist && topDist <= rightDist && topDist <= bottomDist) {
-        indicatorSize = 60 * (1.0-topDist) + 40;
-        var percent = ((intersectTop.x - thisDevice.topLeft.x) / thisDevice.width);
-        top = -(indicatorSize/2.0);
-        left = $(window).width() * percent - (indicatorSize/2.0);
-      } else if (rightDist <= leftDist && rightDist <= topDist && rightDist <= bottomDist) {
-        indicatorSize = 60 * (1.0-rightDist) + 40;
-        var percent = ((intersectRight.y - thisDevice.topLeft.y) / thisDevice.height);
-        top = $(window).height() * percent - (indicatorSize/2.0);
-        right = -(indicatorSize/2.0);
-      } else if (bottomDist <= leftDist && bottomDist <= topDist && bottomDist <= rightDist) {
-        indicatorSize = 60 * (1.0-bottomDist) + 40;
-        var percent = ((intersectBottom.x - thisDevice.topLeft.x) / thisDevice.width);
-        bottom = -(indicatorSize/2.0);
-        left = $(window).width() * percent - (indicatorSize/2.0);
-      }
-
-      var css = 'width: '+indicatorSize+'px; height: '+indicatorSize+'px; ';
-      if (top    !== undefined) css += 'top: '+top+'px; ';
-      if (right  !== undefined) css += 'right: '+right+'px; ';
-      if (bottom !== undefined) css += 'bottom: '+bottom+'px; ';
-      if (left   !== undefined) css += 'left: '+left+'px; ';
-
-      /*console.log("SETTING DROP FOR "+$(".deviceIndicator").length);
-      $(".deviceIndicator").bind("dragover dragenter", function(e) {
-        event.dataTransfer.dropEffect = "copy";
-        event.preventDefault();
-      });
-
-      $(".deviceIndicator").bind("drop", function() {
-        console.log("DROOOp");
-        event.preventDefault();
-      });*/
-
-      return css;
+      return window.deviceSizePositionCSS(this);
     },
 
     'toSeconds': function(ms) {
@@ -378,27 +238,5 @@ if (Meteor.isClient) {
         huddle.broadcast("showdocument", { target: targetID, documentID: documentID } );
       }
     }
-  });
-
-  Huddle.on("showdocument", function(data) {
-    console.log("wohoo");
-    var thisDevice = Session.get('thisDevice');
-    if (data.target !== thisDevice.id) return;
-
-    $.fancybox({
-      type: "iframe",
-      href: "/documentPopup/"+encodeURIComponent(data.documentID)+"/"+encodeURIComponent(Session.get("lastQuery")),
-      autoSize: false,
-      autoResize: false,
-      height: "952px",
-      width: "722px"
-    });
-  });
-
-  Huddle.on("addtextsnippet", function(data) {
-    var thisDevice = Session.get('thisDevice');
-    if (data.target !== thisDevice.id) return;
-
-    console.warn("TODO, SHOULD ADD A SNIPPET: "+data.snippet);
   });
 }

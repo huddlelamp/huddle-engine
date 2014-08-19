@@ -7,5 +7,5 @@ if (Meteor.isClient) {
         }
         return "";
       }
-  });
+  });  
 }
