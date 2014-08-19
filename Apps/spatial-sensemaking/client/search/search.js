@@ -111,7 +111,22 @@ if (Meteor.isClient) {
   };
 
   Template.searchIndex.helpers({
-    'devicePositionCSS': function() {
+    'thisDeviceBorderColorCSS': function() {
+      var thisDevice = Session.get('thisDevice');
+      var info = DeviceInfo.findOne({ _id: thisDevice.id });
+
+      return 'border-image: radial-gradient(rgb('+info.color.r+', '+info.color.g+', '+info.color.b+') 50%, rgba('+info.color.r+', '+info.color.g+', '+info.color.b+', 0.1) 100%, rgba('+info.color.r+', '+info.color.g+', '+info.color.b+', 0.1)) 1%;';
+      // return 'border-color: rgb('+info.color.r+', '+info.color.g+', '+info.color.b+');';
+    },
+
+    'deviceColorCSS': function() {
+      var info = DeviceInfo.findOne({ _id: this.id });
+      if (info === undefined || !info.color) return "";
+
+      return 'background-color: rgb('+info.color.r+', '+info.color.g+', '+info.color.b+');';
+    },
+
+    'deviceSizePositionCSS': function() {
       var indicatorSize = 60;
 
       /** Returns the point of intersection of two lines.
@@ -172,6 +187,14 @@ if (Meteor.isClient) {
       var intersectRight  = intersect(thisDevice.center, otherDevice.center, thisDevice.topRight,   thisDevice.bottomRight);
       var intersectBottom = intersect(thisDevice.center, otherDevice.center, thisDevice.bottomLeft, thisDevice.bottomRight);
 
+      // console.log("-----");
+      // console.log(thisDevice);
+      // console.log(intersectLeft);
+      // console.log(intersectTop);
+      // console.log(intersectRight);
+      // console.log(intersectBottom);
+
+
       //Get the distance of each intersection and the other device
       //We need this to figure out which intersection to use
       //If an intersection is outside of the device it must be invalid      
@@ -180,34 +203,49 @@ if (Meteor.isClient) {
       var rightDist  = insideDevice(intersectRight,  thisDevice) ? pointDist(intersectRight,  otherDevice.center) : 4000;
       var bottomDist = insideDevice(intersectBottom, thisDevice) ? pointDist(intersectBottom, otherDevice.center) : 4000;
 
+      // console.log(leftDist);
+      // console.log(topDist);
+      // console.log(rightDist);
+      // console.log(bottomDist);
+
       //Figure out the final x/y coordinates of the device indicator
       //This is done by using the boundary intersection that is closest and valid
       //Then, one coordinate will be converted from world coords into device pixels
       //The other coordinate is simply set so that half the indicator is visible,
       //which gives us a nice half-circle
-      var finalX;
-      var finalY;
+      var top;
+      var right;
+      var bottom;
+      var left;
       if (leftDist <= topDist && leftDist <= rightDist && leftDist <= bottomDist) {
-        finalY = $(window).height() * ((intersectLeft.y - thisDevice.topLeft.y) / thisDevice.height);
-        finalX = -(indicatorSize/2.0);
+        indicatorSize = 60 * (1.0-leftDist) + 40;
+        var percent = ((intersectLeft.y - thisDevice.topLeft.y) / thisDevice.height);
+        top = $(window).height() * percent - (indicatorSize/2.0);
+        left = -(indicatorSize/2.0);
       } else if (topDist <= leftDist && topDist <= rightDist && topDist <= bottomDist) {
-        finalY = -(indicatorSize/2.0);
-        finalX = $(window).width() * ((intersectTop.x - thisDevice.topLeft.x) / thisDevice.width);
+        indicatorSize = 60 * (1.0-topDist) + 40;
+        var percent = ((intersectTop.x - thisDevice.topLeft.x) / thisDevice.width);
+        top = -(indicatorSize/2.0);
+        left = $(window).width() * percent - (indicatorSize/2.0);
       } else if (rightDist <= leftDist && rightDist <= topDist && rightDist <= bottomDist) {
-        finalY = $(window).height() * ((intersectRight.y - thisDevice.topRight.y) / thisDevice.height);
-        finalX = $(window).width()-(indicatorSize/2.0);
+        indicatorSize = 60 * (1.0-rightDist) + 40;
+        var percent = ((intersectRight.y - thisDevice.topLeft.y) / thisDevice.height);
+        top = $(window).height() * percent - (indicatorSize/2.0);
+        right = -(indicatorSize/2.0);
       } else if (bottomDist <= leftDist && bottomDist <= topDist && bottomDist <= rightDist) {
-        finalY = $(window).height()-(indicatorSize/2.0);
-        finalX = $(window).width() * ((intersectBottom.x - thisDevice.bottomLeft.x) / thisDevice.width);
+        indicatorSize = 60 * (1.0-bottomDist) + 40;
+        var percent = ((intersectBottom.x - thisDevice.topLeft.x) / thisDevice.width);
+        bottom = -(indicatorSize/2.0);
+        left = $(window).width() * percent - (indicatorSize/2.0);
       }
 
-      //Dirty hack to cover some edge cases
-      //Make sure the x/y are inside the device boundaries, so the indicator is
-      //visible
-      finalX = Math.max(-(indicatorSize/2.0), Math.min($(window).width()-(indicatorSize/2.0), finalX));
-      finalY = Math.max(-(indicatorSize/2.0), Math.min($(window).height()-(indicatorSize/2.0), finalY));
-      
-      return 'top: '+finalY+'px; left: '+finalX+'px;';
+      var css = 'width: '+indicatorSize+'px; height: '+indicatorSize+'px; ';
+      if (top    !== undefined) css += 'top: '+top+'px; ';
+      if (right  !== undefined) css += 'right: '+right+'px; ';
+      if (bottom !== undefined) css += 'bottom: '+bottom+'px; ';
+      if (left   !== undefined) css += 'left: '+left+'px; ';
+
+      return css;
     },
 
     'toSeconds': function(ms) {

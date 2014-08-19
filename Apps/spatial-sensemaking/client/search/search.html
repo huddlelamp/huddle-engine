@@ -5,9 +5,9 @@
       <h1>Search <small>for Evidence</small></h1>
     </div>
 
-    <div id="deviceIndicatorWrapper">
+    <div id="deviceIndicatorWrapper" style="{{thisDeviceBorderColorCSS}}">
       {{#each otherDevices}}
-        <span class="deviceIndicator" style="{{devicePositionCSS}}"></span>
+        <span class="deviceIndicator" style="{{deviceSizePositionCSS}} {{deviceColorCSS}}"></span>
       {{/each}}
     </div>
 

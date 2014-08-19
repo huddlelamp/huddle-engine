@@ -1,9 +1,11 @@
 if (Meteor.isClient) {
 
+  var firstProximityData = true;
+
   $(function() {
     var transformDeviceData = function(data) {
       var newData = {
-        id: data.Identity,
+        id: data.Identity.toString(),
         topLeft: {
           x: data.Location[0] || 0,
           y: data.Location[1] || 0,
@@ -43,11 +45,6 @@ if (Meteor.isClient) {
 
     var huddle = Huddle.client("MyHuddleName")
       .on("proximity", function(data) {
-        var location = data.Location;
-        var x = location[0];
-        var y = location[1];
-        var angle = data.Orientation;
-
         Session.set('thisDevice', transformDeviceData(data));
 
         var otherDevices = [];
@@ -55,8 +52,24 @@ if (Meteor.isClient) {
           otherDevices.push(transformDeviceData(presence));
         });
         Session.set('otherDevices', otherDevices);
+
+        if (data.Identity && firstProximityData) {
+          //Write a random color into the db, this will be this devices color
+          var color = {
+            r: getRandomInt(0, 255),
+            g: getRandomInt(0, 255),
+            b: getRandomInt(0, 255),
+          };
+          DeviceInfo._upsert(data.Identity.toString(), { $set: { color: color } });
+
+          firstProximityData = false;
+        }
       });
     huddle.connect("huddle-orbiter.proxemicinteractions.org", 47060);
   });
+
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 }
