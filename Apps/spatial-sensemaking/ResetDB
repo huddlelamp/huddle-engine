@@ -1,0 +1,2 @@
+echo -e 'db["document-meta"].remove()\ndb["past-queries"].remove()' | sudo meteor mongo
+
