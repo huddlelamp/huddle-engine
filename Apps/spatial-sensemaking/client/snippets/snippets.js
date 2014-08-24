@@ -2,8 +2,6 @@ if (Meteor.isClient) {
   Template.snippets.snippets = function() {
     var thisDevice = Session.get('thisDevice');
 
-    console.log("CHECKING FOR "+thisDevice.id);
-
     var snippets = Snippets.find({ device: thisDevice.id });
     return snippets.fetch();
   };
@@ -18,7 +16,7 @@ if (Meteor.isClient) {
     },
 
     'deviceColorCSS': function() {
-      return window.deviceColorCSS(this);
+      return 'background-color: '+window.deviceColorCSS(this);
     },
 
     'deviceSizePositionCSS': function() {

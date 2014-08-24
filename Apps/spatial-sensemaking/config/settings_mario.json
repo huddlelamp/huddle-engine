@@ -2,7 +2,7 @@
   "public": {
     "elasticSearch": {
       "protocol": "http",
-      "host": "192.168.178.242",
+      "host": "87.146.236.248",
       "port": 9200,
       "index": "egon",
       "attachmentsPath": "attachment"

@@ -109,7 +109,15 @@
       {{#if selectedHighlightsCount}}
         <a href="#" id="deleteHighlights">Delete {{selectedHighlightsCount}} {{pluralize selectedHighlightsCount 'highlight' 'highlights'}}</a>
       {{/if}}
-      <br /><br />
+
+      Send to: 
+      <select>
+        <option>Select device</option>
+        {{#each otherDevices}}
+          <option style="{{deviceColorCSS}}">Device</option>
+        {{/each}}
+      </select>
+      <br />
     {{/if}}
 
     {{#if starImage}}

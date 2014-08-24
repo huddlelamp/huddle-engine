@@ -18,7 +18,7 @@ if (Meteor.isClient) {
     var info = DeviceInfo.findOne({ _id: device.id });
     if (info === undefined || !info.color) return "";
 
-    return 'background-color: rgb('+info.color.r+', '+info.color.g+', '+info.color.b+');';
+    return 'rgb('+info.color.r+', '+info.color.g+', '+info.color.b+');';
   };
 
   window.deviceSizePositionCSS = function(otherDevice) {

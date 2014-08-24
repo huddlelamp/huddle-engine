@@ -36,7 +36,7 @@ if (Meteor.isClient) {
             });
           }
 
-          Session.set("indices", indices);
+          Session.setTemporary("indices", indices);
         }
         catch (e) {
           console.error(e);
@@ -140,15 +140,15 @@ if (Meteor.isClient) {
     },
 
     'click .index-delete': function(e, tmpl) {
-      Session.set('indexInScope', this);
+      Session.setTemporary('indexInScope', this);
     },
 
     'click .index-add-documents': function(e, tmpl) {
-		  Session.set('indexInScope', this);
+		  Session.setTemporary('indexInScope', this);
     },
 
     'click .glyphicon-pencil': function(e, tmpl) {
-	    Session.set('indexInScope', this);
+	    Session.setTemporary('indexInScope', this);
     }
   });
 
@@ -175,7 +175,7 @@ if (Meteor.isClient) {
           isAttachmentsEnabled = (m.mappings && m.mappings.attachment);
         }
 
-        Session.set(name + "Mapping", isAttachmentsEnabled);
+        Session.setTemporary(name + "Mapping", isAttachmentsEnabled);
       });
       return Session.get(name + "Mapping");
     },
@@ -219,7 +219,7 @@ if (Meteor.isClient) {
             console.log(err);
           }
           else {
-            Session.set(indexName + "Mapping", true);
+            Session.setTemporary(indexName + "Mapping", true);
           }
         });
       }
@@ -229,7 +229,7 @@ if (Meteor.isClient) {
             console.log(err);
           }
           else {
-            Session.set(indexName + "Mapping", false);
+            Session.setTemporary(indexName + "Mapping", false);
           }
         });
       }

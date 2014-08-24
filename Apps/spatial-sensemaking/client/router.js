@@ -15,12 +15,6 @@ if (Meteor.isClient) {
       path: '/search'
     });
 
-    this.route('documentPopup', {
-      layoutTemplate: 'contentOnlyLayout',
-      path: '/documentPopup/:_id/:_lastQuery/:_selectedSnippet?',
-      template: 'documentPopup',
-    });
-
     this.route('snippets', {
       path: '/snippets'
     });

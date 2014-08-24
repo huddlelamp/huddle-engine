@@ -93,6 +93,7 @@
   /*border: 1px solid black;*/
   margin: 5px;
   font-size: 0.9em;
+  cursor: pointer;
 }
 
 .document-highlight em,
@@ -127,3 +128,87 @@
 /*.media {
   top: 60px;
 }*/
+
+/****** TAKEN FROM DOCUMENT POPUP, ADJUST *****/
+#documentDetails {
+    display: none;
+      margin: 0;
+      padding: 0;
+      width: 722px;
+      height: 860px;
+      overflow: hidden;
+    }
+
+    #contentWrapper {
+      position: relative
+      display: block;
+      margin: 10px auto;
+      width: 700px;
+      overflow: scroll;
+      -webkit-overflow-scrolling: touch;
+      height: 688px;
+      background-color: #f5f5f5;
+      padding: 10px;
+    }
+
+    #textContent, .textSelectionWrapper  {
+      position: relative;
+      white-space:pre-wrap;
+      /*word-wrap: normal;
+      word-break: normal;*/
+      border: 0;
+      padding: 0;
+      margin: 0;
+    }
+
+    .textSelectionWrapper {
+      background: transparent;
+      pointer-events: none;
+      position: absolute;
+      top: 0px; 
+      left: 0px; 
+      margin: 20px; /* same as #contentWrapper padding + #contentWrapper margin */
+      width: 680px;
+    }
+
+    .textSelection {
+      max-width: 100%;
+      opacity: 0.35;
+      padding: 2px;
+    }
+
+    .container {
+      margin: 0 !important;
+      width: 100% !important;
+      padding: 0 !important;
+      overflow: hidden;
+    }
+
+    #editArea {
+      position: fixed;
+      height: 172px;
+    }
+
+    #contentArea {
+      width: 722px;
+      height: 688px;
+    }
+
+    .textHighlighter {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      margin-right: 10px;
+      border-radius: 50%;
+    }
+
+    #selectedSnippetHighlight {
+      opacity: 0;
+      -webkit-transition: opacity 0.7s;
+    }
+
+    .snippetHighlighter {
+      display: inline;
+      background-color: red;
+      opacity: 0.3;
+    }

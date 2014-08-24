@@ -59,7 +59,14 @@ window.currentSelectionRelativeTo = function(elem) {
 
 if (Meteor.isClient){
   Template.documentPopup.rendered = function() {
+    // Session = window.parent.Session;
+    console.log(Session);
+    Session.set = window.parent.Session.set;
+    Session.get = window.parent.Session.get;
+
     window.setTimeout(function() {
+      Session.set("amplifyID", Router._currentController.params._amplifyid);
+
       //TODO guess there is a better way to access params, but I havn't found it yet ^^
       ElasticSearch.get(decodeURIComponent(Router._currentController.params._id), function(err, result) {
         if (err) {
@@ -69,6 +76,10 @@ if (Meteor.isClient){
           result = result.data;     
 
           DocumentMeta._upsert(result._id, {$set: {watched: true}});
+
+          
+          console.log("WHAA?");
+          console.log(Session.get("results"));
 
           documentID = result._id;
           Session.set("lastQuery", decodeURIComponent(Router._currentController.params._lastQuery));
@@ -121,6 +132,14 @@ if (Meteor.isClient){
       are selected **/
   Template.documentPopup.selectedHighlightsCount = function() {
     return Session.get('selectedHighlightsCount') || undefined;
+  };
+
+  Template.documentPopup.otherDevices = function() {
+    window.parent.huddleDep.depend();
+    console.log("get other");
+    return Session.get("otherDevices") || [];
+    // return SessionAmplify.get(Session.get("amplifyID")+"otherDevices") || [];
+    // return window.parent.Session.get(Session.get("amplifyID")+"otherDevices");
   };
 
   /** Return the URL of the favorites image for this document, depending on the
@@ -400,6 +419,10 @@ if (Meteor.isClient){
   });
 
   Template.documentPopup.helpers({
+    'deviceColorCSS': function() {
+      return 'color: '+window.deviceColorCSS(this);
+    },
+
     /** Returns the content of a highlight overlay for a certain highlight. The content is 
         returned in such a way that the highlighted area will be above the text that was selected
         when the highlight was made **/
