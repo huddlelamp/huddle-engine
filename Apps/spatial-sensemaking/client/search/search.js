@@ -387,40 +387,7 @@ if (Meteor.isClient) {
           console.error(err);
         }
         else {
-          result = result.data;  
-
-          openDetailPopup(result);   
-
-          // DocumentMeta._upsert(result._id, {$set: {watched: true}});
-
-          // var observer = function() {
-          //   return function(newDocument) {
-          //     var doc = Session.get('detailDocument');
-          //     doc.documentMeta = newDocument;
-          //     Session.set('detailDocument', doc);
-          //   }; 
-          // };
-
-          // var cursor = DocumentMeta.find({_id: result._id});
-          // result.documentMeta = cursor.fetch()[0];
-
-          // cursor.observe({
-          //   added   : observer(),
-          //   changed : observer(),
-          //   removed : observer(),
-          // });
-
-          // Session.set("detailDocumentSelectedSnippet", undefined);
-          // Session.set("detailDocument", result); 
-
-          // $.fancybox({
-          //   href: "#documentDetails",
-          //   autoSize: false,
-          //   autoResize: false,
-          //   height: "952px",
-          //   width: "722px",
-          //   afterLoad: attachDetailDocumentEvents
-          // });
+          openDetailPopup(result.data);   
         }
       });
 
@@ -434,24 +401,7 @@ if (Meteor.isClient) {
           console.error(err);
         }
         else {
-          result = result.data;     
-
-          openDetailPopup(result, that.toString());
-
-          // DocumentMeta._upsert(result._id, {$set: {watched: true}});
-
-          // Session.set("detailDocumentSelectedSnippet", that.toString());
-          // Session.set("detailDocumentSelectedSnippetSetTime", undefined);
-          // Session.set("detailDocument", result); 
-          
-          // $.fancybox({
-          //   href: "#documentDetails",
-          //   autoSize: false,
-          //   autoResize: false,
-          //   height: "952px",
-          //   width: "722px",
-          //   afterLoad: attachDetailDocumentEvents
-          // });
+          openDetailPopup(result.data, that.toString());
         }
       });
 
@@ -809,22 +759,7 @@ Huddle.on("showdocument", function(data) {
       console.error(err);
     }
     else {
-      result = result.data;    
-
-      openDetailPopup(result); 
-
-      // DocumentMeta._upsert(result._id, {$set: {watched: true}});
-
-      // Session.set("detailDocumentSelectedSnippet", undefined);
-      // Session.set("detailDocument", result); 
-      // $.fancybox({
-      //   href: "#documentDetails",
-      //   autoSize: false,
-      //   autoResize: false,
-      //   height: "952px",
-      //   width: "722px",
-      //   afterLoad: attachDetailDocumentEvents
-      // });
+      openDetailPopup(result.data); 
     }
   });
 });
