@@ -54,6 +54,7 @@ if (Meteor.isClient) {
         var observer = function(i) { 
           return function(newDocument) {
             var results = Session.get('results');
+            if (results === undefined) return;
             results.hits.hits[i].documentMeta = newDocument;
             Session.set('results', results);
           }; 
@@ -386,38 +387,40 @@ if (Meteor.isClient) {
           console.error(err);
         }
         else {
-          result = result.data;     
+          result = result.data;  
 
-          DocumentMeta._upsert(result._id, {$set: {watched: true}});
+          openDetailPopup(result);   
 
-          var observer = function() {
-            return function(newDocument) {
-              var doc = Session.get('detailDocument');
-              doc.documentMeta = newDocument;
-              Session.set('detailDocument', doc);
-            }; 
-          };
+          // DocumentMeta._upsert(result._id, {$set: {watched: true}});
 
-          var cursor = DocumentMeta.find({_id: result._id});
-          result.documentMeta = cursor.fetch()[0];
+          // var observer = function() {
+          //   return function(newDocument) {
+          //     var doc = Session.get('detailDocument');
+          //     doc.documentMeta = newDocument;
+          //     Session.set('detailDocument', doc);
+          //   }; 
+          // };
 
-          cursor.observe({
-            added   : observer(),
-            changed : observer(),
-            removed : observer(),
-          });
+          // var cursor = DocumentMeta.find({_id: result._id});
+          // result.documentMeta = cursor.fetch()[0];
 
-          Session.set("detailDocumentSelectedSnippet", undefined);
-          Session.set("detailDocument", result); 
+          // cursor.observe({
+          //   added   : observer(),
+          //   changed : observer(),
+          //   removed : observer(),
+          // });
 
-          $.fancybox({
-            href: "#documentDetails",
-            autoSize: false,
-            autoResize: false,
-            height: "952px",
-            width: "722px",
-            afterLoad: attachDetailDocumentEvents
-          });
+          // Session.set("detailDocumentSelectedSnippet", undefined);
+          // Session.set("detailDocument", result); 
+
+          // $.fancybox({
+          //   href: "#documentDetails",
+          //   autoSize: false,
+          //   autoResize: false,
+          //   height: "952px",
+          //   width: "722px",
+          //   afterLoad: attachDetailDocumentEvents
+          // });
         }
       });
 
@@ -433,20 +436,22 @@ if (Meteor.isClient) {
         else {
           result = result.data;     
 
-          DocumentMeta._upsert(result._id, {$set: {watched: true}});
+          openDetailPopup(result, that.toString());
 
-          Session.set("detailDocumentSelectedSnippet", that.toString());
-          Session.set("detailDocumentSelectedSnippetSetTime", undefined);
-          Session.set("detailDocument", result); 
+          // DocumentMeta._upsert(result._id, {$set: {watched: true}});
+
+          // Session.set("detailDocumentSelectedSnippet", that.toString());
+          // Session.set("detailDocumentSelectedSnippetSetTime", undefined);
+          // Session.set("detailDocument", result); 
           
-          $.fancybox({
-            href: "#documentDetails",
-            autoSize: false,
-            autoResize: false,
-            height: "952px",
-            width: "722px",
-            afterLoad: attachDetailDocumentEvents
-          });
+          // $.fancybox({
+          //   href: "#documentDetails",
+          //   autoSize: false,
+          //   autoResize: false,
+          //   height: "952px",
+          //   width: "722px",
+          //   afterLoad: attachDetailDocumentEvents
+          // });
         }
       });
 
@@ -488,9 +493,45 @@ if (Meteor.isClient) {
   });
 }
 
+var openDetailPopup = function(result, snippetText) {
+  DocumentMeta._upsert(result._id, {$set: {watched: true}});
+
+  var observer = function() {
+    return function(newDocument) {
+      var doc = Session.get('detailDocument');
+      if (doc === undefined) return;
+      doc.documentMeta = newDocument;
+      Session.set('detailDocument', doc);
+    }; 
+  };
+
+  var cursor = DocumentMeta.find({_id: result._id});
+  result.documentMeta = cursor.fetch()[0];
+
+  cursor.observe({
+    added   : observer(),
+    changed : observer(),
+    removed : observer(),
+  });
+
+  Session.set("detailDocumentSelectedSnippet", snippetText);
+  Session.set("detailDocumentSelectedSnippetSetTime", undefined);
+  Session.set("detailDocument", result); 
+
+  $.fancybox({
+    href: "#documentDetails",
+    autoSize: false,
+    autoResize: false,
+    height: "952px",
+    width: "722px",
+    afterLoad: setTimeout(attachDetailDocumentEvents, 250)
+  });
+};
+
 var attachDetailDocumentEvents = function() {
 
   var toggleFavorited = function() {
+    console.log("WOHOO");
     var doc = Session.get("detailDocument");
     if (doc.documentMeta && doc.documentMeta.favorited) {
       DocumentMeta._upsert(doc._id, {$set: {favorited: false}});
@@ -768,20 +809,22 @@ Huddle.on("showdocument", function(data) {
       console.error(err);
     }
     else {
-      result = result.data;     
+      result = result.data;    
 
-      DocumentMeta._upsert(result._id, {$set: {watched: true}});
+      openDetailPopup(result); 
 
-      Session.set("detailDocumentSelectedSnippet", undefined);
-      Session.set("detailDocument", result); 
-      $.fancybox({
-        href: "#documentDetails",
-        autoSize: false,
-        autoResize: false,
-        height: "952px",
-        width: "722px",
-        afterLoad: attachDetailDocumentEvents
-      });
+      // DocumentMeta._upsert(result._id, {$set: {watched: true}});
+
+      // Session.set("detailDocumentSelectedSnippet", undefined);
+      // Session.set("detailDocument", result); 
+      // $.fancybox({
+      //   href: "#documentDetails",
+      //   autoSize: false,
+      //   autoResize: false,
+      //   height: "952px",
+      //   width: "722px",
+      //   afterLoad: attachDetailDocumentEvents
+      // });
     }
   });
 });
