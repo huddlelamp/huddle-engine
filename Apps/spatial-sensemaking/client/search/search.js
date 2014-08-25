@@ -51,10 +51,11 @@ if (Meteor.isClient) {
       else {
         var results = result.data;
 
-        var observer = function(result) { 
+        var observer = function(i) { 
           return function(newDocument) {
-            result.documentMeta = newDocument;
-            Session.set("results", results);
+            var results = Session.get('results');
+            results.hits.hits[i].documentMeta = newDocument;
+            Session.set('results', results);
           }; 
         };
 
@@ -65,9 +66,9 @@ if (Meteor.isClient) {
           result.documentMeta = cursor.fetch()[0];
 
           cursor.observe({
-            added   : observer(result),
-            changed : observer(result),
-            removed : observer(result),
+            added   : observer(i),
+            changed : observer(i),
+            removed : observer(i),
           });
         }
 
@@ -115,27 +116,22 @@ if (Meteor.isClient) {
   };
 
   Template.searchIndex.isFavorited = function() {
-    var meta = DocumentMeta.findOne({_id : this._id});
-    // var meta = this.documentMeta;
+    var meta = this.documentMeta;
     return (meta && meta.favorited);
   };
 
   Template.searchIndex.hasComment = function() {
-    var meta = DocumentMeta.findOne({_id : this._id});
-    // var meta = this.documentMeta;
+    var meta = this.documentMeta;
     return (meta && ((meta.comment && meta.comment.length > 0) || (meta.textHighlights && meta.textHighlights.length > 0)));
   };
 
   Template.searchIndex.wasWatched = function() {
-    var meta = DocumentMeta.findOne({_id : this._id});
-    // var meta = this.documentMeta;
+    var meta = this.documentMeta;
     return (meta && meta.watched);
   };
 
   Template.searchIndex.comment = function() {
-    var meta = DocumentMeta.findOne({_id: this._id});
-
-    if (meta) return meta.comment;
+    if (this.documentMeta) return this.documentMeta.comment;
     return "";
   };
 
@@ -394,8 +390,26 @@ if (Meteor.isClient) {
 
           DocumentMeta._upsert(result._id, {$set: {watched: true}});
 
+          var observer = function() {
+            return function(newDocument) {
+              var doc = Session.get('detailDocument');
+              doc.documentMeta = newDocument;
+              Session.set('detailDocument', doc);
+            }; 
+          };
+
+          var cursor = DocumentMeta.find({_id: result._id});
+          result.documentMeta = cursor.fetch()[0];
+
+          cursor.observe({
+            added   : observer(),
+            changed : observer(),
+            removed : observer(),
+          });
+
           Session.set("detailDocumentSelectedSnippet", undefined);
           Session.set("detailDocument", result); 
+
           $.fancybox({
             href: "#documentDetails",
             autoSize: false,
@@ -478,8 +492,7 @@ var attachDetailDocumentEvents = function() {
 
   var toggleFavorited = function() {
     var doc = Session.get("detailDocument");
-    var meta = DocumentMeta.findOne({_id : doc._id});
-    if (meta && meta.favorited) {
+    if (doc.documentMeta && doc.documentMeta.favorited) {
       DocumentMeta._upsert(doc._id, {$set: {favorited: false}});
     } else {
       DocumentMeta._upsert(doc._id, {$set: {favorited: true}});
@@ -499,7 +512,7 @@ var attachDetailDocumentEvents = function() {
     //Therefore, check every existing highlight if it intersects and modify it
     //to prevent overlap
     var doc = Session.get("detailDocument");
-    var meta = DocumentMeta.findOne({ _id: doc._id });      
+    var meta = doc.documentMeta;
     var updatedHighlights = [];
     if (meta && meta.textHighlights) {
       for (var i = 0; i < meta.textHighlights.length; i++) {
@@ -575,7 +588,7 @@ var attachDetailDocumentEvents = function() {
     //Walk over all highlights, check if they intersect the current selection
     //If they do, they are not taken into newHighlights
     var doc = Session.get("detailDocument");
-    var meta = DocumentMeta.findOne({ _id: doc._id });   
+    var meta = doc.documentMeta;
     var newHighlights = [];
     if (meta && meta.textHighlights) {
       for (var i = 0; i < meta.textHighlights.length; i++) {
@@ -671,7 +684,7 @@ var checkCurrentSelection = function() {
     Session.set("detailDocumentSelectionRange", relativeRange);
 
     var doc = Session.get("detailDocument");
-    var meta = DocumentMeta.findOne({ _id: doc._id });   
+    var meta = doc.documentMeta;
     var selectedHighlights = [];
     if (meta && meta.textHighlights) {
       for (var i = 0; i < meta.textHighlights.length; i++) {
