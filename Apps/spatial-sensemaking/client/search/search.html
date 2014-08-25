@@ -1,14 +1,11 @@
 <template name="searchIndex">
+
+  {{> deviceIndicators}}
+
   <div class="container">
 
     <div class="page-header">
       <h1>Search <small>for Evidence</small></h1>
-    </div>
-
-    <div id="deviceIndicatorWrapper" style="{{thisDeviceBorderColorCSS}}">
-      {{#each otherDevices}}
-        <span deviceid="{{id}}" class="deviceIndicator" style="{{deviceSizePositionCSS}} {{deviceBackgroundColorCSS}}"></span>
-      {{/each}}
     </div>
 
     <div class="row">
@@ -69,55 +66,5 @@
     {{/each}}
   </div> <!-- container -->
 
-  <div id="documentDetails">
-    {{#with detailDocument}}
-      {{#if highlightDocumentContent}}
-          <div id="contentArea">
-            <div id="contentWrapper">
-              <pre id="textContent">{{{highlightDocumentContent}}}</pre>
-
-              <pre class="textSelectionWrapper" style="top: -{{detailDocumentScrollOffset}}px;" id="selectedSnippetHighlight">{{{highlightDocumentSelectedSnippetContent}}}</pre>
-
-            {{#if highlightDocumentContent}}
-              {{#each detailDocumentHighlights}}
-                <pre class="textSelectionWrapper" style="top: -{{detailDocumentScrollOffset}}px;">{{{detailDocumentHighlightContent this}}}</pre>
-              {{/each}}
-              {{/if}}
-            </div>
-         </div>
-
-          <div id="editArea">
-            <a class="textHighlighter" href="#" style="background-color: orange;"></a>
-            <a class="textHighlighter" href="#" style="background-color: red;"></a>
-            <a class="textHighlighter" href="#" style="background-color: green;"></a>
-            <a class="textHighlighter" href="#" style="background-color: blue;"></a>
-            <a class="textHighlighter" href="#" style="background-color: purple;"></a>
-            <a class="textHighlighter" href="#" style="background-color: slategray;"></a>
-            <a class="textHighlighter" href="#" style="background-color: sienna;"></a>
-            
-            <a href="#" id="deleteHighlights">
-            {{#if detailDocumentSelectedHighlightsCount}}
-              Delete {{detailDocumentSelectedHighlightsCount}} {{pluralize detailDocumentSelectedHighlightsCount 'highlight' 'highlights'}}
-            {{/if}}
-            </a>
-
-            Send to: 
-            <select id="devicedropdown">
-              <option>Select device</option>
-              {{#each otherDevices}}
-                <option style="{{deviceBackgroundColorCSS}}" deviceid="{{id}}">Device</option>
-              {{/each}}
-            </select>
-            <br />
-
-
-
-            <img src="/images/star_{{#if isFavorited}}enabled{{else}}disabled{{/if}}.png" style="width: 32px;" class="favoritedStar icon" id="detailDocumentStar"/>
-
-            <textarea rows="4" cols="50" id="comment">{{comment}}</textarea>
-            <button id="saveCommentButton">Save</button>
-          </div>
-        {{/if}}
-      {{/with}}
-    </div> <!-- documentPopup -->
+  {{> detailDocumentTemplate}}
 </template>

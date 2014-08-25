@@ -1,0 +1,7 @@
+<template name="deviceIndicators">
+  <div id="deviceIndicatorWrapper" style="{{borderCSS}}">
+    {{#each otherDevices}}
+      <a deviceid="{{id}}" class="deviceIndicator" style="{{deviceSizeAndPositionCSS}} {{deviceBackgroundColorCSS}}" href="#"></a>
+    {{/each}}
+  </div>
+</template>

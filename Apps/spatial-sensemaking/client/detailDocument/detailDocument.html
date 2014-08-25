@@ -1,0 +1,45 @@
+<template name="detailDocumentTemplate">
+  <div id="fuu"></div>
+  <div id="documentDetails">
+    {{#with document}}
+      {{#if content}}
+          <div id="contentArea">
+            <div id="contentWrapper">
+              <pre id="content">{{{content}}}</pre>
+
+              <pre class="highlightWrapper" style="top: -{{scrollOffset}}px;" id="previewSnippetHighlight">{{{previewSnippetContent}}}</pre>
+
+              {{#each highlights}}
+                <pre class="highlightWrapper" style="top: -{{scrollOffset}}px;">{{{highlightContent this}}}</pre>
+              {{/each}}
+            </div>
+         </div>
+
+          <div id="editArea">
+            <a class="highlightButton" href="#" style="background-color: orange;"></a>
+            <!--<a class="highlightButton" href="#" style="background-color: red;"></a>-->
+            <a class="highlightButton" href="#" style="background-color: green;"></a>
+            <a class="highlightButton" href="#" style="background-color: blue;"></a>
+            <a class="highlightButton" href="#" style="background-color: purple;"></a>
+            <a class="highlightButton" href="#" style="background-color: slategray;"></a>
+            <a class="highlightButton" href="#" style="background-color: sienna;"></a>
+            <a id="deleteHighlightButton" href="#"></a>
+
+            Send to: 
+            <select id="devicedropdown">
+              <option>Select device</option>
+              {{#each otherDevices}}
+                <option deviceid="{{id}}">Device</option>
+              {{/each}}
+            </select>
+            <br />
+
+            <img src="/images/star_{{#if isFavorited}}enabled{{else}}disabled{{/if}}.png" style="width: 32px;" class="favoritedStar icon" id="detailDocumentStar"/>
+
+            <textarea rows="4" cols="50" id="comment">{{comment}}</textarea>
+            <button id="saveCommentButton">Save</button>
+          </div>
+        {{/if}}
+      {{/with}}
+    </div> <!-- #documentDetails -->
+</template>

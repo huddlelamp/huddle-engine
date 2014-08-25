@@ -97,7 +97,7 @@
 }
 
 .document-highlight em,
-#textContent em {
+#content em {
   /*background-color: yellow;*/
   /*color: black;*/
   font-style: normal;
@@ -131,84 +131,81 @@
 
 /****** TAKEN FROM DOCUMENT POPUP, ADJUST *****/
 #documentDetails {
-    display: none;
-      margin: 0;
-      padding: 0;
-      width: 722px;
-      height: 860px;
-      overflow: hidden;
-    }
+  display: none;
+  margin: 0;
+  padding: 0;
+  width: 722px;
+  height: 860px;
+  overflow: hidden;
+}
 
-    #contentWrapper {
-      position: relative
-      display: block;
-      margin: 10px auto;
-      width: 700px;
-      overflow: scroll;
-      -webkit-overflow-scrolling: touch;
-      height: 688px;
-      background-color: #f5f5f5;
-      padding: 10px;
-    }
+#editArea {
+  position: fixed;
+  height: 172px;
+}
 
-    #textContent, .textSelectionWrapper  {
-      position: relative;
-      white-space:pre-wrap;
-      /*word-wrap: normal;
-      word-break: normal;*/
-      border: 0;
-      padding: 0;
-      margin: 0;
-    }
+#contentArea {
+  width: 722px;
+  height: 688px;
+}
 
-    .textSelectionWrapper {
-      background: transparent;
-      pointer-events: none;
-      position: absolute;
-      top: 0px; 
-      left: 0px; 
-      margin: 20px; /* same as #contentWrapper padding + #contentWrapper margin */
-      width: 680px;
-    }
+#contentWrapper {
+  position: relative
+  display: block;
+  margin: 10px auto;
+  width: 700px;
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
+  height: 688px;
+  background-color: #f5f5f5;
+  padding: 10px;
+}
 
-    .textSelection {
-      max-width: 100%;
-      opacity: 0.35;
-      padding: 2px;
-    }
+#content, .highlightWrapper  {
+  position: relative;
+  white-space:pre-wrap;
+  /*word-wrap: normal;
+  word-break: normal;*/
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
 
-    .container {
-      margin: 0 !important;
-      width: 100% !important;
-      padding: 0 !important;
-      overflow: hidden;
-    }
+.highlightWrapper {
+  background: transparent;
+  pointer-events: none;
+  position: absolute;
+  top: 0px; 
+  left: 0px; 
+  margin: 20px; /* same as #contentWrapper padding + #contentWrapper margin */
+  width: 680px;
+}
 
-    #editArea {
-      position: fixed;
-      height: 172px;
-    }
+.highlight {
+  max-width: 100%;
+  opacity: 0.35;
+  padding: 2px;
+}
 
-    #contentArea {
-      width: 722px;
-      height: 688px;
-    }
+#previewSnippetHighlight {
+  opacity: 0;
+  -webkit-transition: opacity 0.7s;
+}
 
-    .textHighlighter {
-      display: inline-block;
-      width: 30px;
-      height: 30px;
-      margin-right: 10px;
-      border-radius: 50%;
-    }
+#previewSnippetHighlight .highlight {
+  display: inline;
+  background-color: red;
+}
 
-    #selectedSnippetHighlight {
-      opacity: 0;
-      -webkit-transition: opacity 0.7s;
-    }
+.highlightButton, #deleteHighlightButton {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+  border-radius: 50%;
+}
 
-    .snippetHighlighter {
-      display: inline;
-      background-color: red;
-      opacity: 0.3;
-    }
+#deleteHighlightButton {
+  background: transparent;
+  border: 2px solid red;
+}
