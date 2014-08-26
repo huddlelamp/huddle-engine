@@ -171,22 +171,24 @@ Template.detailDocumentTemplate.otherDevices = function() {
 Template.detailDocumentTemplate.open = function(doc, snippetText) {
   DocumentMeta._upsert(doc._id, {$set: {watched: true}});
 
-  Session.set("detailDocumentPreviewSnippet", snippetText);
-  Session.set("detailDocument", doc); 
-
   $.fancybox({
     href: "#documentDetails",
     autoSize: false,
     autoResize: false,
     height: "952px",
     width: "722px",
+    beforeLoad: function() {
+      Session.set('detailDocumentPreviewSnippetHTML', undefined);
+      Session.set("detailDocumentPreviewSnippet", snippetText);
+      Session.set("detailDocument", doc); 
+    },
     afterLoad: function() { 
       //Dirty hack: 500ms delay so we are pretty sure that all DOM events arrived
       Meteor.setTimeout(function() {
         attachEvents();
       }, 500);
     },
-    afterClose: function() { 
+    afterClose: function() {
       Session.set('detailDocumentPreviewSnippetHTML', undefined);
       Session.set("detailDocumentPreviewSnippet", undefined);
       Session.set("detailDocument", undefined); 
@@ -336,6 +338,11 @@ var attachEvents = function() {
     Session.set("detailDocumentScrollOffset", scroll);
   };
 
+  var openWorldView = function() {
+    if (!Template.deviceWorldView) return;
+    Template.deviceWorldView.show();
+  };
+
   var prevent = function(e) {
     e.preventDefault();
   };
@@ -357,6 +364,9 @@ var attachEvents = function() {
 
   $(".highlightWrapper").off('scroll');
   $(".highlightWrapper").on('scroll', prevent);
+
+  $("#openWorldView").off('click touchdown');
+  $("#openWorldView").on('click touchdown', openWorldView);
 };
 
 

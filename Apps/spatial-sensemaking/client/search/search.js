@@ -211,11 +211,18 @@ if (Meteor.isClient) {
       });
     },
 
-    'touchdown .deviceIndicator, click .deviceIndicator': function(e, tmpl) {
+    'touchdown .deviceIndicator, click .deviceIndicator, touchdown .worldDevice, click .worldDevice': function(e, tmpl) {
       e.preventDefault();
 
-      // var selection = Session.get('detailDocumentSelectionRange');
       var targetID = $(e.currentTarget).attr("deviceid");
+      if (targetID === undefined) return;
+
+      //If a device in the world view was tapped, close the world view
+      //If the world view is not open, this will do nothing
+      if (Template.deviceWorldView) {
+        Template.deviceWorldView.hide();
+      }
+
       var text = Template.detailDocumentTemplate.currentlySelectedContent();
 
       if (text !== undefined && text.length > 0) {

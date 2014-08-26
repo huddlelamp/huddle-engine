@@ -1,0 +1,79 @@
+#documentDetails {
+  display: none;
+  margin: 0;
+  padding: 0;
+  width: 722px;
+  height: 860px;
+  overflow: hidden;
+}
+
+#editArea {
+  position: fixed;
+  height: 172px;
+}
+
+#contentArea {
+  width: 722px;
+  height: 688px;
+}
+
+#contentWrapper {
+  position: relative
+  display: block;
+  margin: 10px auto;
+  width: 700px;
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
+  height: 688px;
+  background-color: #f5f5f5;
+  padding: 10px;
+}
+
+#content, .highlightWrapper  {
+  position: relative;
+  white-space:pre-wrap;
+  /*word-wrap: normal;
+  word-break: normal;*/
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.highlightWrapper {
+  background: transparent;
+  pointer-events: none;
+  position: absolute;
+  top: 0px; 
+  left: 0px; 
+  margin: 20px; /* same as #contentWrapper padding + #contentWrapper margin */
+  width: 680px;
+}
+
+.highlight {
+  max-width: 100%;
+  opacity: 0.35;
+  padding: 2px;
+}
+
+#previewSnippetHighlight {
+  opacity: 0;
+  -webkit-transition: opacity 0.7s;
+}
+
+#previewSnippetHighlight .highlight {
+  display: inline;
+  background-color: red;
+}
+
+.highlightButton, #deleteHighlightButton {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+  border-radius: 50%;
+}
+
+#deleteHighlightButton {
+  background: transparent;
+  border: 2px solid red;
+}
