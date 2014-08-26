@@ -6,8 +6,8 @@ DeviceInfo._upsert = function(id, changes) {
   if (exists === false) {
     var newDoc = { _id : id };
     DeviceInfo.insert(newDoc);
-  } 
-  
+  }
+
   return DeviceInfo.update(id, changes);
 };
 
@@ -23,13 +23,13 @@ if (Meteor.isServer) {
     });
 
     DeviceInfo.allow({
-      insert: function () {
+      insert: function() {
         return true;
       },
-      update: function () {
+      update: function() {
         return true;
       },
-      remove: function () {
+      remove: function() {
         return true;
       },
     });

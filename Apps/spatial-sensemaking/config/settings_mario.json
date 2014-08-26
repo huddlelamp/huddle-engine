@@ -4,8 +4,12 @@
       "protocol": "http",
       "host": "87.146.236.248",
       "port": 9200,
-      "index": "egon",
+      "index": "vast2006",
       "attachmentsPath": "attachment"
+    },
+    "huddle": {
+      "host": "huddle-orbiter.proxemicinteractions.org",
+      "port": 49755
     }
   }
 }
