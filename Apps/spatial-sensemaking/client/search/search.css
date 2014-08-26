@@ -1,3 +1,7 @@
+body {
+  padding: 7px;
+}
+
 .hit {
   z-index: 1 !important;
 }

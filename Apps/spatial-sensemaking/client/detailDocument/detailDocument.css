@@ -77,3 +77,8 @@
   background: transparent;
   border: 2px solid red;
 }
+
+.chosen-container .chosen-results li.highlighted {
+  background-color: rgba(0,0,0,0.2) !important;
+  background-image: none !important;
+}

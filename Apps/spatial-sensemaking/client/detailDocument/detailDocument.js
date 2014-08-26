@@ -148,6 +148,13 @@ Template.detailDocumentTemplate.isFavorited = function() {
   return (meta && meta.favorited);
 };
 
+Template.detailDocumentTemplate.deviceColorCSS = function() {
+  var info = DeviceInfo.findOne({ _id: this.id });
+  if (info === undefined || !info.color) return "";
+
+  return 'color: rgb('+info.color.r+', '+info.color.g+', '+info.color.b+');';
+};
+
 Template.detailDocumentTemplate.document = function() {
   return Session.get("detailDocument") || undefined;
 };
@@ -186,6 +193,10 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
       //Dirty hack: 500ms delay so we are pretty sure that all DOM elements arrived
       Meteor.setTimeout(function() {
         attachEvents();
+        $("#devicedropdown").chosen({
+          width: "125px",
+          disable_search_threshold: 100
+        });
       }, 500);
     },
     afterClose: function() {
@@ -338,6 +349,35 @@ var attachEvents = function() {
     Session.set("detailDocumentScrollOffset", scroll);
   };
 
+  // var deviceSelectorClick = function() {
+  //   console.log("GOT "+Template.detailDocumentTemplate.currentlySelectedContent());
+  //   Session.set('deviceSelectorSnippetToSend', Template.detailDocumentTemplate.currentlySelectedContent());
+  // };
+
+  var deviceSelected = function() {
+    var select = $("#devicedropdown")[0];
+    var option = select.options[select.selectedIndex];
+
+    var targetID = $(option).attr("deviceid");
+
+    //set the select back to the placeholder
+    select.selectedIndex = 0;
+    $("#devicedropdown").trigger("chosen:updated");
+
+    if (targetID === undefined) return;
+
+    var text = Session.get('deviceSelectorSnippetToSend');
+
+    if (text !== undefined && text.length > 0) {
+      huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+    } else {
+      //If no selection was made, show the entire document
+      var doc = Session.get("detailDocument");
+      if (doc === undefined) return;
+      huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+    }
+  };
+
   var openWorldView = function() {
     if (!Template.deviceWorldView) return;
     Template.deviceWorldView.show();
@@ -364,6 +404,14 @@ var attachEvents = function() {
 
   $(".highlightWrapper").off('scroll');
   $(".highlightWrapper").on('scroll', prevent);
+
+  // Meteor.setTimeout(function() {
+  //   $("#devicedropdown_chosen").off('click touchdown chosen:showing_dropdown');
+  //   $("#devicedropdown_chosen").on('click touchdown chosen:showing_dropdown', deviceSelectorClick);
+  // }, 1);
+
+  $("#devicedropdown").off('change');
+  $("#devicedropdown").on('change', deviceSelected);
 
   $("#openWorldView").off('click touchdown');
   $("#openWorldView").on('click touchdown', openWorldView);

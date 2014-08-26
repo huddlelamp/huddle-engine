@@ -26,10 +26,10 @@
             <a id="deleteHighlightButton" href="#"></a>
 
             Send to: 
-            <select id="devicedropdown">
-              <option>Select device</option>
+            <select id="devicedropdown" data-placeholder="Select a device" class="chosen-select">
+              <option></option>
               {{#each otherDevices}}
-                <option deviceid="{{id}}">Device</option>
+                <option deviceid="{{id}}" style="{{deviceColorCSS}}">Device</option>
               {{/each}}
             </select>
 
