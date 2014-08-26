@@ -39,6 +39,14 @@
       </div>
     </div>
 
+    <div class="row result-info">
+      <div class="col-md-10 col-md-offset-1 input-group">
+        {{#with results}}
+          {{{pagination}}}
+        {{/with}}
+      </div>
+    </div>
+
     {{#each results.hits.hits}}
       <div class="row document-result">
         <div class="col-md-10 col-md-offset-1">

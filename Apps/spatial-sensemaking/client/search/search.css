@@ -75,6 +75,23 @@
   font-weight: bold;
 }
 
+.paginationLink {
+  display: inline-block;
+  color: #357ebd;
+  border: 1px solid #357ebd;
+  width: 35px;
+  height: 35px;
+  text-align: center;
+  line-height: 33px;
+  margin: 3px;
+}
+
+.paginationLink:hover {
+  text-decoration: none;
+  background-color: #428bca;
+  color: white;
+}
+
 /*.textSelection {
   background-color: rgba(255, 127, 0, 0.3);
 }*/

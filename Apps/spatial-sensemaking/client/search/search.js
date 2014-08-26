@@ -1,9 +1,13 @@
 if (Meteor.isClient) {
 
-  var search = function(query) {
-    Session.set('querySuggestions', []);
+  var SEARCH_RESULTS_PER_PAGE = 10;
+  var SEARCH_FIELDS = ["file^10", "_name"];
 
-    var SEARCH_FIELDS = ["file^10", "_name"];
+  var search = function(query, page) {
+    if (query === undefined) return;
+    if (page === undefined) page = 1;
+
+    Session.set('querySuggestions', []);
 
     var must = [];
     var must_not = [];
@@ -32,8 +36,8 @@ if (Meteor.isClient) {
 
     var q = {
       fields: ["file"],
-      from: 0,
-      size: 10,
+      from: (page-1)*SEARCH_RESULTS_PER_PAGE,
+      size: SEARCH_RESULTS_PER_PAGE,
       query: { bool: bool },
       highlight: {
         fields: {
@@ -89,6 +93,22 @@ if (Meteor.isClient) {
     });
   };
 
+  Template.searchIndex.rendered = function() {
+    //If we have some parameters for search passed to us, do the appropiate search
+    var query = Router._currentController.params._query ? decodeURIComponent(Router._currentController.params._query) : undefined;
+    var page = Router._currentController.params._page ? decodeURIComponent(Router._currentController.params._page) : undefined;
+
+    if (query !== undefined) {
+      if (page === undefined) page = 1;
+
+      $('#search-query').val(query);
+      Meteor.setTimeout(function() {
+        search(query, page);
+      }, 1000);
+
+    }
+  };
+
   Template.searchIndex.results = function() {
     return Session.get("results") || [];
   };
@@ -114,6 +134,16 @@ if (Meteor.isClient) {
   Template.searchIndex.wasWatched = function() {
     var meta = this.documentMeta;
     return (meta && meta.watched);
+  };
+
+  Template.searchIndex.pagination = function() {
+    var pages = Math.ceil(this.hits.total/SEARCH_RESULTS_PER_PAGE);
+    var result = "";
+    for (var i=1; i<=pages; i++) {
+      result += "<a href='/search/"+encodeURIComponent(Session.get("lastQuery"))+"/"+i+"' class='paginationLink'>"+i+"</a>";
+    }
+
+    return result;
   };
 
   var highlightDocumentContentDep = new Deps.Dependency();
@@ -236,7 +266,7 @@ if (Meteor.isClient) {
       if (targetID === undefined) return;
 
       var text = Session.get("worldViewSnippetToSend");
-      
+
       Template.deviceWorldView.hide();
 
       if (text !== undefined && text.length > 0) {

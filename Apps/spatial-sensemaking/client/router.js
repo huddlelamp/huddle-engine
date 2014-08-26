@@ -12,7 +12,7 @@ if (Meteor.isClient) {
     });
 
     this.route('searchIndex', {
-      path: '/search'
+      path: '/search/:_query?/:_page?'
     });
 
     this.route('snippets', {
