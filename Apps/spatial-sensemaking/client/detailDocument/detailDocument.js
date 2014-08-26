@@ -183,7 +183,7 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
       Session.set("detailDocument", doc); 
     },
     afterLoad: function() { 
-      //Dirty hack: 500ms delay so we are pretty sure that all DOM events arrived
+      //Dirty hack: 500ms delay so we are pretty sure that all DOM elements arrived
       Meteor.setTimeout(function() {
         attachEvents();
       }, 500);

@@ -211,17 +211,11 @@ if (Meteor.isClient) {
       });
     },
 
-    'touchdown .deviceIndicator, click .deviceIndicator, touchdown .worldDevice, click .worldDevice': function(e, tmpl) {
+    'touchdown .deviceIndicator, click .deviceIndicator': function(e, tmpl) {
       e.preventDefault();
 
       var targetID = $(e.currentTarget).attr("deviceid");
       if (targetID === undefined) return;
-
-      //If a device in the world view was tapped, close the world view
-      //If the world view is not open, this will do nothing
-      if (Template.deviceWorldView) {
-        Template.deviceWorldView.hide();
-      }
 
       var text = Template.detailDocumentTemplate.currentlySelectedContent();
 
@@ -233,6 +227,26 @@ if (Meteor.isClient) {
         if (doc === undefined) return;
         huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
       }
-    }
+    },
+
+    'touchdown .worldDevice, click .worldDevice': function(e, tmpl) {
+      e.preventDefault();
+
+      var targetID = $(e.currentTarget).attr("deviceid");
+      if (targetID === undefined) return;
+
+      var text = Session.get("worldViewSnippetToSend");
+      
+      Template.deviceWorldView.hide();
+
+      if (text !== undefined && text.length > 0) {
+        huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+      } else {
+        //If no selection was made, show the entire document
+        var doc = Session.get("detailDocument");
+        if (doc === undefined) return;
+        huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+      }
+    },
   });
 }

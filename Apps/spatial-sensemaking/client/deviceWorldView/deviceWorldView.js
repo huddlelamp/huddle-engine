@@ -32,7 +32,15 @@ Template.deviceWorldView.otherDevices = function() {
 Template.deviceWorldView.show = function(animated) {
   if (animated === undefined) animated = true;
 
-  var duration = animated ? 1000 : 0;
+  //When the world view is shown, we remember the currently selected text snippet
+  //in the document details if there is any.
+  //We do that because a tap in the world view can clear the selection which means
+  //we cannot retrieve it later
+  if (Template.detailDocumentTemplate) {
+    Session.set("worldViewSnippetToSend", Template.detailDocumentTemplate.currentlySelectedContent());
+  }
+
+  var duration = animated ? 500 : 0;
   $("#worldViewWrapper").animate({
     top: "0px"
   }, duration);
@@ -41,7 +49,9 @@ Template.deviceWorldView.show = function(animated) {
 Template.deviceWorldView.hide = function(animated) {
   if (animated === undefined) animated = true;
 
-  var duration = animated ? 1000 : 0;
+  Session.set("worldViewSnippetToSend", undefined);
+
+  var duration = animated ? 500 : 0;
   $("#worldViewWrapper").animate({
     top: $(document).height()+"px"
   }, duration);
