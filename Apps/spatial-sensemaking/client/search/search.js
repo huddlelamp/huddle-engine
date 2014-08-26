@@ -54,13 +54,13 @@ if (Meteor.isClient) {
       else {
         var results = result.data;
 
-        var observer = function(i) { 
+        var observer = function(i) {
           return function(newDocument) {
             var results = Session.get('results');
             if (results === undefined) return;
             results.hits.hits[i].documentMeta = newDocument;
             Session.set('results', results);
-          }; 
+          };
         };
 
         for (var i = 0; i < results.hits.hits.length ; i++) {
@@ -103,10 +103,14 @@ if (Meteor.isClient) {
       if (page === undefined) page = 1;
 
       $('#search-query').val(query);
-      Meteor.setTimeout(function() {
-        search(query, page);
-      }, 1000);
+      // Meteor.setTimeout(function() {
+      //   search(query, page);
+      // }, 1000);
 
+      console.log(IndexSettings.find({}).count());
+      console.log(IndexSettings.findOne({ name: "default" }));
+
+      search(query, page);
     }
   };
 
@@ -212,7 +216,7 @@ if (Meteor.isClient) {
 
         var regexp = new RegExp('.*'+query+'.*', 'i');
         var suggestions = PastQueries.find(
-          { query : { $regex: regexp } }, 
+          { query : { $regex: regexp } },
           { sort  : [["count", "desc"]] }
         );
         Session.set('querySuggestions', suggestions.fetch());
@@ -240,7 +244,7 @@ if (Meteor.isClient) {
           console.error(err);
         }
         else {
-          Template.detailDocumentTemplate.open(result.data);   
+          Template.detailDocumentTemplate.open(result.data);
         }
       });
     },

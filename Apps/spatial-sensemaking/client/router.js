@@ -12,7 +12,15 @@ if (Meteor.isClient) {
     });
 
     this.route('searchIndex', {
-      path: '/search/:_query?/:_page?'
+      path: '/search/:_query?/:_page?',
+      waitOn : function() {
+        return Meteor.subscribe('index-settings');
+      },
+      action : function() {
+        if (this.ready()) {
+          this.render();
+        }
+      }
     });
 
     this.route('snippets', {
