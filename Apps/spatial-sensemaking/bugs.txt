@@ -1,0 +1,1 @@
+- active index not available in .rendered()

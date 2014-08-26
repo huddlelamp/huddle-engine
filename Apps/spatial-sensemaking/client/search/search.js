@@ -77,6 +77,7 @@ if (Meteor.isClient) {
         }
 
         Session.set("lastQuery", query);
+        Session.set("lastQueryPage", page);
         Session.set("results", results);
 
         var pastQuery = PastQueries.findOne({ query: query });
@@ -138,9 +139,14 @@ if (Meteor.isClient) {
 
   Template.searchIndex.pagination = function() {
     var pages = Math.ceil(this.hits.total/SEARCH_RESULTS_PER_PAGE);
+    var query = encodeURIComponent(Session.get("lastQuery"));
     var result = "";
     for (var i=1; i<=pages; i++) {
-      result += "<a href='/search/"+encodeURIComponent(Session.get("lastQuery"))+"/"+i+"' class='paginationLink'>"+i+"</a>";
+      if (i == Session.get("lastQueryPage")) {
+        result += '<span class="paginationLink active">'+i+'</span>';
+      } else {
+        result += "<a href='#' query='"+query+"' page='"+i+"' class='paginationLink'>"+i+"</a>";
+      }
     }
 
     return result;
@@ -216,6 +222,16 @@ if (Meteor.isClient) {
     'click .querySuggestion': function(e, tmpl) {
       tmpl.$('#search-query').val(this.query);
       search(this.query);
+    },
+
+    'click .paginationLink': function(e) {
+      e.preventDefault();
+
+      var query = encodeURIComponent($(e.currentTarget).attr("query"));
+      var page = encodeURIComponent($(e.currentTarget).attr("page"));
+      location.replace('/search/'+query+'/'+page); //go f* yourself iron router
+      // Router.go('/search/'+query+'/'+page);
+      // Router.go('/search', [ 'alderwoodpolice', 3]);
     },
 
     'click .hit': function(e, tmpl) {

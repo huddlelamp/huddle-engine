@@ -84,12 +84,23 @@
   text-align: center;
   line-height: 33px;
   margin: 3px;
+  box-sizing: border-box;
 }
 
 .paginationLink:hover {
   text-decoration: none;
   background-color: #428bca;
   color: white;
+}
+
+.paginationLink.active,
+.paginationLink.active:hover {
+  /*font-weight: bold;*/
+  border-color: black;
+  /*border-width: 2px;*/
+  /*height: 36px;*/
+  color: black;
+  background-color: inherit;
 }
 
 /*.textSelection {
