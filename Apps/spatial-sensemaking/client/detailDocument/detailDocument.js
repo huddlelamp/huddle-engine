@@ -79,9 +79,15 @@ Template.detailDocumentTemplate.previewSnippetContent = function() {
 
     //highlight the snippet when it arrived in the DOM (next run loop)
     Meteor.setTimeout(function() { 
+      var bodyScroll = $("body").scrollTop();
       $("#previewSnippetHighlight .highlight").first().get(0).scrollIntoView(false);
       var scroll = $("#contentWrapper").scrollTop();
       Session.set("detailDocumentScrollOffset", scroll);
+
+      //kind of hackish way to fix fancybox positioning on the iPad
+      // $("body").scrollTop(bodyScroll); //use to fix scrollup on desktop
+      $("body").scrollTop(0); 
+      $(".fancybox-wrap").css("top", "35px");
 
       //Show the highlight, wait for the CSS transition to finish, then hide it
       $("#previewSnippetHighlight").css("opacity", 1.0);
@@ -150,9 +156,11 @@ Template.detailDocumentTemplate.isFavorited = function() {
 
 Template.detailDocumentTemplate.deviceColorCSS = function() {
   var info = DeviceInfo.findOne({ _id: this.id });
-  if (info === undefined || !info.color) return "";
+  if (info === undefined || !info.colorDeg) return "";
 
-  return 'color: rgb('+info.color.r+', '+info.color.g+', '+info.color.b+');';
+  var color = window.degreesToColor(info.colorDeg);
+
+  return 'color: rgb('+color.r+', '+color.g+', '+color.b+');';
 };
 
 Template.detailDocumentTemplate.document = function() {

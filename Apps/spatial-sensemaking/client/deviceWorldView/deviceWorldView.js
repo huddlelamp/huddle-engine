@@ -4,9 +4,11 @@ Template.deviceWorldView.rendered = function() {
 
 Template.deviceWorldView.deviceBorderColorCSS = function() {
   var info = DeviceInfo.findOne({ _id: this.id });
-  if (info === undefined || !info.color) return "";
+  if (info === undefined || !info.colorDeg) return "";
 
-  return 'border-color: rgb('+info.color.r+', '+info.color.g+', '+info.color.b+');';
+  var color = window.degreesToColor(info.colorDeg);
+
+  return 'border-color: rgb('+color.r+', '+color.g+', '+color.b+');';
 };
 
 Template.deviceWorldView.deviceSizeAndPosition = function() {
