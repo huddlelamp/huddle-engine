@@ -14,7 +14,7 @@ if (Meteor.isClient) {
     this.route('searchIndex', {
       path: '/search/:_query?/:_page?',
       waitOn : function() {
-        return Meteor.subscribe('index-settings');
+        return Meteor.subscribe('index-settings') && Meteor.subscribe('past-queries');
       },
       action : function() {
         if (this.ready()) {

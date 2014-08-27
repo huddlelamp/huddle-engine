@@ -26,7 +26,7 @@ body {
   background-color: transparent;
   /*width: 60px;*/
   /*height: 60px;*/
-  opacity: 0.5;
+  opacity: 0.65; 
   /*z-index: 9999;*/
   pointer-events: auto;
 }

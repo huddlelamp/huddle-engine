@@ -119,12 +119,8 @@ function determineDeviceColor(deviceID) {
   //If the device has a unique color already, we don't need to look for a new one
   var needColor = true;
   var thisInfos = DeviceInfo.findOne({ _id: deviceID });
-  console.log("GOT THIS INFO");
-  console.log(thisInfos);
   if (thisInfos !== undefined) {
     var thisColorInfos = DeviceInfo.find({ colorDeg: thisInfos.colorDeg}).fetch();
-    console.log("GOT OTHER INFOS");
-    console.log(thisColorInfos);
     if (thisColorInfos.length === 1) {
       needColor = false;
     }
@@ -263,4 +259,4 @@ window.degreesToColor = function(deg) {
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-};
+}
