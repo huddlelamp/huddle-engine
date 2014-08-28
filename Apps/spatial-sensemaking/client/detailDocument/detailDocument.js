@@ -79,9 +79,14 @@ Template.detailDocumentTemplate.previewSnippetContent = function() {
 
     //highlight the snippet when it arrived in the DOM (next run loop)
     Meteor.setTimeout(function() { 
+      var bodyScroll = $("body").scrollTop();
       $("#previewSnippetHighlight .highlight").first().get(0).scrollIntoView(false);
       var scroll = $("#contentWrapper").scrollTop();
       Session.set("detailDocumentScrollOffset", scroll);
+
+      //scrollIntoView seems to have the opinion it must also scroll the body, not 
+      //onlt #contentWrapper. Therefore, we restore body scroll poisition manually
+      $("body").scrollTop(bodyScroll); 
 
       //Show the highlight, wait for the CSS transition to finish, then hide it
       $("#previewSnippetHighlight").css("opacity", 1.0);
@@ -148,6 +153,15 @@ Template.detailDocumentTemplate.isFavorited = function() {
   return (meta && meta.favorited);
 };
 
+Template.detailDocumentTemplate.deviceColorCSS = function() {
+  var info = DeviceInfo.findOne({ _id: this.id });
+  if (info === undefined || !info.colorDeg) return "";
+
+  var color = window.degreesToColor(info.colorDeg);
+
+  return 'color: rgb('+color.r+', '+color.g+', '+color.b+');';
+};
+
 Template.detailDocumentTemplate.document = function() {
   return Session.get("detailDocument") || undefined;
 };
@@ -173,10 +187,10 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
 
   $.fancybox({
     href: "#documentDetails",
-    autoSize: false,
-    autoResize: false,
-    height: "952px",
-    width: "722px",
+    // autoSize: false,
+    // autoResize: false,
+    // height: "952px",
+    // width: "722px",
     beforeLoad: function() {
       Session.set('detailDocumentPreviewSnippetHTML', undefined);
       Session.set("detailDocumentPreviewSnippet", snippetText);
@@ -186,7 +200,15 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
       //Dirty hack: 500ms delay so we are pretty sure that all DOM elements arrived
       Meteor.setTimeout(function() {
         attachEvents();
+        $("#devicedropdown").chosen({
+          width: "125px",
+          disable_search_threshold: 100
+        });
       }, 500);
+    },
+    beforeClose: function() {
+      var doc = Session.get("detailDocument");
+      DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
     },
     afterClose: function() {
       Session.set('detailDocumentPreviewSnippetHTML', undefined);
@@ -299,6 +321,7 @@ var attachEvents = function() {
   };
 
   
+  
   var deleteHighlights = function() {
     var selection = getContentSelection();
     if (selection === undefined) return;
@@ -338,26 +361,67 @@ var attachEvents = function() {
     Session.set("detailDocumentScrollOffset", scroll);
   };
 
+  // var deviceSelectorClick = function() {
+  //   console.log("GOT "+Template.detailDocumentTemplate.currentlySelectedContent());
+  //   Session.set('deviceSelectorSnippetToSend', Template.detailDocumentTemplate.currentlySelectedContent());
+  // };
+
+  var deviceSelected = function() {
+    var select = $("#devicedropdown")[0];
+    var option = select.options[select.selectedIndex];
+
+    var targetID = $(option).attr("deviceid");
+
+    //set the select back to the placeholder
+    select.selectedIndex = 0;
+    $("#devicedropdown").trigger("chosen:updated");
+
+    if (targetID === undefined) return;
+
+    var text = Session.get('deviceSelectorSnippetToSend');
+
+    if (text !== undefined && text.length > 0) {
+      huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+    } else {
+      //If no selection was made, show the entire document
+      var doc = Session.get("detailDocument");
+      if (doc === undefined) return;
+      huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+    }
+  };
+
   var openWorldView = function() {
     if (!Template.deviceWorldView) return;
     Template.deviceWorldView.show();
+  };
+
+  var fixFixed = function() {
+    //When the keyboard is shown or hidden, elements with position: fixed are
+    //fucked up. This can sometimes be fixed by scrolling the body a little
+    Meteor.setTimeout(function() {
+      $("body").scrollTop($("body").scrollTop()+1);
+    }, 1);
   };
 
   var prevent = function(e) {
     e.preventDefault();
   };
 
-  $("#detailDocumentStar").off("click touchdown");
-  $("#detailDocumentStar").on("click touchdown", toggleFavorited);
+  $("#detailDocumentStar").off("click touchstart");
+  $("#detailDocumentStar").on("click touchstart", toggleFavorited);
 
-  $(".highlightButton").off('click touchdown');
-  $(".highlightButton").on('click touchdown', addHighlight);
+  $(".highlightButton").off('click touchstart');
+  $(".highlightButton").on('click touchstart', addHighlight);
 
-  $("#deleteHighlightButton").off('click touchdown');
-  $("#deleteHighlightButton").on('click touchdown', deleteHighlights);
+  $("#deleteHighlightButton").off('click touchstart');
+  $("#deleteHighlightButton").on('click touchstart', deleteHighlights);
 
-  $("#saveCommentButton").off('click touchdown');
-  $("#saveCommentButton").on('click touchdown', saveComment);
+  $("#comment").off('focus blur');
+  $("#comment").on('focus blur', fixFixed);
+  $("#comment").on('blur', saveComment);
+
+  $("#saveCommentButton").off('click touchstart');
+  $("#saveCommentButton").on('click touchstart', saveComment);
 
   $("#contentWrapper").off('scroll');
   $("#contentWrapper").on('scroll', scrolled);
@@ -365,8 +429,16 @@ var attachEvents = function() {
   $(".highlightWrapper").off('scroll');
   $(".highlightWrapper").on('scroll', prevent);
 
-  $("#openWorldView").off('click touchdown');
-  $("#openWorldView").on('click touchdown', openWorldView);
+  // Meteor.setTimeout(function() {
+  //   $("#devicedropdown_chosen").off('click touchdown chosen:showing_dropdown');
+  //   $("#devicedropdown_chosen").on('click touchdown chosen:showing_dropdown', deviceSelectorClick);
+  // }, 1);
+
+  $("#devicedropdown").off('change');
+  $("#devicedropdown").on('change', deviceSelected);
+
+  $("#openWorldView").off('click touchstart');
+  $("#openWorldView").on('click touchstart', openWorldView);
 };
 
 

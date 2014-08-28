@@ -2,13 +2,17 @@
   display: none;
   margin: 0;
   padding: 0;
-  width: 722px;
-  height: 860px;
+  /*width: 722px;*/
+  /*height: 860px;*/
   overflow: hidden;
 }
 
+.fancybox-inner {
+  overflow: hidden !important;
+}
+
 #editArea {
-  position: fixed;
+  /*posi  tion: fixed;*/
   height: 172px;
 }
 
@@ -76,4 +80,9 @@
 #deleteHighlightButton {
   background: transparent;
   border: 2px solid red;
+}
+
+.chosen-container .chosen-results li.highlighted {
+  background-color: rgba(0,0,0,0.2) !important;
+  background-image: none !important;
 }

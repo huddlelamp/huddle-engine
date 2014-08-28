@@ -103,13 +103,6 @@ if (Meteor.isClient) {
       if (page === undefined) page = 1;
 
       $('#search-query').val(query);
-      // Meteor.setTimeout(function() {
-      //   search(query, page);
-      // }, 1000);
-
-      console.log(IndexSettings.find({}).count());
-      console.log(IndexSettings.findOne({ name: "default" }));
-
       search(query, page);
     }
   };

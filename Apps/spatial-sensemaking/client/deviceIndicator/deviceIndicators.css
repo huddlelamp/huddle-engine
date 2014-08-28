@@ -1,3 +1,7 @@
+body {
+  padding: 10px; /* same as #deviceIndicatorWrapper border-width */
+}
+
 #deviceIndicatorWrapper {
   position: fixed;
   top: 0;
@@ -5,7 +9,7 @@
   width: 100%;
   height: 100%;
   /*border: 5px solid transparent;*/
-  border-width: 7px;
+  border-width: 10px;
   border-style: solid;
   border-color: transparent;
   /*background-color: rgba(255,0,0, 0.05);
@@ -22,7 +26,7 @@
   background-color: transparent;
   /*width: 60px;*/
   /*height: 60px;*/
-  opacity: 0.75;
+  opacity: 0.65; 
   /*z-index: 9999;*/
   pointer-events: auto;
 }
