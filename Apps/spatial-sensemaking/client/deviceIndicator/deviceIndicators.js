@@ -1,3 +1,11 @@
+Template.deviceIndicators.rendered = function() {
+  $(document).ready(function() {
+    console.log("HERE WE GO: "+$("#deviceIndicatorWrapper").width()+" || "+$("#deviceIndicatorWrapper").height());
+    $("#deviceIndicatorWrapper").width($("#deviceIndicatorWrapper").width());
+    $("#deviceIndicatorWrapper").height($("#deviceIndicatorWrapper").height());
+  });
+};
+
 Template.deviceIndicators.borderCSS = function() {
   var thisDevice = Session.get('thisDevice');
   if (thisDevice === undefined || !thisDevice.id) return;

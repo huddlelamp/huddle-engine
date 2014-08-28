@@ -84,10 +84,9 @@ Template.detailDocumentTemplate.previewSnippetContent = function() {
       var scroll = $("#contentWrapper").scrollTop();
       Session.set("detailDocumentScrollOffset", scroll);
 
-      //kind of hackish way to fix fancybox positioning on the iPad
-      // $("body").scrollTop(bodyScroll); //use to fix scrollup on desktop
-      $("body").scrollTop(0); 
-      $(".fancybox-wrap").css("top", "35px");
+      //scrollIntoView seems to have the opinion it must also scroll the body, not 
+      //onlt #contentWrapper. Therefore, we restore body scroll poisition manually
+      $("body").scrollTop(bodyScroll); 
 
       //Show the highlight, wait for the CSS transition to finish, then hide it
       $("#previewSnippetHighlight").css("opacity", 1.0);
@@ -188,10 +187,10 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
 
   $.fancybox({
     href: "#documentDetails",
-    autoSize: false,
-    autoResize: false,
-    height: "952px",
-    width: "722px",
+    // autoSize: false,
+    // autoResize: false,
+    // height: "952px",
+    // width: "722px",
     beforeLoad: function() {
       Session.set('detailDocumentPreviewSnippetHTML', undefined);
       Session.set("detailDocumentPreviewSnippet", snippetText);
@@ -317,6 +316,13 @@ var attachEvents = function() {
     rangy.getSelection(0).removeAllRanges();
   };
 
+  var fixFixed = function() {
+    //When the keyboard is shown or hidden, elements with position: fixed are
+    //fucked up. This can sometimes be fixed by scrolling the body a little
+    Meteor.setTimeout(function() {
+      $("body").scrollTop($("body").scrollTop()+1);
+    }, 1);
+  };
   
   var deleteHighlights = function() {
     var selection = getContentSelection();
@@ -395,17 +401,20 @@ var attachEvents = function() {
     e.preventDefault();
   };
 
-  $("#detailDocumentStar").off("click touchdown");
-  $("#detailDocumentStar").on("click touchdown", toggleFavorited);
+  $("#detailDocumentStar").off("click touchstart");
+  $("#detailDocumentStar").on("click touchstart", toggleFavorited);
 
-  $(".highlightButton").off('click touchdown');
-  $(".highlightButton").on('click touchdown', addHighlight);
+  $(".highlightButton").off('click touchstart');
+  $(".highlightButton").on('click touchstart', addHighlight);
 
-  $("#deleteHighlightButton").off('click touchdown');
-  $("#deleteHighlightButton").on('click touchdown', deleteHighlights);
+  $("#deleteHighlightButton").off('click touchstart');
+  $("#deleteHighlightButton").on('click touchstart', deleteHighlights);
 
-  $("#saveCommentButton").off('click touchdown');
-  $("#saveCommentButton").on('click touchdown', saveComment);
+  $("#comment").off('focus blur');
+  $("#comment").on('focus blur', fixFixed);
+
+  $("#saveCommentButton").off('click touchstart');
+  $("#saveCommentButton").on('click touchstart', saveComment);
 
   $("#contentWrapper").off('scroll');
   $("#contentWrapper").on('scroll', scrolled);
@@ -421,8 +430,8 @@ var attachEvents = function() {
   $("#devicedropdown").off('change');
   $("#devicedropdown").on('change', deviceSelected);
 
-  $("#openWorldView").off('click touchdown');
-  $("#openWorldView").on('click touchdown', openWorldView);
+  $("#openWorldView").off('click touchstart');
+  $("#openWorldView").on('click touchstart', openWorldView);
 };
 
 
