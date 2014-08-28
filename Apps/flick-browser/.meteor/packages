@@ -6,5 +6,5 @@
 standard-app-packages
 autopublish
 insecure
-jquery-ui
-huddle
+mrt:jquery-ui@1.9.2
+raedle:huddle@0.9.3-2

@@ -6,5 +6,6 @@
 standard-app-packages
 autopublish
 insecure
-bootstrap-3
-huddle
+raedle:huddle@0.9.3-2
+mizzao:bootstrap-3
+
