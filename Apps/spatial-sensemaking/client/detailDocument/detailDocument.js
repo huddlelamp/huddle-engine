@@ -206,6 +206,10 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
         });
       }, 500);
     },
+    beforeClose: function() {
+      var doc = Session.get("detailDocument");
+      DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
+    },
     afterClose: function() {
       Session.set('detailDocumentPreviewSnippetHTML', undefined);
       Session.set("detailDocumentPreviewSnippet", undefined);
@@ -316,13 +320,7 @@ var attachEvents = function() {
     rangy.getSelection(0).removeAllRanges();
   };
 
-  var fixFixed = function() {
-    //When the keyboard is shown or hidden, elements with position: fixed are
-    //fucked up. This can sometimes be fixed by scrolling the body a little
-    Meteor.setTimeout(function() {
-      $("body").scrollTop($("body").scrollTop()+1);
-    }, 1);
-  };
+  
   
   var deleteHighlights = function() {
     var selection = getContentSelection();
@@ -397,6 +395,14 @@ var attachEvents = function() {
     Template.deviceWorldView.show();
   };
 
+  var fixFixed = function() {
+    //When the keyboard is shown or hidden, elements with position: fixed are
+    //fucked up. This can sometimes be fixed by scrolling the body a little
+    Meteor.setTimeout(function() {
+      $("body").scrollTop($("body").scrollTop()+1);
+    }, 1);
+  };
+
   var prevent = function(e) {
     e.preventDefault();
   };
@@ -412,6 +418,7 @@ var attachEvents = function() {
 
   $("#comment").off('focus blur');
   $("#comment").on('focus blur', fixFixed);
+  $("#comment").on('blur', saveComment);
 
   $("#saveCommentButton").off('click touchstart');
   $("#saveCommentButton").on('click touchstart', saveComment);
