@@ -43,9 +43,7 @@
 
     <div class="row result-info">
       <div class="col-md-10 col-md-offset-1 input-group">
-        {{#with results}}
-          Page:<br />{{{pagination}}}
-        {{/with}}
+        {{> pagination}}
       </div>
     </div>
 
@@ -76,12 +74,20 @@
 
     <div class="row result-info">
       <div class="col-md-10 col-md-offset-1 input-group">
-        {{#with results}}
-          Page:<br />{{{pagination}}}
-        {{/with}}
+        {{> pagination}}
       </div>
     </div>
   <!-- </div> container -->
 
   {{> detailDocumentTemplate}}
+</template>
+
+<template name="pagination">
+  {{#each pages}}
+    {{#if isEqual this currentPage}}
+      <span class="paginationLink active">{{currentPage}}</span>
+    {{else}}
+      <a href="#" query="{{currentQuery}}" page='{{this}}' class='paginationLink'>{{this}}</a>
+    {{/if}}
+  {{/each}}
 </template>

@@ -20,7 +20,6 @@ Template.deviceWorldView.deviceBackgroundColorCSS = function() {
   var color = window.degreesToColor(info.colorDeg);
 
   alpha = 0.35;
-  console.log(this.id+" || "+thisDevice.id);
   if (this.id === thisDevice.id) alpha = 0.1;
   return 'background-color: rgba('+color.r+', '+color.g+', '+color.b+', '+alpha+');';
 };

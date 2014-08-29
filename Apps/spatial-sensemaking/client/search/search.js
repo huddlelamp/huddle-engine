@@ -7,6 +7,8 @@ if (Meteor.isClient) {
     if (query === undefined) return;
     if (page === undefined) page = 1;
 
+    page = parseInt(page);
+
     Session.set('querySuggestions', []);
 
     var must = [];
@@ -134,20 +136,28 @@ if (Meteor.isClient) {
     return (meta && meta.watched);
   };
 
-  Template.searchIndex.pagination = function() {
-    var pages = Math.ceil(this.hits.total/SEARCH_RESULTS_PER_PAGE);
-    var query = encodeURIComponent(Session.get("lastQuery"));
-    var result = "";
-    for (var i=1; i<=pages; i++) {
-      if (i == Session.get("lastQueryPage")) {
-        result += '<span class="paginationLink active">'+i+'</span>';
-      } else {
-        result += "<a href='#' query='"+query+"' page='"+i+"' class='paginationLink'>"+i+"</a>";
-      }
-    }
+  Template.pagination.currentQuery = function() {
+    return Session.get('lastQuery') || undefined;
+  };
 
+  Template.pagination.currentPage = function() {
+    return Session.get("lastQueryPage") || 1;
+  };
+
+  Template.pagination.pages = function() {
+    var results = Session.get('results');
+    var pages = Math.ceil(results.hits.total/SEARCH_RESULTS_PER_PAGE);
+
+    var result = [];
+    for (var i=1; i<=pages; i++) result.push(i);
     return result;
   };
+
+  Template.pagination.helpers({
+    'isEqual': function(v1, v2) {
+      return v1 === v2;
+    }
+  });
 
   var highlightDocumentContentDep = new Deps.Dependency();
   Template.searchIndex.helpers({
@@ -224,15 +234,19 @@ if (Meteor.isClient) {
     'click .paginationLink': function(e) {
       e.preventDefault();
 
-      var query = encodeURIComponent($(e.currentTarget).attr("query"));
-      var page = encodeURIComponent($(e.currentTarget).attr("page"));
-      location.replace('/search/'+query+'/'+page); //go f* yourself iron router
+      // var query = encodeURIComponent($(e.currentTarget).attr("query"));
+      // var page = encodeURIComponent($(e.currentTarget).attr("page"));
+      var query = $(e.currentTarget).attr("query");
+      var page = $(e.currentTarget).attr("page");
+      // location.replace('/search/'+query+'/'+page); //go f* yourself iron router
       // Router.go('/search/'+query+'/'+page);
-      // Router.go('/search', [ 'alderwoodpolice', 3]);
+      // Router.go('searchIndex', { _query: 'alderwoodpolice', _page: 3});
+      console.log(query);
+      console.log(page);
+      search(query, page);
     },
 
     'click .toggleFavorited': function(e, tmpl) {
-      console.log(this);
       if (this.documentMeta && this.documentMeta.favorited) {
         DocumentMeta._upsert(this._id, {$set: {favorited: false}});
       } else {
@@ -263,7 +277,7 @@ if (Meteor.isClient) {
       });
     },
 
-    'touchdown .deviceIndicator, click .deviceIndicator': function(e, tmpl) {
+    'click .deviceIndicator': function(e, tmpl) {
       e.preventDefault();
 
       var targetID = $(e.currentTarget).attr("deviceid");
@@ -281,7 +295,7 @@ if (Meteor.isClient) {
       }
     },
 
-    'touchdown .worldDevice, click .worldDevice': function(e, tmpl) {
+    'click .worldDevice': function(e, tmpl) {
       e.preventDefault();
 
       var targetID = $(e.currentTarget).attr("deviceid");
