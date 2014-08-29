@@ -1,0 +1,16 @@
+{
+  "format": "web-program-pre1",
+  "manifest": [
+    {
+      "path": "da39a3ee5e6b4b0d3255bfef95601890afd80709.css",
+      "where": "client",
+      "type": "css",
+      "cacheable": true,
+      "url": "/da39a3ee5e6b4b0d3255bfef95601890afd80709.css",
+      "sourceMap": "da39a3ee5e6b4b0d3255bfef95601890afd80709.css.map",
+      "sourceMapUrl": "/da39a3ee5e6b4b0d3255bfef95601890afd80709.map",
+      "size": 67,
+      "hash": "fcd27b8bcaa00d54c7985b150de548d29fa1e959"
+    }
+  ]
+}

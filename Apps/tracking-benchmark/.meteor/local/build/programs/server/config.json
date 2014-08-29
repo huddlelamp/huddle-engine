@@ -1,0 +1,4 @@
+{
+  "meteorRelease": "METEOR@0.9.0.1",
+  "client": "../web.browser/program.json"
+}
