@@ -13,28 +13,3 @@ String.prototype.format = function () {
         return args[n];
     });
 };
-
-/* global Log */
-"use strict";
-
-/**
- * Common functions.
- *
- * @author Roman Rädle
- * @namespace Common
- */
-var Common = (function() {
-
-  this.getDeviceType = function() {
-    var type = navigator.userAgent.match(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i);
-
-    var deviceType = 'unknown';
-    if (type) {
-        deviceType = type[0];
-    }
-
-    return deviceType;
-  };
-
-  return this;
-})();

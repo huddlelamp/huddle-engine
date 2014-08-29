@@ -41,6 +41,8 @@
   border: 0;
   padding: 0;
   margin: 0;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .highlightWrapper {
@@ -54,9 +56,17 @@
 }
 
 .highlight {
-  max-width: 100%;
-  opacity: 0.35;
-  padding: 2px;
+  position: relative;
+  /*max-width: 100%;*/
+  /*opacity: 0.35;*/
+  padding: 2px 0;
+  /*padding: 0px;*/
+  /*z-index: 9998;*/
+}
+
+.highlight.previewSnippet {
+  -webkit-transition: color 0.7s, background-color 0.7s;
+  /*z-index: 9999;*/
 }
 
 #previewSnippetHighlight {
