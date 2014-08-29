@@ -231,6 +231,15 @@ if (Meteor.isClient) {
       // Router.go('/search', [ 'alderwoodpolice', 3]);
     },
 
+    'click .toggleFavorited': function(e, tmpl) {
+      console.log(this);
+      if (this.documentMeta && this.documentMeta.favorited) {
+        DocumentMeta._upsert(this._id, {$set: {favorited: false}});
+      } else {
+        DocumentMeta._upsert(this._id, {$set: {favorited: true}});
+      }
+    },
+
     'click .hit': function(e, tmpl) {
       ElasticSearch.get(this._id, function(err, result) {
         if (err) {

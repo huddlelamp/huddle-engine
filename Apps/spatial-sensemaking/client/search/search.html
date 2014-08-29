@@ -1,10 +1,12 @@
 <template name="searchIndex">
 
+  {{> handlebarsCSS}}
+  
   {{> deviceIndicators}}
 
   {{> deviceWorldView}}
 
-  <div class="container">
+  <!-- <div class="container"> -->
 
     <div class="page-header">
       <h1>Search <small>for Evidence</small></h1>
@@ -50,18 +52,15 @@
     {{#each results.hits.hits}}
       <div class="row document-result">
         <div class="col-md-10 col-md-offset-1">
-        {{#if isFavorited}}
-          <img src="/images/star_enabled.png" class="favoritedStar icon"/>
-        {{else}}
-          <img src="/images/star_disabled.png" class="favoritedStar icon"/>
-        {{/if}}
+          <a href="#" class="toggleFavorited"><span class="glyphicon glyphicon-{{#if isFavorited}}heart{{else}}heart-empty{{/if}} icon"></span>
+          </a>
 
         {{#if hasComment}}
-          <img src="/images/comment.png" class="icon"/>
+          <span class="glyphicon glyphicon-tags icon"></span>
         {{/if}}
 
         {{#if wasWatched}}
-          <img src="/images/watched.png" class="icon"/>
+          <span class="glyphicon glyphicon-eye-open icon"></span>
         {{/if}}
           <h4>
             <a href="#" class="hit">{{_id}}</a> (<a href="{{urlToDocument _id}}" target="_blank">raw document</a>)
@@ -82,7 +81,7 @@
         {{/with}}
       </div>
     </div>
-  </div> <!-- container -->
+  <!-- </div> container -->
 
   {{> detailDocumentTemplate}}
 </template>

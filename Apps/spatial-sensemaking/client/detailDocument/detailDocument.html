@@ -36,7 +36,7 @@
             <a href="#" id="openWorldView">Open World View</a>
             <br />
 
-            <img src="/images/star_{{#if isFavorited}}enabled{{else}}disabled{{/if}}.png" style="width: 32px;" class="favoritedStar icon" id="detailDocumentStar"/>
+            <a href="#" class="toggleFavorited" id="detailDocumentStar"><span class="glyphicon glyphicon-{{#if isFavorited}}heart{{else}}heart-empty{{/if}} icon"></span></a>
 
             <textarea rows="4" cols="50" id="comment">{{comment}}</textarea>
             <!--<button id="saveCommentButton">Save</button>-->

@@ -220,6 +220,8 @@ HSLColorspace.prototype = {
     for(var key in rgbValue) {
       rgbValue[key] /= 255;
     }
+
+    console.log("COLOR NOW "+JSON.stringify(rgbValue));
     
     var _M = Math.max(rgbValue.r, rgbValue.g, rgbValue.b);
     var _m = Math.min(rgbValue.r, rgbValue.g, rgbValue.b);

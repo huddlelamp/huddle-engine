@@ -70,7 +70,6 @@ if (Meteor.isClient) {
         needCheckColor = false;
 
         var timeout = getRandomInt(3000, 8000);
-        console.log("GOT TIMEOUT "+timeout);
         Meteor.setTimeout(function() {
           determineDeviceColor(data.Identity.toString());
         }, timeout);
@@ -238,18 +237,28 @@ function determineDeviceColor(deviceID) {
         }
       }
     }
+    
     DeviceInfo._upsert(deviceID, { $set: { colorDeg: newColorDeg } });
   }
 }
 
-window.degreesToColor = function(deg) {
-  var hsv = new HSVColorspace();
-  var color = hsv.toRGB({
+window.degreesToColor = function(deg, ensureVisibility) {
+  if (ensureVisibility === undefined) ensureVisibility = true;
+
+  var color = new tinycolor({
     s: 1,
     v: 1,
     h: deg
   });
 
+  //If requested, make sure the color is visible on white background
+  if (ensureVisibility) {
+    while (color.getBrightness() > 127) {
+      color = color.darken(1);
+    }
+  }
+
+  color = color.toRgb();
   return {
     r: Math.round(color.r),
     g: Math.round(color.g),
