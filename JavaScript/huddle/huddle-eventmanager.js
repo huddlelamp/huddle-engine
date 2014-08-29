@@ -61,6 +61,3 @@ var EventManager = (function()
     trigger  : trigger
   };
 })();
-
-// make EventManager globally available
-window.EventManager = EventManager;

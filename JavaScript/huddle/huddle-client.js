@@ -30,7 +30,7 @@
  * @namespace Huddle
  * @param {int} Device id.
  */
-var Huddle = (function ($) {
+Huddle = (function ($) {
 
     // set web socket
     var WebSocket = window.WebSocket || window.MozWebSocket;
@@ -491,6 +491,3 @@ var Huddle = (function ($) {
 
     return this;
 }).call({}, jQuery); //sweet! we can set this in an IIFE by passing in a blank object literal using the call method
-
-// make Huddle globally available
-window.Huddle = Huddle;
