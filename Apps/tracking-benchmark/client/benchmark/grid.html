@@ -1,0 +1,22 @@
+<template name="benchmarkGrid">
+  <div class="row">
+    <div class="col-lg-6">
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Benchmark {{benchmarkName}}</h3>
+        </div>
+        <div class="panel-body">
+          <svg id="sample-grid" width="{{gridWidth}}" height="{{gridHeight}}">
+            {{#each gridData}}
+              <circle class="sample-point {{state}}" cx="{{x}}" cy="{{y}}" r="25" />
+            {{/each}}
+          </svg>
+        </div>
+        <div class="panel-footer">Current Huddle Client Location {{huddleLocation}}</div>
+      </div>
+    </div>
+  </div>
+
+  {{> samplingView}}
+</template>

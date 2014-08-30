@@ -1,0 +1,24 @@
+<template name="precisionCalculate">
+  <button id="calculate-btn" type="button">Press me!</button>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Measure</th>
+        <th>X</th>
+        <th>Y</th>
+        <th>Unit</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each measures}}
+      <tr>
+        <td><b>{{type}}</b></td>
+        <td>{{x}}</td>
+        <td>{{y}}</td>
+        <td>{{unit}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</template>

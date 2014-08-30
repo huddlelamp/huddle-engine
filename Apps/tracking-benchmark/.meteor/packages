@@ -10,4 +10,6 @@ raedle:huddle
 underscore
 jquery
 mizzao:bootstrap-3
+iron:router
+http
 
