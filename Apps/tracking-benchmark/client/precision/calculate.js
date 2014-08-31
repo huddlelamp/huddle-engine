@@ -8,20 +8,18 @@ if (Meteor.isClient) {
 
   Session.setDefault("groundTruthMeasure", 10.0);
 
-  Session.setDefault("measures", []);
+  Session.setDefault("conditions", []);
 
-  var addMeasure = function(type, unit, x, y) {
-
-    var measures = Session.get("measures");
-
-    measures.push({
+  /**
+   *
+   */
+  var getMeasure = function(type, unit, x, y) {
+    return {
       type: type,
       unit: unit,
       x: x,
       y: y
-    });
-
-    Session.set("measures", measures);
+    };
   };
 
   /**
@@ -76,10 +74,10 @@ if (Meteor.isClient) {
 
     // console.log("Precision MAX: X={0}, Y={1} [in px]".format(ss.max(sdsX) * trackingImageWidth, ss.max(sdsY) * trackingImageHeight));
 
-    var x = (ss.max(sdsX) * trackingImageWidth).toFixed(2);
-    var y = (ss.max(sdsY) * trackingImageHeight).toFixed(2);
+    var x = (ss.max(sdsX) * trackingImageWidth);
+    var y = (ss.max(sdsY) * trackingImageHeight);
 
-    addMeasure("Precision Mean", "px", x, y);
+    return [getMeasure("Precision Mean", "px", x, y)];
   };
 
   var calculateAccuracy = function(benchmark) {
@@ -135,22 +133,24 @@ if (Meteor.isClient) {
       // console.log(neighborSpots.length);
     });
 
-    var meanX = ss.mean(accuraciesX).toFixed(2);
-    var meanY = ss.mean(accuraciesY).toFixed(2);
+    var meanX = ss.mean(accuraciesX);
+    var meanY = ss.mean(accuraciesY);
 
-    var minX = ss.min(accuraciesX).toFixed(2);
-    var minY = ss.min(accuraciesY).toFixed(2);
+    var minX = ss.min(accuraciesX);
+    var minY = ss.min(accuraciesY);
 
-    var maxX = ss.max(accuraciesX).toFixed(2);
-    var maxY = ss.max(accuraciesY).toFixed(2);
+    var maxX = ss.max(accuraciesX);
+    var maxY = ss.max(accuraciesY);
 
-    var sdX = ss.standard_deviation(accuraciesX).toFixed(2);
-    var sdY = ss.standard_deviation(accuraciesY).toFixed(2);
+    var sdX = ss.standard_deviation(accuraciesX);
+    var sdY = ss.standard_deviation(accuraciesY);
 
-    addMeasure("Accuracy Mean", "cm", meanX, meanY);
-    addMeasure("Accuracy Min", "cm", minX, minY);
-    addMeasure("Accuracy Max", "cm", maxX, maxY);
-    addMeasure("Accuracy SD", "cm", sdX, sdY);
+    return [
+      getMeasure("Accuracy Mean", "cm", meanX, meanY),
+      getMeasure("Accuracy Min", "cm", minX, minY),
+      getMeasure("Accuracy Max", "cm", maxX, maxY),
+      getMeasure("Accuracy SD", "cm", sdX, sdY)
+    ];
   };
 
   /**
@@ -246,10 +246,33 @@ if (Meteor.isClient) {
 
   Template.precisionCalculate.helpers({
 
-    'measures': function() {
-      return Session.get("measures");
+    'conditions': function() {
+      return Session.get("conditions");
+    },
+
+    'toFixed': function(value) {
+      return value.toFixed(2);
     },
   });
+
+  var calculate = function(condition) {
+    var url = "https://dl.dropboxusercontent.com/u/3063782/benchmark_{0}.xml".format(condition);
+    parseBenchmark(url, function(benchmark) {
+      var precision = calculatePrecision(benchmark);
+      var accuracy = calculateAccuracy(benchmark);
+
+      var conditions = Session.get("conditions");
+
+      var measures = precision.concat(accuracy);
+
+      conditions.push({
+        name: benchmark.name,
+        measures: measures
+      });
+
+      Session.set("conditions", conditions);
+    });
+  };
 
   /**
    *
@@ -260,11 +283,13 @@ if (Meteor.isClient) {
      *
      */
     'click #calculate-btn': function(e, tmpl) {
-      var url = "https://dl.dropboxusercontent.com/u/3063782/benchmark_daylight.xml";
-      parseBenchmark(url, function(benchmark) {
-        calculatePrecision(benchmark);
-        calculateAccuracy(benchmark);
-      });
+      calculate("officelight");
+      calculate("bright");
+      calculate("dark");
+
+      calculate("finger");
+      calculate("1hand");
+      calculate("2hands");
     },
   });
 }

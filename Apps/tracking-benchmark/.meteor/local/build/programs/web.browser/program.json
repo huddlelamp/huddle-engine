@@ -462,9 +462,9 @@
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/precision/template.calculate.js?ef433234fd4155ef369de1b76b03d33d2dbd38ee",
-      "size": 1082,
-      "hash": "ef433234fd4155ef369de1b76b03d33d2dbd38ee"
+      "url": "/client/precision/template.calculate.js?c51458d6368e140eb358e55676f124243ede4502",
+      "size": 1999,
+      "hash": "c51458d6368e140eb358e55676f124243ede4502"
     },
     {
       "path": "app/client/template.layout.js",
@@ -516,9 +516,9 @@
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/benchmark/sampling.js?d4339c7cc76c09b6dcd869192ffda995e2f16b52",
-      "size": 2094,
-      "hash": "d4339c7cc76c09b6dcd869192ffda995e2f16b52"
+      "url": "/client/benchmark/sampling.js?a18146a43680018e420d380b5050bbe5985b8d34",
+      "size": 2308,
+      "hash": "a18146a43680018e420d380b5050bbe5985b8d34"
     },
     {
       "path": "app/client/benchmark/settings.js",
@@ -534,9 +534,9 @@
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/precision/calculate.js?868e71af6a839b437c14e9490fc40a81b50f3928",
-      "size": 7403,
-      "hash": "868e71af6a839b437c14e9490fc40a81b50f3928"
+      "url": "/client/precision/calculate.js?25a0ba8425d33f4582510a164d760c8e64315cb2",
+      "size": 7814,
+      "hash": "25a0ba8425d33f4582510a164d760c8e64315cb2"
     },
     {
       "path": "app/client/huddle.js",

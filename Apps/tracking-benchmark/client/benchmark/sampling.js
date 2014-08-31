@@ -49,6 +49,13 @@ if (Meteor.isClient) {
       var benchmarkName = Session.get("benchmarkName");
       var samples = Session.get("huddleSamples");
 
+      // do not set as valid measurement if it is too few samples
+      if (samples.length < 100) {
+        $('#samplingViewModal').modal("hide");
+        Session.set("huddleSamples", []);
+        return;
+      }
+
       Meteor.call("samplesBenchmark", benchmarkName, point.row, point.column, samples, function(err, result) {
         if (err) throw err;
         console.log(result);
