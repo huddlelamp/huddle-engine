@@ -82,7 +82,7 @@ if (Meteor.isClient) {
         Session.set("lastQueryPage", page);
         Session.set("results", results);
 
-        var pastQuery = PastQueries.findOne({ query: query.trim().toLower() });
+        var pastQuery = PastQueries.findOne({ query: query.trim().toLowerCase() });
         if (pastQuery === undefined) {
           var newDoc = {
             query : query,
@@ -253,6 +253,8 @@ if (Meteor.isClient) {
       if (targetID === undefined) return;
 
       var text = Template.detailDocumentTemplate.currentlySelectedContent();
+      console.log("GOT");
+      console.log(text);
 
       if (text !== undefined && text.length > 0) {
         huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
