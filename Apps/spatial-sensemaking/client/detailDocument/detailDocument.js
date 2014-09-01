@@ -124,7 +124,6 @@ Template.detailDocumentTemplate.content = function() {
     //PREVIEW SNIPPET
     var snippet = Session.get('detailDocumentPreviewSnippet');
     var snippetLocked = Session.get('detailDocumentPreviewSnippetLocked');
-    console.log("LOCK: "+snippetLocked);
     if (!snippetLocked && snippet && snippet.length > 0) {
       //for some reason, if the snippet is at the very end of the file content it 
       //has an additional line break at the end. Because of that, remove line ends
@@ -136,11 +135,9 @@ Template.detailDocumentTemplate.content = function() {
       var startOffset = tempContent.text().indexOf(snippet);
       var endOffset = startOffset + snippet.length;
       if (startOffset >= 0 && endOffset >= 0) {
-        console.log("Offset alright");
         //Create a fake highlight and add it to the text
         var fakeHighlight = [startOffset, endOffset, "transparent"];
         insertHighlightIntoDOM(tempContent[0], fakeHighlight, { cssClasses: "previewSnippet" });
-        console.log(tempContent.html());
 
         //Fade in and out the preview snippet
         Meteor.setTimeout(function() {
@@ -268,6 +265,8 @@ var attachEvents = function() {
   };
   
   var addHighlight = function(e) {
+    e.preventDefault();
+
     var selection = getContentSelection();
     var color = $(e.currentTarget).css("background-color");
 
@@ -348,6 +347,8 @@ var attachEvents = function() {
   
   
   var deleteHighlights = function() {
+    e.preventDefault();
+
     var selection = getContentSelection();
     if (selection === undefined) return;
 
@@ -405,7 +406,9 @@ var attachEvents = function() {
     }
   };
 
-  var openWorldView = function() {
+  var openWorldView = function(e) {
+    e.preventDefault();
+
     if (!Template.deviceWorldView) return;
     Template.deviceWorldView.show();
   };
@@ -425,18 +428,18 @@ var attachEvents = function() {
   $("#detailDocumentStar").off("click");
   $("#detailDocumentStar").on("click", toggleFavorited);
 
-  $(".highlightButton").off('click touchstart');
-  $(".highlightButton").on('click touchstart', addHighlight);
+  $(".highlightButton").off('touchend mouseup');
+  $(".highlightButton").on('touchend mouseup', addHighlight);
 
-  $("#deleteHighlightButton").off('click');
-  $("#deleteHighlightButton").on('click', deleteHighlights);
+  $("#deleteHighlightButton").off('touchend mouseup');
+  $("#deleteHighlightButton").on('touchend mouseup', deleteHighlights);
 
   $("#comment").off('focus blur');
   $("#comment").on('focus blur', fixFixed);
   $("#comment").on('blur', saveComment);
 
-  $("#saveCommentButton").off('click');
-  $("#saveCommentButton").on('click', saveComment);
+  // $("#saveCommentButton").off('click');
+  // $("#saveCommentButton").on('click', saveComment);
 
   // Meteor.setTimeout(function() {
   //   $("#devicedropdown_chosen").off('click touchdown chosen:showing_dropdown');
@@ -446,8 +449,8 @@ var attachEvents = function() {
   $("#devicedropdown").off('change');
   $("#devicedropdown").on('change', deviceSelected);
 
-  $("#openWorldView").off('click');
-  $("#openWorldView").on('click', openWorldView);
+  $("#openWorldView").off('touchend mouseup');
+  $("#openWorldView").on('touchend mouseup', openWorldView);
 };
 
 

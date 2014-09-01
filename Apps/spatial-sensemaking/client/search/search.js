@@ -245,46 +245,6 @@ if (Meteor.isClient) {
         }
       });
     },
-
-    'click .deviceIndicator': function(e, tmpl) {
-      e.preventDefault();
-
-      var targetID = $(e.currentTarget).attr("deviceid");
-      if (targetID === undefined) return;
-
-      var text = Template.detailDocumentTemplate.currentlySelectedContent();
-      console.log("GOT");
-      console.log(text);
-
-      if (text !== undefined && text.length > 0) {
-        huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
-      } else {
-        //If no selection was made, show the entire document
-        var doc = Session.get("detailDocument");
-        if (doc === undefined) return;
-        huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
-      }
-    },
-
-    'click .worldDevice': function(e, tmpl) {
-      e.preventDefault();
-
-      var targetID = $(e.currentTarget).attr("deviceid");
-      if (targetID === undefined) return;
-
-      var text = Session.get("worldViewSnippetToSend");
-
-      Template.deviceWorldView.hide();
-
-      if (text !== undefined && text.length > 0) {
-        huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
-      } else {
-        //If no selection was made, show the entire document
-        var doc = Session.get("detailDocument");
-        if (doc === undefined) return;
-        huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
-      }
-    },
   });
 }
 

@@ -95,6 +95,28 @@ Template.deviceIndicators.otherDevices = function() {
   return Session.get("otherDevices") || [];
 };
 
+Template.deviceIndicators.events({
+  'touchend .deviceIndicator, mouseup .deviceIndicator': function(e, tmpl) {
+    e.preventDefault();
+
+    var targetID = $(e.currentTarget).attr("deviceid");
+    if (targetID === undefined) return;
+
+    var text = Template.detailDocumentTemplate.currentlySelectedContent();
+
+    if (text !== undefined && text.length > 0) {
+      huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+    } else {
+      //If no selection was made, show the entire document
+      var doc = Session.get("detailDocument");
+      if (doc === undefined) return;
+      huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+    }
+
+    return false;
+  },
+});
+
 //
 // MISC
 //

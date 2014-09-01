@@ -1,6 +1,7 @@
 if (Meteor.isClient) {
   Template.snippets.snippets = function() {
     var thisDevice = Session.get('thisDevice');
+    if (thisDevice === undefined) return [];
 
     var snippets = Snippets.find({ device: thisDevice.id });
     return snippets.fetch();
