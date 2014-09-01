@@ -290,6 +290,8 @@ if (Meteor.isClient) {
       calculate("finger");
       calculate("1hand");
       calculate("2hands");
+
+      calculate("rgb");
     },
   });
 }

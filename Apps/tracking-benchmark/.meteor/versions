@@ -32,7 +32,7 @@ mizzao:bootstrap-3@3.2.0
 mongo-livedata@1.0.3
 observe-sequence@1.0.1
 ordered-dict@1.0.0
-raedle:huddle@0.9.7
+raedle:huddle@0.9.12
 random@1.0.0
 reactive-dict@1.0.0
 reload@1.0.0

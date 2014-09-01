@@ -259,11 +259,11 @@
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/packages/raedle:huddle.js?f39802db645b579bdc5a8009b9353bdc3a63e9c0",
+      "url": "/packages/raedle:huddle.js?132ec13b74ea5e39ee2381413724f9b2275ec300",
       "sourceMap": "packages/raedle:huddle.js.map",
-      "sourceMapUrl": "/packages/f39802db645b579bdc5a8009b9353bdc3a63e9c0.map",
-      "size": 89331,
-      "hash": "8a70e8d7d142a57b4d5bc4f5f8e6e8c0bbc01116"
+      "sourceMapUrl": "/packages/132ec13b74ea5e39ee2381413724f9b2275ec300.map",
+      "size": 97572,
+      "hash": "1dc53c53c4b56008df9717c7a19bd292c45858a9"
     },
     {
       "path": "packages/mizzao:bootstrap-3.js",
@@ -471,9 +471,9 @@
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/template.layout.js?ca6934c27a5c8ecac888d0f02504ec1fd5a0fd3c",
-      "size": 413,
-      "hash": "ca6934c27a5c8ecac888d0f02504ec1fd5a0fd3c"
+      "url": "/client/template.layout.js?1e19d8db247e18f7e45ce21493d1d77d0cc7a227",
+      "size": 659,
+      "hash": "1e19d8db247e18f7e45ce21493d1d77d0cc7a227"
     },
     {
       "path": "app/client/template.loading.js",
@@ -534,18 +534,27 @@
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/precision/calculate.js?25a0ba8425d33f4582510a164d760c8e64315cb2",
-      "size": 7814,
-      "hash": "25a0ba8425d33f4582510a164d760c8e64315cb2"
+      "url": "/client/precision/calculate.js?4db622507395d0d525ecbf425fc1b388ebbb5850",
+      "size": 7839,
+      "hash": "4db622507395d0d525ecbf425fc1b388ebbb5850"
     },
     {
       "path": "app/client/huddle.js",
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/huddle.js?e37fcd3262c5e531ba7dbd36fe4e40d6d1e6b22e",
-      "size": 701,
-      "hash": "e37fcd3262c5e531ba7dbd36fe4e40d6d1e6b22e"
+      "url": "/client/huddle.js?06e1f41921d5abb6a7952c11bc4ede87712b0593",
+      "size": 1226,
+      "hash": "06e1f41921d5abb6a7952c11bc4ede87712b0593"
+    },
+    {
+      "path": "app/client/layout.js",
+      "where": "client",
+      "type": "js",
+      "cacheable": true,
+      "url": "/client/layout.js?64ae0f6f21df5f8ea79fae771d51f40eec8ea2c4",
+      "size": 156,
+      "hash": "64ae0f6f21df5f8ea79fae771d51f40eec8ea2c4"
     },
     {
       "path": "app/client/router.js",
