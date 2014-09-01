@@ -4,7 +4,7 @@
 if [ -z "$1" ]
   then
     echo "Version parameter is missing"
-    echo "Usage: $> ./assemble-huddle.sh 0.9.3-1"
+    echo "Usage: $> ./assemble-huddle.sh <VERSION> (e.g., 0.9.3)"
 
   exit 1
 fi
@@ -28,6 +28,9 @@ echo "Copy version to huddle.js"
 cp -R repository/huddle-$1.js huddle.js
 
 # Open repository folder
-open repository
+#open repository
+
+echo "Copy version to huddle.js to meteor-huddle"
+cp -R repository/huddle-$1.js ../../meteor-packages/raedle:huddle/raedle:huddle.js
 
 echo "Done! Find huddle-$1.js ;)"

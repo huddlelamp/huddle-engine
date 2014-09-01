@@ -11,6 +11,19 @@ Template.deviceWorldView.deviceBorderColorCSS = function() {
   return 'border-color: rgb('+color.r+', '+color.g+', '+color.b+');';
 };
 
+Template.deviceWorldView.deviceBackgroundColorCSS = function() {
+  var info = DeviceInfo.findOne({ _id: this.id });
+  if (info === undefined || !info.colorDeg) return "";
+
+  var thisDevice = Session.get('thisDevice');
+
+  var color = window.degreesToColor(info.colorDeg);
+
+  alpha = 0.35;
+  if (this.id === thisDevice.id) alpha = 0.1;
+  return 'background-color: rgba('+color.r+', '+color.g+', '+color.b+', '+alpha+');';
+};
+
 Template.deviceWorldView.deviceSizeAndPosition = function() {
   var width = $("#worldViewWrapper").width() / this.ratio.x;
   var height = $("#worldViewWrapper").height() / this.ratio.y;

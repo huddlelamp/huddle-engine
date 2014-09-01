@@ -1,5 +1,3 @@
-var contentDependency = new Deps.Dependency();
-
 Template.detailDocumentTemplate.rendered = function() {
   //Make sure scroll offset has a value
   Session.set("detailDocumentScrollOffset", 0);
@@ -15,6 +13,8 @@ Template.detailDocumentTemplate.content = function() {
   } else {
     var content = atob(doc._source.file);
 
+    if (content.length < 1) return "";
+
     var lastQuery = Session.get("lastQuery");
     if (lastQuery !== undefined) {
       processQuery(lastQuery, function(term, isNegated, isPhrase) {
@@ -23,123 +23,168 @@ Template.detailDocumentTemplate.content = function() {
       });
     }
 
-    //Meteor updates the text highlights before this content enters the DOM
-    //Therefore, trigger a custom dependency on the next run loop
-    Meteor.setTimeout(function() { contentDependency.changed(); }, 1);
+    var insertHighlightIntoText = function(text, highlight, start, end, cssClasses) {
+      return [
+        text.slice(0, start),
+        '<span class="highlight '+cssClasses+'" style="background-color: '+highlight[2]+';">',
+        text.slice(start, end),
+        '</span>',
+        text.slice(end)
+      ].join('');
+    };
+
+    var insertHighlightIntoDOM = function(elem, highlight, state) {
+      if (elem === undefined || highlight === undefined) return;
+      if (state === undefined) state = {};
+      if (!state.offset) state.offset = 0;
+      if (!state.opened) state.opened = false;
+      if (!state.closed) state.closed = false;
+      if (!state.cssClasses) state.cssClasses = "";
+
+      if (state.closed) return state;
+
+      var startOffset = highlight[0];
+      var endOffset = highlight[1];
+
+      if (elem.nodeType === 3)  {
+        state.offset += elem.length;
+
+        if (!state.opened && state.offset > startOffset) {
+          //CASE 1: This node contains the start of the highlight
+          state.opened = true;
+
+          //Highlight start is defined by startOffset, highlightEnd depends on
+          //if the highlight ends in this node or goes beyond this node (in which 
+          //case it might be continued in CASE 3 and will be closed in CASE 2)
+          var highlightStart = startOffset - (state.offset - elem.length);
+          var highlightEnd = elem.length;
+          if (state.offset >= endOffset) {
+            highlightEnd = endOffset - (state.offset - elem.length);
+            state.closed = true;
+          }
+
+          $(elem).replaceWith(insertHighlightIntoText(
+            $(elem).text(), 
+            highlight, 
+            highlightStart, 
+            highlightEnd,
+            state.cssClasses
+          ));
+        } else {
+          if (state.opened) {
+            if (state.offset >= endOffset) {
+              //CASE 2: End of highlight is in this node
+              //Since the highlight started before this node, we highlight from the
+              //beginning to endOffset
+              var highlightStart = 0;
+              var highlightEnd = endOffset - (state.offset - elem.length);
+
+              $(elem).replaceWith(insertHighlightIntoText(
+                $(elem).text(), 
+                highlight, 
+                highlightStart, 
+                highlightEnd,
+                state.cssClasses
+              ));
+
+              state.closed = true;
+            } else {
+              //CASE 3: the entire node is part of the highlight, it doesn't end here
+              //Therefore, the entire node needs to be highlighted
+              $(elem).replaceWith(insertHighlightIntoText(
+                $(elem).text(), 
+                highlight, 
+                0, 
+                elem.length,
+                state.cssClasses
+              ));
+            }
+          }
+        }
+      } else {
+        //CASE 4: If this node is not a textnode, we go deeper
+        $(elem).contents().each(function() { state = insertHighlightIntoDOM(this, highlight, state); });
+      }
+
+      return state;
+    };
+
+    //Add the snippet highlight and text highlights if necessary
+    //In order to be able to count the text chars only (without html tags)
+    //we create a temporary element that we can walk over and find text nodes
+    var tempContent = $("<div />").html(content);
+
+    //TEXT HIGHLIGHTS    
+    var meta = DocumentMeta.findOne({_id: this._id});
+    if (meta !== undefined && meta.textHighlights !== undefined) {
+      for (var i=0; i<meta.textHighlights.length; i++) {
+        var highlight = meta.textHighlights[i];
+        var color = new tinycolor(highlight[2]);
+        color = color.setAlpha(0.35).toRgbString();
+        highlight[2] = color;
+        insertHighlightIntoDOM(tempContent[0], meta.textHighlights[i]);
+      }
+    }
+
+    //PREVIEW SNIPPET
+    var snippet = Session.get('detailDocumentPreviewSnippet');
+    var snippetLocked = Session.get('detailDocumentPreviewSnippetLocked');
+    console.log("LOCK: "+snippetLocked);
+    if (!snippetLocked && snippet && snippet.length > 0) {
+      //for some reason, if the snippet is at the very end of the file content it 
+      //has an additional line break at the end. Because of that, remove line ends
+      //from the end of the snippet
+      snippet = $("<span />").html(snippet).text();
+      var endsWithBreak = snippet.indexOf(String.fromCharCode(0x0A), snippet.length-1) !== -1;
+      if (endsWithBreak) snippet = snippet.slice(0, snippet.length-1);
+
+      var startOffset = tempContent.text().indexOf(snippet);
+      var endOffset = startOffset + snippet.length;
+      if (startOffset >= 0 && endOffset >= 0) {
+        console.log("Offset alright");
+        //Create a fake highlight and add it to the text
+        var fakeHighlight = [startOffset, endOffset, "transparent"];
+        insertHighlightIntoDOM(tempContent[0], fakeHighlight, { cssClasses: "previewSnippet" });
+        console.log(tempContent.html());
+
+        //Fade in and out the preview snippet
+        Meteor.setTimeout(function() {
+          // var bodyScroll = $("body").scrollTop();
+          // $(".highlight.previewSnippet").first().get(0).scrollIntoView(false);
+          console.log($(".highlight.previewSnippet").first());
+          $(".highlight.previewSnippet").first().scrollintoview({
+            duration: "normal",
+            complete: function() {
+              $(".highlight.previewSnippet").css("background-color", "rgba(255,0,0,1.0)");
+              $(".highlight.previewSnippet").css("color", "white");
+
+              Meteor.setTimeout(function() {
+                $(".highlight.previewSnippet").css("background-color", "transparent");
+                $(".highlight.previewSnippet").css("color", "");
+
+                //After the fade-out we lock the snippet so it will not be shown again
+                Meteor.setTimeout(function() { 
+                  Session.set('detailDocumentPreviewSnippetLocked', true); 
+                }, 1000);
+              }, 2500);
+            }
+          });
+          // var scroll = $("#contentWrapper").scrollTop();
+          // Session.set("detailDocumentScrollOffset", scroll);
+
+          //scrollIntoView seems to have the opinion it must also scroll the body, not 
+          //onlt #contentWrapper. Therefore, we restore body scroll poisition manually
+          // $("body").scrollTop(bodyScroll); 
+
+          
+        }, 1000);
+      }
+    }
+
+    content = tempContent.html();
 
     return encodeContent(content);
   }
-};
-
-Template.detailDocumentTemplate.previewSnippetContent = function() {
-  contentDependency.depend();
-
-  var snippet = encodeContent(Session.get('detailDocumentPreviewSnippet'));
-  var snippetHTML = Session.get('detailDocumentPreviewSnippetHTML');
-  var text = $("#content").html();
-  if (snippetHTML === undefined && snippet && snippet.length > 0 && text && text.length > 0) {
-    //for some reason, if the snippet is at the very end of the file content it 
-    //has an additional line break at the end. Because of that, remove line ends
-    //from the end of the snippet
-    var endsWithBreak = snippet.indexOf(String.fromCharCode(0x0A), snippet.length-1) !== -1;
-    if (endsWithBreak) snippet = snippet.slice(0, snippet.length-1);
-
-    var startOffset = text.indexOf(snippet);
-    var endOffset = startOffset + snippet.length;
-
-    if (startOffset < 0 || endOffset < 0) return;
-
-    text = [ 
-      text.slice(0, startOffset), 
-      '<span class="highlight">', 
-      text.slice(startOffset, endOffset), 
-      '</span>', 
-      text.slice(endOffset) 
-    ].join('');
-
-    //Put the text into a temporary element, walk over it and replace the text
-    //with spaces while keeping HTML tags
-    snippetHTML = "";
-    var spaceText = function() {
-      if (this.nodeType === 3)  {
-        snippetHTML += $(this).text().replace(/[^\n]/g, " ");
-      }
-      else {
-        var tags = this.outerHTML.split($(this).html());
-        var startTag = tags[0];
-        var endTag = tags[1];
-        snippetHTML += startTag;
-        $(this).contents().each(spaceText);
-        snippetHTML += endTag;
-      }
-    };
-    var div = $("<div></div>");
-    div.html(text);
-    div.contents().each(spaceText);
-
-    //highlight the snippet when it arrived in the DOM (next run loop)
-    Meteor.setTimeout(function() { 
-      var bodyScroll = $("body").scrollTop();
-      $("#previewSnippetHighlight .highlight").first().get(0).scrollIntoView(false);
-      var scroll = $("#contentWrapper").scrollTop();
-      Session.set("detailDocumentScrollOffset", scroll);
-
-      //scrollIntoView seems to have the opinion it must also scroll the body, not 
-      //onlt #contentWrapper. Therefore, we restore body scroll poisition manually
-      $("body").scrollTop(bodyScroll); 
-
-      //Show the highlight, wait for the CSS transition to finish, then hide it
-      $("#previewSnippetHighlight").css("opacity", 1.0);
-      Meteor.setTimeout(function() { 
-        $("#previewSnippetHighlight").css("opacity", 0.0);
-      }, 2000);
-    }, 500);
-
-    Session.set('detailDocumentPreviewSnippetHTML', snippetHTML);
-  }
-
-  return snippetHTML;
-};
-
-/** Returns the content of a highlight overlay for a certain highlight. The content is 
-        returned in such a way that the highlighted area will be above the text that was selected
-        when the highlight was made **/
-Template.detailDocumentTemplate.highlightContent = function(highlight) {
-  var startOffset = highlight[0];
-  var endOffset = highlight[1];
-  var color = highlight[2];
-  
-  var text = $("#content").text();
-  if (text === undefined) return;
-  var highlightText = "";
-
-  //To create the content of a text highlight overlay, we basically copy #textContent
-  //We then replace very non-newline character with a space (thank you monospace font!)
-  //Also, obviously, we insert the text highlight where it belongs
-  var textBeforeStart = text.slice(0, startOffset);
-  textBeforeStart = textBeforeStart.replace(/[^\n]/g, " ");
-  highlightText += textBeforeStart;
-
-  highlightText += '<span class="highlight" style="background-color: '+color+';">';
-  var selectedText = text.slice(startOffset, endOffset);
-  selectedText = selectedText.replace(/[^\n]/g, " ");
-  highlightText += selectedText;
-  highlightText += '</span>';
-
-  var textAfterEnd = text.slice(endOffset);
-  textAfterEnd = textAfterEnd.replace(/[^\n]/g, " ");
-  highlightText += textAfterEnd;
-
-  return highlightText;
-};
-
-Template.detailDocumentTemplate.highlights = function() {
-  contentDependency.depend();
-
-  var meta = DocumentMeta.findOne({_id: this._id});
-  if (meta === undefined) return [];
-
-  return meta.textHighlights || [];
 };
 
 Template.detailDocumentTemplate.comment = function() {
@@ -192,7 +237,7 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
     // height: "952px",
     // width: "722px",
     beforeLoad: function() {
-      Session.set('detailDocumentPreviewSnippetHTML', undefined);
+      Session.set('detailDocumentPreviewSnippetLocked', false);
       Session.set("detailDocumentPreviewSnippet", snippetText);
       Session.set("detailDocument", doc); 
     },
@@ -211,7 +256,7 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
       DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
     },
     afterClose: function() {
-      Session.set('detailDocumentPreviewSnippetHTML', undefined);
+      Session.set('detailDocumentPreviewSnippetLocked', false);
       Session.set("detailDocumentPreviewSnippet", undefined);
       Session.set("detailDocument", undefined); 
     },
@@ -407,21 +452,21 @@ var attachEvents = function() {
     e.preventDefault();
   };
 
-  $("#detailDocumentStar").off("click touchstart");
-  $("#detailDocumentStar").on("click touchstart", toggleFavorited);
+  $("#detailDocumentStar").off("click");
+  $("#detailDocumentStar").on("click", toggleFavorited);
 
   $(".highlightButton").off('click touchstart');
   $(".highlightButton").on('click touchstart', addHighlight);
 
-  $("#deleteHighlightButton").off('click touchstart');
-  $("#deleteHighlightButton").on('click touchstart', deleteHighlights);
+  $("#deleteHighlightButton").off('click');
+  $("#deleteHighlightButton").on('click', deleteHighlights);
 
   $("#comment").off('focus blur');
   $("#comment").on('focus blur', fixFixed);
   $("#comment").on('blur', saveComment);
 
-  $("#saveCommentButton").off('click touchstart');
-  $("#saveCommentButton").on('click touchstart', saveComment);
+  $("#saveCommentButton").off('click');
+  $("#saveCommentButton").on('click', saveComment);
 
   $("#contentWrapper").off('scroll');
   $("#contentWrapper").on('scroll', scrolled);
@@ -437,8 +482,8 @@ var attachEvents = function() {
   $("#devicedropdown").off('change');
   $("#devicedropdown").on('change', deviceSelected);
 
-  $("#openWorldView").off('click touchstart');
-  $("#openWorldView").on('click touchstart', openWorldView);
+  $("#openWorldView").off('click');
+  $("#openWorldView").on('click', openWorldView);
 };
 
 
@@ -525,8 +570,9 @@ var rangeIntersection = function(s1, e1, s2, e2) {
 
 /** Encodes file content for displaying **/
 var encodeContent = function(text) {
-  var pre = $("<pre></pre>");
-  pre.html(text);
-  pre.html(pre.html().replace(/&nbsp;/g, " "));
-  return pre.html();
+  return text;
+  // var pre = $("<pre></pre>");
+  // pre.html(text);
+  // pre.html(pre.html().replace(/&nbsp;/g, " "));
+  // return pre.html();
 };

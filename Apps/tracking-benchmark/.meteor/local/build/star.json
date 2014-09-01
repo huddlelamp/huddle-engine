@@ -1,0 +1,23 @@
+{
+  "format": "site-archive-pre1",
+  "builtBy": "Meteor METEOR@0.9.0.1",
+  "programs": [
+    {
+      "name": "web.browser",
+      "arch": "web.browser",
+      "path": "programs/web.browser/program.json"
+    },
+    {
+      "name": "server",
+      "arch": "os",
+      "path": "programs/server/start.sh"
+    },
+    {
+      "name": "ctl",
+      "arch": "os",
+      "path": "programs/ctl/start.sh"
+    }
+  ],
+  "control": "ctl",
+  "meteorRelease": "METEOR@0.9.0.1"
+}

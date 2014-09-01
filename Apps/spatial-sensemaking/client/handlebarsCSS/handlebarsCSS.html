@@ -1,0 +1,50 @@
+<template name="handlebarsCSS">
+  <style>
+    a {
+      color: {{deviceColor}};
+    }
+
+    a:hover {
+      color: {{darkerDeviceColor}};
+    }
+
+    input, textarea {
+      color: black;
+      border-color: {{darkerDeviceColor}} !important;
+    }
+
+    button {
+      background-color: {{deviceColor}} !important;
+      color: white !important;
+      border-color: {{darkerDeviceColor}} !important;
+    }
+
+    /*
+    DEVICE INDICATORS
+     */
+    
+    body {
+      padding: 0; /* because we remove #deviceIndicatorWrapper border-width */
+    }
+
+    #deviceIndicatorWrapper {
+      border-width: 0;
+    }
+
+    /*
+    SEARCH PAGE
+    */
+
+    .paginationLink:not(.active) {
+      color: {{deviceColor}} !important;
+      border-color: {{deviceColor}} !important;
+    }
+
+    .paginationLink:hover:not(.active) {
+      background-color: {{darkerDeviceColor}} !important;
+      color: white !important;
+    }
+
+    
+  </style>
+</template>

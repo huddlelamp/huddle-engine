@@ -38,6 +38,3 @@ var Common = (function() {
 
   return this;
 })();
-
-// make Common globally available
-window.Common = Common;
