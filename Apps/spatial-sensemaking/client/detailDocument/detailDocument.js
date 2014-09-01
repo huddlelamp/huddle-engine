@@ -1,6 +1,6 @@
 Template.detailDocumentTemplate.content = function() {
   var doc = Session.get("detailDocument");
-  if (doc === undefined) return;
+  if (doc === undefined) return undefined;
 
   var contentType = doc._source._content_type;
   if (contentType == "image/jpeg") {

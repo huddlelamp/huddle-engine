@@ -53,28 +53,30 @@ Template.deviceIndicators.deviceSizeAndPositionCSS = function() {
     //The other coordinate is simply set so that half the indicator is visible,
     //which gives us a nice half-circle
     //Furthermore, we calculate the indicator size based on the distance
+    var MIN_INDICATOR_SIZE = 70;
+    var CLOSENESS_INDICATOR_EXPAND = 50;
     var top;
     var right;
     var bottom;
     var left;
     var indicatorSize;
     if (leftDist <= topDist && leftDist <= rightDist && leftDist <= bottomDist) {
-      indicatorSize = 60 * (1.0-leftDist) + 40;
+      indicatorSize = CLOSENESS_INDICATOR_EXPAND * (1.0-leftDist) + MIN_INDICATOR_SIZE;
       var percent = ((intersectLeft.y - thisDevice.topLeft.y) / thisDevice.height);
       top = $(window).height() * percent - (indicatorSize/2.0);
       left = -(indicatorSize/2.0);
     } else if (topDist <= leftDist && topDist <= rightDist && topDist <= bottomDist) {
-      indicatorSize = 60 * (1.0-topDist) + 40;
+      indicatorSize = CLOSENESS_INDICATOR_EXPAND * (1.0-topDist) + MIN_INDICATOR_SIZE;
       var percent = ((intersectTop.x - thisDevice.topLeft.x) / thisDevice.width);
       top = -(indicatorSize/2.0);
       left = $(window).width() * percent - (indicatorSize/2.0);
     } else if (rightDist <= leftDist && rightDist <= topDist && rightDist <= bottomDist) {
-      indicatorSize = 60 * (1.0-rightDist) + 40;
+      indicatorSize = CLOSENESS_INDICATOR_EXPAND * (1.0-rightDist) + MIN_INDICATOR_SIZE;
       var percent = ((intersectRight.y - thisDevice.topLeft.y) / thisDevice.height);
       top = $(window).height() * percent - (indicatorSize/2.0);
       right = -(indicatorSize/2.0);
     } else if (bottomDist <= leftDist && bottomDist <= topDist && bottomDist <= rightDist) {
-      indicatorSize = 60 * (1.0-bottomDist) + 40;
+      indicatorSize = CLOSENESS_INDICATOR_EXPAND * (1.0-bottomDist) + MIN_INDICATOR_SIZE;
       var percent = ((intersectBottom.x - thisDevice.topLeft.x) / thisDevice.width);
       bottom = -(indicatorSize/2.0);
       left = $(window).width() * percent - (indicatorSize/2.0);

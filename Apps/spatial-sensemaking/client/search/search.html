@@ -50,8 +50,7 @@
     {{#each results.hits.hits}}
       <div class="row document-result">
         <div class="col-md-10 col-md-offset-1">
-          <a href="#" class="toggleFavorited"><span class="glyphicon glyphicon-{{#if isFavorited}}heart{{else}}heart-empty{{/if}} icon"></span>
-          </a>
+          <a href="#" class="toggleFavorited"><span class="glyphicon glyphicon-{{#if isFavorited}}heart{{else}}heart-empty{{/if}} icon"></span></a>
 
         {{#if hasComment}}
           <span class="glyphicon glyphicon-tags icon"></span>

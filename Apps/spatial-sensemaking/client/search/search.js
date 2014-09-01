@@ -301,6 +301,8 @@ Template.pagination.currentQuery = function() {
 
   Template.pagination.pages = function() {
     var results = Session.get('results');
+    if (results === undefined || !results.hits) return 0;
+    
     var pages = Math.ceil(results.hits.total/SEARCH_RESULTS_PER_PAGE);
 
     var result = [];

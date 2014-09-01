@@ -3,36 +3,44 @@
     {{#with document}}
       {{#if content}}
           <div id="contentArea">
-            <div id="contentWrapper">
-              <pre id="content">{{{content}}}</pre>
-            </div> 
+            <!-- <div id="contentWrapper"> -->
+              <div id="content"><a href="#" class="toggleFavorited" id="detailDocumentStar"><span class="glyphicon glyphicon-{{#if isFavorited}}heart{{else}}heart-empty{{/if}} icon-large"></span></a>{{{content}}}</div>
+            <!-- </div>  -->
          </div>
 
           <div id="editArea">
-            <a class="highlightButton" href="#" style="background-color: orange;"></a>
-            <!--<a class="highlightButton" href="#" style="background-color: red;"></a>-->
-            <a class="highlightButton" href="#" style="background-color: green;"></a>
-            <a class="highlightButton" href="#" style="background-color: blue;"></a>
-            <a class="highlightButton" href="#" style="background-color: purple;"></a>
-            <a class="highlightButton" href="#" style="background-color: slategray;"></a>
-            <a class="highlightButton" href="#" style="background-color: sienna;"></a>
-            <a id="deleteHighlightButton" href="#"></a>
+            <div id="highlightArea">
+              <a class="highlightButton" href="#" style="background-color: orange;"></a>
+              <!--<a class="highlightButton" href="#" style="background-color: red;"></a>-->
+              <a class="highlightButton" href="#" style="background-color: green;"></a>
+              <a class="highlightButton" href="#" style="background-color: blue;"></a>
+              <a class="highlightButton" href="#" style="background-color: purple;"></a>
+              <a class="highlightButton" href="#" style="background-color: slategray;"></a>
+              <a class="highlightButton" href="#" style="background-color: sienna;"></a>
+              <a id="deleteHighlightButton" href="#"></a>
+            </div>
 
-            Send to: 
-            <select id="devicedropdown" data-placeholder="Select a device" class="chosen-select">
-              <option></option>
-              {{#each otherDevices}}
-                <option deviceid="{{id}}" style="{{deviceColorCSS}}">Device</option>
-              {{/each}}
-            </select>
+            <div id="annotationArea">
 
-            <a href="#" id="openWorldView">Open World View</a>
-            <br />
+              <textarea rows="4" cols="50" id="comment">{{comment}}</textarea>
 
-            <a href="#" class="toggleFavorited" id="detailDocumentStar"><span class="glyphicon glyphicon-{{#if isFavorited}}heart{{else}}heart-empty{{/if}} icon"></span></a>
 
-            <textarea rows="4" cols="50" id="comment">{{comment}}</textarea>
-            <!--<button id="saveCommentButton">Save</button>-->
+            </div>
+
+            <div id="shareArea">
+              Send to: 
+              <select id="devicedropdown" data-placeholder="Select a device" class="chosen-select">
+                <option></option>
+                {{#each otherDevices}}
+                  <option deviceid="{{id}}" style="{{deviceColorCSS}}">Device</option>
+                {{/each}}
+              </select>
+
+              <span style="margin-left: 15px;">&nbsp;</span>
+
+              <a href="#" id="openWorldView">Open World View</a>
+            </div>
+            
           </div>
         {{/if}}
       {{/with}}

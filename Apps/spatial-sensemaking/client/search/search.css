@@ -116,6 +116,11 @@
   margin: 5px;
 }
 
+.icon-large {
+  font-size: 2em;
+  margin: 5px;
+}
+
 /*.fancybox-overlay {
   background: transparent;
   pointer-events: none;
