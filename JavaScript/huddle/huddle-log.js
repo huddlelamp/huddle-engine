@@ -105,6 +105,3 @@ var Log = (function() {
     debug: debug
   };
 })();
-
-// make Log globally available
-window.Log = Log;

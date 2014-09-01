@@ -1,0 +1,20 @@
+/* CSS declarations go here */
+#sample-grid {
+  background: yellow;
+}
+
+circle.sample-point {
+  stroke: black;
+}
+
+circle.not-sampled {
+  fill: red;
+}
+
+circle.await-sampling {
+  fill: cyan;
+}
+
+circle.sampled {
+  fill: green;
+}
