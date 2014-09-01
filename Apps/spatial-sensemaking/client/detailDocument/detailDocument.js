@@ -1,8 +1,3 @@
-Template.detailDocumentTemplate.rendered = function() {
-  //Make sure scroll offset has a value
-  Session.set("detailDocumentScrollOffset", 0);
-};
-
 Template.detailDocumentTemplate.content = function() {
   var doc = Session.get("detailDocument");
   if (doc === undefined) return;
@@ -149,9 +144,6 @@ Template.detailDocumentTemplate.content = function() {
 
         //Fade in and out the preview snippet
         Meteor.setTimeout(function() {
-          // var bodyScroll = $("body").scrollTop();
-          // $(".highlight.previewSnippet").first().get(0).scrollIntoView(false);
-          console.log($(".highlight.previewSnippet").first());
           $(".highlight.previewSnippet").first().scrollintoview({
             duration: "normal",
             complete: function() {
@@ -169,14 +161,6 @@ Template.detailDocumentTemplate.content = function() {
               }, 2500);
             }
           });
-          // var scroll = $("#contentWrapper").scrollTop();
-          // Session.set("detailDocumentScrollOffset", scroll);
-
-          //scrollIntoView seems to have the opinion it must also scroll the body, not 
-          //onlt #contentWrapper. Therefore, we restore body scroll poisition manually
-          // $("body").scrollTop(bodyScroll); 
-
-          
         }, 1000);
       }
     }
@@ -209,10 +193,6 @@ Template.detailDocumentTemplate.deviceColorCSS = function() {
 
 Template.detailDocumentTemplate.document = function() {
   return Session.get("detailDocument") || undefined;
-};
-
-Template.detailDocumentTemplate.scrollOffset = function() {
-  return Session.get("detailDocumentScrollOffset") || 0;
 };
 
 Template.detailDocumentTemplate.otherDevices = function() {
@@ -401,16 +381,6 @@ var attachEvents = function() {
     DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
   };
 
-  var scrolled = function(e) {
-    var scroll = $("#contentWrapper").scrollTop();
-    Session.set("detailDocumentScrollOffset", scroll);
-  };
-
-  // var deviceSelectorClick = function() {
-  //   console.log("GOT "+Template.detailDocumentTemplate.currentlySelectedContent());
-  //   Session.set('deviceSelectorSnippetToSend', Template.detailDocumentTemplate.currentlySelectedContent());
-  // };
-
   var deviceSelected = function() {
     var select = $("#devicedropdown")[0];
     var option = select.options[select.selectedIndex];
@@ -467,12 +437,6 @@ var attachEvents = function() {
 
   $("#saveCommentButton").off('click');
   $("#saveCommentButton").on('click', saveComment);
-
-  $("#contentWrapper").off('scroll');
-  $("#contentWrapper").on('scroll', scrolled);
-
-  $(".highlightWrapper").off('scroll');
-  $(".highlightWrapper").on('scroll', prevent);
 
   // Meteor.setTimeout(function() {
   //   $("#devicedropdown_chosen").off('click touchdown chosen:showing_dropdown');

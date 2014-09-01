@@ -82,7 +82,7 @@ if (Meteor.isClient) {
         Session.set("lastQueryPage", page);
         Session.set("results", results);
 
-        var pastQuery = PastQueries.findOne({ query: query });
+        var pastQuery = PastQueries.findOne({ query: query.trim().toLower() });
         if (pastQuery === undefined) {
           var newDoc = {
             query : query,
@@ -136,30 +136,6 @@ if (Meteor.isClient) {
     return (meta && meta.watched);
   };
 
-  Template.pagination.currentQuery = function() {
-    return Session.get('lastQuery') || undefined;
-  };
-
-  Template.pagination.currentPage = function() {
-    return Session.get("lastQueryPage") || 1;
-  };
-
-  Template.pagination.pages = function() {
-    var results = Session.get('results');
-    var pages = Math.ceil(results.hits.total/SEARCH_RESULTS_PER_PAGE);
-
-    var result = [];
-    for (var i=1; i<=pages; i++) result.push(i);
-    return result;
-  };
-
-  Template.pagination.helpers({
-    'isEqual': function(v1, v2) {
-      return v1 === v2;
-    }
-  });
-
-  var highlightDocumentContentDep = new Deps.Dependency();
   Template.searchIndex.helpers({
     'toSeconds': function(ms) {
       var time = new Date(ms);
@@ -234,15 +210,8 @@ if (Meteor.isClient) {
     'click .paginationLink': function(e) {
       e.preventDefault();
 
-      // var query = encodeURIComponent($(e.currentTarget).attr("query"));
-      // var page = encodeURIComponent($(e.currentTarget).attr("page"));
       var query = $(e.currentTarget).attr("query");
       var page = $(e.currentTarget).attr("page");
-      // location.replace('/search/'+query+'/'+page); //go f* yourself iron router
-      // Router.go('/search/'+query+'/'+page);
-      // Router.go('searchIndex', { _query: 'alderwoodpolice', _page: 3});
-      console.log(query);
-      console.log(page);
       search(query, page);
     },
 
@@ -316,3 +285,31 @@ if (Meteor.isClient) {
     },
   });
 }
+
+
+//
+// PAGINATION 
+//
+
+Template.pagination.currentQuery = function() {
+    return Session.get('lastQuery') || undefined;
+  };
+
+  Template.pagination.currentPage = function() {
+    return Session.get("lastQueryPage") || 1;
+  };
+
+  Template.pagination.pages = function() {
+    var results = Session.get('results');
+    var pages = Math.ceil(results.hits.total/SEARCH_RESULTS_PER_PAGE);
+
+    var result = [];
+    for (var i=1; i<=pages; i++) result.push(i);
+    return result;
+  };
+
+  Template.pagination.helpers({
+    'isEqual': function(v1, v2) {
+      return v1 === v2;
+    }
+  });
