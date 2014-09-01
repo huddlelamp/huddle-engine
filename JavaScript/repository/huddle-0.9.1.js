@@ -3,6 +3,7 @@
  * var awesomeWorld = "Hello {0}! You are {1}.".format("World", "awesome");
  *
  * TODO Enclose the format prototype function in HuddleClient JavaScript API.
+ * Source: http://stackoverflow.com/questions/1038746/equivalent-of-string-format-in-jquery
  */
 String.prototype.format = function () {
     var args = arguments;
@@ -13,27 +14,42 @@ String.prototype.format = function () {
     });
 };
 
-function namespace(namespaceString) {
-    var parts = namespaceString.split('.'),
-        parent = window,
-        currentPart = '';
+/* global Log */
+"use strict";
 
-    for(var i = 0, length = parts.length; i < length; i++) {
-        currentPart = parts[i];
-        parent[currentPart] = parent[currentPart] || {};
-        parent = parent[currentPart];
+/**
+ * Common functions.
+ *
+ * @author Roman Rädle
+ * @namespace Common
+ */
+var Common = (function() {
+
+  this.getDeviceType = function() {
+    var type = navigator.userAgent.match(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i);
+
+    var deviceType = 'unknown';
+    if (type) {
+        deviceType = type[0];
     }
 
-    return parent;
-};
+    return deviceType;
+  };
+
+  return this;
+})();
+
+/* global Log */
 "use strict";
 
 /**
  * Gives us some nice debug convenience functions
  *
- * @namespace Debug
+ * @author Mario Schreiner
+ * @author Roman Rädle
+ * @namespace Log
  */
-window.Log = (function() {
+var Log = (function() {
 
   /**
    * true if info mode is on, otherwise false
@@ -130,15 +146,18 @@ window.Log = (function() {
     debug: debug
   };
 })();
+
 /* global EventManager */
 "use strict";
 
 /**
  * Manages events throughout Connichiwa. Allows all parts of Connichiwa to register for and trigger events.
  *
+ * @author Mario Schreiner
+ * @author Roman Rädle
  * @namespace EventManager
  */
-window.EventManager = (function()
+var EventManager = (function()
 {
   /**
    * A dictionary where each entry represents a single event. The key is the event name. Each entry of the dictionary is an array of callbacks that should be called when the event is triggered.
@@ -191,6 +210,7 @@ window.EventManager = (function()
     trigger  : trigger
   };
 })();
+
 /**
  * An instance of HuddleClient handles the connection to a Huddle engine through a
  * web socket connection. It offers properties to automatically reconnect on
@@ -217,12 +237,16 @@ window.EventManager = (function()
  *                           },
  * }
  *
- * @author Roman Rädle [firstname.lastname@outlook.com] replace 'ä' with 'ae'
+ * @author Roman Rädle
+ * @author Hans-Christian Jetter
  * @requires jQuery
  * @namespace Huddle
  * @param {int} Device id.
  */
-window.Huddle = (function ($) {
+Huddle = (function ($) {
+
+    // Huddle client version
+    this.version = "0.9.10";
 
     // set web socket
     var WebSocket = window.WebSocket || window.MozWebSocket;
@@ -230,6 +254,7 @@ window.Huddle = (function ($) {
     var DataTypes = {
         Glyph: "Glyph",
         IdentifyDevice: "Digital",
+        ShowColor: "ShowColor",
         Proximity: "Proximity",
         Message: "Message"
     };
@@ -242,18 +267,27 @@ window.Huddle = (function ($) {
     var glyph;
 
     /**
-     * TODO Document me!!!
+     * Creates a Huddle client with an optional name as parameter. The client
+     * is set to automatically reconnect on error.
      *
-     * @param {string} name Client name. Does not necessarily need to be a unique name.
+     * @param {Object} [options] Client options. (e.g., name: does not
+     * necessarily need to be a unique name.)
      */
-    this.client = function (name) {
-        this.name = typeof name !== 'undefined' ? name : "";
+    this.client = function (options) {
+
+        this.options = {
+            name: "undefined",
+            glyphId: null,
+        };
+        $.extend(this.options, options);
 
         this.running = false;
         this.connected = false;
-        this.reconnect = false;
+        this.reconnect = true;
 
         this.reconnectTimeout = null;
+
+        this.identified = false;
 
         return this;
     };
@@ -362,11 +396,22 @@ window.Huddle = (function ($) {
 
             this.connected = true;
 
+            var deviceType = Common.getDeviceType();
+
             // set a short timeout before send the handshake (this avoids 'Uncaught InvalidStateError: Failed to execute 'send' on 'WebSocket': Still in CONNECTING state'.
             setTimeout(function () {
-                var content = '"Name": "{0}"'.format(this.name);
-                send("Handshake", content);
-            }, 500);
+                // var content = '"Name": "{0}"'.format(this.name);
+                // send("Handshake", content);
+
+                var handshake = {
+                  Name: this.options.name,
+                  GlyphId: this.options.glyphId,
+                  DeviceType: deviceType,
+                  Options: this.options,
+                };
+
+                sendJSONObject("Handshake", handshake);
+            }.apply(this), 500);
 
             // start alive interval to avoid web socket from disconnect
             aliveInterval = setInterval(sendAlive, 10000);
@@ -405,7 +450,7 @@ window.Huddle = (function ($) {
             if (this.running && this.reconnect && !this.reconnectTimeout) {
                 this.reconnectTimeout = setInterval(function () {
                     doConnect(this.host, this.port);
-                }, 1000);
+                }.apply(this), 1000);
             }
         }.bind(this);
 
@@ -458,7 +503,7 @@ window.Huddle = (function ($) {
 
                     return;
                 case DataTypes.IdentifyDevice:
-                    if (data.Data.Type && data.Data.Type == "ShowColor")
+                    if (data.Data.Type && data.Data.Type == DataTypes.ShowColor)
                       showColor(data.Data);
                     else
                       identifyDevice(data.Data);
@@ -487,6 +532,16 @@ window.Huddle = (function ($) {
      * @param {Object} data The digital data as object literal.
      */
     var identifyDevice = function (data) {
+
+        if (this.identified != !data.Value) {
+            this.identified = !data.Value;
+
+            if (this.identified)
+              EventManager.trigger("devicefound");
+            else
+              EventManager.trigger("devicelost");
+        }
+
         if (data.Value) {
 
             // do not add a glyph container if it already exists
@@ -495,6 +550,7 @@ window.Huddle = (function ($) {
 
             var $glyphContainer = $('<div id="huddle-glyph-container"></div>').appendTo($('body'));
             $glyphContainer.css({
+                "z-index": "10000",
                 "top": "0",
                 "left": "0",
                 "position": "fixed",
@@ -542,6 +598,7 @@ window.Huddle = (function ($) {
 
             var $glyphContainer = $('<div id="huddle-register-container"></div>').appendTo($('body'));
             $glyphContainer.css({
+                "z-index": "10000",
                 "top": "0",
                 "left": "0",
                 "position": "fixed",
@@ -556,6 +613,11 @@ window.Huddle = (function ($) {
       else {
           $('#huddle-register-container').remove();
       }
+
+      // send acknowledge back to server to indicate that message was received
+      sendJSONObject("Acknowledge", data);
+
+      EventManager.trigger("showColor", data);
     }.bind(this);
 
     /**
@@ -612,12 +674,23 @@ window.Huddle = (function ($) {
      * @param {string} msg Message content.
      */
     this.broadcast = function (event, msg) {
-        send(DataTypes.Message, '"Event": "{0}", "Data": {1}'.format(event, msg));
+
+        var content = msg;
+        if (typeof(msg) === 'object') {
+            try {
+                content = JSON.stringify(msg);
+            }
+            catch (error) {
+                Log.error("Unable to JSON.stringify message: " + error);
+            }
+        }
+
+        send(DataTypes.Message, '"Event": "{0}", "Data": {1}'.format(event, content));
         return this;
     };
 
     /**
-     * Send message to Huddle engine.
+     * Send message to Huddle Engine.
      *
      * @this Huddle
      * @private
@@ -627,6 +700,19 @@ window.Huddle = (function ($) {
     var send = function (type, content) {
         var msg = '{{"Type": "{0}", {1}}}'.format(type, content);
         this.socket.send(msg);
+    }.bind(this);
+
+    /**
+     * Send JSON object stringified to Huddle Engine.
+     *
+     * @this Huddle
+     * @private
+     * @param {string} type Message type.
+     * @param {Object} object JSON object.
+     */
+    var sendJSONObject = function(type, object) {
+        var msg = '"Data": {0}'.format(JSON.stringify(object));
+        send(type, msg);
     }.bind(this);
 
     /**
@@ -643,3 +729,4 @@ window.Huddle = (function ($) {
 
     return this;
 }).call({}, jQuery); //sweet! we can set this in an IIFE by passing in a blank object literal using the call method
+
