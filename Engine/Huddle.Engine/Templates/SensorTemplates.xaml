@@ -150,12 +150,6 @@
                           Grid.Row="0">
                     <Image Source="{Binding Path=ColorImageSource}" />
                 </GroupBox>
-
-                <StackPanel Orientation="Horizontal" Grid.Row="1">
-                    <Label Content="Fps"/>
-                    <Slider Value="{Binding Path=Fps}" Width="340" Height="25" Minimum="0" Maximum="100" />
-                    <TextBlock Text="{Binding Path=Fps}"/>
-                </StackPanel>
             </Grid>
         </StackPanel>
     </DataTemplate>

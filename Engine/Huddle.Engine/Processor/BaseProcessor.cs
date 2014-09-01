@@ -49,6 +49,41 @@ namespace Huddle.Engine.Processor
 
         #region properties
 
+        #region Pipeline
+        
+        /// <summary>
+        /// The <see cref="Pipeline" /> property's name.
+        /// </summary>
+        public const string PipelinePropertyName = "Pipeline";
+
+        private Pipeline _pipeline;
+
+        /// <summary>
+        /// Sets and gets the Pipeline property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Pipeline Pipeline
+        {
+            get
+            {
+                return _pipeline;
+            }
+
+            set
+            {
+                if (_pipeline == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(PipelinePropertyName);
+                _pipeline = value;
+                RaisePropertyChanged(PipelinePropertyName);
+            }
+        }
+
+        #endregion
+
         #region X
 
         /// <summary>

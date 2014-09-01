@@ -25,7 +25,7 @@ namespace Huddle.Engine.ViewModel
 {
     public class PipelineViewModel : ProcessorViewModelBase<Pipeline>
     {
-        #region prviate fields
+        #region private fields
 
         private readonly DataContractSerializer _serializer = new DataContractSerializer(typeof(Pipeline), null,
                                                                 0x7FFF /*maxItemsInObjectGraph*/,
@@ -582,6 +582,9 @@ namespace Huddle.Engine.ViewModel
         {
             if (!Model.Targets.Contains(node))
                 Model.Targets.Add(node);
+
+            // set pipeline for subnodes
+            node.Pipeline = Model;
 
             var nodeViewModel = new NodeViewModel
             {

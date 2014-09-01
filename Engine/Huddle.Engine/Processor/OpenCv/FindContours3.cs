@@ -488,7 +488,7 @@ namespace Huddle.Engine.Processor.OpenCv
         #region ctor
 
         public FindContours3()
-            : base(true)
+            : base(false)
         {
             
         }

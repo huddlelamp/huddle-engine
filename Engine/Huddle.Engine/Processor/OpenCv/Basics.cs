@@ -190,7 +190,7 @@ namespace Huddle.Engine.Processor.OpenCv
         #region ctor
 
         public Basics()
-            : base(true)
+            : base(false)
         {
             IsInitialized = false;
             MouseDownCommand = new RelayCommand<SenderAwareEventArgs>(args =>
@@ -280,15 +280,21 @@ namespace Huddle.Engine.Processor.OpenCv
             {
                 var imageCopy = image.Copy(ROI);
 
-                if (FlipHorizontal)
-                    imageCopy = imageCopy.Flip(FLIP.HORIZONTAL);
-                if (FlipVertical)
-                    imageCopy = imageCopy.Flip(FLIP.VERTICAL);
+                var flipCode = FLIP.NONE;
 
+                if (FlipHorizontal)
+                    flipCode |= FLIP.HORIZONTAL;
+                if (FlipVertical)
+                    flipCode |= FLIP.VERTICAL;
+                
+                if (flipCode != FLIP.NONE)
+                    CvInvoke.cvFlip(imageCopy.Ptr, imageCopy.Ptr, flipCode);
+                
                 return imageCopy;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Log("{0}", e.StackTrace);
                 return null;
             }
         }

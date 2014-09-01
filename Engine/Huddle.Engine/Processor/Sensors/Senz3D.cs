@@ -378,42 +378,6 @@ namespace Huddle.Engine.Processor.Sensors
 
         #endregion
 
-        #region Fps
-
-        /// <summary>
-        /// The <see cref="Fps" /> property's name.
-        /// </summary>
-        public const string FpsPropertyName = "Fps";
-
-        private int _fps = 30;
-
-        /// <summary>
-        /// Sets and gets the Fps property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        [XmlAttribute]
-        public int Fps
-        {
-            get
-            {
-                return _fps;
-            }
-
-            set
-            {
-                if (_fps == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(FpsPropertyName);
-                _fps = value;
-                RaisePropertyChanged(FpsPropertyName);
-            }
-        }
-
-        #endregion
-
         #region UvMapChecked
 
         /// <summary>
@@ -843,6 +807,8 @@ namespace Huddle.Engine.Processor.Sensors
 
         #region private methods
 
+        private DateTime timestamp;
+
         private void DoRendering()
         {
             _isRunning = true;
@@ -1036,8 +1002,6 @@ namespace Huddle.Engine.Processor.Sensors
                 if (rgbOfDepthImage != null) dc.Add(new RgbImageData(this, "rgbofdepth", rgbOfDepthImage));
                 if (depthOfRgbImage != null) dc.Add(new GrayFloatImage(this, "depthofrgb", depthOfRgbImage));
                 Publish(dc);
-
-                Thread.Sleep(1000 / (Fps > 0 ? Fps : 1));
             }
 
             _pp.Close();

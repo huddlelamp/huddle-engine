@@ -1,4 +1,5 @@
-﻿using System.Xml.Serialization;
+﻿using System.Runtime.Serialization;
+using System.Xml.Serialization;
 using Huddle.Engine.Data;
 using Huddle.Engine.Processor;
 
@@ -39,6 +40,42 @@ namespace Huddle.Engine.Model
                 RaisePropertyChanging(ScalePropertyName);
                 _scale = value;
                 RaisePropertyChanged(ScalePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Fps
+
+        /// <summary>
+        /// The <see cref="Fps" /> property's name.
+        /// </summary>
+        public const string FpsPropertyName = "Fps";
+
+        private double _fps;
+
+        /// <summary>
+        /// Sets and gets the Fps property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public double Fps
+        {
+            get
+            {
+                return _fps;
+            }
+
+            set
+            {
+                if (_fps == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(FpsPropertyName);
+                _fps = value;
+                RaisePropertyChanged(FpsPropertyName);
             }
         }
 

@@ -1,14 +1,11 @@
-﻿using System.Threading.Tasks;
-using Huddle.Engine.Util;
-
-namespace Huddle.Engine
+﻿namespace Huddle.Engine.Windows
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow
+    public partial class EditorWindow
     {
-        public MainWindow()
+        public EditorWindow()
         {
             InitializeComponent();
         }

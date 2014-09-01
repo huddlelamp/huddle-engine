@@ -279,6 +279,8 @@
                 </i:Interaction.Triggers>
                 <Image Source="/Huddle.Engine;component/Resources/32x32/save_as.png" />
             </Button>
+
+            <TextBlock Text="{Binding Path=Model.Fps, Mode=OneWay, StringFormat={}{0:#.#} Fps}" FontSize="44" />
         </StackPanel>
 
         <Grid Row="1">
