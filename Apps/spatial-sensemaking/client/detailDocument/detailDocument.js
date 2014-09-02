@@ -229,8 +229,6 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
     // height: "952px",
     // width: "722px",
     beforeLoad: function() {
-      isOpen = true;
-
       Session.set('detailDocumentPreviewSnippetLocked', false);
       Session.set("detailDocumentPreviewSnippet", snippetText);
       Session.set("detailDocument", doc); 
@@ -246,8 +244,6 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
       }, 500);
     },
     beforeClose: function() {
-      isOpen = false;
-
       //Increase popup ID on close, so we know the popup has changed
       popupID++;
 
