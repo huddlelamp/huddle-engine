@@ -127,6 +127,11 @@ body {
   margin: 5px;
 }
 
+.icon-larger {
+  font-size: 1.85em;
+  margin: 5px;
+}
+
 .icon-large {
   font-size: 2em;
   margin: 5px;
