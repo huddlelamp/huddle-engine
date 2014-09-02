@@ -3,7 +3,7 @@ if (Meteor.isClient) {
   var SEARCH_RESULTS_PER_PAGE = 10;
   var SEARCH_FIELDS = ["file^10", "_name"];
 
-  var search = function(query, page) {
+  search = function(query, page) {
     if (query === undefined) return;
     if (page === undefined) page = 1;
 
@@ -77,6 +77,8 @@ if (Meteor.isClient) {
             removed : observer(i),
           });
         }
+
+        $('#search-query').val(query);
 
         Session.set("lastQuery", query);
         Session.set("lastQueryPage", page);

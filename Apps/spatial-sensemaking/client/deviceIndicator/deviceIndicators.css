@@ -29,4 +29,17 @@ body {
   opacity: 0.65; 
   /*z-index: 9999;*/
   pointer-events: auto;
+  -webkit-transition: -webkit-transform 0.3s;
+}
+
+#deviceIndicatorSendText {
+  position: absolute;
+  opacity: 0;
+  -webkit-transition: opacity 0.7s;
+  color: white;
+  background-color: rgba(0,0,0,0.7);
+  border-radius: 12px;
+  padding: 10px;
+  max-width: 150px;
+  text-align: center;
 }

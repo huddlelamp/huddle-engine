@@ -105,17 +105,82 @@ Template.deviceIndicators.events({
     var text = Template.detailDocumentTemplate.currentlySelectedContent();
 
     if (text !== undefined && text.length > 0) {
+      //If a text selection exists, send it
       huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+      pulseIndicator(e.currentTarget);
+      showSendConfirmation(e.currentTarget, "Did send text snippet to device.");
     } else {
-      //If no selection was made, show the entire document
+      //If no selection was made but a document is open, send that
       var doc = Session.get("detailDocument");
-      if (doc === undefined) return;
-      huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+      if (doc !== undefined) {
+        huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+        pulseIndicator(e.currentTarget);
+        showSendConfirmation(e.currentTarget, "Did show document on device.");
+      } else {
+        //If no document is open but a query result is shown, send that
+        var lastQuery = Session.get('lastQuery');
+        var lastQueryPage = Session.get('lastQueryPage');
+        if (lastQuery !== undefined) {
+          huddle.broadcast("dosearch", {target: targetID, query: lastQuery, page: lastQueryPage });
+          pulseIndicator(e.currentTarget);
+          showSendConfirmation(e.currentTarget, "Did send search results to device.");
+        }
+      }
     }
 
     return false;
   },
 });
+
+//
+// ANIMATION STUFF
+// 
+function pulseIndicator(indicator) {
+  $(indicator).css('transform', 'scale(1.5, 1.5)');
+  Meteor.setTimeout(function() {
+    $(indicator).css('transform', '');
+  }, 300);
+}
+
+function showSendConfirmation(indicator, text) {
+  $("#deviceIndicatorSendText").text(text);
+
+  Meteor.setTimeout(function() {
+    var eWidth = $("#deviceIndicatorSendText").width() + parseInt($("#deviceIndicatorSendText").css('padding-left')) + parseInt($("#deviceIndicatorSendText").css('padding-right'));
+    var eHeight = $("#deviceIndicatorSendText").height() + parseInt($("#deviceIndicatorSendText").css('padding-top')) + parseInt($("#deviceIndicatorSendText").css('padding-bottom'));
+    var indicatorSize = $(indicator).width();
+
+    $("#deviceIndicatorSendText").css({ top: "auto", left: "auto", right: "auto", bottom: "auto"});
+
+    var css = { opacity: 1.0 };
+    if ($(indicator).css('top') !== 'auto') {
+      css.top = parseInt($(indicator).css('top')) + indicatorSize/2.0 - eHeight/2.0;
+      if (css.top < 100) css.top = indicatorSize/2.0 + 20;
+      css.top += "px";
+    }
+    if ($(indicator).css('left') !== 'auto') {
+      css.left = parseInt($(indicator).css('left')) + indicatorSize/2.0 - eWidth/2.0;
+      if (css.left < 100) css.left = indicatorSize/2.0 + 20;
+      css.left += "px";
+    }
+    if ($(indicator).css('right') !== 'auto') {
+      css.right = parseInt($(indicator).css('right')) - indicatorSize/2.0 + eWidth/2.0;
+      if (css.right < 100) css.right = indicatorSize/2.0 + 20;
+      css.right += "px";
+    }
+    if ($(indicator).css('bottom') !== 'auto') {
+      css.bottom = parseInt($(indicator).css('bottom')) - indicatorSize/2.0 + eHeight/2.0;
+      if (css.bottom < 100) css.bottom = indicatorSize/2.0 + 20;
+      css.bottom += "px";
+    }
+
+    $("#deviceIndicatorSendText").css(css);
+
+    Meteor.setTimeout(function() {
+      $("#deviceIndicatorSendText").css("opacity", 0);
+    }, 1500);
+  }, 1);
+}
 
 //
 // MISC

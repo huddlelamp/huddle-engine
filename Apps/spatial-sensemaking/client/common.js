@@ -112,6 +112,14 @@ if (Meteor.isClient) {
     //TODO also insert source document and the device that sent the snippet
     Snippets.insert({ device: thisDevice.id, text: data.snippet });
   });
+
+  Huddle.on("dosearch", function(data) {
+    var thisDevice = Session.get('thisDevice');
+    if (data.target !== thisDevice.id) return;
+
+    // if (!data.page) data.page = 1;
+    search(data.query, data.page);
+  });
 }
 
 function determineDeviceColor(deviceID) {
