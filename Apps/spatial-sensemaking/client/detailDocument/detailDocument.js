@@ -1,3 +1,5 @@
+var popupID = 0;
+
 Template.detailDocumentTemplate.content = function() {
   var doc = Session.get("detailDocument");
   if (doc === undefined) return undefined;
@@ -139,25 +141,38 @@ Template.detailDocumentTemplate.content = function() {
         var fakeHighlight = [startOffset, endOffset, "transparent"];
         insertHighlightIntoDOM(tempContent[0], fakeHighlight, { cssClasses: "previewSnippet" });
 
+        //Remember the current popup ID. For the timeouts, we check if the ID
+        //changed - if so the popup was closed and/or reopened and we shouldn't
+        //perform the snippet animations
+        var currentID = popupID;
+
         //Fade in and out the preview snippet
         Meteor.setTimeout(function() {
-          $(".highlight.previewSnippet").first().scrollintoview({
-            duration: "normal",
-            complete: function() {
-              $(".highlight.previewSnippet").css("background-color", "rgba(255,0,0,1.0)");
-              $(".highlight.previewSnippet").css("color", "white");
+          if (currentID === popupID) {
+            $(".highlight.previewSnippet").first().scrollintoview({
+              duration: "normal",
+              complete: function() {
+                if (currentID === popupID) {
+                  $(".highlight.previewSnippet").css("background-color", "rgba(255,0,0,1.0)");
+                  $(".highlight.previewSnippet").css("color", "white");
 
-              Meteor.setTimeout(function() {
-                $(".highlight.previewSnippet").css("background-color", "transparent");
-                $(".highlight.previewSnippet").css("color", "");
+                  Meteor.setTimeout(function() {
+                    if (currentID === popupID) {
+                      $(".highlight.previewSnippet").css("background-color", "transparent");
+                      $(".highlight.previewSnippet").css("color", "");
 
-                //After the fade-out we lock the snippet so it will not be shown again
-                Meteor.setTimeout(function() { 
-                  Session.set('detailDocumentPreviewSnippetLocked', true); 
-                }, 1000);
-              }, 2500);
-            }
-          });
+                      //After the fade-out we lock the snippet so it will not be shown again
+                      Meteor.setTimeout(function() { 
+                        if (currentID === popupID) {
+                          Session.set('detailDocumentPreviewSnippetLocked', true); 
+                        }
+                      }, 1000);
+                    }
+                  }, 2500);
+                }
+              }
+            });
+          }
         }, 1000);
       }
     }
@@ -214,6 +229,8 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
     // height: "952px",
     // width: "722px",
     beforeLoad: function() {
+      isOpen = true;
+
       Session.set('detailDocumentPreviewSnippetLocked', false);
       Session.set("detailDocumentPreviewSnippet", snippetText);
       Session.set("detailDocument", doc); 
@@ -229,6 +246,11 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
       }, 500);
     },
     beforeClose: function() {
+      isOpen = false;
+
+      //Increase popup ID on close, so we know the popup has changed
+      popupID++;
+
       var doc = Session.get("detailDocument");
       DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
     },
