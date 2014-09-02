@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -60,18 +61,22 @@ namespace Huddle.Engine.Processor
         {
             DispatcherHelper.RunAsync(() =>
             {
-                try
+                if (_dataStats.All(s => s.Type != data.GetType()))
+                {
+                    var stat = new Stat
+                           {
+                               Type = data.GetType(),
+                               Count = 1
+                           };
+                    stat.Watch.Start();
+                    DataStats.Add(stat);
+                }
+                else
                 {
                     var stat = _dataStats.Single(s => s.Type == data.GetType());
+                    stat.Fps = 1000.0 / stat.Watch.ElapsedMilliseconds;
+                    stat.Watch.Restart();
                     stat.Count++;
-                }
-                catch (Exception)
-                {
-                    DataStats.Add(new Stat
-                    {
-                        Type = data.GetType(),
-                        Count = 1
-                    });
                 }
             });
 
@@ -113,6 +118,76 @@ namespace Huddle.Engine.Processor
                 RaisePropertyChanging(TypePropertyName);
                 _type = value;
                 RaisePropertyChanged(TypePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Fps
+
+        /// <summary>
+        /// The <see cref="Fps" /> property's name.
+        /// </summary>
+        public const string FpsPropertyName = "Fps";
+
+        private double _fps;
+
+        /// <summary>
+        /// Sets and gets the Fps property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double Fps
+        {
+            get
+            {
+                return _fps;
+            }
+
+            set
+            {
+                if (_fps == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(FpsPropertyName);
+                _fps = value;
+                RaisePropertyChanged(FpsPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Stopwatch
+
+        /// <summary>
+        /// The <see cref="Watch" /> property's name.
+        /// </summary>
+        public const string WatchPropertyName = "Watch";
+
+        private Stopwatch _watch = new Stopwatch();
+
+        /// <summary>
+        /// Sets and gets the Watch property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Stopwatch Watch
+        {
+            get
+            {
+                return _watch;
+            }
+
+            set
+            {
+                if (_watch == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(WatchPropertyName);
+                _watch = value;
+                RaisePropertyChanged(WatchPropertyName);
             }
         }
 
