@@ -308,7 +308,15 @@ namespace Huddle.Engine.Processor
         {
             base.Stop();
 
-            _thresholdThreadRunning = false;
+            // cleanup data
+            Devices.Clear();
+            DrawModels.Clear();
+
+            #region Timeout Handling
+
+            _thresholdThreadRunning = false; 
+
+            #endregion
         }
 
         #region Data Processing

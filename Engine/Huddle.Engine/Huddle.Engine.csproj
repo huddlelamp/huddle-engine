@@ -320,7 +320,7 @@
     <Compile Include="Processor\ISnapshot.cs" />
     <Compile Include="Processor\ITakeLong.cs" />
     <Compile Include="Processor\MergeProcessor.cs" />
-    <Compile Include="Processor\Network\FleckWebSocketServer.cs" />
+    <Compile Include="Processor\Network\HuddleServer.cs" />
     <Compile Include="Processor\Network\WebSocketServer.cs" />
     <Compile Include="Processor\OpenCv\FindContours3.cs" />
     <Compile Include="Processor\OpenCv\FindContours2.cs" />

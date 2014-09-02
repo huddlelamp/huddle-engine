@@ -13,7 +13,8 @@ using Newtonsoft.Json;
 
 namespace Huddle.Engine.Processor.Network
 {
-    [ViewTemplate("Web Socket Server", "WebSocketServerTemplate")]
+    [Obsolete("WebSocketServer is deprecated and only supports the Huddle protocol <= v0.9.12, please use FlockWebSocketServer instead.")]
+    [ViewTemplate("Web Socket Server", "HuddleServerTemplate")]
     public class WebSocketServer : BaseProcessor
     {
         #region member fields
