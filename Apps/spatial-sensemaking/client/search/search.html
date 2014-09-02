@@ -49,24 +49,32 @@
 
     {{#each results.hits.hits}}
       <div class="row document-result">
-        <div class="col-md-10 col-md-offset-1">
-          <a href="#" class="toggleFavorited"><span class="glyphicon glyphicon-{{#if isFavorited}}heart{{else}}heart-empty{{/if}} icon"></span></a>
+        <div class="col-md-10 col-md-offset-1 {{#if wasWatched}}watched{{/if}}">
+          <h4><a href="#" class="hit">{{_id}}</a></h4>
 
-        {{#if hasComment}}
-          <span class="glyphicon glyphicon-tags icon"></span>
-        {{/if}}
+          <div class="table">
+            <div class="tr">
+              <div class="td vcenter" style="width: 50px;">
+                <a href="#" class="toggleFavorited"><span class="glyphicon glyphicon-{{#if isFavorited}}heart{{else}}heart-empty{{/if}} icon"></span></a>
 
-        {{#if wasWatched}}
-          <span class="glyphicon glyphicon-eye-open icon"></span>
-        {{/if}}
-          <h4>
-            <a href="#" class="hit">{{_id}}</a> (<a href="{{urlToDocument _id}}" target="_blank">raw document</a>)
-          </h4>
-          <ul>
-            {{#each highlight.file}}
-              <li class="document-highlight" documentid="{{../_id}}">{{{this}}}</li>
-            {{/each}}
-          </ul>
+                <br />
+
+                {{#if hasComment}}
+                  <span class="glyphicon glyphicon-tags icon"></span>
+                  <br />
+                {{/if}}
+
+                {{#if wasWatched}}
+                  <span class="glyphicon glyphicon-eye-open icon"></span>
+                {{/if}}
+              </div>
+              <div class="td vtop">
+                  {{#each highlight.file}}
+                    <div class="document-highlight" documentid="{{../_id}}">{{{this}}}</div>
+                  {{/each}}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     {{/each}}

@@ -1,3 +1,7 @@
+body {
+  font-size: 15px;
+}
+
 .input-group-btn:last-child > .btn {
   margin-left: -4px; /* fixes input grp visual on iPad */
 }
@@ -66,9 +70,16 @@
 
 .document-highlight {
   /*border: 1px solid black;*/
-  margin: 5px;
-  font-size: 0.9em;
+  /*margin: 5px;*/
+  margin: 0px; 
+  padding: 10px;
+  /*font-size: 0.9em;*/
   cursor: pointer;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.document-highlight:last-child {
+  border-bottom: 0;
 }
 
 .document-highlight em,

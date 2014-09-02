@@ -41,3 +41,19 @@ Template.handlebarsCSS.veryLightDeviceColor = function() {
     // return 'rgb('+color.r+', '+color.g+', '+color.b+')';
     return color.toRgbString();
 };
+
+Template.handlebarsCSS.opacityDeviceColor = function(opacity) {
+    var thisDevice = Session.get('thisDevice');
+    if (thisDevice === undefined) return '';
+
+    var info = DeviceInfo.findOne({ _id: thisDevice.id });
+    if (info === undefined || !info.colorDeg) return "";
+
+    var color = new tinycolor(window.degreesToColor(info.colorDeg));
+    color.setAlpha(opacity);
+    // color.setAlpha(0.2);
+    // color = color.toRgb();
+
+    // return 'rgb('+color.r+', '+color.g+', '+color.b+')';
+    return color.toRgbString();
+};

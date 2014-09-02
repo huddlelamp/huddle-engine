@@ -52,12 +52,27 @@ Template.deviceWorldView.events({
     Template.deviceWorldView.hide();
 
     if (text !== undefined && text.length > 0) {
+      //If a text selection exists, send it
       huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+      pulseIndicator(e.currentTarget);
+      showSendConfirmation(e.currentTarget, "Did send text snippet to device.");
     } else {
-      //If no selection was made, show the entire document
+      //If no selection was made but a document is open, send that
       var doc = Session.get("detailDocument");
-      if (doc === undefined) return;
-      huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+      if (doc !== undefined) {
+        huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+        pulseIndicator(e.currentTarget);
+        showSendConfirmation(e.currentTarget, "Did show document on device.");
+      } else {
+        //If no document is open but a query result is shown, send that
+        var lastQuery = Session.get('lastQuery');
+        var lastQueryPage = Session.get('lastQueryPage');
+        if (lastQuery !== undefined) {
+          huddle.broadcast("dosearch", {target: targetID, query: lastQuery, page: lastQueryPage });
+          pulseIndicator(e.currentTarget);
+          showSendConfirmation(e.currentTarget, "Did send search results to device.");
+        }
+      }
     }
   },
 });
