@@ -20,27 +20,31 @@
               <a id="deleteHighlightButton" href="#"></a>
             </div>
 
-            <div id="annotationArea">
+            <div class="table">
+              <div class="tr">
+                <div class="td vcenter">
+                  <div id="annotationArea">
+                    <textarea rows="4" cols="50" id="comment">{{comment}}</textarea>
+                    <span id="savedText">Saved</span>
+                  </div>
+                </div>
+                <div class="td vcenter">
+                  <div id="shareArea">
+                    Send to: 
+                    <select id="devicedropdown" data-placeholder="Select a device" class="chosen-select">
+                      <option></option>
+                      {{#each otherDevices}}
+                        <option deviceid="{{id}}" style="{{deviceColorCSS}}">Device</option>
+                      {{/each}}
+                    </select>
 
-              <textarea rows="4" cols="50" id="comment">{{comment}}</textarea>
+                    <br /><br />
 
-
+                    <a href="#" id="openWorldView">Open World View</a>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            <div id="shareArea">
-              Send to: 
-              <select id="devicedropdown" data-placeholder="Select a device" class="chosen-select">
-                <option></option>
-                {{#each otherDevices}}
-                  <option deviceid="{{id}}" style="{{deviceColorCSS}}">Device</option>
-                {{/each}}
-              </select>
-
-              <span style="margin-left: 15px;">&nbsp;</span>
-
-              <a href="#" id="openWorldView">Open World View</a>
-            </div>
-            
           </div>
         {{/if}}
       {{/with}}

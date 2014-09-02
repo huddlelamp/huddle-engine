@@ -379,7 +379,29 @@ var attachEvents = function() {
 
   var saveComment = function() {
     var doc = Session.get("detailDocument");
-    DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
+    if (doc === undefined) return;
+
+    var oldMeta = DocumentMeta.findOne({_id: doc._id});
+
+    var oldComment = oldMeta.comment;
+    var newComment = $("#comment").val();
+
+    if (oldComment !== newComment) {
+      DocumentMeta._upsert(doc._id, {$set: {comment: newComment}});
+
+      $("#savedText").css("opacity", 1.0);
+      Meteor.setTimeout(function() {
+        $("#savedText").css("opacity", 0);
+      }, 1700);
+    }
+  };
+
+  var timedSaveCommentTimer;
+  var timedSaveComment = function() {
+    Meteor.clearTimeout(timedSaveCommentTimer);
+    timedSaveCommentTimer = Meteor.setTimeout(function() {
+      saveComment();
+    }, 2000);
   };
 
   var deviceSelected = function() {
@@ -436,7 +458,10 @@ var attachEvents = function() {
 
   $("#comment").off('focus blur');
   $("#comment").on('focus blur', fixFixed);
-  $("#comment").on('blur', saveComment);
+  // $("#comment").on('blur', saveComment);
+
+  $("#comment").off("keyup");
+  $("#comment").on("keyup", timedSaveComment);
 
   // $("#saveCommentButton").off('click');
   // $("#saveCommentButton").on('click', saveComment);
