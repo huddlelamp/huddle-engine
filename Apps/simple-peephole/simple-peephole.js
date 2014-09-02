@@ -119,36 +119,38 @@ if (Meteor.isClient) {
       var maxLines = 100;
       var lines = 0;
 
-      huddle = Huddle.client(name)
-        .on("proximity", function(data) {
+      huddle = Huddle.client({
+        name: name
+      })
+      .on("proximity", function(data) {
 
-          // move canvas
-          Peephole.moveCanvas(data);
+        // move canvas
+        Peephole.moveCanvas(data);
 
-          // render presence indicators
-          Peephole.renderPresences(data.Presences);
-        })
-        .on("myMessage", function(data) {
-          $('#incoming-messages').val(function(_, val) {
+        // render presence indicators
+        Peephole.renderPresences(data.Presences);
+      })
+      .on("myMessage", function(data) {
+        $('#incoming-messages').val(function(_, val) {
 
-            ++lines;
+          ++lines;
 
-            if (lines > maxLines) {
-              val = val.substring(val.indexOf('\n') + 1, val.length);
-            }
+          if (lines > maxLines) {
+            val = val.substring(val.indexOf('\n') + 1, val.length);
+          }
 
-            var json = JSON.stringify(data);
-            if (val.trim() == "") {
-                return json;
-            }
-            else {
-              return val + "\r\n" + json;
-            }
-          });
-
-          $('#incoming-messages').scrollTop($('#incoming-messages')[0].scrollHeight);
+          var json = JSON.stringify(data);
+          if (val.trim() == "") {
+              return json;
+          }
+          else {
+            return val + "\r\n" + json;
+          }
         });
-        huddle.connect(host, port);
+
+        $('#incoming-messages').scrollTop($('#incoming-messages')[0].scrollHeight);
+      });
+      huddle.connect(host, port);
     };
 
     var host = Peephole.getParameterByName("host");

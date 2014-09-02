@@ -1,12 +1,18 @@
 if (Meteor.isClient) {
 
   Template.main.rendered = function() {
-    console.log("rendered");
-
     var maxLines = 100;
     var lines = 0;
 
-    var huddle = Huddle.client("MyHuddle")
+    var huddle = Huddle.client({
+      name: "MyHuddle",
+    })
+    .on("devicefound", function() {
+      console.log("devicefound");
+    })
+    .on("devicelost", function() {
+      console.log("devicelost");
+    })
     .on("proximity", function(data) {
       // console.log(data);
       $('#console').val(function(_, val) {
@@ -28,7 +34,9 @@ if (Meteor.isClient) {
 
       $('#console').scrollTop($('#console')[0].scrollHeight);
     })
-    .connect("huddle-orbiter.proxemicinteractions.org", 58629);
+    // .connect("huddle-orbiter.proxemicinteractions.org", 58629);
+    .connect("134.34.226.168", 4712);
+    // .connect("localhost", 4711);
   };
 }
 
