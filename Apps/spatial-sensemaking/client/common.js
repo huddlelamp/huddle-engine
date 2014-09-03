@@ -120,6 +120,16 @@ if (Meteor.isClient) {
     // if (!data.page) data.page = 1;
     search(data.query, data.page);
   });
+
+  Huddle.on("gotourl", function(data) {
+    var thisDevice = Session.get('thisDevice');
+    if (data.target !== thisDevice.id) return;
+
+    console.log(data);
+    location.replace(data.url);
+    // if (!data.page) data.page = 1;
+    // search(data.query, data.page);
+  });
 }
 
 function determineDeviceColor(deviceID) {
