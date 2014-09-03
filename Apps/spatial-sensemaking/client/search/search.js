@@ -99,6 +99,10 @@ if (Meteor.isClient) {
   };
 
   Template.searchIndex.rendered = function() {
+    Template.searchIndex.reflectURL();
+  };
+
+  Template.searchIndex.reflectURL = function() {
     //If we have some parameters for search passed to us, do the appropiate search
     var query = Router._currentController.params._query ? decodeURIComponent(Router._currentController.params._query) : undefined;
     var page = Router._currentController.params._page ? decodeURIComponent(Router._currentController.params._page) : undefined;

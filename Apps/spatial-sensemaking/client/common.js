@@ -131,12 +131,17 @@ if (Meteor.isClient) {
     search(data.query, data.page);
   });
 
-  Huddle.on("gotourl", function(data) {
+  Huddle.on("go", function(data) {
     var thisDevice = Session.get('thisDevice');
     if (data.target !== thisDevice.id) return;
 
     console.log(data);
-    location.replace(data.url);
+    // Router.go(data.url);
+    // IronLocation.pushState(state, options.title, url, options.skipReactive);
+    Router.go(data.template, data.params);
+    Template.searchIndex.reflectURL();
+    // Router.render();
+    // location.replace(data.url);
     // if (!data.page) data.page = 1;
     // search(data.query, data.page);
   });

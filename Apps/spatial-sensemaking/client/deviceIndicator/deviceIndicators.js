@@ -122,7 +122,15 @@ Template.deviceIndicators.events({
         var lastQueryPage = Session.get('lastQueryPage');
         if (lastQuery !== undefined) {
           // huddle.broadcast("dosearch", {target: targetID, query: lastQuery, page: lastQueryPage });
-          huddle.broadcast("gotourl", { target: targetID, url: "/search/"+lastQuery+"/"+lastQueryPage });
+          // huddle.broadcast("gotourl", { target: targetID, url: "/searchIndex/"+lastQuery+"/"+lastQueryPage });
+          huddle.broadcast("go", {
+            target: targetID,
+            template: "searchIndex",
+            params: {
+              _query: lastQuery,
+              _page: lastQueryPage
+            }
+          });
           pulseIndicator(e.currentTarget);
           showSendConfirmation(e.currentTarget, "Search results were sent to the device.");
         }
