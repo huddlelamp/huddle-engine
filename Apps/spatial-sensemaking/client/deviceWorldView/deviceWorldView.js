@@ -49,33 +49,66 @@ Template.deviceWorldView.events({
 
     var text = Session.get("worldViewSnippetToSend");
 
-    Template.deviceWorldView.hide();
+    Meteor.setTimeout(function() {
+      Template.deviceWorldView.hide();
+    }, 1000);
 
     if (text !== undefined && text.length > 0) {
       //If a text selection exists, send it
       huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
-      pulseIndicator(e.currentTarget);
-      showSendConfirmation(e.currentTarget, "Did send text snippet to device.");
+      pulseDevice(e.currentTarget);
+      showSendConfirmation(e.currentTarget, "The selected text was sent to the device.");
     } else {
       //If no selection was made but a document is open, send that
       var doc = Session.get("detailDocument");
       if (doc !== undefined) {
         huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
-        pulseIndicator(e.currentTarget);
-        showSendConfirmation(e.currentTarget, "Did show document on device.");
+        pulseDevice(e.currentTarget);
+        showSendConfirmation(e.currentTarget, "The document "+doc._id+" is displayed on the device.");
       } else {
         //If no document is open but a query result is shown, send that
         var lastQuery = Session.get('lastQuery');
         var lastQueryPage = Session.get('lastQueryPage');
         if (lastQuery !== undefined) {
           huddle.broadcast("dosearch", {target: targetID, query: lastQuery, page: lastQueryPage });
-          pulseIndicator(e.currentTarget);
-          showSendConfirmation(e.currentTarget, "Did send search results to device.");
+          pulseDevice(e.currentTarget);
+          showSendConfirmation(e.currentTarget, "Search results were sent to the device.");
         }
       }
     }
   },
 });
+
+function pulseDevice(device) {
+  $(device).css('transform', 'scale(1.5, 1.5)');
+  Meteor.setTimeout(function() {
+    $(device).css('transform', '');
+  }, 300);
+}
+
+function showSendConfirmation(device, text) {
+  $("#worldViewSendText").text(text);
+
+  Meteor.setTimeout(function() {
+    var eWidth = $("#worldViewSendText").width() + parseInt($("#worldViewSendText").css('padding-left')) + parseInt($("#worldViewSendText").css('padding-right'));
+    var eHeight = $("#worldViewSendText").height() + parseInt($("#worldViewSendText").css('padding-top')) + parseInt($("#worldViewSendText").css('padding-bottom'));
+
+    var deviceWidth = $(device).width();
+    var deviceHeight = $(device).height();
+
+    var top = parseInt($(device).position().top + deviceHeight/2.0) - eHeight/2.0;
+    var left = parseInt($(device).position().left + deviceWidth/2.0) - eWidth/2.0;
+    $("#worldViewSendText").css({ 
+      opacity: 1.0, 
+      top: top, 
+      left: left
+    });
+
+    Meteor.setTimeout(function() {
+      $("#worldViewSendText").css("opacity", 0);
+    }, 2000);
+  }, 1);
+}
 
 //
 // "PUBLIC" METHODS

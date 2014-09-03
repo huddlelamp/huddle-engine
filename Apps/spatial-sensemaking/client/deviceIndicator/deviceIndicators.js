@@ -108,14 +108,14 @@ Template.deviceIndicators.events({
       //If a text selection exists, send it
       huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
       pulseIndicator(e.currentTarget);
-      showSendConfirmation(e.currentTarget, "Did send text snippet to device.");
+      showSendConfirmation(e.currentTarget, "The selected text was sent to the device.");
     } else {
       //If no selection was made but a document is open, send that
       var doc = Session.get("detailDocument");
       if (doc !== undefined) {
         huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
         pulseIndicator(e.currentTarget);
-        showSendConfirmation(e.currentTarget, "Did show document on device.");
+        showSendConfirmation(e.currentTarget, "The document "+doc._id+" is displayed on the device.");
       } else {
         //If no document is open but a query result is shown, send that
         var lastQuery = Session.get('lastQuery');
@@ -124,7 +124,7 @@ Template.deviceIndicators.events({
           // huddle.broadcast("dosearch", {target: targetID, query: lastQuery, page: lastQueryPage });
           huddle.broadcast("gotourl", { target: targetID, url: "/search/"+lastQuery+"/"+lastQueryPage });
           pulseIndicator(e.currentTarget);
-          showSendConfirmation(e.currentTarget, "Did send search results to device.");
+          showSendConfirmation(e.currentTarget, "Search results were sent to the device.");
         }
       }
     }
@@ -179,7 +179,7 @@ function showSendConfirmation(indicator, text) {
 
     Meteor.setTimeout(function() {
       $("#deviceIndicatorSendText").css("opacity", 0);
-    }, 1500);
+    }, 2000);
   }, 1);
 }
 

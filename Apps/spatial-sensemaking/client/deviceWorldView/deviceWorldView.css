@@ -16,12 +16,27 @@
   border-width: 5px; 
   border-radius: 12px; 
   opacity: 1.0;
+  -webkit-transition: -webkit-transform 0.3s;
 }
 
 .worldDevice.thisDevice {
   /*opacity: 0.35;*/
   border-style: dashed;
   border-width: 2px;
+}
+
+#worldViewSendText {
+  position: absolute;
+  opacity: 0;
+  -webkit-transition: opacity 0.7s;
+  color: white;
+  background-color: rgba(0,0,0,0.85);
+  border-radius: 12px;
+  padding: 10px;
+  max-width: 150px;
+  text-align: center;
+  z-index: 9999;
+  pointer-events: none;
 }
 
 #closeButton {

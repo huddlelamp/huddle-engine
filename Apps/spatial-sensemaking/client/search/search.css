@@ -94,7 +94,7 @@ body {
 .paginationLink {
   display: inline-block;
   color: #357ebd;
-  border: 1px solid #357ebd;
+  border: 2px solid #357ebd;
   width: 35px;
   height: 35px;
   text-align: center;
@@ -116,7 +116,8 @@ body {
   /*border-width: 2px;*/
   /*height: 36px;*/
   color: black;
-  background-color: inherit;
+  background-color: lightgray;
+  /*font-weight: bold;*/
 }
 
 /*.textSelection {
