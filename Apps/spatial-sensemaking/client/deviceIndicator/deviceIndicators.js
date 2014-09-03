@@ -1,7 +1,7 @@
 Template.deviceIndicators.rendered = function() {
   $(document).ready(function() {
-    $("#deviceIndicatorWrapper").width($("#deviceIndicatorWrapper").width());
-    $("#deviceIndicatorWrapper").height($("#deviceIndicatorWrapper").height());
+    // $("#deviceIndicatorWrapper").width($("#deviceIndicatorWrapper").width());
+    // $("#deviceIndicatorWrapper").height($("#deviceIndicatorWrapper").height());
   });
 };
 

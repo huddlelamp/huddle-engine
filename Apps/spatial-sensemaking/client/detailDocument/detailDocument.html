@@ -3,9 +3,8 @@
     {{#with document}}
       {{#if content}}
           <div id="contentArea">
-            <!-- <div id="contentWrapper"> -->
-              <div id="content"><a href="#" class="toggleFavorited" id="detailDocumentStar"><span class="glyphicon glyphicon-{{#if isFavorited}}heart{{else}}heart-empty{{/if}} icon-large"></span></a>{{{content}}}</div>
-            <!-- </div>  -->
+            <a href="#" class="toggleFavorited" id="detailDocumentStar"><span class="glyphicon glyphicon-{{#if isFavorited}}heart{{else}}heart-empty{{/if}} icon-large"></span></a>
+              <div id="content">{{{content}}}</div>
          </div>
 
           <div id="editArea">

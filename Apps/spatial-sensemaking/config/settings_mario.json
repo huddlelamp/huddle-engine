@@ -2,7 +2,7 @@
   "public": {
     "elasticSearch": {
       "protocol": "http",
-      "host": "134.34.222.10",
+      "host": "192.168.1.103",
       "port": 9200,
       "index": "vast2006",
       "attachmentsPath": "attachment"

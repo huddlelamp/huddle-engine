@@ -25,10 +25,10 @@ Template.deviceWorldView.deviceBackgroundColorCSS = function() {
 };
 
 Template.deviceWorldView.deviceSizeAndPosition = function() {
-  var width = $("#worldViewWrapper").width() / this.ratio.x;
+  var width  = $("#worldViewWrapper").width() / this.ratio.x;
   var height = $("#worldViewWrapper").height() / this.ratio.y;
-  var x = ($("#worldViewWrapper").width() - width) * this.topLeft.x;
-  var y = ($("#worldViewWrapper").height() - height) * this.topLeft.y;
+  var x      = ($("#worldViewWrapper").width() - width) * this.topLeft.x;
+  var y      = ($("#worldViewWrapper").height() - height) * this.topLeft.y;
   return 'width: '+width+'px; height: '+height+'px; top: '+y+'px; left: '+x+'px;';
 };
 
@@ -92,10 +92,18 @@ Template.deviceWorldView.show = function(animated) {
     Session.set("worldViewSnippetToSend", Template.detailDocumentTemplate.currentlySelectedContent());
   }
 
+  // if ($("#worldViewWrapper").css("display") !== "none") return;
+
+  //Make sure the view is hidden properly before showing it
+  Template.deviceWorldView.hide(false);
+
+  $("#worldViewWrapper").css("display", "");
+
   var duration = animated ? 500 : 0;
   $("#worldViewWrapper").animate({
     top: "0px"
   }, duration);
+  // $("#worldViewWrapper").slideUp(duration);
 };
 
 Template.deviceWorldView.hide = function(animated) {
@@ -103,10 +111,15 @@ Template.deviceWorldView.hide = function(animated) {
 
   Session.set("worldViewSnippetToSend", undefined);
 
+  // if ($("#worldViewWrapper").css("display") === "none") return;
+
   var duration = animated ? 500 : 0;
   $("#worldViewWrapper").animate({
     top: $(document).height()+"px"
-  }, duration);
+  }, duration, function() {
+    $("#worldViewWrapper").css("display", "none");
+  });
+  // $("#worldViewWrapper").slideDown(duration);
 };
 
 //
