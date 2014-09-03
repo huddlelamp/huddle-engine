@@ -446,9 +446,20 @@ var attachEvents = function() {
     }
   };
 
-  var openWorldView = function(e) {
-    e.preventDefault();
+  var fuckYouWorldView = function(e) {
+    //Do you really wanna know? Well, I try to keep it short:
+    //* Using preventDefault() on touchstart/touchend bugs the text selection in 
+    //mobile safari, the text selection handles won't disappear after that
+    //* Not using preventDefault for some reason triggers multiple clicks, closing
+    //the world view right after opening it
+    //* The click event triggers too late, the text selection is already gone there
+    //
+    //Solution? We remember the selected text on touchend (where it still exists),
+    //but open the world view in click
+    Session.set("worldViewSnippetToSend", Template.detailDocumentTemplate.currentlySelectedContent());
+  };
 
+  var openWorldView = function(e) {
     if (!Template.deviceWorldView) return;
     Template.deviceWorldView.show();
   };
@@ -492,8 +503,11 @@ var attachEvents = function() {
   $("#devicedropdown").off('change');
   $("#devicedropdown").on('change', deviceSelected);
 
-  $("#openWorldView").off('touchend mouseup');
-  $("#openWorldView").on('touchend mouseup', openWorldView);
+  $("#openWorldView").off('touchend');
+  $("#openWorldView").on('touchend', fuckYouWorldView);
+
+  $("#openWorldView").off('click');
+  $("#openWorldView").on('click', openWorldView);
 };
 
 
@@ -503,6 +517,7 @@ var attachEvents = function() {
 
 var getContentSelection = function() {
   var selection = rangy.getSelection(0);
+  console.log(selection);
   
   if (selection.rangeCount === 0 || selection.isCollapsed) {
     return undefined;

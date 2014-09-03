@@ -56,9 +56,19 @@ if (Meteor.isClient) {
     return newData;
   }; //end transformDeviceData
 
-  huddle = Huddle.client("MyHuddleName")
+  var existingID = amplify.store("huddleid");
+  if (existingID === undefined) existingID = null;
+  console.log("EXISTING ID: "+existingID);
+
+  huddle = Huddle.client({ glyphId: existingID })
+  .on("devicelost", function(a) {
+    console.log("DEVICE WAS LOST");
+    console.log(a);
+  })
   .on("proximity", function(data) {
     if (firstProximityData && data.Identity) {
+      console.log("MY ID: "+data.Identity);
+      amplify.store("huddleid", data.Identity);
       firstProximityData = false;
 
       determineDeviceColor(data.Identity.toString());

@@ -1,2 +1,0 @@
-- active index not available in .rendered()
-- huddle notification on device lost missing

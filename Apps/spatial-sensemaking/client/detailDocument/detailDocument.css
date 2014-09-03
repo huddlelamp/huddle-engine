@@ -24,15 +24,19 @@
 }
 
 #annotationArea {
-  position: relative;
+  /*position: relative;*/
   /*margin-bottom: 10px;*/
   margin: 0;
 }
 
 #comment {
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
+  margin: 0;
+  border-radius: 3px;
 }
+
 #savedText {
   opacity: 0;
   position: absolute;
@@ -129,6 +133,10 @@
 
 .td.vcenter {
   vertical-align: middle;
+}
+
+.td.vbottom {
+  vertical-align: bottom;
 }
 
 .td.vtop {

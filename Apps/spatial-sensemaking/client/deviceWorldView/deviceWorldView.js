@@ -48,6 +48,7 @@ Template.deviceWorldView.events({
     if (targetID === undefined) return;
 
     var text = Session.get("worldViewSnippetToSend");
+    // var text = Template.detailDocumentTemplate.currentlySelectedContent();
 
     Meteor.setTimeout(function() {
       Template.deviceWorldView.hide();
@@ -121,14 +122,14 @@ Template.deviceWorldView.show = function(animated) {
   //in the document details if there is any.
   //We do that because a tap in the world view can clear the selection which means
   //we cannot retrieve it later
-  if (Template.detailDocumentTemplate) {
-    Session.set("worldViewSnippetToSend", Template.detailDocumentTemplate.currentlySelectedContent());
-  }
+  // if (Template.detailDocumentTemplate) {
+    // Session.set("worldViewSnippetToSend", Template.detailDocumentTemplate.currentlySelectedContent());
+  // }
 
   // if ($("#worldViewWrapper").css("display") !== "none") return;
 
   //Make sure the view is hidden properly before showing it
-  Template.deviceWorldView.hide(false);
+  Template.deviceWorldView.hide(false, false);
 
   $("#worldViewWrapper").css("display", "");
 
@@ -139,10 +140,11 @@ Template.deviceWorldView.show = function(animated) {
   // $("#worldViewWrapper").slideUp(duration);
 };
 
-Template.deviceWorldView.hide = function(animated) {
+Template.deviceWorldView.hide = function(animated, clearSnippet) {
   if (animated === undefined) animated = true;
+  if (clearSnippet === undefined) clearSnippet = true;
 
-  Session.set("worldViewSnippetToSend", undefined);
+  if (clearSnippet) Session.set("worldViewSnippetToSend", undefined);
 
   // if ($("#worldViewWrapper").css("display") === "none") return;
 
