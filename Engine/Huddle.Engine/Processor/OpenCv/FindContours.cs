@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
@@ -483,6 +487,42 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #region DebugImageSource
+
+        /// <summary>
+        /// The <see cref="DebugImageSource" /> property's name.
+        /// </summary>
+        public const string DebugImageSourcePropertyName = "DebugImageSource";
+
+        private BitmapSource _debugImageSource;
+
+        /// <summary>
+        /// Sets and gets the DebugImageSource property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public BitmapSource DebugImageSource
+        {
+            get
+            {
+                return _debugImageSource;
+            }
+
+            set
+            {
+                if (_debugImageSource == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DebugImageSourcePropertyName);
+                _debugImageSource = value;
+                RaisePropertyChanged(DebugImageSourcePropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -490,7 +530,7 @@ namespace Huddle.Engine.Processor.OpenCv
         public FindContours()
             : base(false)
         {
-            
+
         }
 
         #endregion
@@ -503,6 +543,19 @@ namespace Huddle.Engine.Processor.OpenCv
             var now = DateTime.Now;
 
             _objects.RemoveAll(o => (now - o.LastUpdate).TotalMilliseconds > Timeout);
+
+            var debugImage = image.Copy();
+            foreach (var rawObject in _objects)
+            {
+                debugImage.Draw(rawObject.Shape, Rgbs.Mimosa, -1);
+            }
+
+            Task.Factory.StartNew(() =>
+            {
+                var bitmapSource = debugImage.ToBitmapSource(true);
+                debugImage.Dispose();
+                return bitmapSource;
+            }).ContinueWith(t => DebugImageSource = t.Result);
 
             var outputImage = new Image<Rgb, byte>(imageWidth, imageHeight, Rgbs.Black);
 
@@ -593,7 +646,7 @@ namespace Huddle.Engine.Processor.OpenCv
                                         o.Shape = area;
                                         o.Polygon = new Polygon(points.ToArray(), imageWidth, imageHeight);
                                         o.Points = pts;
-                                        o.DeviceToCameraRatio = ((longestEdgeLength / imageWidth)*0.3 + o.DeviceToCameraRatio)*0.7;
+                                        o.DeviceToCameraRatio = ((longestEdgeLength / imageWidth) * 0.3 + o.DeviceToCameraRatio) * 0.7;
                                         o.LongestEdge = longestEdge;
 
                                         updated = true;

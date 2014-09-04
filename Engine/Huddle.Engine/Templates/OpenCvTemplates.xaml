@@ -356,14 +356,19 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
                           Grid.Column="0">
                     <Image Source="{Binding Path=PreProcessImage}" />
                 </GroupBox>
-                <GroupBox Header="Post Processed Image"
+                <GroupBox Header="Debug Image"
                           Grid.Column="1">
+                    <Image Source="{Binding Path=DebugImageSource}" />
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="2">
                     <Image Source="{Binding Path=PostProcessImage}" />
                 </GroupBox>
             </Grid>
@@ -486,7 +491,32 @@
             </StackPanel>
         </StackPanel>
     </DataTemplate>
-    
+
+    <DataTemplate x:Key="FillContours" DataType="openCv:FillContours">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Image Source="{Binding Path=PreProcessImage}" />
+                </GroupBox>
+                <GroupBox Header="Debug Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=DebugImageSource}" />
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="2">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </Grid>
+        </StackPanel>
+    </DataTemplate>
+
     <DataTemplate x:Key="FillConvexHulls" DataType="openCv:FillConvexHulls">
         <StackPanel>
             <Grid>

@@ -474,6 +474,11 @@ namespace Huddle.Engine.ViewModel
             if (fileName.EndsWith(".pipeline.huddle"))
                 fileName = fileName.Substring(0, fileName.Length - ".pipeline.huddle".Length);
 
+            // sometimes the filename ends twice with ".pipeline.huddle" and sometimes not. If the
+            // filename does not contain a ".pipeline.huddle" it will be added.
+            if (!fileName.EndsWith(".pipeline.huddle"))
+                fileName += ".pipeline.huddle"; 
+
             Save(fileName);
         }
 

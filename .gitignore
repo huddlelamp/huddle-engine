@@ -8,3 +8,4 @@ obj/
 *.tmp
 *.user
 .DS_Store
+*.DotSettings
