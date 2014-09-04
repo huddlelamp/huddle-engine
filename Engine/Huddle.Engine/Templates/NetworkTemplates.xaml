@@ -12,6 +12,12 @@
                     <TextBox Width="100" Text="{Binding Path=Port}" VerticalAlignment="Center" TextAlignment="Center" />
                     <Button Content="Apply" />
                 </StackPanel>
+                
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Outgoing Fps"/>
+                    <Slider Width="200" Height="25" Minimum="1" Maximum="100" Value="{Binding Path=OutgoingFps}" />
+                    <TextBlock Text="{Binding Path=OutgoingFps, StringFormat={}{0:#}}"/>
+                </StackPanel>
             </StackPanel>
         </Grid>
     </DataTemplate>

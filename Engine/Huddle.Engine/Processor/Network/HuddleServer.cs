@@ -27,6 +27,8 @@ namespace Huddle.Engine.Processor.Network
 
         private readonly ConcurrentDictionary<Guid, FleckClient> _connectedClients = new ConcurrentDictionary<Guid, FleckClient>();
 
+        private readonly Stopwatch _lastProximityUpdate = new Stopwatch();
+
         #endregion
 
         #region properties
@@ -61,6 +63,41 @@ namespace Huddle.Engine.Processor.Network
                 RaisePropertyChanging(PortPropertyName);
                 _port = value;
                 RaisePropertyChanged(PortPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region OutgoingFps
+
+        /// <summary>
+        /// The <see cref="OutgoingFps" /> property's name.
+        /// </summary>
+        public const string OutgoingFpsPropertyName = "OutgoingFps";
+
+        private int _outgoingFps = 30;
+
+        /// <summary>
+        /// Sets and gets the OutgoingFps property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int OutgoingFps
+        {
+            get
+            {
+                return _outgoingFps;
+            }
+
+            set
+            {
+                if (_outgoingFps == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(OutgoingFpsPropertyName);
+                _outgoingFps = value;
+                RaisePropertyChanged(OutgoingFpsPropertyName);
             }
         }
 
@@ -162,6 +199,8 @@ namespace Huddle.Engine.Processor.Network
             // stop web socket server in case a server is already running.
             StopWebSocketServer();
 
+            _lastProximityUpdate.Start();
+
             _webSocketServer = new Fleck.WebSocketServer(string.Format("ws://0.0.0.0:{0}", Port));
             _webSocketServer.Start(socket =>
             {
@@ -185,6 +224,8 @@ namespace Huddle.Engine.Processor.Network
 
             if (_webSocketServer != null)
                 _webSocketServer.Dispose();
+
+            _lastProximityUpdate.Stop();
         }
 
         /// <summary>
@@ -249,13 +290,18 @@ namespace Huddle.Engine.Processor.Network
                 }
             }
 
-            foreach (var proximity in proximities)
+            if (_lastProximityUpdate.ElapsedMilliseconds > 1000 / OutgoingFps)
             {
-                var proximity1 = proximity;
-                foreach (var client in clients.Where(c => Equals(c.Id, proximity1.Identity)))
+                foreach (var proximity in proximities)
                 {
-                    client.Send(proximity);
+                    var proximity1 = proximity;
+                    foreach (var client in clients.Where(c => Equals(c.Id, proximity1.Identity)))
+                    {
+                        client.Send(proximity);
+                    }
                 }
+
+                _lastProximityUpdate.Restart();
             }
 
             #endregion
