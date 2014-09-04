@@ -102,19 +102,6 @@ if (Meteor.isClient) {
     Template.searchIndex.reflectURL();
   };
 
-  Template.searchIndex.reflectURL = function() {
-    //If we have some parameters for search passed to us, do the appropiate search
-    var query = Router._currentController.params._query ? decodeURIComponent(Router._currentController.params._query) : undefined;
-    var page = Router._currentController.params._page ? decodeURIComponent(Router._currentController.params._page) : undefined;
-
-    if (query !== undefined) {
-      if (page === undefined) page = 1;
-
-      $('#search-query').val(query);
-      search(query, page);
-    }
-  };
-
   Template.searchIndex.results = function() {
     return Session.get("results") || [];
   };
@@ -218,7 +205,8 @@ if (Meteor.isClient) {
 
       var query = $(e.currentTarget).attr("query");
       var page = $(e.currentTarget).attr("page");
-      search(query, page);
+      Router.go('searchIndex', {_query: query, _page: page});
+      Template.searchIndex.reflectURL();
     },
 
     'click .toggleFavorited': function(e, tmpl) {
@@ -253,6 +241,23 @@ if (Meteor.isClient) {
     },
   });
 }
+
+//
+// "PUBLIC"
+// 
+
+Template.searchIndex.reflectURL = function() {
+  //If we have some parameters for search passed to us, do the appropiate search
+  var query = Router._currentController.params._query ? decodeURIComponent(Router._currentController.params._query) : undefined;
+  var page = Router._currentController.params._page ? decodeURIComponent(Router._currentController.params._page) : undefined;
+
+  if (query !== undefined) {
+    if (page === undefined) page = 1;
+
+    $('#search-query').val(query);
+    search(query, page);
+  }
+};
 
 
 //

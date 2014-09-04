@@ -361,10 +361,9 @@ var attachEvents = function() {
     //Clear selection
     rangy.getSelection(0).removeAllRanges();
   };
-
   
   
-  var deleteHighlights = function() {
+  var deleteHighlights = function(e) {
     e.preventDefault();
 
     var selection = getContentSelection();
@@ -378,15 +377,25 @@ var attachEvents = function() {
     var doc = Session.get("detailDocument");
     var meta = DocumentMeta.findOne({_id: doc._id});
     var newHighlights = [];
+    var count = 0;
     if (meta && meta.textHighlights) {
       for (var i = 0; i < meta.textHighlights.length; i++) {
         var highlight = meta.textHighlights[i];
         var intersection = rangeIntersection(startOffset, endOffset, highlight[0], highlight[1]);
         if (intersection === undefined) {
           newHighlights.push(meta.textHighlights[i]);
+        } else {
+          count++;
         }
       }
     }
+
+    $(e.currentTarget).popover('destroy');
+    $(e.currentTarget).popover({
+      placement: "bottom",
+      content: "Do you really want to delete <b>"+count+"</b> text highlights? <br/><br /><button class='btn btn-danger'>Yes, delete</button> <button class='btn'>Cancel</button>",
+      html: true
+    });
 
     //Insert the "surviving" highlights back into the DB
     DocumentMeta._upsert(doc._id, { $set: { textHighlights: newHighlights } });
@@ -517,7 +526,6 @@ var attachEvents = function() {
 
 var getContentSelection = function() {
   var selection = rangy.getSelection(0);
-  console.log(selection);
   
   if (selection.rangeCount === 0 || selection.isCollapsed) {
     return undefined;

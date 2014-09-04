@@ -60,7 +60,7 @@ if (Meteor.isClient) {
   if (existingID === undefined) existingID = null;
   console.log("EXISTING ID: "+existingID);
 
-  huddle = Huddle.client({ glyphId: existingID })
+  huddle = Huddle.client({ glyphId: existingID+"" })
   .on("devicelost", function(a) {
     console.log("DEVICE WAS LOST");
     console.log(a);
@@ -135,15 +135,8 @@ if (Meteor.isClient) {
     var thisDevice = Session.get('thisDevice');
     if (data.target !== thisDevice.id) return;
 
-    console.log(data);
-    // Router.go(data.url);
-    // IronLocation.pushState(state, options.title, url, options.skipReactive);
     Router.go(data.template, data.params);
     Template.searchIndex.reflectURL();
-    // Router.render();
-    // location.replace(data.url);
-    // if (!data.page) data.page = 1;
-    // search(data.query, data.page);
   });
 }
 
