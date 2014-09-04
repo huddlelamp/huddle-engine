@@ -556,7 +556,13 @@ namespace Huddle.Engine.ViewModel
 
                     if (snapshotBitmaps == null)
                     {
-                        MessageBox.Show(string.Format("Snapshot function not implemented for {0}", Model.GetType().Name));
+                        MessageBox.Show(string.Format("Snapshot function not implemented for {0}.", Model.GetType().Name));
+                        return;
+                    }
+
+                    if (snapshotBitmaps.Length == 0)
+                    {
+                        MessageBox.Show("No images available.");
                         return;
                     }
 

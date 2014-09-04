@@ -234,6 +234,9 @@ namespace Huddle.Engine.Processor
 
         public override Bitmap[] TakeSnapshots()
         {
+            if (PreProcessImage == null || PostProcessImage == null)
+                return new Bitmap[0];
+
             return new[]
             {
                 PreProcessImage.BitmapFromSource(),

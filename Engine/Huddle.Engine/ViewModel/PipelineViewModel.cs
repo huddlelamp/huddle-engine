@@ -232,11 +232,23 @@ namespace Huddle.Engine.ViewModel
                 ProcessorTypes = new ObservableCollection<ViewTemplateAttribute>(types);
             }
 
+            // exit hook to stop input source --> replaced by Application.Current.MainWindow.Closing
+            //Application.Current.Exit += (s, e) =>
+            //{
+            //    Stop();
+            //};
+
             // exit hook to stop input source
-            Application.Current.Exit += (s, e) =>
+            Application.Current.MainWindow.Closing += (s, e) =>
             {
                 Stop();
-                Save(Settings.Default.DefaultPipelineFileName);
+
+                var savePipeline = MessageBox.Show("Do you want to save changes?", "Save Changes", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (savePipeline == MessageBoxResult.Yes)
+                {
+                    // Saves pipeline on application exit
+                    Save(Settings.Default.DefaultPipelineFileName);
+                }
             };
 
             Model = new Pipeline();
@@ -458,6 +470,10 @@ namespace Huddle.Engine.ViewModel
 
             AskForSaveAsDefaultPipeline(fileName);
 
+            // crop file type if it has been added to the filename
+            if (fileName.EndsWith(".pipeline.huddle"))
+                fileName = fileName.Substring(0, fileName.Length - ".pipeline.huddle".Length);
+
             Save(fileName);
         }
 
@@ -620,5 +636,6 @@ namespace Huddle.Engine.ViewModel
             {
                 return String.Compare(x.Name, y.Name, StringComparison.Ordinal);
             }
-        }}
+        }
+    }
 }

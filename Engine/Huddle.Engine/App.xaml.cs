@@ -22,7 +22,11 @@ namespace Huddle.Engine
             //        MessageBox.Show(string.Format("Command Line File: {0}", commandLineFile));
             //    }
 
+#if DEBUG
+            StartupUri = new Uri("Windows/EditorWindow.xaml", UriKind.Relative);
+#else
             StartupUri = new Uri("Windows/BasicWindow.xaml", UriKind.Relative);
+#endif
 
             DispatcherUnhandledException += AppDispatcherUnhandledException;
 

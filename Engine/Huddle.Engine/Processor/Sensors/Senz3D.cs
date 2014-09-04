@@ -14,6 +14,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.External.Extensions;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
+using Huddle.Engine.Processor.Sensors.Utils;
 using Huddle.Engine.Util;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
 using Point = System.Drawing.Point;
@@ -854,7 +855,7 @@ namespace Huddle.Engine.Processor.Sensors
                 /* Get RGB color image */
                 Stopwatch sw = Stopwatch.StartNew();
                 var color = _pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_COLOR);
-                var colorBitmap = GetRgb32Pixels(color);
+                var colorBitmap = Senz3DUtils.GetRgb32Pixels(color);
                 var colorImage = new Image<Rgb, byte>(colorBitmap);
                 var colorImageCopy = colorImage.Copy();
                 ColorImageFrameTime = sw.ElapsedMilliseconds;
@@ -862,7 +863,7 @@ namespace Huddle.Engine.Processor.Sensors
                 /* Get depth image */
                 sw.Restart();
                 var depth = _pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_DEPTH);
-                var depthImageAndConfidence = GetHighPrecisionDepthImage(depth);
+                var depthImageAndConfidence = Senz3DUtils.GetHighPrecisionDepthImage(depth, MinDepthValue, MaxDepthValue);
                 var depthImage = (Image<Gray, float>)depthImageAndConfidence[0];
                 var depthImageCopy = depthImage.Copy();
                 var confidenceMapImage = (Image<Rgb, Byte>)depthImageAndConfidence[1];
@@ -884,7 +885,7 @@ namespace Huddle.Engine.Processor.Sensors
                 if (UvMapChecked || getRgbInDepthROI)
                 {
                     sw.Restart();
-                    uvMapImage = GetDepthUVMap(depth);
+                    uvMapImage = Senz3DUtils.GetDepthUvMap(depth);
                     uvMapImageCopy = uvMapImage.Copy();
                     UVMapImageFrameTime = sw.ElapsedMilliseconds;
                 }
@@ -902,13 +903,19 @@ namespace Huddle.Engine.Processor.Sensors
                     sw.Restart();
                     if (getRgbInDepthROI)
                     {
-                        var tl = new Point();
-                        var br = new Point();
-                        rgbOfDepthImage = GetRgbOfDepthPixels(depthImage, colorImage, uvMapImage, true, ref _rgbInDepthROI);
-                        getRgbInDepthROI = false;
+                        rgbOfDepthImage = Senz3DUtils.GetRgbOfDepthPixels(depthImage, colorImage, uvMapImage, true, ref _rgbInDepthROI);
+                        Stage(new ROI(this, "rgbInDepthROI")
+                        {
+                            RoiRectangle = _rgbInDepthROI
+                        });
+                        Push();
+
+                        Log("Identified rgbInDepthROI as {0}", _rgbInDepthROI);
                     }
                     else
-                        rgbOfDepthImage = GetRgbOfDepthPixels(depthImage, colorImage, uvMapImage);
+                    {
+                        rgbOfDepthImage = Senz3DUtils.GetRgbOfDepthPixels(depthImage, colorImage, uvMapImage);
+                    }
 
                     rgbOfDepthImageCopy = rgbOfDepthImage.Copy();
                     RgbOfDepthImageFrameTime = sw.ElapsedMilliseconds;
@@ -925,7 +932,7 @@ namespace Huddle.Engine.Processor.Sensors
                 if (DepthOfRgbChecked && uvMapImage != null)
                 {
                     sw.Restart();
-                    depthOfRgbImage = GetDepthOfRGBPixels(depthImage, colorImage, uvMapImage);
+                    depthOfRgbImage = Senz3DUtils.GetDepthOfRGBPixels(depthImage, colorImage, uvMapImage);
                     depthOfRgbImageCopy = depthOfRgbImage.Copy();
                     DepthOfRgbImageFrameTime = sw.ElapsedMilliseconds;
                 }
@@ -1006,345 +1013,6 @@ namespace Huddle.Engine.Processor.Sensors
 
             _pp.Close();
             _pp.Dispose();
-        }
-
-        private static int Align16(uint width)
-        {
-            return ((int)((width + 15) / 16)) * 16;
-        }
-
-        private Bitmap GetRgb32Pixels(PXCMImage image)
-        {
-            var cwidth = Align16(image.info.width); /* aligned width */
-            var cheight = (int)image.info.height;
-
-            PXCMImage.ImageData cdata;
-            byte[] cpixels;
-            if (image.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.ColorFormat.COLOR_FORMAT_RGB32, out cdata) >= pxcmStatus.PXCM_STATUS_NO_ERROR)
-            {
-                cpixels = cdata.ToByteArray(0, cwidth * cheight * 4);
-                image.ReleaseAccess(ref cdata);
-            }
-            else
-            {
-                cpixels = new byte[cwidth * cheight * 4];
-            }
-
-            var width = (int)image.info.width;
-            var height = (int)image.info.height;
-
-            Bitmap bitmap;
-            lock (this)
-            {
-                bitmap = new Bitmap(width, height, PixelFormat.Format32bppRgb);
-                BitmapData data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppRgb);
-                Marshal.Copy(cpixels, 0, data.Scan0, width * height * 4);
-                bitmap.UnlockBits(data);
-            }
-
-            return bitmap;
-        }
-
-        private IImage[] GetHighPrecisionDepthImage(PXCMImage depthImage)
-        {
-            var inputWidth = Align16(depthImage.info.width);  /* aligned width */
-            var inputHeight = (int)depthImage.info.height;
-
-            var returnImages = new IImage[2];
-            returnImages[0] = new Image<Gray, float>(inputWidth, inputHeight);
-            returnImages[1] = new Image<Rgb, Byte>(inputWidth, inputHeight);
-
-            PXCMImage.ImageData cdata;
-            if (depthImage.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH, out cdata) <
-                pxcmStatus.PXCM_STATUS_NO_ERROR) return returnImages;
-
-            var depthValues = cdata.ToShortArray(0, inputWidth * inputHeight);
-            depthImage.ReleaseAccess(ref cdata);
-
-            var minValue = MinDepthValue;
-            var maxValue = MaxDepthValue;
-
-            var depthReturnImage = ((Image<Gray, float>)returnImages[0]);
-            var confidenceReturnImage = ((Image<Rgb, Byte>)returnImages[1]);
-            var depthReturnImageData = depthReturnImage.Data;
-            var confidenceReturnImageData = confidenceReturnImage.Data;
-
-            Parallel.For(0, inputHeight, y =>
-            {
-                for (int x = 0; x < inputWidth; x++)
-                {
-                    float depth = depthValues[y * inputWidth + x];
-                    if (depth != EmguExtensions.LowConfidence && depth != EmguExtensions.Saturation)
-                    {
-                        var test = (depth - minValue) / (maxValue - minValue);
-
-                        if (test < 0)
-                            test = 0.0f;
-                        else if (test > 1.0)
-                            test = 1.0f;
-
-                        test *= 255.0f;
-
-                        depthReturnImageData[y, x, 0] = test;
-                    }
-                    else
-                    {
-                        depthReturnImageData[y, x, 0] = depth;
-                        confidenceReturnImageData[y, x, 0] = 255;
-                    }
-                }
-            });
-            return returnImages;
-        }
-
-
-        private Image<Rgb, float> GetDepthUVMap(PXCMImage image)
-        {
-            var inputWidth = (int)image.info.width;
-            var inputHeight = (int)image.info.height;
-
-            var _uvMap = new Image<Rgb, float>(inputWidth, inputHeight);
-
-            PXCMImage.ImageData cdata;
-            if (image.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH, out cdata) <
-                pxcmStatus.PXCM_STATUS_NO_ERROR) return _uvMap;
-
-            var uv = new float[inputHeight * inputWidth * 2];
-
-            // read UV
-            var pData = cdata.buffer.planes[2];
-            Marshal.Copy(pData, uv, 0, inputWidth * inputHeight * 2);
-            image.ReleaseAccess(ref cdata);
-
-            Parallel.For(0, uv.Length / 2, i =>
-            {
-                int j = i * 2;
-                //Console.WriteLine(j + ": " + uv[j] * 255.0 + ", " + uv[j + 1] * 255.0);
-                _uvMap[(j / 2) / inputWidth, (j / 2) % inputWidth] = new Rgb(uv[j] * 255.0, uv[j + 1] * 255.0, 0);
-            });
-
-            return _uvMap;
-        }
-
-        private Image<Rgb, byte> GetRgbOfDepthPixels(Image<Gray, float> depth, Image<Rgb, byte> rgb,
-            Image<Rgb, float> uvmap)
-        {
-            Rectangle dummyRect = new Rectangle();
-            return GetRgbOfDepthPixels(depth, rgb, uvmap, false, ref dummyRect);
-        }
-
-        private Image<Rgb, byte> GetRgbOfDepthPixels(Image<Gray, float> depth, Image<Rgb, byte> rgb, Image<Rgb, float> uvmap,
-            bool getRgbContour, ref Rectangle rgbInDepthRect)
-        {
-            var resImg = new Image<Rgb, byte>(depth.Width, depth.Height);
-
-            // number of rgb pixels per depth pixel
-            int regWidth = rgb.Width / depth.Width;
-            int regHeight = rgb.Height / depth.Height;
-            int rgbWidth = rgb.Width;
-            int rgbHeight = rgb.Height;
-            float xfactor = 1.0f / 255.0f * rgbWidth;
-            float yfactor = 1.0f / 255.0f * rgbHeight;
-            var uvmapData = uvmap.Data;
-            var rgbData = rgb.Data;
-            var resImgData = resImg.Data;
-
-            Image<Gray, byte> contourImg = null;
-            byte[, ,] contourImgData = null;
-            if (getRgbContour)
-            {
-                // dummy image to extract contour of RGB image in depth image
-                contourImg = new Image<Gray, byte>(depth.Width, depth.Height);
-                contourImgData = contourImg.Data;
-            }
-
-            Parallel.For(0, depth.Height, y =>
-            {
-                for (int x = 0; x < depth.Width; x++)
-                {
-                    int xindex = (int)(uvmapData[y, x, 0] * xfactor + 0.5);
-                    int yindex = (int)(uvmapData[y, x, 1] * yfactor + 0.5);
-
-                    double rsum = 0, gsum = 0, bsum = 0;
-                    int pixelcount = 0;
-                    for (int rx = xindex - regWidth / 2; rx < xindex + regWidth / 2; rx++)
-                    {
-                        for (int ry = yindex - regHeight / 2; ry < yindex + regHeight / 2; ry++)
-                        {
-                            if (rx > 0 && ry > 0 && rx < rgbWidth && ry < rgbHeight)
-                            {
-                                rsum += rgbData[ry, rx, 0];
-                                gsum += rgbData[ry, rx, 1];
-                                bsum += rgbData[ry, rx, 2];
-                                pixelcount++;
-                            }
-                        }
-                    }
-                    resImgData[y, x, 0] = (byte)(rsum / pixelcount);
-                    resImgData[y, x, 1] = (byte)(gsum / pixelcount);
-                    resImgData[y, x, 2] = (byte)(bsum / pixelcount);
-                    if ((resImgData[y, x, 0] + resImgData[y, x, 1] + resImgData[y, x, 2]) > 0.01)
-                    {
-                        if (getRgbContour) contourImgData[y, x, 0] = 255;
-                    }
-                }
-            });
-
-            if (getRgbContour)
-            {
-                using (var storage = new MemStorage())
-                {
-                    for (var contours = contourImg.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE,
-                        RETR_TYPE.CV_RETR_EXTERNAL, storage); contours != null; contours = contours.HNext)
-                    {
-                        var currentContour = contours.ApproxPoly(contours.Perimeter * 0.05, storage);
-                        if (currentContour.Area > 160 * 120)
-                        {
-                            _rgbInDepthROI = currentContour.BoundingRectangle;
-                            //contourImg.Draw(_rgbInDepthROI, new Gray(122.0), 5);
-                            //return contourImg.Convert<Rgb, Byte>();
-
-                            Stage(new ROI(this, "rgbInDepthROI")
-                            {
-                                RoiRectangle = _rgbInDepthROI
-                            });
-                            Push();
-
-                            Log("Identified rgbInDepthROI as {0}", _rgbInDepthROI);
-                            return resImg;
-                        }
-                    }
-                }
-            }
-
-            return resImg;
-        }
-
-
-        private Image<Gray, float> GetDepthOfRGBPixels(Image<Gray, float> depth, Image<Rgb, byte> rgb, Image<Rgb, float> uvmap)
-        {
-            // create RGB-sized image
-            var retdepth = new Image<Gray, float>(rgb.Width, rgb.Height, new Gray(EmguExtensions.LowConfidence));
-            var retdepthWidth = retdepth.Width;
-            var retdepthHeight = retdepth.Height;
-
-            var uvmapWidth = uvmap.Width;
-            var uvmapHeight = uvmap.Height;
-
-            var depthData = depth.Data;
-            var uvmapData = uvmap.Data;
-
-            float xfactor = 1.0f / 255.0f * retdepthWidth;
-            float yfactor = 1.0f / 255.0f * retdepthHeight;
-
-            //for (int uvy = 0; uvy < uvmapHeight - 1; uvy++)
-            Parallel.For(0, uvmapHeight - 1, uvy =>
-            {
-
-                //for (int uvx = 0; uvx < uvmapWidth - 1; uvx++)
-                Parallel.For(0, uvmapWidth - 1, uvx =>
-                {
-                    // for each point in UVmap create two triangles that connect this point with the right/bottom neighbors                   
-
-                    var pts1 = new Point[3];
-                    var d1 = new float[]
-                    {
-                        depthData[uvy, uvx, 0],
-                        depthData[uvy, uvx + 1, 0],
-                        depthData[uvy + 1, uvx, 0]
-                    };
-
-                    double d1avg = 0;
-                    int count = 0;
-                    for (int i = 0; i < d1.Length; i++)
-                    {
-                        if (d1[i] != EmguExtensions.Saturation && d1[i] != EmguExtensions.LowConfidence)
-                        {
-                            d1avg += d1[i];
-                            count++;
-                        }
-                    }
-                    if (count > 0)
-                        d1avg = d1avg / (float)count;
-                    else
-                        d1avg = EmguExtensions.LowConfidence;
-
-                    var pts2 = new Point[3];
-                    var d2 = new float[]
-                    {
-                        depthData[uvy, uvx + 1, 0],
-                        depthData[uvy + 1, uvx + 1, 0],
-                        depthData[uvy + 1, uvx, 0]
-                    };
-
-                    double d2avg = 0;
-                    count = 0;
-                    for (int i = 0; i < d2.Length; i++)
-                    {
-                        if (d2[i] != EmguExtensions.Saturation && d2[i] != EmguExtensions.LowConfidence)
-                        {
-                            d2avg += d2[i];
-                            count++;
-                        }
-                    }
-                    if (count > 0)
-                        d2avg = d2avg / (float)count;
-                    else
-                        d2avg = EmguExtensions.LowConfidence;
-
-
-                    bool outofbounds = false;
-
-                    // get points for triangle 1 (top left)
-                    pts1[0].X = (int)(uvmapData[uvy, uvx, 0] * xfactor + 0.5);
-                    outofbounds |= pts1[0].X < 0 || pts1[0].X > retdepthWidth;
-
-                    pts1[0].Y = (int)(uvmapData[uvy, uvx, 1] * yfactor + 0.5);
-                    outofbounds |= pts1[0].Y < 0 || pts1[0].Y > retdepthHeight;
-
-                    pts1[1].X = (int)(uvmapData[uvy, uvx + 1, 0] * xfactor + 0.5) - 1;
-                    outofbounds |= pts1[1].X < 0 || pts1[1].X > retdepthWidth;
-
-                    pts1[1].Y = (int)(uvmapData[uvy, uvx + 1, 1] * yfactor + 0.5) - 1;
-                    outofbounds |= pts1[1].Y < 0 || pts1[1].Y > retdepthHeight;
-
-                    pts1[2].X = (int)(uvmapData[uvy + 1, uvx, 0] * xfactor + 0.5);
-                    outofbounds |= pts1[2].X < 0 || pts1[2].X > retdepthWidth;
-
-                    pts1[2].Y = (int)(uvmapData[uvy + 1, uvx, 1] * yfactor + 0.5) - 1;
-                    outofbounds |= pts1[2].Y < 0 || pts1[2].Y > retdepthHeight;
-
-                    if (!outofbounds)
-                        retdepth.FillConvexPoly(pts1, new Gray(d1avg));
-
-                    // get points for triangle 2 (bottom right)
-                    outofbounds = false;
-
-                    pts2[0].X = pts1[1].X;
-                    outofbounds |= pts2[0].X < 0 || pts2[0].X > retdepthWidth;
-
-                    pts2[0].Y = pts1[1].Y;
-                    outofbounds |= pts2[0].Y < 0 || pts2[0].Y > retdepthHeight;
-
-                    pts2[1].X = (int)(uvmapData[uvy + 1, uvx + 1, 0] * xfactor + 0.5);
-                    outofbounds |= pts2[1].X < 0 || pts2[1].X > retdepthWidth;
-
-                    pts2[1].Y = (int)(uvmapData[uvy + 1, uvx + 1, 1] * yfactor + 0.5) - 1;
-                    outofbounds |= pts2[1].Y < 0 || pts2[1].Y > retdepthHeight;
-
-                    pts2[2].X = pts1[2].X;
-                    outofbounds |= pts2[2].X < 0 || pts2[2].X > retdepthWidth;
-
-                    pts2[2].Y = pts1[2].Y;
-                    outofbounds |= pts2[2].Y < 0 || pts2[2].Y > retdepthHeight;
-
-                    if (!outofbounds)
-                        retdepth.FillConvexPoly(pts2, new Gray(d2avg));
-
-                });
-            });
-
-            return retdepth;
         }
 
         private PXCMCapture.VideoStream.ProfileInfo GetConfiguration(PXCMImage.ColorFormat format)

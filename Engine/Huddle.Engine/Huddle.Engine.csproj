@@ -284,6 +284,9 @@
     <Compile Include="Extensions\NumericExtensions.cs" />
     <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
     <Compile Include="Extensions\PointExtensions.cs" />
+    <Compile Include="Processor\OpenCv\FillContours.cs" />
+    <Compile Include="Processor\Sensors\Senz3DIntel.cs" />
+    <Compile Include="Processor\Sensors\Utils\Senz3DUtils.cs" />
     <Compile Include="Windows\BasicWindow.xaml.cs">
       <DependentUpon>BasicWindow.xaml</DependentUpon>
     </Compile>
