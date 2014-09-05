@@ -810,10 +810,6 @@ namespace Huddle.Engine.Processor.OpenCv
                         {
                             newObjects.Add(CreateObject(NextId(), rectangle, minAreaRect, polygon, contourPoints, updateTime));
                         }
-                        else
-                        {
-                            Console.WriteLine("Updated {0}", occlusionTracking);
-                        }
                     }
                 }
             }

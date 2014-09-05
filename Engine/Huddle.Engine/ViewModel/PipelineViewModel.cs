@@ -18,6 +18,7 @@ using Huddle.Engine.Processor;
 using Huddle.Engine.Properties;
 using Huddle.Engine.Util;
 using Huddle.Engine.View;
+using Huddle.Engine.Windows;
 using Microsoft.Win32;
 using Xceed.Wpf.Toolkit.Zoombox;
 
@@ -242,6 +243,9 @@ namespace Huddle.Engine.ViewModel
             Application.Current.MainWindow.Closing += (s, e) =>
             {
                 Stop();
+
+                // Only show message box if it is the editor window.
+                if (typeof (EditorWindow) != Application.Current.MainWindow.GetType()) return;
 
                 var savePipeline = MessageBox.Show("Do you want to save changes?", "Save Changes", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (savePipeline == MessageBoxResult.Yes)
