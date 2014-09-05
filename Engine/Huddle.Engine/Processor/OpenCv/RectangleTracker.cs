@@ -625,13 +625,13 @@ namespace Huddle.Engine.Processor.OpenCv
 
             // Update occluded objects. It tries to find not yet identified and maybe occluded objects.
             if (IsUpdateOccludedRectangles)
-                UpdateOccludedObjects(image, ref outputImage[0], now, threadSafeObjects);
+                UpdateOccludedObjects(image, ref outputImage[0], now, _objects.ToArray());
 
             foreach (var rawObject in _objects.ToArray())
             {
                 if (IsRenderContent)
                 {
-                    Console.WriteLine("{0}: {1}", rawObject.Id, rawObject.IsOccluded);
+                    //Console.WriteLine("{0}: {1}", rawObject.Id, rawObject.IsOccluded);
 
                     if (IsFillContours)
                         outputImage[0].FillConvexPoly(rawObject.Points, Rgbs.Yellow);
@@ -725,6 +725,11 @@ namespace Huddle.Engine.Processor.OpenCv
             var mask = new Image<Gray, byte>(imageWidth, imageHeight);
 
             var occludedObjects = objects.Where(o => !Equals(o.LastUpdate, updateTime)).ToArray();
+
+            // ignore if no objects are occluded but continue in case is render content set true to update debug view
+            if (occludedObjects.Length < 1 && !IsRenderContent)
+                return;
+
             foreach (var obj in occludedObjects)
                 mask.Draw(obj.Shape, new Gray(1), -1);
 
@@ -752,7 +757,7 @@ namespace Huddle.Engine.Processor.OpenCv
             }).ContinueWith(t => DebugImageSource = t.Result);
 
             var outputImageEnclosed = outputImage;
-            Parallel.ForEach(objects, obj => FindObjectByBlankingKnownObjects(true, fixedImage, ref outputImageEnclosed, updateTime, objects, obj));
+            Parallel.ForEach(occludedObjects, obj => FindObjectByBlankingKnownObjects(true, fixedImage, ref outputImageEnclosed, updateTime, objects, obj));
         }
 
         /// <summary>
@@ -804,6 +809,10 @@ namespace Huddle.Engine.Processor.OpenCv
                         if (!UpdateObject(occlusionTracking, maxRestoreDistance, rectangle, minAreaRect, polygon, contourPoints, updateTime, objects))
                         {
                             newObjects.Add(CreateObject(NextId(), rectangle, minAreaRect, polygon, contourPoints, updateTime));
+                        }
+                        else
+                        {
+                            Console.WriteLine("Updated {0}", occlusionTracking);
                         }
                     }
                 }
