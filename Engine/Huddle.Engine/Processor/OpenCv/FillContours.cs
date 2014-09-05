@@ -9,6 +9,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
+using Huddle.Engine.Data;
 using Huddle.Engine.Util;
 
 namespace Huddle.Engine.Processor.OpenCv

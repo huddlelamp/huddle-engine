@@ -55,17 +55,17 @@
                             <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=DepthSmoothing}" />
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Depth Confidence Threshold"/>
-                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThreshold}" />
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThreshold}" IsSnapToTickEnabled="True" TickFrequency="1" />
                                 <TextBlock Text="{Binding Path=DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Min Depth Value (Red)"/>
-                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=MinDepthValue}" />
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=MinDepthValue}" IsSnapToTickEnabled="True" TickFrequency="1" />
                                 <TextBlock Text="{Binding Path=MinDepthValue, StringFormat={}{0:#}}"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Max Depth Value (Blue)"/>
-                                <Slider Width="200" Height="25" Minimum="0" Maximum="5000" Value="{Binding Path=MaxDepthValue}" />
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="5000" Value="{Binding Path=MaxDepthValue}" IsSnapToTickEnabled="True" TickFrequency="1" />
                                 <TextBlock Text="{Binding Path=MaxDepthValue, StringFormat={}{0:#}}"/>
                             </StackPanel>
                         </StackPanel>
@@ -81,13 +81,6 @@
                                 <Label Content=" ("/>
                                 <Label Content="{Binding Path=ConfidenceMapImageFrameTime}"/>
                                 <Label Content=" ms)"/>
-                            </StackPanel>
-                            <Separator/>
-                            <CheckBox Content="Adaptive Depth Confidence Threshold" IsChecked="{Binding Path=IsAdaptiveSensing}"/>
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="Depth Confidence Threshold (High)"/>
-                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThresholdHigh}" />
-                                <TextBlock Text="{Binding Path=DepthConfidenceThresholdHigh, StringFormat={}{0:#}}"/>
                             </StackPanel>
                         </StackPanel>
                     </GroupBox>
@@ -195,17 +188,17 @@
                             <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=DepthSmoothing}" />
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Depth Confidence Threshold (low)"/>
-                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThreshold}" />
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThreshold}" IsSnapToTickEnabled="True" TickFrequency="1" />
                                 <TextBlock Text="{Binding Path=DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Min Depth Value (Red)"/>
-                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=MinDepthValue}" />
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=MinDepthValue}" IsSnapToTickEnabled="True" TickFrequency="1" />
                                 <TextBlock Text="{Binding Path=MinDepthValue, StringFormat={}{0:#}}"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Max Depth Value (Blue)"/>
-                                <Slider Width="200" Height="25" Minimum="0" Maximum="5000" Value="{Binding Path=MaxDepthValue}" />
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="5000" Value="{Binding Path=MaxDepthValue}" IsSnapToTickEnabled="True" TickFrequency="1" />
                                 <TextBlock Text="{Binding Path=MaxDepthValue, StringFormat={}{0:#}}"/>
                             </StackPanel>
                         </StackPanel>
@@ -247,7 +240,7 @@
                             <TextBlock Width="320" Foreground="Red" HorizontalAlignment="Left" TextAlignment="Left" TextWrapping="Wrap">WARNING: Active 'Adaptive Sensing' can cause unsync outer/inner region of depth and confidence frames on fast movements.</TextBlock>
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Depth Confidence Threshold (High)"/>
-                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThresholdHigh}" />
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThresholdHigh}" IsSnapToTickEnabled="True" TickFrequency="1" />
                                 <TextBlock Text="{Binding Path=DepthConfidenceThresholdHigh, StringFormat={}{0:#}}"/>
                             </StackPanel>
                         </StackPanel>
