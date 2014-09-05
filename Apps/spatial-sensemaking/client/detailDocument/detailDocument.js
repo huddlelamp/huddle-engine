@@ -223,40 +223,39 @@ Template.detailDocumentTemplate.otherDevices = function() {
 Template.detailDocumentTemplate.open = function(doc, snippetText) {
   DocumentMeta._upsert(doc._id, {$set: {watched: true}});
 
-  $.fancybox({
-    href: "#documentDetails",
-    // autoSize: false,
-    // autoResize: false,
-    // height: "952px",
-    // width: "722px",
-    beforeLoad: function() {
-      lockPreviewSnippet = false;
-      Session.set("detailDocumentPreviewSnippet", snippetText);
-      Session.set("detailDocument", doc); 
-    },
-    afterLoad: function() { 
-      //Dirty hack: 500ms delay so we are pretty sure that all DOM elements arrived
-      Meteor.setTimeout(function() {
-        attachEvents();
-        $("#devicedropdown").chosen({
-          width: "125px",
-          disable_search_threshold: 100
-        });
-      }, 500);
-    },
-    beforeClose: function() {
-      //Increase popup ID on close, so we know the popup has changed
-      popupID++;
+  //Set the session variables that show the popup content, then wait until
+  //the next run loop until we actually show the popup. This prevents the popup
+  //arriving in an unfinished state, which looks kinda ugly
+  lockPreviewSnippet = false;
+  Session.set("detailDocumentPreviewSn{ippet", snippetText);
+  Session.set("detailDocument", doc); 
+  Meteor.setTimeout(function() {
+    $.fancybox({
+      href: "#documentDetails",
+      afterLoad: function() { 
+        //Dirty hack: 500ms delay so we are pretty sure that all DOM elements arrived
+        Meteor.setTimeout(function() {
+          attachEvents();
+          $("#devicedropdown").chosen({
+            width: "125px",
+            disable_search_threshold: 100
+          });
+        }, 500);
+      },
+      beforeClose: function() {
+        //Increase popup ID on close, so we know the popup has changed
+        popupID++;
 
-      var doc = Session.get("detailDocument");
-      DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
-    },
-    afterClose: function() {
-      lockPreviewSnippet = false;
-      Session.set("detailDocumentPreviewSnippet", undefined);
-      Session.set("detailDocument", undefined); 
-    },
-  });
+        var doc = Session.get("detailDocument");
+        DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
+      },
+      afterClose: function() {
+        lockPreviewSnippet = false;
+        Session.set("detailDocumentPreviewSnippet", undefined);
+        Session.set("detailDocument", undefined); 
+      },
+    });
+  }, 1);
 };
 
 Template.detailDocumentTemplate.currentlySelectedContent = function() {
