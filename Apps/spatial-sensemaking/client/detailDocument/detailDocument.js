@@ -390,18 +390,36 @@ var attachEvents = function() {
       }
     }
 
+    //BUILD POPOVER
+
+    var content = $("<span>Do you really want to delete <b>"+count+"</b> text highlights? <br/><br />");
+    
+    var yesButton = $("<button />");
+    yesButton.html("<span class='glyphicon glyphicon-trash'></span> Yes, delete");
+    yesButton.addClass("btn btn-danger");
+    yesButton.click(function() {
+      //Insert the "surviving" highlights back into the DB
+      DocumentMeta._upsert(doc._id, { $set: { textHighlights: newHighlights } });
+
+      //Clear selection
+      rangy.getSelection(0).removeAllRanges();
+    });
+
+    var noButton = $("<button />");
+    noButton.text("No");
+    noButton.addClass("btn");
+    noButton.click(function() {
+    });
+
+    content.append(yesButton);
+    content.append(noButton);
+
     $(e.currentTarget).popover('destroy');
     $(e.currentTarget).popover({
       placement: "bottom",
-      content: "Do you really want to delete <b>"+count+"</b> text highlights? <br/><br /><button class='btn btn-danger'>Yes, delete</button> <button class='btn'>Cancel</button>",
+      content: content,
       html: true
     });
-
-    //Insert the "surviving" highlights back into the DB
-    DocumentMeta._upsert(doc._id, { $set: { textHighlights: newHighlights } });
-
-    //Clear selection
-    rangy.getSelection(0).removeAllRanges();
   };
 
   var saveComment = function() {
@@ -609,3 +627,74 @@ var encodeContent = function(text) {
   // pre.html(pre.html().replace(/&nbsp;/g, " "));
   // return pre.html();
 };
+
+window.UIMenuControllerItems = [
+  {
+    title: "Share",
+    action: function() { alert("TODO"); },
+    canPerform: function() { 
+      var selection = getContentSelection();
+      if (selection !== undefined || selection.length > 0) return true;
+
+      return false;
+    }
+  },
+  {
+    title: "Delete Highlights",
+    action: function() { 
+      var selection = getContentSelection();
+      if (selection === undefined || selection.length < 1) return false;
+
+      var startOffset = selection[0];
+      var endOffset = selection[1];
+
+      //Walk over all highlights, check if they intersect the current selection
+      //If they do, they are not taken into newHighlights
+      var doc = Session.get("detailDocument");
+      var meta = DocumentMeta.findOne({_id: doc._id});
+      var newHighlights = [];
+      if (meta && meta.textHighlights) {
+        for (var i = 0; i < meta.textHighlights.length; i++) {
+          var highlight = meta.textHighlights[i];
+          var intersection = rangeIntersection(startOffset, endOffset, highlight[0], highlight[1]);
+          if (intersection === undefined) {
+            newHighlights.push(meta.textHighlights[i]);
+          }
+        }
+      }
+
+      //Insert the "surviving" highlights back into the DB
+      DocumentMeta._upsert(doc._id, { $set: { textHighlights: newHighlights } });
+
+      //Clear selection
+      rangy.getSelection(0).removeAllRanges();
+    },
+    canPerform: function() { 
+      var selection = getContentSelection();
+      if (selection === undefined) return;
+
+      var startOffset = selection[0];
+      var endOffset = selection[1];
+
+      //Walk over all highlights, check if they intersect the current selection
+      //If they do, they are not taken into newHighlights
+      var doc = Session.get("detailDocument");
+      var meta = DocumentMeta.findOne({_id: doc._id});
+      var newHighlights = [];
+      var count = 0;
+      if (meta && meta.textHighlights) {
+        for (var i = 0; i < meta.textHighlights.length; i++) {
+          var highlight = meta.textHighlights[i];
+          var intersection = rangeIntersection(startOffset, endOffset, highlight[0], highlight[1]);
+          if (intersection === undefined) {
+            newHighlights.push(meta.textHighlights[i]);
+          } else {
+            count++;
+          }
+        }
+      }
+
+      return (count > 0);
+    }
+  }
+];
