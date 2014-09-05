@@ -2,6 +2,10 @@ body {
   font-size: 15px;
 }
 
+.btn {
+  font-size: 15px; 
+}
+
 .input-group-btn:last-child > .btn {
   margin-left: -4px; /* fixes input grp visual on iPad */
 }
@@ -14,7 +18,7 @@ body {
   /*display: inline-block; */
   border: 1px solid #357ebd; 
   padding: 6px; 
-  width: 100%;
+  width: 70%;
   position: relative;
 }
 

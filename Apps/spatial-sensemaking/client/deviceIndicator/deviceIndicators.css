@@ -2,6 +2,12 @@ body {
   padding: 10px; /* same as #deviceIndicatorWrapper border-width */
 }
 
+@media (min-device-width : 768px) {
+  .container {
+    width: 730px;
+  }
+}
+
 #deviceIndicatorWrapper {
   position: fixed;
   top: 0;
