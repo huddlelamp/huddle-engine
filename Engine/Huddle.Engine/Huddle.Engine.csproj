@@ -325,9 +325,7 @@
     <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\HuddleServer.cs" />
     <Compile Include="Processor\Network\WebSocketServer.cs" />
-    <Compile Include="Processor\OpenCv\FindContours3.cs" />
-    <Compile Include="Processor\OpenCv\FindContours2.cs" />
-    <Compile Include="Processor\OpenCv\FindConvexHulls2.cs" />
+    <Compile Include="Processor\OpenCv\FindContours.cs" />
     <Compile Include="Processor\OpenCv\SubtractBackground.cs" />
     <Compile Include="Processor\OpenCv\Not.cs" />
     <Compile Include="Processor\OpenCv\BasicsGrayFloat.cs" />
@@ -339,7 +337,7 @@
     <Compile Include="Processor\OpenCv\FillConvexHulls.cs" />
     <Compile Include="Processor\OpenCv\Kalman.cs" />
     <Compile Include="Data\Hand.cs" />
-    <Compile Include="Processor\OpenCv\Struct\RawObject.cs" />
+    <Compile Include="Processor\OpenCv\Struct\RectangularObject.cs" />
     <Compile Include="Processor\PipelineMode.cs" />
     <Compile Include="Processor\Sampler.cs" />
     <Compile Include="Processor\Sensors\Senz3D.cs" />
@@ -352,7 +350,7 @@
     <Compile Include="Processor\OpenCv\DepthProcessor.cs" />
     <Compile Include="Processor\IProcessor.cs" />
     <Compile Include="Processor\RgbProcessor.cs" />
-    <Compile Include="Processor\OpenCv\FindContours.cs" />
+    <Compile Include="Processor\OpenCv\RectangleTracker.cs" />
     <Compile Include="IO\WrappingStream.cs" />
     <Compile Include="Processor\ProximityProcessor.cs" />
     <Compile Include="Processor\UnsyncFusion.cs" />

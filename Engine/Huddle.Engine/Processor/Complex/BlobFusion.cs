@@ -23,8 +23,8 @@ namespace Huddle.Engine.Processor.Complex
             var depthToIds = new Dictionary<long, long>();
             var colorToIds = new Dictionary<long, long>();
 
-            var depthBlobs = dataContainer.ToArray().OfType<BlobData>().Where(b => b.Source.GetType() == typeof(FindContours)).ToArray();
-            var colorBlobs = dataContainer.ToArray().OfType<BlobData>().Where(b => b.Source.GetType() == typeof(FindContours3)).ToArray();
+            var depthBlobs = dataContainer.ToArray().OfType<BlobData>().Where(b => b.Source.GetType() == typeof(RectangleTracker)).ToArray();
+            var colorBlobs = dataContainer.ToArray().OfType<BlobData>().Where(b => b.Source.GetType() == typeof(FindContours)).ToArray();
 
             foreach (var depthBlob in depthBlobs)
             {

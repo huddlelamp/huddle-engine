@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
@@ -20,14 +14,14 @@ using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
 {
-    [ViewTemplate("Find Contours", "FindContours")]
+    [ViewTemplate("Find Contours", "RectangleTracker")]
     public class FindContours : RgbProcessor
     {
         #region private fields
 
-        private readonly List<RawObject> _objects = new List<RawObject>();
+        private static long _id = 0;
 
-        private Image<Gray, float> _depthImage; 
+        private readonly List<RectangularObject> _objects = new List<RectangularObject>();
 
         #endregion
 
@@ -110,13 +104,13 @@ namespace Huddle.Engine.Processor.OpenCv
         /// </summary>
         public const string MinContourAreaPropertyName = "MinContourArea";
 
-        private double _minContourArea = 5.0;
+        private int _minContourArea = 200;
 
         /// <summary>
         /// Sets and gets the MinContourArea property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public double MinContourArea
+        public int MinContourArea
         {
             get
             {
@@ -145,13 +139,13 @@ namespace Huddle.Engine.Processor.OpenCv
         /// </summary>
         public const string MaxContourAreaPropertyName = "MaxContourArea";
 
-        private double _maxContourArea = 10.0;
+        private int _maxContourArea = 3000;
 
         /// <summary>
         /// Sets and gets the MaxContourArea property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public double MaxContourArea
+        public int MaxContourArea
         {
             get
             {
@@ -419,36 +413,36 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        #region MaxRestoreDistance
+        #region MaxDistanceRestoreId
 
         /// <summary>
-        /// The <see cref="MaxRestoreDistance" /> property's name.
+        /// The <see cref="MaxDistanceRestoreId" /> property's name.
         /// </summary>
-        public const string MaxRestoreDistancePropertyName = "MaxRestoreDistance";
+        public const string MaxDistanceRestoreIdPropertyName = "MaxDistanceRestoreId";
 
-        private double _maxRestoreDistance = 5.0;
+        private double _maxDistanceRestoreId = 10.0;
 
         /// <summary>
-        /// Sets and gets the MaxRestoreDistance property.
+        /// Sets and gets the MaxDistanceRestoreId property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public double MaxRestoreDistance
+        public double MaxDistanceRestoreId
         {
             get
             {
-                return _maxRestoreDistance;
+                return _maxDistanceRestoreId;
             }
 
             set
             {
-                if (_maxRestoreDistance == value)
+                if (_maxDistanceRestoreId == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(MaxRestoreDistancePropertyName);
-                _maxRestoreDistance = value;
-                RaisePropertyChanged(MaxRestoreDistancePropertyName);
+                RaisePropertyChanging(MaxDistanceRestoreIdPropertyName);
+                _maxDistanceRestoreId = value;
+                RaisePropertyChanged(MaxDistanceRestoreIdPropertyName);
             }
         }
 
@@ -489,42 +483,6 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        #region DebugImageSource
-
-        /// <summary>
-        /// The <see cref="DebugImageSource" /> property's name.
-        /// </summary>
-        public const string DebugImageSourcePropertyName = "DebugImageSource";
-
-        private BitmapSource _debugImageSource;
-
-        /// <summary>
-        /// Sets and gets the DebugImageSource property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        [IgnoreDataMember]
-        public BitmapSource DebugImageSource
-        {
-            get
-            {
-                return _debugImageSource;
-            }
-
-            set
-            {
-                if (_debugImageSource == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(DebugImageSourcePropertyName);
-                _debugImageSource = value;
-                RaisePropertyChanged(DebugImageSourcePropertyName);
-            }
-        }
-
-        #endregion
-
         #endregion
 
         #region ctor
@@ -532,24 +490,10 @@ namespace Huddle.Engine.Processor.OpenCv
         public FindContours()
             : base(false)
         {
-
+            
         }
 
         #endregion
-
-        public override IData Process(IData data)
-        {
-            var depthImageData = data as GrayFloatImage;
-            if (depthImageData != null && Equals(depthImageData.Key, "depth"))
-            {
-                if (_depthImage != null)
-                    _depthImage.Dispose();
-
-                _depthImage = depthImageData.Image.Copy();
-            }
-
-            return base.Process(data);
-        }
 
         public override Image<Rgb, byte> ProcessAndView(Image<Rgb, byte> image)
         {
@@ -560,90 +504,156 @@ namespace Huddle.Engine.Processor.OpenCv
 
             _objects.RemoveAll(o => (now - o.LastUpdate).TotalMilliseconds > Timeout);
 
-            #region Debug Stuff
+            var outputImage = new Image<Rgb, byte>(imageWidth, imageHeight, Rgbs.Black);
 
-            // #### DEBUG
-            //var debugImage = image.Copy();
-            var debugImage = new Image<Rgb, byte>(imageWidth, imageHeight);
-            var debugImage2 = new Image<Gray, float>(imageWidth, imageHeight);
-            if (_depthImage != null)
+            //Convert the image to grayscale and filter out the noise
+            var grayImage = image.Convert<Gray, Byte>();
+
+            using (var storage = new MemStorage())
             {
-                var depthMapBinary = _depthImage.ThresholdBinaryInv(new Gray(255), new Gray(255));
-                var depthMap = depthMapBinary;//.Mul(255);
-
-                //mask = mask.ThresholdBinary(new Gray(10), new Gray(250));
-
-                //debugImage = depthMap.Convert<Rgb, byte>();//mask.Convert<Rgb, byte>();
-
-                var mask = new Image<Gray, byte>(imageWidth, imageHeight);
-                foreach (var obj in _objects)
+                for (var contours = grayImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, IsRetrieveExternal ? RETR_TYPE.CV_RETR_EXTERNAL : RETR_TYPE.CV_RETR_LIST, storage); contours != null; contours = contours.HNext)
                 {
-                    mask.Draw(obj.Shape, new Gray(1), -1);
-                    //mask = mask.Mul(255);
+                    var currentContour = contours.ApproxPoly(contours.Perimeter * 0.05, storage);
+
+                    if (currentContour.Area > MinContourArea) //only consider contours with area greater than
+                    {
+                        if (IsRenderContent && IsDrawAllContours && currentContour.Area < MaxContourArea)
+                            outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
+
+                        if (currentContour.Total >= 4) //The contour has 4 vertices.
+                        {
+                            #region determine if all the angles in the contour are within [80, 100] degree
+
+                            var points = new List<Point>();
+
+                            bool isRectangle = true;
+                            Point[] pts = currentContour.ToArray();
+                            LineSegment2D[] edges = PointCollection.PolyLine(pts, true);
+
+                            LineSegment2D longestEdge = edges[0];
+                            var longestEdgeLength = 0.0;
+                            var rightAngle = 0;
+                            for (int i = 0; i < edges.Length; i++)
+                            {
+                                var edge = edges[(i + 1) % edges.Length];
+
+                                // Assumption is that the longest edge defines the width of the tracked device in the blob
+                                if (edge.Length > longestEdgeLength)
+                                {
+                                    longestEdgeLength = edge.Length;
+                                    longestEdge = edge;
+                                }
+
+                                var angle = Math.Abs(edge.GetExteriorAngleDegree(edges[i]));
+
+                                points.Add(edge.P1);
+
+                                if (angle < MinAngle || angle > MaxAngle)
+                                {
+                                    //isRectangle = false;
+                                    break;
+                                }
+                                else
+                                {
+                                    rightAngle++;
+                                }
+                            }
+
+                            if (rightAngle < MinDetectRightAngles)
+                                isRectangle = false;
+
+                            #endregion
+
+                            //Log("Is Rectangle: {0}", isRectangle);
+
+                            if (isRectangle)
+                            {
+                                bool updated = false;
+
+                                var area = currentContour.GetMinAreaRect(storage);
+
+                                foreach (var o in _objects)
+                                {
+                                    var oCenter = o.Shape.center;
+                                    var cCenter = currentContour.GetMinAreaRect().center;
+
+                                    //var distance = currentContour.Distance(shapeCenter);
+
+                                    //var distance2 = oCenter.Length(cCenter);
+                                    var distance2 = Math.Sqrt(Math.Pow(oCenter.X - cCenter.X, 2) + Math.Pow(oCenter.Y - cCenter.Y, 2));
+
+                                    //Log("Distance {0}", distance2);
+
+                                    if (distance2 < MaxDistanceRestoreId)
+                                    //if (currentContour.BoundingRectangle.IntersectsWith(o.Bounds))
+                                    {
+                                        o.LastUpdate = DateTime.Now;
+                                        o.Center = new Point((int)cCenter.X, (int)cCenter.Y);
+                                        o.Bounds = currentContour.BoundingRectangle;
+                                        o.Shape = area;
+                                        o.Polygon = new Polygon(points.ToArray(), imageWidth, imageHeight);
+                                        o.Points = pts;
+                                        o.DeviceToCameraRatio = ((longestEdgeLength / imageWidth)*0.3 + o.DeviceToCameraRatio)*0.7;
+                                        o.LongestEdge = longestEdge;
+
+                                        updated = true;
+                                    }
+                                }
+
+                                //_objects.RemoveAll(o => currentContour.BoundingRectangle.IntersectsWith(o.Bounds));
+
+                                if (!updated)
+                                {
+                                    var minAreaRect = currentContour.GetMinAreaRect();
+
+                                    _objects.Add(new RectangularObject
+                                    {
+                                        Id = NextId(),
+                                        LastUpdate = DateTime.Now,
+                                        Center = new Point((int)minAreaRect.center.X, (int)minAreaRect.center.Y),
+                                        Bounds = currentContour.BoundingRectangle,
+                                        Shape = minAreaRect,
+                                        Polygon = new Polygon(points.ToArray(), imageWidth, imageHeight),
+                                        Points = pts,
+                                        DeviceToCameraRatio = longestEdgeLength / imageWidth,
+                                        LongestEdge = longestEdge
+                                    });
+                                }
+                            }
+                        }
+                    }
                 }
-
-                CvInvoke.cvCopy(depthMap.Ptr, debugImage2.Ptr, mask);
-                debugImage2 = debugImage2.Erode(2).Dilate(2);
-
-                var debugImage3 = debugImage2.Convert<Rgb, byte>();
-
-                //debugImage = image.Or(debugImage3);
-                //debugImage = debugImage.Dilate(2).Erode(2);
-
-                //image = image.Or(debugImage3);
-                //image = image.Dilate(2).Erode(2);
             }
 
-            //foreach (var rawObject in _objects)
-            //{
-            //    debugImage.Draw(rawObject.Shape, Rgbs.Mimosa, -1);
-            //}
-
-            //Task.Factory.StartNew(() =>
-            //{
-            //    var bitmapSource = debugImage.ToBitmapSource(true);
-            //    debugImage.Dispose();
-            //    return bitmapSource;
-            //}).ContinueWith(t => DebugImageSource = t.Result);
-            // #### DEBUG
-
-            #endregion
-
-            // Needed to be wrapped in closure -> required by Parallel.ForEach below.
-            Image<Rgb, byte>[] outputImage = { new Image<Rgb, byte>(imageWidth, imageHeight, Rgbs.Black) };
-
-            // Try to identify objects event if they are connected tightly (without a gap).
-            Parallel.ForEach(_objects, obj => FindObjectByBlankingKnownObjects(image, ref outputImage[0], now, obj));
-
-            // Find yet unidentified objects
-            FindObjectByBlankingKnownObjects(image, ref outputImage[0], now);
-
-            // Tries to find not yet identified and maybe occluded objects.
-            FindOccludedObjects(image, now, ref outputImage[0]);
-
             foreach (var rawObject in _objects)
-            {
+            { 
                 if (IsRenderContent)
                 {
                     if (IsFillContours)
-                        outputImage[0].FillConvexPoly(rawObject.Points, Rgbs.Yellow);
+                        outputImage.FillConvexPoly(rawObject.Points, Rgbs.Yellow);
 
                     if (IsDrawContours)
-                        outputImage[0].Draw(rawObject.Shape, Rgbs.Red, 2);
+                        outputImage.Draw(rawObject.Shape, Rgbs.Yellow, 2);
 
                     if (IsDrawCenter)
                     {
                         var circle = new CircleF(rawObject.Center, 2);
-                        outputImage[0].Draw(circle, Rgbs.Green, 3);
+                        outputImage.Draw(circle, Rgbs.Green, 3);
                     }
 
                     if (IsDrawCenter)
                     {
                         var circle = new CircleF(rawObject.EstimatedCenter, 2);
-                        outputImage[0].Draw(circle, Rgbs.Blue, 3);
+                        outputImage.Draw(circle, Rgbs.Blue, 3);
                     }
 
-                    outputImage[0].Draw(string.Format("Id {0}", rawObject.Id), ref EmguFont, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
+                    //if (IsRenderContent)
+                    //{
+                    //    outputImage.Draw(rawObject.LongestEdge, Rgbs.Green, 5);
+                    //    outputImage.Draw(string.Format("Length {0:F1}", rawObject.LongestEdge.Length), ref EmguFont, rawObject.LongestEdge.P1, Rgbs.Green);
+                    //}
+
+                    outputImage.Draw(string.Format("Id {0}", rawObject.Id), ref EmguFontBig, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
                 }
 
                 var bounds = rawObject.Bounds;
@@ -669,220 +679,9 @@ namespace Huddle.Engine.Processor.OpenCv
 
             Push();
 
-            return outputImage[0];
-        }
+            grayImage.Dispose();
 
-        /// <summary>
-        /// Find an object by blanking out known objects except for the parameter object in the
-        /// source image. If obj == null it will blank out all objects.
-        /// </summary>
-        /// <param name="image"></param>
-        /// <param name="outputImage"></param>
-        /// <param name="obj"></param>
-        private void FindObjectByBlankingKnownObjects(Image<Rgb, byte> image, ref Image<Rgb, byte> outputImage, DateTime updateTime, RawObject obj = null)
-        {
-            var objectsToBlank = obj != null ? _objects.Where(o => o != obj).ToArray() : _objects.ToArray();
-
-            // Blank previous objects from previous frame
-            var blankedImage = image.Copy();
-            foreach (var otherObject in objectsToBlank)
-            {
-                blankedImage.Draw(otherObject.Shape, Rgbs.Black, -1);
-            }
-
-            var blankedImageGray = blankedImage.Convert<Gray, Byte>();
-
-            FindRectangles(blankedImageGray, ref outputImage, updateTime);
-
-            blankedImageGray.Dispose();
-        }
-
-        /// <summary>
-        /// Tries to find objects that are occluded.
-        /// </summary>
-        /// <param name="image"></param>
-        /// <param name="updateTime"></param>
-        /// <param name="outputImage"></param>
-        private void FindOccludedObjects(Image<Rgb, byte> image, DateTime updateTime, ref Image<Rgb, byte> outputImage)
-        {
-            var imageWidth = image.Width;
-            var imageHeight = image.Height;
-
-            var mask = new Image<Gray, byte>(imageWidth, imageHeight);
-
-            var occludedObjects = _objects.Where(o => !Equals(o.LastUpdate, updateTime)).ToArray();
-            Console.WriteLine("Occluded Objects: {0}", occludedObjects.Length);
-            foreach (var obj in occludedObjects)
-                mask.Draw(obj.Shape, new Gray(1), -1);
-
-            if (_depthImage == null) return;
-
-            var occludedPartsImage = new Image<Gray, float>(imageWidth, imageHeight);
-
-            var depthMapBinary = _depthImage.ThresholdBinaryInv(new Gray(255), new Gray(255));
-            var depthMap = depthMapBinary;
-
-            CvInvoke.cvCopy(depthMap.Ptr, occludedPartsImage.Ptr, mask);
-            occludedPartsImage = occludedPartsImage.Erode(2).Dilate(2);
-
-            var debugImage3 = occludedPartsImage.Convert<Rgb, byte>();
-
-            var fixedImage = image.Or(debugImage3);
-            fixedImage = fixedImage.Dilate(2).Erode(2);
-
-            var debugImage = fixedImage.Copy();
-            Task.Factory.StartNew(() =>
-            {
-                var bitmapSource = debugImage.ToBitmapSource(true);
-                debugImage.Dispose();
-                return bitmapSource;
-            }).ContinueWith(t => DebugImageSource = t.Result);
-
-            var outputImageEnclosed = outputImage;
-            Parallel.ForEach(_objects, obj => FindObjectByBlankingKnownObjects(fixedImage, ref outputImageEnclosed, updateTime, obj));
-        }
-
-        /// <summary>
-        /// Find rectangles in image and add possible rectangle candidates as temporary but known objects or updates
-        /// existing objects from previous frames.
-        /// </summary>
-        /// <param name="grayImage"></param>
-        /// <param name="outputImage"></param>
-        /// <param name="updateTime"></param>
-        private void FindRectangles(Image<Gray, byte> grayImage, ref Image<Rgb, byte> outputImage, DateTime updateTime)
-        {
-            var imageWidth = grayImage.Width;
-            var imageHeight = grayImage.Height;
-            var pixels = imageWidth * imageHeight;
-
-            var diagonal = Math.Sqrt(Math.Pow(imageWidth, 2) + Math.Pow(imageHeight, 2));
-
-            var maxRestoreDistance = (MaxRestoreDistance / 100.0) * diagonal;
-
-            using (var storage = new MemStorage())
-            {
-                for (var contours = grayImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, IsRetrieveExternal ? RETR_TYPE.CV_RETR_EXTERNAL : RETR_TYPE.CV_RETR_LIST, storage); contours != null; contours = contours.HNext)
-                {
-                    var currentContour = contours.ApproxPoly(contours.Perimeter * 0.015, storage);
-
-                    if (currentContour.Area > ((MinContourArea / 100.0) * pixels) && currentContour.Area < ((MaxContourArea / 100.0) * pixels)) //only consider contours with area greater than
-                    {
-                        if (IsRenderContent && IsDrawAllContours)
-                            outputImage.Draw(currentContour, Rgbs.BlueTorquoise, 2);
-                        //outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
-
-                        // Continue with next contour if current contour is not a rectangle.
-                        List<Point> points;
-                        if (!IsRectangle(currentContour, MinAngle, MaxAngle, MinDetectRightAngles, out points)) continue;
-
-                        var rectangle = currentContour.BoundingRectangle;
-                        var minAreaRect = currentContour.GetMinAreaRect(storage);
-                        var polygon = new Polygon(points.ToArray(), imageWidth, imageHeight);
-                        var contourPoints = currentContour.ToArray();
-
-                        if (!UpdateObject(maxRestoreDistance, rectangle, minAreaRect, polygon, contourPoints, updateTime))
-                        {
-                            AddObject(rectangle, minAreaRect, polygon, contourPoints, updateTime);
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Determine if all the angles in the contour are within min/max angle.
-        /// </summary>
-        /// <param name="contour"></param>
-        /// <param name="minAngle"></param>
-        /// <param name="maxAngle"></param>
-        /// <param name="minDetectAngles"></param>
-        /// <returns></returns>
-        private bool IsRectangle(Seq<Point> contour, int minAngle, int maxAngle, int minDetectAngles, out List<Point> points)
-        {
-            points = new List<Point>();
-
-            if (contour.Total >= 3) //The contour has 4 vertices.
-            {
-                var pts = contour.ToArray();
-                var edges = PointCollection.PolyLine(pts, true);
-
-                var rightAngle = 0;
-                for (var i = 0; i < edges.Length; i++)
-                {
-                    var edge1 = edges[i];
-                    var edge2 = edges[(i + 1) % edges.Length];
-
-                    points.Add(edge1.P1);
-
-                    var angle = Math.Abs(edge1.GetExteriorAngleDegree(edge2));
-
-                    // stop if an angle is not in min/max angle range, no need to continue
-                    if (angle < minAngle || angle > maxAngle)
-                    {
-                        points.Clear();
-                        return false;
-                    }
-
-                    rightAngle++;
-                }
-
-                return rightAngle >= minDetectAngles;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Adds a new temporary object that will be used to identify itself in the preceeding frames.
-        /// </summary>
-        /// <param name="boundingRectangle"></param>
-        /// <param name="minAreaRect"></param>
-        /// <param name="polygon"></param>
-        /// <param name="points"></param>
-        /// <param name="updateTime"></param>
-        private void AddObject(Rectangle boundingRectangle, MCvBox2D minAreaRect, Polygon polygon, Point[] points, DateTime updateTime)
-        {
-            _objects.Add(new RawObject
-            {
-                Id = NextId(),
-                LastUpdate = updateTime,
-                Center = new Point((int)minAreaRect.center.X, (int)minAreaRect.center.Y),
-                Bounds = boundingRectangle,
-                Shape = minAreaRect,
-                Polygon = polygon,
-                Points = points,
-            });
-        }
-
-        /// <summary>
-        /// Updates an object if it finds an object from last frame at a max restore distance.
-        /// </summary>
-        /// <param name="maxRestoreDistance"></param>
-        /// <param name="boundingRectangle"></param>
-        /// <param name="minAreaRect"></param>
-        /// <param name="polygon"></param>
-        /// <param name="points"></param>
-        /// <returns></returns>
-        private bool UpdateObject(double maxRestoreDistance, Rectangle boundingRectangle, MCvBox2D minAreaRect, Polygon polygon, Point[] points, DateTime updateTime)
-        {
-            foreach (var o in _objects)
-            {
-                var oCenter = o.Shape.center;
-                var cCenter = minAreaRect.center;
-
-                var distance = Math.Sqrt(Math.Pow(oCenter.X - cCenter.X, 2) + Math.Pow(oCenter.Y - cCenter.Y, 2));
-
-                if (!(distance < maxRestoreDistance)) continue;
-
-                o.LastUpdate = updateTime;
-                o.Center = new Point((int)cCenter.X, (int)cCenter.Y);
-                o.Bounds = boundingRectangle;
-                o.Shape = minAreaRect;
-                o.Polygon = polygon;
-                o.Points = points;
-
-                return true;
-            }
-            return false;
+            return outputImage;
         }
     }
 }

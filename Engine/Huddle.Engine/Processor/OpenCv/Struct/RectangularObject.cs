@@ -7,7 +7,7 @@ using Huddle.Engine.Processor.OpenCv.Filter;
 
 namespace Huddle.Engine.Processor.OpenCv.Struct
 {
-    public class RawObject : ObservableObject
+    public class RectangularObject : ObservableObject
     {
         #region private fields
 
@@ -47,6 +47,41 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
                 RaisePropertyChanging(IdPropertyName);
                 _id = value;
                 RaisePropertyChanged(IdPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region IsOccluded
+
+        /// <summary>
+        /// The <see cref="IsOccluded" /> property's name.
+        /// </summary>
+        public const string IsOccludedPropertyName = "IsOccluded";
+
+        private bool _isOccluded = false;
+
+        /// <summary>
+        /// Sets and gets the IsOccluded property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsOccluded
+        {
+            get
+            {
+                return _isOccluded;
+            }
+
+            set
+            {
+                if (_isOccluded == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsOccludedPropertyName);
+                _isOccluded = value;
+                RaisePropertyChanged(IsOccludedPropertyName);
             }
         }
 
