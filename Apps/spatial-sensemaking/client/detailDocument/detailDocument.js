@@ -1,5 +1,7 @@
 var popupID = 0;
 
+var lockPreviewSnippet = false;
+
 Template.detailDocumentTemplate.content = function() {
   var doc = Session.get("detailDocument");
   if (doc === undefined) return undefined;
@@ -125,8 +127,7 @@ Template.detailDocumentTemplate.content = function() {
 
     //PREVIEW SNIPPET
     var snippet = Session.get('detailDocumentPreviewSnippet');
-    var snippetLocked = Session.get('detailDocumentPreviewSnippetLocked');
-    if (!snippetLocked && snippet && snippet.length > 0) {
+    if (!lockPreviewSnippet && snippet && snippet.length > 0) {
       //for some reason, if the snippet is at the very end of the file content it 
       //has an additional line break at the end. Because of that, remove line ends
       //from the end of the snippet
@@ -164,7 +165,7 @@ Template.detailDocumentTemplate.content = function() {
                       //After the fade-out we lock the snippet so it will not be shown again
                       Meteor.setTimeout(function() { 
                         if (currentID === popupID) {
-                          Session.set('detailDocumentPreviewSnippetLocked', true); 
+                          lockPreviewSnippet = true;
                         }
                       }, 1000);
                     }
@@ -229,7 +230,7 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
     // height: "952px",
     // width: "722px",
     beforeLoad: function() {
-      Session.set('detailDocumentPreviewSnippetLocked', false);
+      lockPreviewSnippet = false;
       Session.set("detailDocumentPreviewSnippet", snippetText);
       Session.set("detailDocument", doc); 
     },
@@ -251,7 +252,7 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
       DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
     },
     afterClose: function() {
-      Session.set('detailDocumentPreviewSnippetLocked', false);
+      lockPreviewSnippet = false;
       Session.set("detailDocumentPreviewSnippet", undefined);
       Session.set("detailDocument", undefined); 
     },
@@ -359,67 +360,71 @@ var attachEvents = function() {
     DocumentMeta._upsert(doc._id, { $set: { textHighlights: updatedHighlights } });
 
     //Clear selection
-    rangy.getSelection(0).removeAllRanges();
+    // rangy.getSelection(0).removeAllRanges();
   };
   
   
+  var hidePopupTimer;
   var deleteHighlights = function(e) {
-    e.preventDefault();
+    // e.preventDefault();
 
-    var selection = getContentSelection();
-    if (selection === undefined) return;
-
-    var startOffset = selection[0];
-    var endOffset = selection[1];
-
-    //Walk over all highlights, check if they intersect the current selection
-    //If they do, they are not taken into newHighlights
-    var doc = Session.get("detailDocument");
-    var meta = DocumentMeta.findOne({_id: doc._id});
-    var newHighlights = [];
-    var count = 0;
-    if (meta && meta.textHighlights) {
-      for (var i = 0; i < meta.textHighlights.length; i++) {
-        var highlight = meta.textHighlights[i];
-        var intersection = rangeIntersection(startOffset, endOffset, highlight[0], highlight[1]);
-        if (intersection === undefined) {
-          newHighlights.push(meta.textHighlights[i]);
-        } else {
-          count++;
-        }
-      }
+    if (hidePopupTimer !== undefined) {
+      Meteor.clearTimeout(hidePopupTimer);
+      hidePopupTimer = undefined;
     }
 
-    //BUILD POPOVER
+    var count = countSelectedHighlights();
 
-    var content = $("<span>Do you really want to delete <b>"+count+"</b> text highlights? <br/><br />");
-    
-    var yesButton = $("<button />");
-    yesButton.html("<span class='glyphicon glyphicon-trash'></span> Yes, delete");
-    yesButton.addClass("btn btn-danger");
-    yesButton.click(function() {
-      //Insert the "surviving" highlights back into the DB
-      DocumentMeta._upsert(doc._id, { $set: { textHighlights: newHighlights } });
+    var content;
+    var autoHide = 0;
+    if (count === 0) {
+      content = $("<span>You can remove text highlights by selecting them and tapping this button.</span>");
+      autoHide = 3000;
+    } else {
+      var selection = getContentSelection();
 
-      //Clear selection
-      rangy.getSelection(0).removeAllRanges();
-    });
+      var highlightsString = (count === 1) ? 'highlight' : 'highlights';
+      content = $("<span>Do you want to remove <b>"+count+"</b> text "+highlightsString+"?<br/><br />");
+      
+      var yesButton = $("<button />");
+      yesButton.html("<span class='glyphicon glyphicon-trash'></span> Yes, remove");
+      yesButton.addClass("btn btn-danger");
+      yesButton.css('margin-right', '25px');
+      yesButton.on('touchend', function(e2) {
+        e2.preventDefault();
+        deleteSelectedHighlights(selection);
+        $(e.currentTarget).popover('hide');
+      });
 
-    var noButton = $("<button />");
-    noButton.text("No");
-    noButton.addClass("btn");
-    noButton.click(function() {
-    });
+      var noButton = $("<button />");
+      noButton.text("Cancel");
+      noButton.addClass("btn btn-cancel");
+      noButton.on('touchend', function(e2) {
+        e2.preventDefault();
+        $(e.currentTarget).popover('hide');
+      });
 
-    content.append(yesButton);
-    content.append(noButton);
+      content.append(yesButton);
+      content.append(noButton);
+    }
 
     $(e.currentTarget).popover('destroy');
     $(e.currentTarget).popover({
       placement: "bottom",
       content: content,
-      html: true
+      html: true,
     });
+
+    $("body").off('touchstart mousedown');
+    $("body").on('touchstart mousedown', function() {
+      $(e.currentTarget).popover('hide');
+    });
+
+    if (autoHide > 0) {
+      hidePopupTimer = Meteor.setTimeout(function() {
+        $(e.currentTarget).popover('hide');
+      }, autoHide);
+    }
   };
 
   var saveComment = function() {
@@ -509,8 +514,8 @@ var attachEvents = function() {
   $(".highlightButton").off('touchend mouseup');
   $(".highlightButton").on('touchend mouseup', addHighlight);
 
-  $("#deleteHighlightButton").off('touchend mouseup');
-  $("#deleteHighlightButton").on('touchend mouseup', deleteHighlights);
+  $("#deleteHighlightButton").off('touchend');
+  $("#deleteHighlightButton").on('touchend', deleteHighlights);
 
   $("#comment").off('focus blur');
   $("#comment").on('focus blur', fixFixed);
@@ -613,6 +618,64 @@ var rangeIntersection = function(s1, e1, s2, e2) {
   return undefined;
 };
 
+//
+// SELECTION AND HIGHLIGHTS
+// 
+
+var countSelectedHighlights = function(selection) {
+  if (selection === undefined) selection = getContentSelection();
+  if (selection === undefined) return 0;
+
+  var startOffset = selection[0];
+  var endOffset = selection[1];
+
+  //Walk over all highlights, check if they intersect the current selection
+  //If they do, they are not taken into newHighlights
+  var doc = Session.get("detailDocument");
+  var meta = DocumentMeta.findOne({_id: doc._id});
+  var count = 0;
+  if (meta && meta.textHighlights) {
+    for (var i = 0; i < meta.textHighlights.length; i++) {
+      var highlight = meta.textHighlights[i];
+      var intersection = rangeIntersection(startOffset, endOffset, highlight[0], highlight[1]);
+      if (intersection !== undefined) {
+        count++;
+      }
+    }
+  }
+
+  return count;
+};
+
+var deleteSelectedHighlights = function(selection) {
+  if (selection === undefined) selection = getContentSelection();
+  if (selection === undefined || selection.length < 1) return false;
+
+  var startOffset = selection[0];
+  var endOffset = selection[1];
+
+  //Walk over all highlights, check if they intersect the current selection
+  //If they do, they are not taken into newHighlights
+  var doc = Session.get("detailDocument");
+  var meta = DocumentMeta.findOne({_id: doc._id});
+  var newHighlights = [];
+  if (meta && meta.textHighlights) {
+    for (var i = 0; i < meta.textHighlights.length; i++) {
+      var highlight = meta.textHighlights[i];
+      var intersection = rangeIntersection(startOffset, endOffset, highlight[0], highlight[1]);
+      if (intersection === undefined) {
+        newHighlights.push(meta.textHighlights[i]);
+      }
+    }
+  }
+
+  //Insert the "surviving" highlights back into the DB
+  DocumentMeta._upsert(doc._id, { $set: { textHighlights: newHighlights } });
+
+  //Clear selection
+  // rangy.getSelection(0).removeAllRanges();
+};
+
 
 //////////
 // MISC //
@@ -641,60 +704,7 @@ window.UIMenuControllerItems = [
   },
   {
     title: "Delete Highlights",
-    action: function() { 
-      var selection = getContentSelection();
-      if (selection === undefined || selection.length < 1) return false;
-
-      var startOffset = selection[0];
-      var endOffset = selection[1];
-
-      //Walk over all highlights, check if they intersect the current selection
-      //If they do, they are not taken into newHighlights
-      var doc = Session.get("detailDocument");
-      var meta = DocumentMeta.findOne({_id: doc._id});
-      var newHighlights = [];
-      if (meta && meta.textHighlights) {
-        for (var i = 0; i < meta.textHighlights.length; i++) {
-          var highlight = meta.textHighlights[i];
-          var intersection = rangeIntersection(startOffset, endOffset, highlight[0], highlight[1]);
-          if (intersection === undefined) {
-            newHighlights.push(meta.textHighlights[i]);
-          }
-        }
-      }
-
-      //Insert the "surviving" highlights back into the DB
-      DocumentMeta._upsert(doc._id, { $set: { textHighlights: newHighlights } });
-
-      //Clear selection
-      rangy.getSelection(0).removeAllRanges();
-    },
-    canPerform: function() { 
-      var selection = getContentSelection();
-      if (selection === undefined) return;
-
-      var startOffset = selection[0];
-      var endOffset = selection[1];
-
-      //Walk over all highlights, check if they intersect the current selection
-      //If they do, they are not taken into newHighlights
-      var doc = Session.get("detailDocument");
-      var meta = DocumentMeta.findOne({_id: doc._id});
-      var newHighlights = [];
-      var count = 0;
-      if (meta && meta.textHighlights) {
-        for (var i = 0; i < meta.textHighlights.length; i++) {
-          var highlight = meta.textHighlights[i];
-          var intersection = rangeIntersection(startOffset, endOffset, highlight[0], highlight[1]);
-          if (intersection === undefined) {
-            newHighlights.push(meta.textHighlights[i]);
-          } else {
-            count++;
-          }
-        }
-      }
-
-      return (count > 0);
-    }
+    action: deleteSelectedHighlights,
+    canPerform: function() { return (countSelectedHighlights() > 0); }
   }
 ];
