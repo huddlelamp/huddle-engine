@@ -1,10 +1,12 @@
-# Get Started in Minutes (Huddle Web Applications - Meteor)
+# Get Started in Minutes (Huddle.Engine for Tracking and Huddle Web Applications - Meteor)
 
-1. Install Meteor (https://www.meteor.com)
-2. Install npm (node package manager, part of NodeJS - http://nodejs.org)
-3. Install Meteorite (https://atmospherejs.com)
+1. Install OpenCV 2.4.9 (http://opencv.org/)
+2. Download and install Huddle.Engine. (download link not yet available)
+3. Install Meteor (https://www.meteor.com)
+4. Further details on the Huddle JavaScript API in the Wiki at https://bitbucket.org/raedle/huddle/wiki/Home
 
-# Development of Huddle Processors (C#/WPF Development)
+
+# Development of Huddle Processors (C#/WPF Development and for Advanced Users only!)
 
 1. Install Emgu CV (http://www.emgu.com/ or direct from SourceForge.net http://sourceforge.net/projects/emgucv/)
 1.1 Huddle.Engine was implemented with Emgu CV version 2.4.9-alpha

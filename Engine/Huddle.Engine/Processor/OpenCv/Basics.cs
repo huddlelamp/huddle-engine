@@ -43,6 +43,41 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #region IsUseROI
+
+        /// <summary>
+        /// The <see cref="IsUseROI" /> property's name.
+        /// </summary>
+        public const string IsUseROIPropertyName = "IsUseROI";
+
+        private bool _isUseROI = true;
+
+        /// <summary>
+        /// Sets and gets the IsUseROI property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsUseROI
+        {
+            get
+            {
+                return _isUseROI;
+            }
+
+            set
+            {
+                if (_isUseROI == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsUseROIPropertyName);
+                _isUseROI = value;
+                RaisePropertyChanged(IsUseROIPropertyName);
+            }
+        }
+
+        #endregion
+
         #region ROI
 
         /// <summary>
@@ -108,6 +143,41 @@ namespace Huddle.Engine.Processor.OpenCv
                 RaisePropertyChanging(ROITempPropertyName);
                 _roiTemp = value;
                 RaisePropertyChanged(ROITempPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Scale
+
+        /// <summary>
+        /// The <see cref="Scale" /> property's name.
+        /// </summary>
+        public const string ScalePropertyName = "Scale";
+
+        private double _scale = 1.0;
+
+        /// <summary>
+        /// Sets and gets the Scale property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double Scale
+        {
+            get
+            {
+                return _scale;
+            }
+
+            set
+            {
+                if (_scale == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ScalePropertyName);
+                _scale = value;
+                RaisePropertyChanged(ScalePropertyName);
             }
         }
 
@@ -278,19 +348,53 @@ namespace Huddle.Engine.Processor.OpenCv
             // mirror image
             try
             {
-                var imageCopy = image.Copy(ROI);
+                Image<Rgb, byte> imageCopy;
+                if (IsUseROI)
+                    imageCopy = image.Copy(ROI);
+                else
+                    imageCopy = image.Copy();
 
-                var flipCode = FLIP.NONE;
+                // TODO Revise code.
+                if (Scale != 1.0)
+                {
+                    var imageCopy2 = new Image<Rgb, byte>((int)(imageCopy.Width * Scale), (int)(imageCopy.Height * Scale));
+                    CvInvoke.cvResize(imageCopy.Ptr, imageCopy2.Ptr, INTER.CV_INTER_CUBIC);
+                    
+                    imageCopy.Dispose();
+                    imageCopy = imageCopy2;
+                }
 
-                if (FlipHorizontal)
-                    flipCode |= FLIP.HORIZONTAL;
-                if (FlipVertical)
-                    flipCode |= FLIP.VERTICAL;
-                
-                if (flipCode != FLIP.NONE)
-                    CvInvoke.cvFlip(imageCopy.Ptr, imageCopy.Ptr, flipCode);
-                
-                return imageCopy;
+                //if (GpuInvoke.HasCuda)
+                if (false)
+                {
+                    var gpuImage = new GpuImage<Rgb, byte>(imageCopy);
+
+                    var flipCode = FLIP.NONE;
+
+                    if (FlipHorizontal)
+                        flipCode |= FLIP.HORIZONTAL;
+                    if (FlipVertical)
+                        flipCode |= FLIP.VERTICAL;
+
+                    if (flipCode != FLIP.NONE)
+
+                        GpuInvoke.Flip(gpuImage.Ptr, gpuImage.Ptr, FLIP.HORIZONTAL | FLIP.VERTICAL, null);
+                    return gpuImage.ToImage();
+                }
+                else
+                {
+                    var flipCode = FLIP.NONE;
+
+                    if (FlipHorizontal)
+                        flipCode |= FLIP.HORIZONTAL;
+                    if (FlipVertical)
+                        flipCode |= FLIP.VERTICAL;
+
+                    if (flipCode != FLIP.NONE)
+                        CvInvoke.cvFlip(imageCopy.Ptr, imageCopy.Ptr, flipCode);
+
+                    return imageCopy;
+                }
             }
             catch (Exception e)
             {

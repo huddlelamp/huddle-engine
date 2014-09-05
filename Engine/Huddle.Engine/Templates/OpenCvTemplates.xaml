@@ -46,6 +46,14 @@
                 </GroupBox>
             </Grid>
 
+            <CheckBox Content="Use ROI (set ROI costs computational power)" VerticalAlignment="Center" IsChecked="{Binding Path=IsUseROI}" />
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Scale"/>
+                <TextBox Width="100" Text="{Binding Path=Scale}" VerticalAlignment="Center" TextAlignment="Center" />
+                <Button Content="Apply" />
+            </StackPanel>
+
             <CheckBox Content="Flip Vertical" VerticalAlignment="Center" IsChecked="{Binding Path=FlipVertical}" />
             <CheckBox Content="Flip Horizontal" VerticalAlignment="Center" IsChecked="{Binding Path=FlipHorizontal}" />
 
