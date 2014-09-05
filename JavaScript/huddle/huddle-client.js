@@ -33,7 +33,7 @@
 Huddle = (function ($) {
 
     // Huddle client version
-    this.version = "0.9.12";
+    this.version = "0.9.13";
 
     // set web socket
     var WebSocket = window.WebSocket || window.MozWebSocket;
@@ -150,7 +150,7 @@ Huddle = (function ($) {
         }.apply(this);
 
         this.host = host;
-        this.port = typeof port !== 'undefined' ? port : 4711;
+        this.port = typeof port !== 'undefined' ? port : 1948;
 
         this.running = true;
 

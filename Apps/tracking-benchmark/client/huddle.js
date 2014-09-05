@@ -50,6 +50,12 @@ if (Meteor.isClient) {
       z: location[2]
     });
     Session.set("huddleSamples", samples);
-  })
-  .connect(settings.host, settings.port);
+  });
+
+  if (settings.port) {
+    huddle.connect(settings.host, settings.port);
+  }
+  else {
+    huddle.connect(settings.host);
+  }
 }

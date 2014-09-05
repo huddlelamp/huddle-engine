@@ -2,7 +2,7 @@
   "public": {
     "huddle": {
       "host": "134.34.226.168",
-      "port": 4711
+      "port": null
     },
     "timer": {
       "duration": 3000

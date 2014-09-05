@@ -35,8 +35,8 @@ if (Meteor.isClient) {
       $('#console').scrollTop($('#console')[0].scrollHeight);
     })
     // .connect("huddle-orbiter.proxemicinteractions.org", 58629);
-    .connect("134.34.226.168", 4712);
-    // .connect("localhost", 4711);
+    .connect("134.34.226.168");
+    // .connect("localhost");
   };
 }
 

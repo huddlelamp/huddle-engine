@@ -1,6 +1,6 @@
 application-configuration@1.0.0
 autopublish@1.0.0
-autoupdate@1.0.4
+autoupdate@1.0.5
 binary-heap@1.0.0
 blaze-tools@1.0.0
 blaze@1.0.3
@@ -27,7 +27,7 @@ mizzao:bootstrap-3@3.2.0
 mongo-livedata@1.0.3
 observe-sequence@1.0.1
 ordered-dict@1.0.0
-raedle:huddle@0.9.12
+raedle:huddle@0.9.13
 random@1.0.0
 reactive-dict@1.0.0
 reload@1.0.0

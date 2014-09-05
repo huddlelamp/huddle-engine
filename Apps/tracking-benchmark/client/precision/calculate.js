@@ -3,10 +3,10 @@ if (Meteor.isClient) {
   Session.setDefault("trackingImageWidth", 283);
   Session.setDefault("trackingImageHeight", 158);
 
-  Session.setDefault("trackingAreaWidth", 102.0);
-  Session.setDefault("trackingAreaHeight", 57.0);
+  Session.setDefault("trackingAreaWidth", 1020);
+  Session.setDefault("trackingAreaHeight", 570);
 
-  Session.setDefault("groundTruthMeasure", 10.0);
+  Session.setDefault("groundTruthMeasure", 100);
 
   Session.setDefault("conditions", []);
 
@@ -26,9 +26,8 @@ if (Meteor.isClient) {
    * @param {Object} benchmark Benchmark object.
    */
   var calculatePrecision = function(benchmark) {
-
-    var trackingImageWidth = Session.get("trackingImageWidth");
-    var trackingImageHeight = Session.get("trackingImageHeight");
+    var trackingAreaWidth = Session.get("trackingAreaWidth");
+    var trackingAreaHeight = Session.get("trackingAreaHeight");
 
     var spots = benchmark.spots;
 
@@ -74,10 +73,16 @@ if (Meteor.isClient) {
 
     // console.log("Precision MAX: X={0}, Y={1} [in px]".format(ss.max(sdsX) * trackingImageWidth, ss.max(sdsY) * trackingImageHeight));
 
-    var x = (ss.max(sdsX) * trackingImageWidth);
-    var y = (ss.max(sdsY) * trackingImageHeight);
+    // var meanX = (ss.max(meansX) * trackingAreaWidth);
+    // var meanY = (ss.max(meansY) * trackingAreaHeight);
 
-    return [getMeasure("Precision Mean", "px", x, y)];
+    var sdX = (ss.max(sdsX) * trackingAreaWidth);
+    var sdY = (ss.max(sdsY) * trackingAreaHeight);
+
+    return [
+      // getMeasure("Precision Mean (Max)", "cm", meanX, meanY),
+      getMeasure("Precision SD (Max)", "mm", sdX, sdY)
+    ];
   };
 
   var calculateAccuracy = function(benchmark) {
@@ -146,10 +151,10 @@ if (Meteor.isClient) {
     var sdY = ss.standard_deviation(accuraciesY);
 
     return [
-      getMeasure("Accuracy Mean", "cm", meanX, meanY),
-      getMeasure("Accuracy Min", "cm", minX, minY),
-      getMeasure("Accuracy Max", "cm", maxX, maxY),
-      getMeasure("Accuracy SD", "cm", sdX, sdY)
+      getMeasure("Accuracy Mean", "mm", meanX, meanY),
+      getMeasure("Accuracy Min", "mm", minX, minY),
+      getMeasure("Accuracy Max", "mm", maxX, maxY),
+      getMeasure("Accuracy SD", "mm", sdX, sdY)
     ];
   };
 
@@ -267,6 +272,7 @@ if (Meteor.isClient) {
 
       conditions.push({
         name: benchmark.name,
+        lux: benchmark.lux,
         measures: measures
       });
 

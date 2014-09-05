@@ -259,11 +259,11 @@
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/packages/raedle:huddle.js?132ec13b74ea5e39ee2381413724f9b2275ec300",
+      "url": "/packages/raedle:huddle.js?41f88de512cf2129e5dd4d4cdd022563cff0f645",
       "sourceMap": "packages/raedle:huddle.js.map",
-      "sourceMapUrl": "/packages/132ec13b74ea5e39ee2381413724f9b2275ec300.map",
+      "sourceMapUrl": "/packages/41f88de512cf2129e5dd4d4cdd022563cff0f645.map",
       "size": 97572,
-      "hash": "1dc53c53c4b56008df9717c7a19bd292c45858a9"
+      "hash": "1f9ad8c049c3a69027e3bef6f4c6ec1c24e75e42"
     },
     {
       "path": "packages/mizzao:bootstrap-3.js",
@@ -462,9 +462,9 @@
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/precision/template.calculate.js?c51458d6368e140eb358e55676f124243ede4502",
-      "size": 1999,
-      "hash": "c51458d6368e140eb358e55676f124243ede4502"
+      "url": "/client/precision/template.calculate.js?b058c921153870e6030598dd5e24abeea460c22f",
+      "size": 2103,
+      "hash": "b058c921153870e6030598dd5e24abeea460c22f"
     },
     {
       "path": "app/client/template.layout.js",
@@ -534,18 +534,18 @@
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/precision/calculate.js?4db622507395d0d525ecbf425fc1b388ebbb5850",
-      "size": 7839,
-      "hash": "4db622507395d0d525ecbf425fc1b388ebbb5850"
+      "url": "/client/precision/calculate.js?e8f332ebd25b7ba15dd8bc16a42d452feec7acb0",
+      "size": 8062,
+      "hash": "e8f332ebd25b7ba15dd8bc16a42d452feec7acb0"
     },
     {
       "path": "app/client/huddle.js",
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/huddle.js?06e1f41921d5abb6a7952c11bc4ede87712b0593",
-      "size": 1226,
-      "hash": "06e1f41921d5abb6a7952c11bc4ede87712b0593"
+      "url": "/client/huddle.js?840a8a3e6bc6e285a89374f7738ea73e9dc604de",
+      "size": 1311,
+      "hash": "840a8a3e6bc6e285a89374f7738ea73e9dc604de"
     },
     {
       "path": "app/client/layout.js",
