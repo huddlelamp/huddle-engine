@@ -227,7 +227,7 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
   //the next run loop until we actually show the popup. This prevents the popup
   //arriving in an unfinished state, which looks kinda ugly
   lockPreviewSnippet = false;
-  Session.set("detailDocumentPreviewSn{ippet", snippetText);
+  Session.set("detailDocumentPreviewSnippet", snippetText);
   Session.set("detailDocument", doc); 
   Meteor.setTimeout(function() {
     $.fancybox({
@@ -363,66 +363,42 @@ var attachEvents = function() {
   };
   
   
-  var hidePopupTimer;
   var deleteHighlights = function(e) {
     // e.preventDefault();
 
-    if (hidePopupTimer !== undefined) {
-      Meteor.clearTimeout(hidePopupTimer);
-      hidePopupTimer = undefined;
-    }
-
     var count = countSelectedHighlights();
 
-    var content;
-    var autoHide = 0;
     if (count === 0) {
-      content = $("<span>You can remove text highlights by selecting them and tapping this button.</span>");
-      autoHide = 3000;
+      var content = $("<span>You can remove text highlights by selecting them and tapping this button.</span>");
+      showPopover(e.currentTarget, content, {autoHide: 3000});
     } else {
       var selection = getContentSelection();
 
       var highlightsString = (count === 1) ? 'highlight' : 'highlights';
-      content = $("<span>Do you want to remove <b>"+count+"</b> text "+highlightsString+"?<br/><br />");
+      var content = $("<span>Do you want to remove <b>"+count+"</b> text "+highlightsString+"?<br/><br />");
       
       var yesButton = $("<button />");
       yesButton.html("<span class='glyphicon glyphicon-trash'></span> Yes, remove");
       yesButton.addClass("btn btn-danger");
       yesButton.css('margin-right', '25px');
-      yesButton.on('touchend', function(e2) {
+      yesButton.on('click', function(e2) {
         e2.preventDefault();
         deleteSelectedHighlights(selection);
-        $(e.currentTarget).popover('hide');
+        hidePopover(e.currentTarget);
       });
 
       var noButton = $("<button />");
       noButton.text("Cancel");
       noButton.addClass("btn btn-cancel");
-      noButton.on('touchend', function(e2) {
+      noButton.on('click', function(e2) {
         e2.preventDefault();
-        $(e.currentTarget).popover('hide');
+        hidePopover(e.currentTarget);
       });
 
       content.append(yesButton);
       content.append(noButton);
-    }
 
-    $(e.currentTarget).popover('destroy');
-    $(e.currentTarget).popover({
-      placement: "bottom",
-      content: content,
-      html: true,
-    });
-
-    $("body").off('touchstart mousedown');
-    $("body").on('touchstart mousedown', function() {
-      $(e.currentTarget).popover('hide');
-    });
-
-    if (autoHide > 0) {
-      hidePopupTimer = Meteor.setTimeout(function() {
-        $(e.currentTarget).popover('hide');
-      }, autoHide);
+      showPopover(e.currentTarget, content);
     }
   };
 
@@ -513,8 +489,8 @@ var attachEvents = function() {
   $(".highlightButton").off('touchend mouseup');
   $(".highlightButton").on('touchend mouseup', addHighlight);
 
-  $("#deleteHighlightButton").off('touchend');
-  $("#deleteHighlightButton").on('touchend', deleteHighlights);
+  $("#deleteHighlightButton").off('touchend mouseup');
+  $("#deleteHighlightButton").on('touchend mouseup', deleteHighlights);
 
   $("#comment").off('focus blur');
   $("#comment").on('focus blur', fixFixed);
@@ -533,6 +509,13 @@ var attachEvents = function() {
 
   $("#devicedropdown").off('change');
   $("#devicedropdown").on('change', deviceSelected);
+
+  $("#shareButton").off('touchend');
+  $("#shareButton").on('touchend', function(e) {
+    e.preventDefault();
+
+
+  });
 
   $("#openWorldView").off('touchend');
   $("#openWorldView").on('touchend', fuckYouWorldView);
@@ -680,6 +663,42 @@ var deleteSelectedHighlights = function(selection) {
 // MISC //
 //////////
 
+
+var hidePopoverTimer;
+var showPopover = function(target, content, options) {
+  var defaultOptions = {
+    placement: "bottom",
+    autoHide: 0
+  };
+  options = $.extend(defaultOptions, options);
+
+  if (hidePopoverTimer !== undefined) {
+    Meteor.clearTimeout(hidePopoverTimer);
+    hidePopoverTimer = undefined;
+  }
+
+  $(target).popover('destroy');
+  $(target).popover({
+    placement: options.placement,
+    content: content,
+    html: true,
+  });
+
+  // $("body").off('touchstart mousedown');
+  // $("body").on('touchstart mousedown', function() {
+  //   $(target).popover('hide');
+  // });
+
+  if (options.autoHide > 0) {
+    hidePopoverTimer = Meteor.setTimeout(function() {
+      $(target).popover('hide');
+    }, options.autoHide);
+  }
+};
+
+var hidePopover = function(target) {
+  $(target).popover('hide');
+};
 
 /** Encodes file content for displaying **/
 var encodeContent = function(text) {

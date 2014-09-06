@@ -1,0 +1,15 @@
+{
+  "public": {
+    "elasticSearch": {
+      "protocol": "http",
+      "host": "localhost",
+      "port": 9200,
+      "index": "vast2006",
+      "attachmentsPath": "attachment"
+    },
+    "huddle": {
+      "host": "huddle-orbiter.proxemicinteractions.org",
+      "port": 49755
+    }
+  }
+}
