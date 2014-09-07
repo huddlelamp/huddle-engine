@@ -84,7 +84,30 @@ if (Meteor.isClient) {
     },
 
     huddleLocation: function() {
-      return Session.get("huddleLocation");
+      var location = Session.get("huddleLocation");
+
+      return "X={0}, Y={1}".format(location[0].toFixed(2), location[1].toFixed(2));
+    },
+
+    huddleAngle: function() {
+      var angle = Session.get("huddleAngle");
+
+      return "{0} (Radians)".format(angle.toFixed(2));
+    },
+
+    huddleState: function() {
+      var state = Session.get("huddleState");
+
+      switch (state) {
+        case 0:
+          return "not-tracked";
+        case 1:
+          return "tracked";
+        case 2:
+          return "occluded";
+      }
+
+      return "unknown";
     },
 
     gridData: function() {

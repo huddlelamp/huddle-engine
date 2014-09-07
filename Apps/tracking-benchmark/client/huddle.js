@@ -1,5 +1,22 @@
 if (Meteor.isClient) {
 
+  /**
+   * Get url parameter, e.g., http://localhost:3000/?id=3 -> id = 3
+   *
+   * @name The parameter name.
+   */
+  var getParameterByName = function(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+  }
+
+  var huddleOff = getParameterByName("huddle");
+  if (huddleOff && huddleOff == "off") {
+    return;
+  }
+
   var settings = Meteor.settings.public.huddle;
 
   Session.setDefault("huddleIsSampling", false);
@@ -16,8 +33,8 @@ if (Meteor.isClient) {
   }
 
   var huddle = Huddle.client({
-    name: "MyHuddle",
-    glyphId: "3",
+    name: "BenchmarkClient",
+    // glyphId: "1",
   })
   .on("proximity", function(data) {
 
@@ -26,8 +43,8 @@ if (Meteor.isClient) {
     if (lastTimestamp) {
       var delta = timestamp - lastTimestamp;
 
-      var cIdx = ++lastFpsIdx % maxLastFps;
-      lastFps[cIdx] = (1000.0 / delta);
+      lastFpsIdx = ++lastFpsIdx % maxLastFps;
+      lastFps[lastFpsIdx] = (1000.0 / delta);
 
       var meanFps = ss.mean(lastFps);
 
@@ -35,8 +52,16 @@ if (Meteor.isClient) {
     }
     lastTimestamp = timestamp;
 
+    var state = data.State;
+    Session.set("huddleState", state);
+
     var location = data.Location;
     Session.set("huddleLocation", location);
+
+    // var angle = (Math.PI * 180) / data.Orientation ;
+    // Correct angle to ease later data analysis.
+    var angle = data.Orientation > 90.0 ? data.Orientation - 360.0 : data.Orientation;
+    Session.set("huddleAngle", angle);
 
     if (!Session.get("huddleIsSampling")) {
       return;
@@ -45,9 +70,11 @@ if (Meteor.isClient) {
     var samples = Session.get("huddleSamples");
     samples.push({
       timestamp: timestamp,
+      state: state,
       x: location[0],
       y: location[1],
-      z: location[2]
+      z: location[2],
+      angle: angle
     });
     Session.set("huddleSamples", samples);
   });

@@ -113,14 +113,16 @@ if (Meteor.isClient) {
      * @param {string} host Huddle Engine host.
      * @param {int} port Huddle Engine port.
      * @param {string} [name] Huddle client's name.
+     * @param {string} [glyphId] If of glyph that is shown to register device.
      */
-    Peephole.hutHutHut = function(host, port, name) {
+    Peephole.hutHutHut = function(host, port, name, glyphId) {
 
       var maxLines = 100;
       var lines = 0;
 
       huddle = Huddle.client({
-        name: name
+        name: name,
+        glyphId: glyphId,
       })
       .on("proximity", function(data) {
 
@@ -156,9 +158,10 @@ if (Meteor.isClient) {
     var host = Peephole.getParameterByName("host");
     var port = parseInt(Peephole.getParameterByName("port"));
     var name = Peephole.getParameterByName("name");
+    var glyphId = Peephole.getParameterByName("glyphId");
 
     if (host && port && name) {
-      Peephole.hutHutHut(host, port, name);
+      Peephole.hutHutHut(host, port, name, glyphId);
     }
     else {
       $('#connection-dialog').modal({

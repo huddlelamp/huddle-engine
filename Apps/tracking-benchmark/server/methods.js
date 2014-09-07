@@ -44,7 +44,7 @@ if (Meteor.isServer) {
         var logEntry = '  <spot row="{0}" column="{1}">\r\n'.format(row, column);
 
         _.each(samples, function(sample, i) {
-          logEntry += '    <sample n="{0}" timestamp="{1}" x="{2}" y="{3}" z="{4}" />\r\n'.format(i, sample.timestamp, sample.x, sample.y, sample.z);
+          logEntry += '    <sample n="{0}" timestamp="{1}" tracking-state="{2}" x="{3}" y="{4}" z="{5}" angle="{6}" />\r\n'.format(i, sample.timestamp, sample.state, sample.x, sample.y, sample.z, sample.angle);
         });
 
         logEntry += '  </spot>\r\n';

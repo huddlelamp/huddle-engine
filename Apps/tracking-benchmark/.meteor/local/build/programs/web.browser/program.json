@@ -440,13 +440,22 @@
       "hash": "d6d6bb8d92c95ea03bbe2c1465cdce394cd25628"
     },
     {
+      "path": "app/client/benchmark/template.calculate.js",
+      "where": "client",
+      "type": "js",
+      "cacheable": true,
+      "url": "/client/benchmark/template.calculate.js?bf3821fed63e54fcfebdd153082d460951cd3d47",
+      "size": 2562,
+      "hash": "bf3821fed63e54fcfebdd153082d460951cd3d47"
+    },
+    {
       "path": "app/client/benchmark/template.grid.js",
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/benchmark/template.grid.js?6d2256d9c32985361a30958c13449b59cf1427aa",
-      "size": 1597,
-      "hash": "6d2256d9c32985361a30958c13449b59cf1427aa"
+      "url": "/client/benchmark/template.grid.js?053c8922d349df7eb28fff7713a5be09087c65d5",
+      "size": 1875,
+      "hash": "053c8922d349df7eb28fff7713a5be09087c65d5"
     },
     {
       "path": "app/client/benchmark/template.settings.js",
@@ -456,15 +465,6 @@
       "url": "/client/benchmark/template.settings.js?de2b4ee3c25985837329dcea05ec150a4e09af8f",
       "size": 707,
       "hash": "de2b4ee3c25985837329dcea05ec150a4e09af8f"
-    },
-    {
-      "path": "app/client/precision/template.calculate.js",
-      "where": "client",
-      "type": "js",
-      "cacheable": true,
-      "url": "/client/precision/template.calculate.js?b058c921153870e6030598dd5e24abeea460c22f",
-      "size": 2103,
-      "hash": "b058c921153870e6030598dd5e24abeea460c22f"
     },
     {
       "path": "app/client/template.layout.js",
@@ -485,6 +485,15 @@
       "hash": "e083723025aa3513d7ccd94ee43f8ee555424271"
     },
     {
+      "path": "app/client/template.not-found.js",
+      "where": "client",
+      "type": "js",
+      "cacheable": true,
+      "url": "/client/template.not-found.js?8556671714cbeb5f58b1a56b41a64b3b468f3711",
+      "size": 112,
+      "hash": "8556671714cbeb5f58b1a56b41a64b3b468f3711"
+    },
+    {
       "path": "app/client/template.sampling-view.js",
       "where": "client",
       "type": "js",
@@ -503,13 +512,22 @@
       "hash": "0bd3217d02a6c153c9802277b88c757be3e4a179"
     },
     {
+      "path": "app/client/benchmark/calculate.js",
+      "where": "client",
+      "type": "js",
+      "cacheable": true,
+      "url": "/client/benchmark/calculate.js?fe4960b82d3fa0a5db579728caaad270f8a59eac",
+      "size": 10291,
+      "hash": "fe4960b82d3fa0a5db579728caaad270f8a59eac"
+    },
+    {
       "path": "app/client/benchmark/grid.js",
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/benchmark/grid.js?9b3414bc057e4785453adf1c4e138ea11d3a7bce",
-      "size": 2924,
-      "hash": "9b3414bc057e4785453adf1c4e138ea11d3a7bce"
+      "url": "/client/benchmark/grid.js?07e498167f24caeb7ebbd95e1285f397b6dcb85e",
+      "size": 3435,
+      "hash": "07e498167f24caeb7ebbd95e1285f397b6dcb85e"
     },
     {
       "path": "app/client/benchmark/sampling.js",
@@ -530,22 +548,13 @@
       "hash": "77ec8fc571fdb82a19bbd43b929fcba0cb6fe2e0"
     },
     {
-      "path": "app/client/precision/calculate.js",
-      "where": "client",
-      "type": "js",
-      "cacheable": true,
-      "url": "/client/precision/calculate.js?e8f332ebd25b7ba15dd8bc16a42d452feec7acb0",
-      "size": 8062,
-      "hash": "e8f332ebd25b7ba15dd8bc16a42d452feec7acb0"
-    },
-    {
       "path": "app/client/huddle.js",
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/huddle.js?840a8a3e6bc6e285a89374f7738ea73e9dc604de",
-      "size": 1311,
-      "hash": "840a8a3e6bc6e285a89374f7738ea73e9dc604de"
+      "url": "/client/huddle.js?ca9d1b04cd34b8ab3f2e6eb99d37d8b07ca77797",
+      "size": 2196,
+      "hash": "ca9d1b04cd34b8ab3f2e6eb99d37d8b07ca77797"
     },
     {
       "path": "app/client/layout.js",
@@ -561,9 +570,9 @@
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/client/router.js?e222f2b0f80e8d5ea60d15a7cf9bea083d1f75c9",
-      "size": 667,
-      "hash": "e222f2b0f80e8d5ea60d15a7cf9bea083d1f75c9"
+      "url": "/client/router.js?42ca4b310b4603972d2ae841ddad6b5f22d80fcb",
+      "size": 668,
+      "hash": "42ca4b310b4603972d2ae841ddad6b5f22d80fcb"
     },
     {
       "path": "app/client/sampling-view.js",
@@ -593,15 +602,15 @@
       "hash": "2a3453bba5b8f7e5a39caf4f0fb6016f1b588104"
     },
     {
-      "path": "aee45868254a35ee42ad2a435e5e186ea0dfd6cc.css",
+      "path": "c42de06c0c2062c20ff27e4b4156c56927858fb3.css",
       "where": "client",
       "type": "css",
       "cacheable": true,
-      "url": "/aee45868254a35ee42ad2a435e5e186ea0dfd6cc.css",
-      "sourceMap": "aee45868254a35ee42ad2a435e5e186ea0dfd6cc.css.map",
-      "sourceMapUrl": "/aee45868254a35ee42ad2a435e5e186ea0dfd6cc.map",
-      "size": 134384,
-      "hash": "8c63ef201b221647faeec92ef7ccf7fef1a9e369"
+      "url": "/c42de06c0c2062c20ff27e4b4156c56927858fb3.css",
+      "sourceMap": "c42de06c0c2062c20ff27e4b4156c56927858fb3.css.map",
+      "sourceMapUrl": "/c42de06c0c2062c20ff27e4b4156c56927858fb3.map",
+      "size": 134588,
+      "hash": "dd7626c5220750a2df9542ab8ec428b546222420"
     },
     {
       "path": "packages/mizzao:bootstrap-3/bootstrap-3/fonts/glyphicons-halflings-regular.eot",
@@ -652,7 +661,7 @@
       "path": "head.html",
       "where": "internal",
       "type": "head",
-      "hash": "ed49b89ea62ff3cbc0aafa087d6db940f34b95d3"
+      "hash": "c7e08519a144c2f22902833457aeb8e87eb9e56d"
     }
   ]
 }

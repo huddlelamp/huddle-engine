@@ -18,3 +18,24 @@ circle.await-sampling {
 circle.sampled {
   fill: green;
 }
+
+.tracking-state {
+  /*font-size: 11pt;
+  font-weight: bold;*/
+}
+
+.tracking-state-unknown {
+
+}
+
+.tracking-state-not-tracked {
+  color: red;
+}
+
+.tracking-state-tracked {
+  color: green;
+}
+
+.tracking-state-occluded {
+  color: blue;
+}

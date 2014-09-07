@@ -24,8 +24,8 @@ if (Meteor.isClient) {
       },
     });
 
-    this.route('precisionCalculate', {
-      path: '/precision/calculate',
+    this.route('benchmark/Calculate', {
+      path: '/benchmark/calculate',
     });
 
     this.route('notFound', {
