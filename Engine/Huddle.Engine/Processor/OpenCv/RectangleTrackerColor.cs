@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 using Emgu.CV;
@@ -22,8 +21,8 @@ using Point = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
 {
-    [ViewTemplate("Find Contours", "RectangleTracker")]
-    public class FindContours : RgbProcessor
+    [ViewTemplate("Rectangle Tracker (RGB)", "RectangleTracker")]
+    public class RectangleTrackerColor : RgbProcessor
     {
         #region private fields
 
@@ -34,6 +33,41 @@ namespace Huddle.Engine.Processor.OpenCv
         #endregion
 
         #region properties
+
+        #region BlobType
+
+        /// <summary>
+        /// The <see cref="BlobType" /> property's name.
+        /// </summary>
+        public const string BlobTypePropertyName = "BlobType";
+
+        private string _blobType = string.Empty;
+
+        /// <summary>
+        /// Sets and gets the BlobType property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string BlobType
+        {
+            get
+            {
+                return _blobType;
+            }
+
+            set
+            {
+                if (_blobType == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(BlobTypePropertyName);
+                _blobType = value;
+                RaisePropertyChanged(BlobTypePropertyName);
+            }
+        }
+
+        #endregion
 
         #region MinAngle
 
@@ -566,7 +600,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #region ctor
 
-        public FindContours()
+        public RectangleTrackerColor()
             : base(false)
         {
 
@@ -679,7 +713,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
                 var bounds = obj.Bounds;
                 var estimatedCenter = obj.EstimatedCenter;
-                Stage(new BlobData(this, "DeviceBlob")
+                Stage(new BlobData(this, BlobType)
                 {
                     Id = obj.Id,
                     X = estimatedCenter.X / (double)imageWidth,
@@ -764,6 +798,14 @@ namespace Huddle.Engine.Processor.OpenCv
             var depthMapBinary = _depthImage.ThresholdBinaryInv(new Gray(255), new Gray(255));
             var depthMap = depthMapBinary;
 
+            if (depthMap.Width != imageWidth || depthMap.Height != imageHeight)
+            {
+                var resizedDepthMap = new Image<Gray, float>(imageWidth, imageHeight);
+                CvInvoke.cvResize(depthMap.Ptr, resizedDepthMap.Ptr, INTER.CV_INTER_CUBIC);
+                depthMap.Dispose();
+                depthMap = resizedDepthMap;
+            }
+
             CvInvoke.cvCopy(depthMap.Ptr, occludedPartsImage.Ptr, mask);
             occludedPartsImage = occludedPartsImage.Erode(2).Dilate(2);
 
@@ -809,41 +851,30 @@ namespace Huddle.Engine.Processor.OpenCv
             {
                 for (var contours = grayImage.FindContours(CHAIN_APPROX_METHOD.CV_CHAIN_APPROX_SIMPLE, IsRetrieveExternal ? RETR_TYPE.CV_RETR_EXTERNAL : RETR_TYPE.CV_RETR_LIST, storage); contours != null; contours = contours.HNext)
                 {
-                    var lowApproxContour = contours.ApproxPoly(contours.Perimeter * 0.02, storage);
+                    var lowApproxContour = contours.ApproxPoly(contours.Perimeter * 0.015, storage);
 
                     if (lowApproxContour.Area > ((MinContourArea / 100.0) * pixels) && lowApproxContour.Area < ((MaxContourArea / 100.0) * pixels)) //only consider contours with area greater than
                     {
                         if (IsRenderContent && IsDrawAllContours)
                             outputImage.Draw(lowApproxContour, Rgbs.BlueTorquoise, 1);
-                        ////outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
+                        //outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
 
                         // Continue with next contour if current contour is not a rectangle.
                         List<Point> points;
-                        var conts = GetPlausibleRectangles(storage, lowApproxContour, MinAngle, MaxAngle,
-                            MinDetectRightAngles, out points);
+                        if (!IsPlausibleRectangle(lowApproxContour, MinAngle, MaxAngle, MinDetectRightAngles, out points)) continue;
 
-                        if (conts.Length < 1) continue;
+                        var highApproxContour = contours.ApproxPoly(contours.Perimeter * 0.05, storage);
+                        if (IsRenderContent && IsDrawAllContours)
+                            outputImage.Draw(highApproxContour, Rgbs.Yellow, 1);
 
-                        foreach (var nContour in conts)
+                        var rectangle = highApproxContour.BoundingRectangle;
+                        var minAreaRect = highApproxContour.GetMinAreaRect(storage);
+                        var polygon = new Polygon(points.ToArray(), imageWidth, imageHeight);
+                        var contourPoints = highApproxContour.ToArray();
+
+                        if (!UpdateObject(occlusionTracking, maxRestoreDistance, rectangle, minAreaRect, polygon, contourPoints, updateTime, objects))
                         {
-                            if (IsRenderContent && IsDrawAllContours)
-                                outputImage.Draw(nContour, Rgbs.Mimosa, 2);
-
-                            var highApproxContour = nContour;
-
-                            //var highApproxContour = nContour.ApproxPoly(contours.Perimeter * 0.05, storage);
-                            if (IsRenderContent && IsDrawAllContours)
-                                outputImage.Draw(highApproxContour, Rgbs.Yellow, 1);
-
-                            var rectangle = highApproxContour.BoundingRectangle;
-                            var minAreaRect = highApproxContour.GetMinAreaRect(storage);
-                            var polygon = new Polygon(points.ToArray(), imageWidth, imageHeight);
-                            var contourPoints = highApproxContour.ToArray();
-
-                            if (!UpdateObject(occlusionTracking, maxRestoreDistance, rectangle, minAreaRect, polygon, contourPoints, updateTime, objects))
-                            {
-                                newObjects.Add(CreateObject(NextId(), rectangle, minAreaRect, polygon, contourPoints, updateTime));
-                            }
+                            newObjects.Add(CreateObject(NextId(), rectangle, minAreaRect, polygon, contourPoints, updateTime));
                         }
                     }
                 }
@@ -861,17 +892,14 @@ namespace Huddle.Engine.Processor.OpenCv
         /// <param name="minDetectAngles"></param>
         /// <param name="points"></param>
         /// <returns></returns>
-        private Contour<Point>[] GetPlausibleRectangles(MemStorage storage, Seq<Point> contour, int minAngle, int maxAngle, int minDetectAngles, out List<Point> points)
+        private bool IsPlausibleRectangle(Seq<Point> contour, int minAngle, int maxAngle, int minDetectAngles, out List<Point> points)
         {
             points = new List<Point>();
 
-            if (contour.Total < 4) return new Contour<Point>[0]; //The contour has less than 3 vertices.
+            if (contour.Total < 4) return false; //The contour has less than 3 vertices.
 
             var pts = contour.ToArray();
             var edges = PointCollection.PolyLine(pts, true);
-
-            var defects = contour.GetConvexityDefacts(storage, ORIENTATION.CV_CLOCKWISE).ToArray();
-            var allRectContours = new Contour<Point>(storage);
 
             var rightAngle = 0;
             for (var i = 0; i < edges.Length; i++)
@@ -893,47 +921,10 @@ namespace Huddle.Engine.Processor.OpenCv
                     continue;
                 }
 
-                if (!IsStartAndEndPoint(defects, edge1.P1))
-                    allRectContours.Push(edge1.P1);
-
-                if (!IsStartAndEndPoint(defects, edge1.P2))
-                    allRectContours.Push(edge1.P2);
-
-                if (!IsStartAndEndPoint(defects, edge2.P1))
-                    allRectContours.Push(edge2.P1);
-
-                if (!IsStartAndEndPoint(defects, edge2.P2))
-                    allRectContours.Push(edge2.P2);
-
                 rightAngle++;
             }
 
-            if (rightAngle >= minDetectAngles)
-            {
-                allRectContours.Push(allRectContours.First());
-                var list = new List<Contour<Point>> { allRectContours };
-                return list.ToArray();
-            }
-            return new Contour<Point>[0];
-        }
-
-        private bool IsStartAndEndPoint(IEnumerable<MCvConvexityDefect> defects, Point point)
-        {
-            var isStartPoint = false;
-            var isEndPoint = false;
-            foreach (var defect in defects)
-            {
-                if (point.Length(defect.StartPoint) <= 0)
-                {
-                    isStartPoint = true;
-                }
-
-                if (point.Length(defect.EndPoint) <= 0)
-                {
-                    isEndPoint = true;
-                }
-            }
-            return isStartPoint && isEndPoint;
+            return rightAngle >= minDetectAngles;
         }
 
         /// <summary>

@@ -52,39 +52,39 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #endregion
 
-        #region IsOccluded
+        #region State
 
         /// <summary>
-        /// The <see cref="IsOccluded" /> property's name.
+        /// The <see cref="State" /> property's name.
         /// </summary>
-        public const string IsOccludedPropertyName = "IsOccluded";
+        public const string StatePropertyName = "State";
 
-        private bool _isOccluded = false;
+        private TrackingState _state = TrackingState.NotTracked;
 
         /// <summary>
-        /// Sets and gets the IsOccluded property.
+        /// Sets and gets the State property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public bool IsOccluded
+        public TrackingState State
         {
             get
             {
-                return _isOccluded;
+                return _state;
             }
 
             set
             {
-                if (_isOccluded == value)
+                if (_state == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(IsOccludedPropertyName);
-                _isOccluded = value;
-                RaisePropertyChanged(IsOccludedPropertyName);
+                RaisePropertyChanging(StatePropertyName);
+                _state = value;
+                RaisePropertyChanged(StatePropertyName);
             }
         }
-
+        
         #endregion
 
         #region LastUpdate

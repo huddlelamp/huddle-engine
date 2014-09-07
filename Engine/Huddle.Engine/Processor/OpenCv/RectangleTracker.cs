@@ -34,6 +34,41 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #region properties
 
+        #region BlobType
+
+        /// <summary>
+        /// The <see cref="BlobType" /> property's name.
+        /// </summary>
+        public const string BlobTypePropertyName = "BlobType";
+
+        private string _blobType = string.Empty;
+
+        /// <summary>
+        /// Sets and gets the BlobType property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string BlobType
+        {
+            get
+            {
+                return _blobType;
+            }
+
+            set
+            {
+                if (_blobType == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(BlobTypePropertyName);
+                _blobType = value;
+                RaisePropertyChanged(BlobTypePropertyName);
+            }
+        }
+
+        #endregion
+
         #region MinAngle
 
         /// <summary>
@@ -592,9 +627,15 @@ namespace Huddle.Engine.Processor.OpenCv
             var imageWidth = image.Width;
             var imageHeight = image.Height;
 
+            // Get time for current processing.
             var now = DateTime.Now;
 
+            // Remove all objects, which have a last update past the timeout threshold.
             _objects.RemoveAll(o => (now - o.LastUpdate).TotalMilliseconds > Timeout);
+
+            // Reset tracking state of all objects in the previous frame
+            foreach (var o in _objects)
+                o.State = TrackingState.NotTracked;
 
             // Needed to be wrapped in closure -> required by Parallel.ForEach below.
             Image<Rgb, byte>[] outputImage = { new Image<Rgb, byte>(imageWidth, imageHeight, Rgbs.Black) };
@@ -612,6 +653,12 @@ namespace Huddle.Engine.Processor.OpenCv
                     if (foundObjects.Any())
                         Log("Updated but also found {0} new objects {1}", foundObjects.Length, foundObjects);
                 }
+
+                threadSafeObjects = _objects.Where(o => !Equals(o.LastUpdate, now)).ToArray();
+
+                // Update occluded objects. It tries to find not yet identified and maybe occluded objects.
+                if (IsUpdateOccludedRectangles)
+                    UpdateOccludedObjects(image, ref outputImage[0], now, threadSafeObjects);
             }
             else
             {
@@ -623,48 +670,61 @@ namespace Huddle.Engine.Processor.OpenCv
                     Log("Found {0} new objects {1}", foundObjects.Length, foundObjects);
             }
 
-            // Update occluded objects. It tries to find not yet identified and maybe occluded objects.
-            if (IsUpdateOccludedRectangles)
-                UpdateOccludedObjects(image, ref outputImage[0], now, _objects.ToArray());
-
-            foreach (var rawObject in _objects.ToArray())
+            foreach (var obj in _objects.ToArray())
             {
                 if (IsRenderContent)
                 {
-                    //Console.WriteLine("{0}: {1}", rawObject.Id, rawObject.IsOccluded);
-
                     if (IsFillContours)
-                        outputImage[0].FillConvexPoly(rawObject.Points, Rgbs.Yellow);
+                        outputImage[0].FillConvexPoly(obj.Points, Rgbs.Yellow);
 
                     if (IsDrawContours)
-                        outputImage[0].Draw(rawObject.Shape, rawObject.IsOccluded ? Rgbs.Red : Rgbs.Green, 2);
+                    {
+                        Rgb color;
+                        switch (obj.State)
+                        {
+                            case TrackingState.Tracked:
+                                color = Rgbs.Green;
+                                break;
+                            case TrackingState.Occluded:
+                                color = Rgbs.Yellow;
+                                break;
+                            case TrackingState.NotTracked:
+                                color = Rgbs.Red;
+                                break;
+                            default:
+                                color = Rgbs.Cyan;
+                                break;
+                        }
+                        outputImage[0].Draw(obj.Shape, color, 2);
+                    }
 
                     if (IsDrawCenter)
                     {
-                        var circle = new CircleF(rawObject.Center, 2);
+                        var circle = new CircleF(obj.Center, 2);
                         outputImage[0].Draw(circle, Rgbs.Green, 3);
                     }
 
                     if (IsDrawCenter)
                     {
-                        var circle = new CircleF(rawObject.EstimatedCenter, 2);
+                        var circle = new CircleF(obj.EstimatedCenter, 2);
                         outputImage[0].Draw(circle, Rgbs.Blue, 3);
                     }
 
-                    outputImage[0].Draw(string.Format("Id {0}", rawObject.Id), ref EmguFont, new Point((int)rawObject.Shape.center.X, (int)rawObject.Shape.center.Y), Rgbs.White);
+                    outputImage[0].Draw(string.Format("Id {0}", obj.Id), ref EmguFont, new Point((int)obj.Shape.center.X, (int)obj.Shape.center.Y), Rgbs.White);
                 }
 
-                var bounds = rawObject.Bounds;
-                var estimatedCenter = rawObject.EstimatedCenter;
-                Stage(new BlobData(this, "DeviceBlob")
+                var bounds = obj.Bounds;
+                var estimatedCenter = obj.EstimatedCenter;
+                Stage(new BlobData(this, BlobType)
                 {
-                    Id = rawObject.Id,
+                    Id = obj.Id,
                     X = estimatedCenter.X / (double)imageWidth,
                     Y = estimatedCenter.Y / (double)imageHeight,
-                    Angle = rawObject.Shape.angle,
+                    State = obj.State,
+                    Angle = obj.Shape.angle,
                     //Angle = rawObject.SlidingAngle,
-                    Shape = rawObject.Shape,
-                    Polygon = rawObject.Polygon,
+                    Shape = obj.Shape,
+                    Polygon = obj.Polygon,
                     Area = new Rect
                     {
                         X = bounds.X / (double)imageWidth,
@@ -739,6 +799,14 @@ namespace Huddle.Engine.Processor.OpenCv
 
             var depthMapBinary = _depthImage.ThresholdBinaryInv(new Gray(255), new Gray(255));
             var depthMap = depthMapBinary;
+
+            if (depthMap.Width != imageWidth || depthMap.Height != imageHeight)
+            {
+                var resizedDepthMap = new Image<Gray, float>(imageWidth, imageHeight);
+                CvInvoke.cvResize(depthMap.Ptr, resizedDepthMap.Ptr, INTER.CV_INTER_CUBIC);
+                depthMap.Dispose();
+                depthMap = resizedDepthMap;
+            }
 
             CvInvoke.cvCopy(depthMap.Ptr, occludedPartsImage.Ptr, mask);
             occludedPartsImage = occludedPartsImage.Erode(2).Dilate(2);
@@ -848,12 +916,11 @@ namespace Huddle.Engine.Processor.OpenCv
                 var angle = Math.Abs(edge1.GetExteriorAngleDegree(edge2));
 
                 // stop if an angle is not in min/max angle range, no need to continue
-                // also top if connected edges are more than double in ratio
+                // also stop if connected edges are more than double in ratio
                 if ((angle < minAngle || angle > maxAngle) ||
                      (edgeRatio > 5.0 || 1 / edgeRatio > 5.0))
                 {
-                    points.Clear();
-                    return false;
+                    continue;
                 }
 
                 rightAngle++;
@@ -876,6 +943,7 @@ namespace Huddle.Engine.Processor.OpenCv
             return new RectangularObject
             {
                 Id = id,
+                State = TrackingState.Tracked,
                 LastUpdate = updateTime,
                 Center = new Point((int)minAreaRect.center.X, (int)minAreaRect.center.Y),
                 Bounds = boundingRectangle,
@@ -917,7 +985,7 @@ namespace Huddle.Engine.Processor.OpenCv
             if (leastDistance > maxRestoreDistance || candidate == null)
                 return false;
 
-            candidate.IsOccluded = occluded;
+            candidate.State = occluded ? TrackingState.Occluded : TrackingState.Tracked;
             candidate.LastUpdate = updateTime;
             candidate.Center = new Point((int)cCenter.X, (int)cCenter.Y);
             candidate.Bounds = boundingRectangle;

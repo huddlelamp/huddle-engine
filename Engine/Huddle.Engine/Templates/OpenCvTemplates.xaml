@@ -373,6 +373,12 @@
                 </GroupBox>
             </Grid>
 
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Blob Type"/>
+                <TextBox Width="100" Text="{Binding Path=BlobType}" VerticalAlignment="Center" TextAlignment="Center" />
+                <Button Content="Apply" />
+            </StackPanel>
+
             <CheckBox Content="Fill Contours" IsChecked="{Binding Path=IsFillContours}" />
             <CheckBox Content="Draw Contours" IsChecked="{Binding Path=IsDrawContours}" />
             <CheckBox Content="Draw All Contours" IsChecked="{Binding Path=IsDrawAllContours}" />
@@ -380,6 +386,7 @@
             <CheckBox Content="Subract Confidence Image" IsChecked="{Binding Path=IsSubtractConfidenceImage}" />
             <CheckBox Content="Retrieve External" IsChecked="{Binding Path=IsRetrieveExternal}" />
             <CheckBox Content="Update Occluded Rectangles" IsChecked="{Binding Path=IsUpdateOccludedRectangles}" />
+            <TextBlock Width="320" Foreground="Blue" HorizontalAlignment="Left" TextAlignment="Left" TextWrapping="Wrap">NOTE: Active 'Update Occluded Rectangles' requires depth image input with the same ROI as the confidence image.</TextBlock>
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="Maximal Restore Distance"/>
@@ -419,7 +426,7 @@
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="Timeout"/>
-                <Slider Width="200" Value="{Binding Path=Timeout}" Minimum="0" Maximum="10000" IsSnapToTickEnabled="True" TickFrequency="10" />
+                <Slider Width="200" Value="{Binding Path=Timeout}" Minimum="0" Maximum="20000" IsSnapToTickEnabled="True" TickFrequency="10" />
                 <TextBlock Text="{Binding Path=Timeout, StringFormat={}{0} ms}"/>
             </StackPanel>
         </StackPanel>

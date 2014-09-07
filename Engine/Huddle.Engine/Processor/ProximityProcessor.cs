@@ -20,6 +20,7 @@ using Huddle.Engine.Extensions;
 using Huddle.Engine.Processor.BarCodes;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
 using Huddle.Engine.Processor.OpenCv;
+using Huddle.Engine.Processor.OpenCv.Struct;
 using Huddle.Engine.Util;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
@@ -253,6 +254,7 @@ namespace Huddle.Engine.Processor
                 {
                     BlobId = 999,
                     DeviceId = "999",
+                    State = TrackingState.Tracked,
                     IsIdentified = true,
                     X = position.X,
                     Y = position.Y,
@@ -385,13 +387,10 @@ namespace Huddle.Engine.Processor
             foreach (var device1 in identifiedDevices)
             {
                 var p1 = new Point(device1.SlidingX / Width, device1.SlidingY / Height);
-                var proximity = new Proximity(this, "Display", device1.Key)
-                {
-                    Identity = device1.DeviceId,
-                    Location = new Point3D(p1.X, p1.Y, 0),
-                    Orientation = device1.SlidingAngle,
-                    RgbImageToDisplayRatio = device1.RgbImageToDisplayRatio
-                };
+                
+                var location = new Point3D(p1.X, p1.Y, 0);
+                var orientation = device1.SlidingAngle;
+                var proximity = CreateProximity("Display", device1, location, orientation);
 
                 #region Calculate Proximities
 
@@ -440,15 +439,10 @@ namespace Huddle.Engine.Processor
                     Log(log.ToString());
 
                     var p2 = new Point(device2.SlidingX / Width, device2.SlidingY / Height);
-
-                    proximity.Presences.Add(new Proximity(this, "Display", device2.Key)
-                    {
-                        Identity = device2.DeviceId,
-                        Location = new Point3D(p2.X, p2.Y, 0),
-                        Distance = (p2 - p1).Length,
-                        Orientation = localAngle,
-                        RgbImageToDisplayRatio = device2.RgbImageToDisplayRatio
-                    });
+                    
+                    var location2 = new Point3D(p2.X, p2.Y, 0);
+                    var distance2 = (p2 - p1).Length;
+                    proximity.Presences.Add(CreateProximity("Display", device2, location2, distance2, localAngle));
                 }
 
                 #endregion
@@ -485,6 +479,19 @@ namespace Huddle.Engine.Processor
 
         #endregion
 
+        private Proximity CreateProximity(string type, Device device, Point3D location, double orientation, double distance = 0.0)
+        {
+            return new Proximity(this, type, device.Key)
+                   {
+                       State = device.State,
+                       Identity = device.DeviceId,
+                       Location = location,
+                       Distance = distance,
+                       Orientation = orientation,
+                       RgbImageToDisplayRatio = device.RgbImageToDisplayRatio
+                   };
+        }
+
         private void CreateDevice(BlobData blob)
         {
             var device = new Device(this, "unknown")
@@ -493,6 +500,7 @@ namespace Huddle.Engine.Processor
                 IsIdentified = false,
                 X = blob.X * Width,
                 Y = blob.Y * Height,
+                State = blob.State,
                 LastBlobAngle = blob.Angle,
                 Shape = blob.Polygon,
                 Area = blob.Area,
@@ -507,6 +515,7 @@ namespace Huddle.Engine.Processor
             device.BlobId = blob.Id;
             device.X = blob.X * Width;
             device.Y = blob.Y * Height;
+            device.State = blob.State;
             device.Shape = blob.Polygon;
             device.Area = blob.Area;
 

@@ -297,6 +297,7 @@ namespace Huddle.Engine.Processor
                                 BlobId = blob1.Id,
                                 X = blob1.X * Width,
                                 Y = blob1.Y * Height,
+                                State = blob1.State,
                                 Angle = loc.Angle
                             })
                         );

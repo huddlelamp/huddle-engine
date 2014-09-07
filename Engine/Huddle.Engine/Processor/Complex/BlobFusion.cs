@@ -23,8 +23,10 @@ namespace Huddle.Engine.Processor.Complex
             var depthToIds = new Dictionary<long, long>();
             var colorToIds = new Dictionary<long, long>();
 
-            var depthBlobs = dataContainer.ToArray().OfType<BlobData>().Where(b => b.Source.GetType() == typeof(RectangleTracker)).ToArray();
-            var colorBlobs = dataContainer.ToArray().OfType<BlobData>().Where(b => b.Source.GetType() == typeof(FindContours)).ToArray();
+            /* TODO add to IData an originates from another IData because this will be more independent from Source processor.
+             * E.g., BlobData originates from Senz3D.Color or Senz3D.Depth or Senz3D.Confidence or just Color, Depth, Confidence */
+            var depthBlobs = dataContainer.ToArray().OfType<BlobData>().Where(b => Equals(b.Key, "DepthBlob")).ToArray();
+            var colorBlobs = dataContainer.ToArray().OfType<BlobData>().Where(b => Equals(b.Key, "ColorBlob")).ToArray();
 
             foreach (var depthBlob in depthBlobs)
             {
@@ -57,6 +59,12 @@ namespace Huddle.Engine.Processor.Complex
 
                     if (r.WillIntersect)
                     {
+                        if (IsInTolerance(depthBlob, colorBlob, 0.01))
+                        {
+                            depthBlob.X = colorBlob.X;
+                            depthBlob.Y = colorBlob.Y;
+                            depthBlob.Angle = colorBlob.Angle;
+                        }
                         pushableColorBlobs.Remove(colorBlob);
                     }
                 }
@@ -91,6 +99,14 @@ namespace Huddle.Engine.Processor.Complex
         public override IData Process(IData data)
         {
             return null;
+        }
+
+        private bool IsInTolerance(BlobData blob1, BlobData blob2, double tolerance)
+        {
+            var dx = Math.Abs(blob1.X - blob2.X);
+            var dy = Math.Abs(blob1.Y - blob2.Y);
+            //var dAngle = Math.Abs(blob1.Angle - blob2.Angle);
+            return dx < tolerance && dy < tolerance;
         }
 
         #region Polygon Collision Detection

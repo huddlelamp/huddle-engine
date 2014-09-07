@@ -17,7 +17,13 @@ namespace Huddle.Engine.Processor.Network
     {
         #region member fields
 
+        #region Fps Calculation
+
         private Stopwatch _stopwatch;
+        private readonly double[] _fpsSmoothing = new double[60];
+        private int _fpsSmoothingIndex;
+
+        #endregion
 
         private Fleck.WebSocketServer _webSocketServer;
 
@@ -234,6 +240,8 @@ namespace Huddle.Engine.Processor.Network
 
             var proximities = dataContainer.OfType<Proximity>().ToArray();
 
+            #region Fps Calculation
+
             // Calculate frames per second -> this speed defines the outgoing fps
             if (proximities.Any())
             {
@@ -244,10 +252,14 @@ namespace Huddle.Engine.Processor.Network
                 }
                 else
                 {
-                    Pipeline.Fps = 1000.0 / _stopwatch.ElapsedMilliseconds;
+                    _fpsSmoothingIndex = ++_fpsSmoothingIndex % _fpsSmoothing.Length;
+                    _fpsSmoothing[_fpsSmoothingIndex] = 1000.0/_stopwatch.ElapsedMilliseconds;
+                    Pipeline.Fps = _fpsSmoothing.Average();
                     _stopwatch.Restart();
                 }
             }
+
+            #endregion
 
             foreach (var proximity in proximities)
             {

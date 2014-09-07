@@ -5,6 +5,7 @@ using System.Windows.Documents;
 using System.Windows.Media.Media3D;
 using Huddle.Engine.Converter;
 using Huddle.Engine.Processor;
+using Huddle.Engine.Processor.OpenCv.Struct;
 using Newtonsoft.Json;
 
 namespace Huddle.Engine.Data
@@ -43,6 +44,41 @@ namespace Huddle.Engine.Data
                 RaisePropertyChanging(TypePropertyName);
                 _type = value;
                 RaisePropertyChanged(TypePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region State
+
+        /// <summary>
+        /// The <see cref="State" /> property's name.
+        /// </summary>
+        public const string StatePropertyName = "State";
+
+        private TrackingState _state = TrackingState.NotTracked;
+
+        /// <summary>
+        /// Sets and gets the State property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public TrackingState State
+        {
+            get
+            {
+                return _state;
+            }
+
+            set
+            {
+                if (_state == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(StatePropertyName);
+                _state = value;
+                RaisePropertyChanged(StatePropertyName);
             }
         }
 
@@ -306,6 +342,7 @@ namespace Huddle.Engine.Data
         {
             return new Proximity(Source, Type, Key)
             {
+                State = State,
                 Distance = Distance,
                 Identity = Identity,
                 Location = Location,
@@ -318,12 +355,15 @@ namespace Huddle.Engine.Data
 
         public override void Dispose()
         {
-            // ignore
+            // Clear all presences.
+            foreach (var presence in Presences)
+                presence.Dispose();
+            Presences.Clear();
         }
 
         public override string ToString()
         {
-            return string.Format("{0}={{Type={1},Identity={2},Location={3},Orientation={4},Distance={5},Movement={6}}}", GetType().Name, Type, Identity, Location, Orientation, Distance, Movement);
+            return string.Format("{0}={{Type={1},State={2},Identity={3},Location={4},Orientation={5},Distance={6},Movement={7}}}", GetType().Name, Type, State, Identity, Location, Orientation, Distance, Movement);
         }
     }
 }

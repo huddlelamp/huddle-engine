@@ -5,6 +5,7 @@ using Huddle.Engine.Extensions;
 using Huddle.Engine.Processor;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
 using Huddle.Engine.Processor.OpenCv.Filter;
+using Huddle.Engine.Processor.OpenCv.Struct;
 using Newtonsoft.Json;
 
 namespace Huddle.Engine.Data
@@ -202,6 +203,41 @@ namespace Huddle.Engine.Data
                 RaisePropertyChanging(YPropertyName);
                 _y = value;
                 RaisePropertyChanged(YPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region State
+
+        /// <summary>
+        /// The <see cref="State" /> property's name.
+        /// </summary>
+        public const string StatePropertyName = "State";
+
+        private TrackingState _state = TrackingState.NotTracked;
+
+        /// <summary>
+        /// Sets and gets the State property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public TrackingState State
+        {
+            get
+            {
+                return _state;
+            }
+
+            set
+            {
+                if (_state == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(StatePropertyName);
+                _state = value;
+                RaisePropertyChanged(StatePropertyName);
             }
         }
 
@@ -463,6 +499,7 @@ namespace Huddle.Engine.Data
                 IsIdentified = IsIdentified,
                 X = X,
                 Y = Y,
+                State = State,
                 Shape = Shape,
                 Area = Area,
                 RgbImageToDisplayRatio = RgbImageToDisplayRatio
