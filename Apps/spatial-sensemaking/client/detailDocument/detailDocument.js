@@ -223,12 +223,13 @@ Template.detailDocumentTemplate.otherDevices = function() {
 Template.detailDocumentTemplate.open = function(doc, snippetText) {
   DocumentMeta._upsert(doc._id, {$set: {watched: true}});
 
-  //Set the session variables that show the popup content, then wait until
+  //Set the session variables that defines the popup content, then wait until
   //the next run loop until we actually show the popup. This prevents the popup
   //arriving in an unfinished state, which looks kinda ugly
   lockPreviewSnippet = false;
-  Session.set("detailDocumentPreviewSn{ippet", snippetText);
+  Session.set("detailDocumentPreviewSnippet", snippetText);
   Session.set("detailDocument", doc); 
+
   Meteor.setTimeout(function() {
     $.fancybox({
       href: "#documentDetails",
@@ -247,7 +248,9 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
         popupID++;
 
         var doc = Session.get("detailDocument");
-        DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
+        if (doc !== undefined) {
+          DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
+        }
       },
       afterClose: function() {
         lockPreviewSnippet = false;
@@ -281,11 +284,16 @@ var attachEvents = function() {
       DocumentMeta._upsert(doc._id, {$set: {favorited: true}});
     }
   };
+
+  var addHighlightSelection;
+  var prepareAddHighlight = function(e) {
+    //See "prepareWorldView" for the reason why we need this
+    addHighlightSelection = getContentSelection();
+  };
   
   var addHighlight = function(e) {
-    e.preventDefault();
-
-    var selection = getContentSelection();
+    // var selection = getContentSelection();
+    var selection = addHighlightSelection;
     var color = $(e.currentTarget).css("background-color");
 
     if (selection === undefined) return;
@@ -363,66 +371,41 @@ var attachEvents = function() {
   };
   
   
-  var hidePopupTimer;
   var deleteHighlights = function(e) {
-    // e.preventDefault();
-
-    if (hidePopupTimer !== undefined) {
-      Meteor.clearTimeout(hidePopupTimer);
-      hidePopupTimer = undefined;
-    }
+    e.preventDefault();
 
     var count = countSelectedHighlights();
 
-    var content;
-    var autoHide = 0;
     if (count === 0) {
-      content = $("<span>You can remove text highlights by selecting them and tapping this button.</span>");
-      autoHide = 3000;
+      var content = $("<span>You can remove text highlights by selecting them and tapping this button.</span>");
+      showPopover(e.currentTarget, content, {autoHide: 3000, container: "body"});
     } else {
       var selection = getContentSelection();
 
       var highlightsString = (count === 1) ? 'highlight' : 'highlights';
-      content = $("<span>Do you want to remove <b>"+count+"</b> text "+highlightsString+"?<br/><br />");
+      var content = $("<span>Do you want to remove <b>"+count+"</b> text "+highlightsString+"?<br/><br />");
       
       var yesButton = $("<button />");
       yesButton.html("<span class='glyphicon glyphicon-trash'></span> Yes, remove");
-      yesButton.addClass("btn btn-danger");
+      yesButton.addClass("btn btn-danger noDeviceCustomization popupClickable");
       yesButton.css('margin-right', '25px');
-      yesButton.on('touchend', function(e2) {
-        e2.preventDefault();
+      yesButton.on('click', function(e2) {
         deleteSelectedHighlights(selection);
-        $(e.currentTarget).popover('hide');
+        hidePopover(e.currentTarget);
       });
 
       var noButton = $("<button />");
       noButton.text("Cancel");
-      noButton.addClass("btn btn-cancel");
-      noButton.on('touchend', function(e2) {
+      noButton.addClass("btn btn-cancel noDeviceCustomization popupClickable");
+      noButton.on('touchend', function(e2) { //touchend so text selection is kept
         e2.preventDefault();
-        $(e.currentTarget).popover('hide');
+        hidePopover(e.currentTarget);
       });
 
       content.append(yesButton);
       content.append(noButton);
-    }
 
-    $(e.currentTarget).popover('destroy');
-    $(e.currentTarget).popover({
-      placement: "bottom",
-      content: content,
-      html: true,
-    });
-
-    $("body").off('touchstart mousedown');
-    $("body").on('touchstart mousedown', function() {
-      $(e.currentTarget).popover('hide');
-    });
-
-    if (autoHide > 0) {
-      hidePopupTimer = Meteor.setTimeout(function() {
-        $(e.currentTarget).popover('hide');
-      }, autoHide);
+      showPopover(e.currentTarget, content, {container: "body"});
     }
   };
 
@@ -453,31 +436,64 @@ var attachEvents = function() {
     }, 2000);
   };
 
-  var deviceSelected = function() {
-    var select = $("#devicedropdown")[0];
-    var option = select.options[select.selectedIndex];
+  var openShareView = function(e) {
+    e.preventDefault();
 
-    var targetID = $(option).attr("deviceid");
+    var otherDevices = Template.detailDocumentTemplate.otherDevices();
+    var text = Template.detailDocumentTemplate.currentlySelectedContent();
 
-    //set the select back to the placeholder
-    select.selectedIndex = 0;
-    $("#devicedropdown").trigger("chosen:updated");
-
-    if (targetID === undefined) return;
-
-    var text = Session.get('deviceSelectorSnippetToSend');
-
+    var content;
     if (text !== undefined && text.length > 0) {
-      huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+      content = $("<span>Send selected text to:</span>");
     } else {
-      //If no selection was made, show the entire document
-      var doc = Session.get("detailDocument");
-      if (doc === undefined) return;
-      huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+      content = $("<span>Send document to:</span>");
     }
+    content.append("<br />");
+    content.append("<br />");
+
+    for (var i=0; i<otherDevices.length; i++) {
+      var device = otherDevices[i];
+      var info = DeviceInfo.findOne({ _id: device.id });
+      if (info === undefined || info.colorDeg === undefined) return;
+
+      var color = new tinycolor(window.degreesToColor(info.colorDeg)).toRgbString();
+  
+      var link = $("<button />");
+      link.attr("deviceid", device.id);
+      link.addClass("btn shareDevice noDeviceCustomization popupClickable");
+      link.css('border-color', color);
+
+      link.on('click', function(e2) {
+        console.log("YAP");
+        // e2.preventDefault();
+        
+        var targetID = $(this).attr("deviceid");
+        if (targetID === undefined) return;
+
+        if (text !== undefined && text.length > 0) {
+          //If a text selection exists, send it
+          huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+          // pulseIndicator(e.currentTarget);
+          // showSendConfirmation(e.currentTarget, "The selected text was sent to the device.");
+        } else {
+          //If no selection was made but a document is open, send that
+          var doc = Session.get("detailDocument");
+          if (doc !== undefined) {
+            huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+            // pulseIndicator(e.currentTarget);
+            // showSendConfirmation(e.currentTarget, "The document "+doc._id+" is displayed on the device.");
+          }
+        }
+
+        hidePopover(e.currentTarget);
+      });
+      content.append(link);
+    } 
+
+    showPopover(e.currentTarget, content, {placement: "top", container: "body"});
   };
 
-  var fuckYouWorldView = function(e) {
+  var prepareWorldView = function(e) {
     //Do you really wanna know? Well, I try to keep it short:
     //* Using preventDefault() on touchstart/touchend bugs the text selection in 
     //mobile safari, the text selection handles won't disappear after that
@@ -510,33 +526,25 @@ var attachEvents = function() {
   $("#detailDocumentStar").off("click");
   $("#detailDocumentStar").on("click", toggleFavorited);
 
-  $(".highlightButton").off('touchend mouseup');
-  $(".highlightButton").on('touchend mouseup', addHighlight);
+  $(".highlightButton").off('touchend');
+  $(".highlightButton").on('touchend', prepareAddHighlight);
+  $(".highlightButton").off('click');
+  $(".highlightButton").on('click', addHighlight);
 
   $("#deleteHighlightButton").off('touchend');
   $("#deleteHighlightButton").on('touchend', deleteHighlights);
 
   $("#comment").off('focus blur');
   $("#comment").on('focus blur', fixFixed);
-  // $("#comment").on('blur', saveComment);
 
   $("#comment").off("keyup");
   $("#comment").on("keyup", timedSaveComment);
 
-  // $("#saveCommentButton").off('click');
-  // $("#saveCommentButton").on('click', saveComment);
-
-  // Meteor.setTimeout(function() {
-  //   $("#devicedropdown_chosen").off('click touchdown chosen:showing_dropdown');
-  //   $("#devicedropdown_chosen").on('click touchdown chosen:showing_dropdown', deviceSelectorClick);
-  // }, 1);
-
-  $("#devicedropdown").off('change');
-  $("#devicedropdown").on('change', deviceSelected);
+  $("#shareButton").off('touchend');
+  $("#shareButton").on('touchend', openShareView);
 
   $("#openWorldView").off('touchend');
-  $("#openWorldView").on('touchend', fuckYouWorldView);
-
+  $("#openWorldView").on('touchend', prepareWorldView);
   $("#openWorldView").off('click');
   $("#openWorldView").on('click', openWorldView);
 };
@@ -681,6 +689,65 @@ var deleteSelectedHighlights = function(selection) {
 //////////
 
 
+var hidePopoverTimer;
+var showPopover = function(target, content, options) {
+  var defaultOptions = {
+    placement : "bottom",
+    container : false,
+    trigger   : "manual",
+    autoHide  : 0
+  };
+  options = $.extend(defaultOptions, options);
+
+  if (hidePopoverTimer !== undefined) {
+    Meteor.clearTimeout(hidePopoverTimer);
+    hidePopoverTimer = undefined;
+  }
+
+  $(target).popover('destroy');
+  $(target).popover({
+    trigger   : options.trigger,
+    placement : options.placement,
+    content   : content,
+    container : options.container,
+    html      : true,
+  });
+
+  //We want to close popups when the user clicks basically anywhere outside of them
+  //If showPopup() is used in a click event handler, though, this would cause the
+  //popup to close immediatly, therefore we setup the event handlers on body in the
+  //next run loop
+  Meteor.setTimeout(function() {
+    $("body").off('touchstart');
+    $("body").on('touchstart', function(e) {
+      if ($(e.target).hasClass("popupClickable") === false) {
+        e.preventDefault();
+      }
+
+      //Don't hide the popup if an element inside of it was touched
+      var popover = $("#"+$(target).attr("aria-describedby"));
+      if (popover.length > 0 && $.contains(popover[0], e.target)) {
+        return;
+      }
+
+      hidePopover(target);
+      $("body").off('touchstart');
+    });
+  }, 1);
+
+  $(target).popover('show');
+
+  if (options.autoHide > 0) {
+    hidePopoverTimer = Meteor.setTimeout(function() {
+      hidePopover(target);
+    }, options.autoHide);
+  }
+};
+
+var hidePopover = function(target) {
+  $(target).popover('hide');
+};
+
 /** Encodes file content for displaying **/
 var encodeContent = function(text) {
   return text;
@@ -693,7 +760,9 @@ var encodeContent = function(text) {
 window.UIMenuControllerItems = [
   {
     title: "Share",
-    action: function() { alert("TODO"); },
+    action: function() { 
+
+    },
     canPerform: function() { 
       var selection = getContentSelection();
       if (selection !== undefined || selection.length > 0) return true;
