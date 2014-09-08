@@ -1,10 +1,11 @@
 <template name="detailDocumentTemplate">
   <div id="documentDetails">
     {{#with document}}
-      {{#if content}}
+      <!-- {{#if content}} -->
           <div id="contentArea">
             <a href="#" class="toggleFavorited" id="detailDocumentStar"><span class="glyphicon glyphicon-{{#if isFavorited}}heart{{else}}heart-empty{{/if}} icon-large"></span></a>
-              <div id="content">{{{content}}}</div>
+              <p id="content">{{{content}}}</p>
+              {{{contentEvent}}}
          </div>
 
           <div id="editArea">
@@ -50,7 +51,9 @@
               </div>
             </div>
           </div>
-        {{/if}}
+        <!-- {{/if}} -->
       {{/with}}
     </div> <!-- #documentDetails -->
+
+    <a href="#" id="sharePopupAnchor">&nbsp;</a>
 </template>

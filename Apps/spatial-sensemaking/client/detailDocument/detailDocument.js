@@ -3,12 +3,32 @@ var popupID = 0;
 var lockPreviewSnippet = false;
 
 Template.detailDocumentTemplate.content = function() {
+  return Session.get("content") || "";
+};
+
+Template.detailDocumentTemplate.contentEvent = function() {
+  console.log("EXECUTING");
   var doc = Session.get("detailDocument");
   if (doc === undefined) return undefined;
 
   var contentType = doc._source._content_type;
+  console.log(contentType);
   if (contentType == "image/jpeg") {
     return '<img src="data:' + contentType + ';base64,' + doc._source.file + '" />';
+  } else if (contentType == "application/vnd.ms-excel") {
+    console.log(doc);
+    Meteor.call("getOfficeContent", "excel", doc._source.file, function(err, data) {
+      // console.log(err);
+      // console.log(data);
+      Session.set("content", data);
+    });
+  } else if (contentType === "application/msword") {
+    console.log(doc);
+    Meteor.call("getOfficeContent", "word", doc._source.file, function(err, data) {
+      // console.log(err);
+      // console.log(data);
+      Session.set("content", data);
+    });
   } else {
     var content = atob(doc._source.file);
 
@@ -180,7 +200,8 @@ Template.detailDocumentTemplate.content = function() {
 
     content = tempContent.html();
 
-    return encodeContent(content);
+    Session.set("content", encodeContent(content));
+    // return encodeContent(content);
   }
 };
 
@@ -233,6 +254,8 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
   Meteor.setTimeout(function() {
     $.fancybox({
       href: "#documentDetails",
+      autoSize: true,
+      autoResize: true,
       afterLoad: function() { 
         //Dirty hack: 500ms delay so we are pretty sure that all DOM elements arrived
         Meteor.setTimeout(function() {
@@ -757,26 +780,23 @@ var encodeContent = function(text) {
   // return pre.html();
 };
 
-window.UIMenuControllerItems = [
+window.UIMenuController = {};
+window.UIMenuController.menuItems = [
   {
     title: "Share",
     action: function() { 
       //For some reason, not deferring this code might make it hang on the
       //second execute :/
       Meteor.setTimeout(function() {
-        showSharePopup($("#shareButton"));
+        var menuFrame = window.UIMenuController.menuFrame();
 
-        //TODO DUPLICATION END BOOOOO
-        
-        // $("#mouseAnchor").css({
-        //   position: "absolute",
-        //   top: 200,
-        //   left: 200
-        // });
+        $("#sharePopupAnchor").css({
+          position: "absolute",
+          top: menuFrame.y + menuFrame.height,
+          left: menuFrame.x + menuFrame.width/2.0
+        });
 
-        // var content = $("<span>loooool</span>");
-
-        // showPopover($("#mouseAnchor"), content);
+        showSharePopup($("#sharePopupAnchor"));
       }, 1);
     },
     canPerform: function() { 
