@@ -98,50 +98,69 @@ Template.deviceIndicators.otherDevices = function() {
 };
 
 Template.deviceIndicators.events({
-  'touchend .deviceIndicator, mouseup .deviceIndicator': function(e, tmpl) {
+  'touchstart .deviceIndicator, mouseover .deviceIndicator': function(e) {
+    // Template.deviceIndicators.highlightIndicator(e.currentTarget);
+  },
+
+  'touchend .deviceIndicator, mouseup .deviceIndicator': function(e) {
     e.preventDefault();
+    Template.deviceIndicators.sendThroughIndicator(e.currentTarget);
+  }
+});
 
-    var targetID = $(e.currentTarget).attr("deviceid");
-    if (targetID === undefined) return;
+//
+// "PUBLIC" API
+// 
 
-    var text = Template.detailDocumentTemplate.currentlySelectedContent();
+Template.deviceIndicators.highlightIndicator = function(indicator) {
+  $(indicator).css('transform', 'scale(1.25, 1.25)');
+};
 
-    if (text !== undefined && text.length > 0) {
-      //If a text selection exists, send it
-      huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
-      pulseIndicator(e.currentTarget);
-      showSendConfirmation(e.currentTarget, "The selected text was sent to the device.");
+Template.deviceIndicators.unhighlightIndicator = function(indicator) {
+  $(indicator).css('transform', '');
+};
+
+Template.deviceIndicators.sendThroughIndicator = function(indicator, text) {
+  var targetID = $(indicator).attr("deviceid");
+  if (targetID === undefined) return;
+
+  if (text === undefined) {
+    text = Template.detailDocumentTemplate.currentlySelectedContent();
+  }
+
+  if (text !== undefined && text.length > 0) {
+    //If a text selection exists, send it
+    huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+    pulseIndicator(indicator);
+    showSendConfirmation(indicator, "The selected text was sent to the device.");
+  } else {
+    //If no selection was made but a document is open, send that
+    var doc = Session.get("detailDocument");
+    if (doc !== undefined) {
+      huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+      pulseIndicator(indicator);
+      showSendConfirmation(indicator, "The document "+doc._id+" is displayed on the device.");
     } else {
-      //If no selection was made but a document is open, send that
-      var doc = Session.get("detailDocument");
-      if (doc !== undefined) {
-        huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
-        pulseIndicator(e.currentTarget);
-        showSendConfirmation(e.currentTarget, "The document "+doc._id+" is displayed on the device.");
-      } else {
-        //If no document is open but a query result is shown, send that
-        var lastQuery = Session.get('lastQuery');
-        var lastQueryPage = Session.get('lastQueryPage');
-        if (lastQuery !== undefined) {
-          // huddle.broadcast("dosearch", {target: targetID, query: lastQuery, page: lastQueryPage });
-          // huddle.broadcast("gotourl", { target: targetID, url: "/searchIndex/"+lastQuery+"/"+lastQueryPage });
-          huddle.broadcast("go", {
-            target: targetID,
-            template: "searchIndex",
-            params: {
-              _query: lastQuery,
-              _page: lastQueryPage
-            }
-          });
-          pulseIndicator(e.currentTarget);
-          showSendConfirmation(e.currentTarget, "Search results were sent to the device.");
-        }
+      //If no document is open but a query result is shown, send that
+      var lastQuery = Session.get('lastQuery');
+      var lastQueryPage = Session.get('lastQueryPage');
+      if (lastQuery !== undefined) {
+        // huddle.broadcast("dosearch", {target: targetID, query: lastQuery, page: lastQueryPage });
+        // huddle.broadcast("gotourl", { target: targetID, url: "/searchIndex/"+lastQuery+"/"+lastQueryPage });
+        huddle.broadcast("go", {
+          target: targetID,
+          template: "searchIndex",
+          params: {
+            _query: lastQuery,
+            _page: lastQueryPage
+          }
+        });
+        pulseIndicator(indicator);
+        showSendConfirmation(indicator, "Search results were sent to the device.");
       }
     }
-
-    return false;
-  },
-});
+  }
+};
 
 //
 // ANIMATION STUFF

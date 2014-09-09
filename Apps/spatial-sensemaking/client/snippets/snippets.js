@@ -33,13 +33,16 @@ if (Meteor.isClient) {
 
   // var dragDep = new Deps.Dependency();
   var dragLastPoint;
+  var draggedSnippet;
+  var highlightedIndicator;
   Template.snippets.events({
     'touchstart .snippet, mousedown .snippet': function(e) {
       e.preventDefault();
       dragLastPoint = getEventLocation(e, "client");
+      draggedSnippet = e.target;
     },
 
-    'touchmove .snippet, mousemove .snippet': function(e) {
+    'touchmove .snippet, mousemove .snippet, touchmove .deviceIndicator, mousemove .deviceIndicator': function(e) {
       // e.preventDefault();
 
       if (dragLastPoint === undefined) return;
@@ -55,12 +58,29 @@ if (Meteor.isClient) {
         left: parseInt($("#snippet_"+this._id).css('left')) + deltaX
       });
       markSnippetDirty(this);
+
+      if ($(e.target).hasClass("deviceIndicator")) {
+        highlightedIndicator = e.target;
+        Template.deviceIndicators.highlightIndicator(e.target);
+      } else if (highlightedIndicator !== undefined) {
+        Template.deviceIndicators.unhighlightIndicator(highlightedIndicator);
+        highlightedIndicator = undefined;
+      }
     },
 
-    'touchend .snippet, mouseup .snippet': function(e) {
-      // e.preventDefault();
+    'touchend .snippet, mouseup .snippet, touchend .deviceIndicator, mouseup .deviceIndicator': function(e) {
       dragLastPoint = undefined;
-    }
+
+      if ($(e.target).hasClass("deviceIndicator")) {
+        //TODO
+        //use another method that does not create a new snippet on the other
+        //device but rather move it
+        //in fact, we can probably use sendThroughIndicator with a move flag
+        Template.deviceIndicators.sendThroughIndicator(e.target, $(draggedSnippet).text());
+      } 
+
+      draggedSnippet = undefined;
+    },
   });
 
   Template.snippets.helpers({
