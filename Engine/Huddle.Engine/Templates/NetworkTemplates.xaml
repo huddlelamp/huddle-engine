@@ -12,6 +12,12 @@
                     <TextBox Width="100" Text="{Binding Path=Port}" VerticalAlignment="Center" TextAlignment="Center" />
                     <Button Content="Apply" />
                 </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Limit Fps"/>
+                    <Slider Width="200" Value="{Binding Path=LimitFps}" Minimum="1" Maximum="100" />
+                    <TextBlock Text="{Binding Path=LimitFps, StringFormat={}{0:#} Fps}"/>
+                </StackPanel>
             </StackPanel>
         </Grid>
     </DataTemplate>

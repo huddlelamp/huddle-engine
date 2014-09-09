@@ -17,6 +17,12 @@ namespace Huddle.Engine.Processor.Network
     {
         #region member fields
 
+        #region Limit Fps
+
+        private Stopwatch _limitFpsStopwatch = new Stopwatch();
+
+        #endregion
+
         #region Fps Calculation
 
         private Stopwatch _stopwatch;
@@ -107,6 +113,41 @@ namespace Huddle.Engine.Processor.Network
 
         #endregion
 
+        #region LimitFps
+
+        /// <summary>
+        /// The <see cref="LimitFps" /> property's name.
+        /// </summary>
+        public const string LimitFpsPropertyName = "LimitFps";
+
+        private int _limitFps = 30;
+
+        /// <summary>
+        /// Sets and gets the LimitFps property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int LimitFps
+        {
+            get
+            {
+                return _limitFps;
+            }
+
+            set
+            {
+                if (_limitFps == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(LimitFpsPropertyName);
+                _limitFps = value;
+                RaisePropertyChanged(LimitFpsPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -168,6 +209,8 @@ namespace Huddle.Engine.Processor.Network
             // stop web socket server in case a server is already running.
             StopWebSocketServer();
 
+            _limitFpsStopwatch.Start();
+
             _webSocketServer = new Fleck.WebSocketServer(string.Format("ws://0.0.0.0:{0}", Port));
             _webSocketServer.Start(socket =>
             {
@@ -182,6 +225,8 @@ namespace Huddle.Engine.Processor.Network
         /// </summary>
         private void StopWebSocketServer()
         {
+            _limitFpsStopwatch.Stop();
+
             // send disconnect to clients
             foreach (var client in _connectedClients.Values)
                 client.Close();
@@ -209,68 +254,73 @@ namespace Huddle.Engine.Processor.Network
 
         public override IDataContainer PreProcess(IDataContainer dataContainer)
         {
-            var devices = dataContainer.OfType<Device>().ToArray();
-            var identifiedDevices = devices.Where(d => d.IsIdentified).ToArray();
-
-            var clients = _connectedClients.Values.ToArray();
-
-            #region Reveal QrCode on unidentified clients
-
-            var digital = new Digital(this, "Identify") { Value = true };
-            foreach (var client in clients)
+            if (_limitFpsStopwatch.ElapsedMilliseconds > (1000 / LimitFps))
             {
-                if (identifiedDevices.Any(d => Equals(d.DeviceId, client.Id)) ||
-                    client.Id == null) continue;
+                var devices = dataContainer.OfType<Device>().ToArray();
+                var identifiedDevices = devices.Where(d => d.IsIdentified).ToArray();
 
-                client.Send(digital);
-            }
+                var clients = _connectedClients.Values.ToArray();
 
-            var digital2 = new Digital(this, "Identify") { Value = false };
-            foreach (var client in clients)
-            {
-                if (identifiedDevices.Any(d => Equals(d.DeviceId, client.Id)))
+                #region Reveal QrCode on unidentified clients
+
+                var digital = new Digital(this, "Identify") { Value = true };
+                foreach (var client in clients)
                 {
-                    client.Send(digital2);
+                    if (identifiedDevices.Any(d => Equals(d.DeviceId, client.Id)) ||
+                        client.Id == null) continue;
+
+                    client.Send(digital);
                 }
-            }
 
-            #endregion
-
-            #region Send proximity information to clients
-
-            var proximities = dataContainer.OfType<Proximity>().ToArray();
-
-            #region Fps Calculation
-
-            // Calculate frames per second -> this speed defines the outgoing fps
-            if (proximities.Any())
-            {
-                if (_stopwatch == null)
+                var digital2 = new Digital(this, "Identify") { Value = false };
+                foreach (var client in clients)
                 {
-                    _stopwatch = new Stopwatch();
-                    _stopwatch.Start();
+                    if (identifiedDevices.Any(d => Equals(d.DeviceId, client.Id)))
+                    {
+                        client.Send(digital2);
+                    }
                 }
-                else
+
+                #endregion
+
+                #region Send proximity information to clients
+
+                var proximities = dataContainer.OfType<Proximity>().ToArray();
+
+                #region Fps Calculation
+
+                // Calculate frames per second -> this speed defines the outgoing fps
+                if (proximities.Any())
                 {
-                    _fpsSmoothingIndex = ++_fpsSmoothingIndex % _fpsSmoothing.Length;
-                    _fpsSmoothing[_fpsSmoothingIndex] = 1000.0/_stopwatch.ElapsedMilliseconds;
-                    Pipeline.Fps = _fpsSmoothing.Average();
-                    _stopwatch.Restart();
+                    if (_stopwatch == null)
+                    {
+                        _stopwatch = new Stopwatch();
+                        _stopwatch.Start();
+                    }
+                    else
+                    {
+                        _fpsSmoothingIndex = ++_fpsSmoothingIndex % _fpsSmoothing.Length;
+                        _fpsSmoothing[_fpsSmoothingIndex] = 1000.0 / _stopwatch.ElapsedMilliseconds;
+                        Pipeline.Fps = _fpsSmoothing.Average();
+                        _stopwatch.Restart();
+                    }
                 }
-            }
 
-            #endregion
+                #endregion
 
-            foreach (var proximity in proximities)
-            {
-                var proximity1 = proximity;
-                foreach (var client in clients.Where(c => Equals(c.Id, proximity1.Identity)))
+                foreach (var proximity in proximities)
                 {
-                    client.Send(proximity);
+                    var proximity1 = proximity;
+                    foreach (var client in clients.Where(c => Equals(c.Id, proximity1.Identity)))
+                    {
+                        client.Send(proximity);
+                    }
                 }
-            }
 
-            #endregion
+                _limitFpsStopwatch.Restart();
+
+                #endregion
+            }
 
             return null;
         }
@@ -569,7 +619,7 @@ namespace Huddle.Engine.Processor.Network
             var otherClient = obj as FleckClient;
             if (otherClient == null)
                 return false;
-            
+
             return Equals(_socket.ConnectionInfo.Id, otherClient._socket.ConnectionInfo.Id);
         }
 

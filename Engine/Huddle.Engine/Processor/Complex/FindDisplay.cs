@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.ServiceModel.Syndication;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using AForge.Imaging.Filters;
 using AForge.Vision.GlyphRecognition;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -433,6 +430,8 @@ namespace Huddle.Engine.Processor.Complex
             if (devicesToFind.Any())
             {
                 var colorImage = _lastRgbImage.Copy();
+
+                // TODO: is the copy required or does convert already create a copy? _lastRgbImage.Copy() 
                 var grayscaleImage = _lastRgbImage.Copy().Convert<Gray, byte>();
 
                 var width = _lastRgbImage.Width;

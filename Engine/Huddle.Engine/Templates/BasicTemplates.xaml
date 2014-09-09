@@ -14,7 +14,8 @@
         <StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="Type"/>
-                <ComboBox ItemsSource="{Binding Path=Types}"
+                <ComboBox Width="200"
+                          ItemsSource="{Binding Path=Types}"
                           SelectedValue="{Binding Path=Type}" />
             </StackPanel>
 

@@ -309,13 +309,13 @@
     <Compile Include="Processor\BarCodes\ZXingHelper\BarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\IBarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\ImageLuminanceSource.cs" />
-    <Compile Include="Processor\Complex\BlobFusion.cs" />
+    <Compile Include="Processor\Complex\HybridSensing.cs" />
     <Compile Include="Processor\Complex\BlobRenderer.cs" />
     <Compile Include="Processor\Complex\FindDisplay.cs" />
     <Compile Include="Processor\Complex\PolygonIntersection\Polygon.cs" />
     <Compile Include="Processor\Complex\PolygonIntersection\Vector.cs" />
     <Compile Include="Processor\Complex\SyncFusion.cs" />
-    <Compile Include="Processor\Complex\HybridTracking.cs" />
+    <Compile Include="Processor\Complex\BinaryThresholding.cs" />
     <Compile Include="Processor\DataRenderer.cs" />
     <Compile Include="Processor\GenericImageProcessor.cs" />
     <Compile Include="Processor\BaseProcessor.cs" />

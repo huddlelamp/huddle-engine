@@ -8,8 +8,8 @@ using Huddle.Engine.Util;
 
 namespace Huddle.Engine.Processor.Complex
 {
-    [ViewTemplate("Blob Fusion", "BlobFusion")]
-    public class BlobFusion : BaseProcessor
+    [ViewTemplate("Hybrid Sensing", "HybridSensing")]
+    public class HybridSensing : BaseProcessor
     {
         #region private members
 
