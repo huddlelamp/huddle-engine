@@ -9,20 +9,22 @@ Template.deviceIndicators.borderCSS = function() {
   var thisDevice = Session.get('thisDevice');
   if (thisDevice === undefined || !thisDevice.id) return;
   
-  var info = DeviceInfo.findOne({ _id: thisDevice.id });
-  if (info === undefined || info.colorDeg === undefined) return;
+  var colorDeg = window.getDeviceColorDeg(thisDevice.id);
+  // var info = DeviceInfo.findOne({ _id: thisDevice.id });
+  // if (info === undefined || info.colorDeg === undefined) return;
 
-  var color = window.degreesToColor(info.colorDeg);
+  var color = window.degreesToColor(colorDeg);
 
   // return 'border-color: rgb('+color.r+', '+color.g+', '+color.b+')';
   return 'border-image: radial-gradient(rgb('+color.r+', '+color.g+', '+color.b+') 25%, rgba('+color.r+', '+color.g+', '+color.b+', 0.5) 100%, rgba('+color.r+', '+color.g+', '+color.b+', 0.5)) 1%;';
 };
 
 Template.deviceIndicators.deviceBackgroundColorCSS = function() {
-  var info = DeviceInfo.findOne({ _id: this.id });
-  if (info === undefined || !info.colorDeg) return "";
+  var colorDeg = window.getDeviceColorDeg(this.id);
+  // var info = DeviceInfo.findOne({ _id: this.id });
+  // if (info === undefined || !info.colorDeg) return "";
 
-  var color = window.degreesToColor(info.colorDeg);
+  var color = window.degreesToColor(colorDeg);
 
   return 'background-color: rgb('+color.r+', '+color.g+', '+color.b+');';
 };

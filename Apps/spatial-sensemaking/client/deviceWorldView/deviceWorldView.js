@@ -3,21 +3,23 @@ Template.deviceWorldView.rendered = function() {
 };
 
 Template.deviceWorldView.deviceBorderColorCSS = function() {
-  var info = DeviceInfo.findOne({ _id: this.id });
-  if (info === undefined || !info.colorDeg) return "";
+  var colorDeg = window.getDeviceColorDeg(this.id);
+  // var info = DeviceInfo.findOne({ _id: this.id });
+  // if (info === undefined || !info.colorDeg) return "";
 
-  var color = window.degreesToColor(info.colorDeg);
+  var color = window.degreesToColor(colorDeg);
 
   return 'border-color: rgb('+color.r+', '+color.g+', '+color.b+');';
 };
 
 Template.deviceWorldView.deviceBackgroundColorCSS = function() {
-  var info = DeviceInfo.findOne({ _id: this.id });
-  if (info === undefined || !info.colorDeg) return "";
+  var colorDeg = window.getDeviceColorDeg(this.id);
+  // var info = DeviceInfo.findOne({ _id: this.id });
+  // if (info === undefined || !info.colorDeg) return "";
 
   var thisDevice = Session.get('thisDevice');
 
-  var color = window.degreesToColor(info.colorDeg);
+  var color = window.degreesToColor(colorDeg);
 
   alpha = 0.35;
   if (this.id === thisDevice.id) alpha = 0.1;
