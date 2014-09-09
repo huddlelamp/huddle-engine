@@ -7,23 +7,19 @@ Template.detailDocumentTemplate.content = function() {
 };
 
 Template.detailDocumentTemplate.contentEvent = function() {
-  console.log("EXECUTING");
   var doc = Session.get("detailDocument");
   if (doc === undefined) return undefined;
 
   var contentType = doc._source._content_type;
-  console.log(contentType);
   if (contentType == "image/jpeg") {
     return '<img src="data:' + contentType + ';base64,' + doc._source.file + '" />';
   } else if (contentType == "application/vnd.ms-excel") {
-    console.log(doc);
     Meteor.call("getOfficeContent", "excel", doc._source.file, function(err, data) {
       // console.log(err);
       // console.log(data);
       Session.set("content", data);
     });
   } else if (contentType === "application/msword") {
-    console.log(doc);
     Meteor.call("getOfficeContent", "word", doc._source.file, function(err, data) {
       // console.log(err);
       // console.log(data);
@@ -464,23 +460,23 @@ var attachEvents = function() {
     showSharePopup(e.currentTarget);
   };
 
-  var prepareWorldView = function(e) {
-    //Do you really wanna know? Well, I try to keep it short:
-    //* Using preventDefault() on touchstart/touchend bugs the text selection in 
-    //mobile safari, the text selection handles won't disappear after that
-    //* Not using preventDefault for some reason triggers multiple clicks, closing
-    //the world view right after opening it
-    //* The click event triggers too late, the text selection is already gone there
-    //
-    //Solution? We remember the selected text on touchend (where it still exists),
-    //but open the world view in click
-    Session.set("worldViewSnippetToSend", Template.detailDocumentTemplate.currentlySelectedContent());
-  };
+  // var prepareWorldView = function(e) {
+  //   //Do you really wanna know? Well, I try to keep it short:
+  //   //* Using preventDefault() on touchstart/touchend bugs the text selection in 
+  //   //mobile safari, the text selection handles won't disappear after that
+  //   //* Not using preventDefault for some reason triggers multiple clicks, closing
+  //   //the world view right after opening it
+  //   //* The click event triggers too late, the text selection is already gone there
+  //   //
+  //   //Solution? We remember the selected text on touchend (where it still exists),
+  //   //but open the world view in click
+  //   Session.set("worldViewSnippetToSend", Template.detailDocumentTemplate.currentlySelectedContent());
+  // };
 
-  var openWorldView = function(e) {
-    if (!Template.deviceWorldView) return;
-    Template.deviceWorldView.show();
-  };
+  // var openWorldView = function(e) {
+  //   if (!Template.deviceWorldView) return;
+  //   Template.deviceWorldView.show();
+  // };
 
   var fixFixed = function() {
     //When the keyboard is shown or hidden, elements with position: fixed are
@@ -514,10 +510,10 @@ var attachEvents = function() {
   $("#shareButton").off('touchend mouseup');
   $("#shareButton").on('touchend mouseup', openShareView);
 
-  $("#openWorldView").off('touchend');
-  $("#openWorldView").on('touchend', prepareWorldView);
-  $("#openWorldView").off('click');
-  $("#openWorldView").on('click', openWorldView);
+  // $("#openWorldView").off('touchend');
+  // $("#openWorldView").on('touchend', prepareWorldView);
+  // $("#openWorldView").off('click');
+  // $("#openWorldView").on('click', openWorldView);
 };
 
 var showSharePopup = function(el) {

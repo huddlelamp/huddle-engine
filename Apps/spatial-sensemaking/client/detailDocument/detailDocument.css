@@ -155,10 +155,10 @@
   background-color: transparent !important;
 }
 
-#openWorldView {
+/*#openWorldView {
   width: 150px;
   margin-top: -30px;
-}
+}*/
 
 .chosen-container .chosen-results li.highlighted {
   background-color: rgba(0,0,0,0.2) !important;

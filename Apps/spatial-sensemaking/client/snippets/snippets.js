@@ -1,20 +1,22 @@
 if (Meteor.isClient) {
   Template.snippets.initSnippetPosition = function() {
-    if ($("#snippet_"+this._id).css('top') !== undefined ||
-      $("#snippet_"+this._id).css('left') !== undefined) return;
-
-    var top  = this.y;
-    var left = this.x;
-
-    if (top === undefined) top = getRandomInt(0, 600);
-    if (left === undefined) left = getRandomInt(0, 600);
-    
     var that = this;
     Meteor.setTimeout(function() {
+      if ($("#snippet_"+that._id).css("display") !== "none") {
+        return;
+    }
+
+      var top  = that.y || 0;
+      var left = that.x || 0;
+
+      if (top === undefined) top = getRandomInt(0, 600);
+      if (left === undefined) left = getRandomInt(0, 600);
+    
       $("#snippet_"+that._id).css({
         top: top,
         left: left
       });
+      $("#snippet_"+that._id).css('display', 'inline-block');
       markSnippetDirty(that);
     }, 1);
   };
@@ -31,7 +33,6 @@ if (Meteor.isClient) {
     return Session.get("otherDevices") || [];
   };
 
-  // var dragDep = new Deps.Dependency();
   var dragLastPoint;
   var draggedSnippet;
   var highlightedIndicator;
@@ -44,7 +45,7 @@ if (Meteor.isClient) {
 
     'touchmove .snippet, mousemove .snippet, touchmove .deviceIndicator, mousemove .deviceIndicator': function(e) {
       // e.preventDefault();
-
+      
       if (dragLastPoint === undefined) return;
 
       var currentPoint = getEventLocation(e, "client");
@@ -59,9 +60,13 @@ if (Meteor.isClient) {
       });
       markSnippetDirty(this);
 
+      var hitTarget = document.elementFromPoint(currentPoint.x, currentPoint.y);
       if ($(e.target).hasClass("deviceIndicator")) {
         highlightedIndicator = e.target;
         Template.deviceIndicators.highlightIndicator(e.target);
+      } else if ($(hitTarget).hasClass("deviceIndicator")) {
+        highlightedIndicator = hitTarget;
+        Template.deviceIndicators.highlightIndicator(hitTarget);
       } else if (highlightedIndicator !== undefined) {
         Template.deviceIndicators.unhighlightIndicator(highlightedIndicator);
         highlightedIndicator = undefined;
@@ -69,15 +74,18 @@ if (Meteor.isClient) {
     },
 
     'touchend .snippet, mouseup .snippet, touchend .deviceIndicator, mouseup .deviceIndicator': function(e) {
+      var lastHitTarget = document.elementFromPoint(dragLastPoint.x, dragLastPoint.y);
       dragLastPoint = undefined;
 
       if ($(e.target).hasClass("deviceIndicator")) {
-        //TODO
-        //use another method that does not create a new snippet on the other
-        //device but rather move it
-        //in fact, we can probably use sendThroughIndicator with a move flag
         Template.deviceIndicators.sendThroughIndicator(e.target, $(draggedSnippet).text());
-      } 
+        var snippetID = $(draggedSnippet).attr("id").replace("snippet_", "");
+        Snippets.remove({_id : snippetID});
+      } else if ($(lastHitTarget).hasClass("deviceIndicator")) {
+        Template.deviceIndicators.sendThroughIndicator(lastHitTarget, $(draggedSnippet).text());
+        var snippetID = $(draggedSnippet).attr("id").replace("snippet_", "");
+        Snippets.remove({_id : snippetID});
+      }
 
       draggedSnippet = undefined;
     },
@@ -104,6 +112,11 @@ function markSnippetDirty(snippet) {
 
   dirtyTimer[snippet._id] = Meteor.setTimeout(function() {
     dirtyTimer[snippet._id] = undefined;
+
+    if ($("#snippet_"+snippet._id).length === 0 || $("#snippet_"+snippet._id).css("display") === "none") {
+      return;
+    }
+
     Snippets.update(
       {_id: snippet._id}, 
       {$set: {
@@ -111,7 +124,7 @@ function markSnippetDirty(snippet) {
         x: parseInt($("#snippet_"+snippet._id).css('left'))
       }}
     );
-  }, 5000);
+  }, 2500);
 }
 
 function getEventLocation(e, type) 

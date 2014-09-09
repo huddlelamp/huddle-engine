@@ -145,8 +145,6 @@ Template.deviceIndicators.sendThroughIndicator = function(indicator, text) {
       var lastQuery = Session.get('lastQuery');
       var lastQueryPage = Session.get('lastQueryPage');
       if (lastQuery !== undefined) {
-        // huddle.broadcast("dosearch", {target: targetID, query: lastQuery, page: lastQueryPage });
-        // huddle.broadcast("gotourl", { target: targetID, url: "/searchIndex/"+lastQuery+"/"+lastQueryPage });
         huddle.broadcast("go", {
           target: targetID,
           template: "searchIndex",

@@ -138,6 +138,10 @@ body {
   margin: 5px;
 }
 
+.glyphicon-eye-open.icon-larger {
+  font-size: 1.57em !important;
+}
+
 .icon-large {
   font-size: 2em;
   margin: 5px;

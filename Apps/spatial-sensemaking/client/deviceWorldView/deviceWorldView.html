@@ -1,15 +1,16 @@
 <template name="deviceWorldView">
+
   <div id="worldViewWrapper" style="">
 
     {{#with thisDevice}}
-      <a class="worldDevice thisDevice" style="{{deviceBorderColorCSS}} {{deviceBackgroundColorCSS}} {{deviceSizeAndPosition}}"></a>
+      <a class="btn noDeviceCustomization worldDevice thisDevice popupClickable" style="{{deviceBorderColorCSS}} {{deviceBackgroundColorCSS}} {{devicePosition}}"></a>
     {{/with}}
 
     {{#each otherDevices}}
-      <a deviceid="{{id}}" class="worldDevice" style="{{deviceBorderColorCSS}} {{deviceBackgroundColorCSS}} {{deviceSizeAndPosition}}" href="#"></a>
+      <button deviceid="{{id}}" class="btn noDeviceCustomization worldDevice popupClickable" style="{{deviceBorderColorCSS}} {{devicePosition}}" href="#"></button>
     {{/each}}
-
-    <button id="closeButton" class="btn"><span class="glyphicon glyphicon-remove"></span> Close World View</button>
   </div>
+  
   <span id="worldViewSendText"></span>
+  <button id="openWorldView" class="btn">Open World View</button>
 </template>

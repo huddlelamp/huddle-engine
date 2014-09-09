@@ -54,7 +54,7 @@
 
           <div class="table">
             <div class="tr">
-              <div class="td vtop" style="width: 50px; padding-top: 5px;">
+              <div class="td vtop" style="width: 50px; padding-top: 5px; text-align: center;">
                 <a href="#" class="toggleFavorited"><span class="glyphicon glyphicon-{{#if isFavorited}}heart{{else}}heart-empty{{/if}} icon-larger"></span></a>
 
                 <br />
@@ -68,7 +68,7 @@
                   <span class="glyphicon glyphicon-eye-open icon-larger"></span>
                 {{/if}}
               </div>
-              <div class="td vtop">
+              <div class="td vtop" style="width: 100%;">
                   {{#each highlight.file}}
                     <div class="document-highlight" documentid="{{../_id}}">{{{this}}}</div>
                   {{/each}}
