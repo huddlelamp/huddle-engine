@@ -22,8 +22,12 @@ if (Meteor.isClient) {
       topLeft: {
         x: data.Location[0] || 0,
         y: data.Location[1] || 0,
+        // x: Math.round(data.Location[0] * 10) / 10,
+        // y: Math.round(data.Location[1] * 10) / 10
       },
       ratio: {
+        // x: (Math.round(data.RgbImageToDisplayRatio.X * 10) / 10) || 1,
+        // y: (Math.round(data.RgbImageToDisplayRatio.Y * 10) / 10) || 1
         x: data.RgbImageToDisplayRatio.X || 1,
         y: data.RgbImageToDisplayRatio.Y || 1
       },
@@ -60,12 +64,15 @@ if (Meteor.isClient) {
   if (existingID === undefined) existingID = null;
   console.log("EXISTING ID: "+existingID);
 
+  // var start = Date.now();
   huddle = Huddle.client({ glyphId: existingID+"" })
   .on("devicelost", function(a) {
     console.log("DEVICE WAS LOST");
     console.log(a);
   })
   .on("proximity", function(data) {
+    // if (capFPS(1)) return;
+
     if (firstProximityData && data.Identity) {
       console.log("MY ID: "+data.Identity);
       amplify.store("huddleid", data.Identity);
@@ -268,6 +275,36 @@ function determineDeviceColor(deviceID) {
   }
 }
 
+var cachedColorDegs = {};
+window.getDeviceColorDeg = function(deviceID) {
+  if (cachedColorDegs[deviceID]) {
+    return cachedColorDegs[deviceID];
+  }
+
+  // var info = DeviceInfo.findOne({ _id: deviceID });
+  // if (info === undefined || info.colorDeg === undefined) return 0;
+  
+  var cursor = DeviceInfo.find({_id: deviceID });
+  var info = cursor.fetch()[0];
+  if (info === undefined || info.colorDeg === undefined) return 0;
+
+  var observer = function(deviceID) {
+    return function(newDocument) {
+      if (newDocument === undefined || newDocument.colorDeg === undefined) return;
+      cachedColorDegs[deviceID] = newDocument.colorDeg;
+    };
+  };
+
+  cursor.observe({
+    added   : observer(deviceID),
+    changed : observer(deviceID),
+    removed : observer(deviceID),
+  });
+
+  cachedColorDegs[deviceID] = info.colorDeg;
+  return info.colorDeg;
+};
+
 window.degreesToColor = function(deg, ensureVisibility) {
   if (ensureVisibility === undefined) ensureVisibility = true;
 
@@ -294,4 +331,17 @@ window.degreesToColor = function(deg, ensureVisibility) {
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+var lastFPSCap = new Date();
+function capFPS(fps) {
+  var now = new Date();
+  var timeDiff = now.getTime() - lastFPSCap.getTime();
+
+  if (timeDiff < (1000.0/fps)) {
+    return true;
+  } else {
+    lastFPSCap = now;
+    return false;
+  }
 }

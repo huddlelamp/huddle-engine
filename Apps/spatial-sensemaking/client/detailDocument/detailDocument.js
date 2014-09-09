@@ -3,12 +3,32 @@ var popupID = 0;
 var lockPreviewSnippet = false;
 
 Template.detailDocumentTemplate.content = function() {
+  return Session.get("content") || "";
+};
+
+Template.detailDocumentTemplate.contentEvent = function() {
+  console.log("EXECUTING");
   var doc = Session.get("detailDocument");
   if (doc === undefined) return undefined;
 
   var contentType = doc._source._content_type;
+  console.log(contentType);
   if (contentType == "image/jpeg") {
     return '<img src="data:' + contentType + ';base64,' + doc._source.file + '" />';
+  } else if (contentType == "application/vnd.ms-excel") {
+    console.log(doc);
+    Meteor.call("getOfficeContent", "excel", doc._source.file, function(err, data) {
+      // console.log(err);
+      // console.log(data);
+      Session.set("content", data);
+    });
+  } else if (contentType === "application/msword") {
+    console.log(doc);
+    Meteor.call("getOfficeContent", "word", doc._source.file, function(err, data) {
+      // console.log(err);
+      // console.log(data);
+      Session.set("content", data);
+    });
   } else {
     var content = atob(doc._source.file);
 
@@ -180,7 +200,8 @@ Template.detailDocumentTemplate.content = function() {
 
     content = tempContent.html();
 
-    return encodeContent(content);
+    Session.set("content", encodeContent(content));
+    // return encodeContent(content);
   }
 };
 
@@ -233,6 +254,8 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
   Meteor.setTimeout(function() {
     $.fancybox({
       href: "#documentDetails",
+      autoSize: true,
+      autoResize: true,
       afterLoad: function() { 
         //Dirty hack: 500ms delay so we are pretty sure that all DOM elements arrived
         Meteor.setTimeout(function() {
@@ -438,59 +461,7 @@ var attachEvents = function() {
 
   var openShareView = function(e) {
     e.preventDefault();
-
-    var otherDevices = Template.detailDocumentTemplate.otherDevices();
-    var text = Template.detailDocumentTemplate.currentlySelectedContent();
-
-    var content;
-    if (text !== undefined && text.length > 0) {
-      content = $("<span>Send selected text to:</span>");
-    } else {
-      content = $("<span>Send document to:</span>");
-    }
-    content.append("<br />");
-    content.append("<br />");
-
-    for (var i=0; i<otherDevices.length; i++) {
-      var device = otherDevices[i];
-      var info = DeviceInfo.findOne({ _id: device.id });
-      if (info === undefined || info.colorDeg === undefined) return;
-
-      var color = new tinycolor(window.degreesToColor(info.colorDeg)).toRgbString();
-  
-      var link = $("<button />");
-      link.attr("deviceid", device.id);
-      link.addClass("btn shareDevice noDeviceCustomization popupClickable");
-      link.css('border-color', color);
-
-      link.on('click', function(e2) {
-        console.log("YAP");
-        // e2.preventDefault();
-        
-        var targetID = $(this).attr("deviceid");
-        if (targetID === undefined) return;
-
-        if (text !== undefined && text.length > 0) {
-          //If a text selection exists, send it
-          huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
-          // pulseIndicator(e.currentTarget);
-          // showSendConfirmation(e.currentTarget, "The selected text was sent to the device.");
-        } else {
-          //If no selection was made but a document is open, send that
-          var doc = Session.get("detailDocument");
-          if (doc !== undefined) {
-            huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
-            // pulseIndicator(e.currentTarget);
-            // showSendConfirmation(e.currentTarget, "The document "+doc._id+" is displayed on the device.");
-          }
-        }
-
-        hidePopover(e.currentTarget);
-      });
-      content.append(link);
-    } 
-
-    showPopover(e.currentTarget, content, {placement: "top", container: "body"});
+    showSharePopup(e.currentTarget);
   };
 
   var prepareWorldView = function(e) {
@@ -540,13 +511,65 @@ var attachEvents = function() {
   $("#comment").off("keyup");
   $("#comment").on("keyup", timedSaveComment);
 
-  $("#shareButton").off('touchend');
-  $("#shareButton").on('touchend', openShareView);
+  $("#shareButton").off('touchend mouseup');
+  $("#shareButton").on('touchend mouseup', openShareView);
 
   $("#openWorldView").off('touchend');
   $("#openWorldView").on('touchend', prepareWorldView);
   $("#openWorldView").off('click');
   $("#openWorldView").on('click', openWorldView);
+};
+
+var showSharePopup = function(el) {
+  var otherDevices = Template.detailDocumentTemplate.otherDevices();
+  var text = Template.detailDocumentTemplate.currentlySelectedContent();
+
+  var content;
+  if (text !== undefined && text.length > 0) {
+    content = $("<span>Send selected text to:</span>");
+  } else {
+    content = $("<span>Send document to:</span>");
+  }
+  content.append("<br />");
+  content.append("<br />");
+
+  for (var i=0; i<otherDevices.length; i++) {
+    var device = otherDevices[i];
+    var info = DeviceInfo.findOne({ _id: device.id });
+    if (info === undefined || info.colorDeg === undefined) return;
+
+    var color = new tinycolor(window.degreesToColor(info.colorDeg)).toRgbString();
+
+    var link = $("<button />");
+    link.attr("deviceid", device.id);
+    link.addClass("btn shareDevice noDeviceCustomization popupClickable");
+    link.css('border-color', color);
+
+    link.on('click', function(e2) {
+      var targetID = $(this).attr("deviceid");
+      if (targetID === undefined) return;
+
+      if (text !== undefined && text.length > 0) {
+        //If a text selection exists, send it
+        huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+        // pulseIndicator(e.currentTarget);
+        // showSendConfirmation(e.currentTarget, "The selected text was sent to the device.");
+      } else {
+        //If no selection was made but a document is open, send that
+        var doc = Session.get("detailDocument");
+        if (doc !== undefined) {
+          huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+          // pulseIndicator(e.currentTarget);
+          // showSendConfirmation(e.currentTarget, "The document "+doc._id+" is displayed on the device.");
+        }
+      }
+
+      hidePopover(el);
+    });
+    content.append(link);
+  } 
+
+  showPopover(el, content, {placement: "top", container: "body"});
 };
 
 
@@ -718,8 +741,8 @@ var showPopover = function(target, content, options) {
   //popup to close immediatly, therefore we setup the event handlers on body in the
   //next run loop
   Meteor.setTimeout(function() {
-    $("body").off('touchstart');
-    $("body").on('touchstart', function(e) {
+    $("body").off('touchstart mousedown');
+    $("body").on('touchstart mousedown', function(e) {
       if ($(e.target).hasClass("popupClickable") === false) {
         e.preventDefault();
       }
@@ -731,7 +754,7 @@ var showPopover = function(target, content, options) {
       }
 
       hidePopover(target);
-      $("body").off('touchstart');
+      $("body").off('touchstart mousedown');
     });
   }, 1);
 
@@ -757,11 +780,24 @@ var encodeContent = function(text) {
   // return pre.html();
 };
 
-window.UIMenuControllerItems = [
+window.UIMenuController = {};
+window.UIMenuController.menuItems = [
   {
     title: "Share",
     action: function() { 
+      //For some reason, not deferring this code might make it hang on the
+      //second execute :/
+      Meteor.setTimeout(function() {
+        var menuFrame = window.UIMenuController.menuFrame();
 
+        $("#sharePopupAnchor").css({
+          position: "absolute",
+          top: menuFrame.y + menuFrame.height,
+          left: menuFrame.x + menuFrame.width/2.0
+        });
+
+        showSharePopup($("#sharePopupAnchor"));
+      }, 1);
     },
     canPerform: function() { 
       var selection = getContentSelection();
