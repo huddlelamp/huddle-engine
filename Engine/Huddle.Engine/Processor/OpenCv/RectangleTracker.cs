@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -14,10 +15,14 @@ using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
 using Huddle.Engine.Extensions;
+using Huddle.Engine.Processor.Complex;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
 using Huddle.Engine.Processor.OpenCv.Struct;
 using Huddle.Engine.Util;
 using Point = System.Drawing.Point;
+using Polygon = Huddle.Engine.Processor.Complex.PolygonIntersection.Polygon;
+using Rectangle = System.Drawing.Rectangle;
+using Vector = Huddle.Engine.Processor.Complex.PolygonIntersection.Vector;
 
 namespace Huddle.Engine.Processor.OpenCv
 {
@@ -655,7 +660,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 }
 
                 threadSafeObjects = _objects.Where(o => !Equals(o.LastUpdate, now)).ToArray();
-
+                
                 // Update occluded objects. It tries to find not yet identified and maybe occluded objects.
                 if (IsUpdateOccludedRectangles)
                     UpdateOccludedObjects(image, ref outputImage[0], now, threadSafeObjects);
@@ -765,9 +770,23 @@ namespace Huddle.Engine.Processor.OpenCv
 
             var newObjects = FindRectangles(occlusionTracking, blankedImageGray, ref outputImage, updateTime, objects);
 
+            // Remove objects that intersect with previous objects.
+            var filteredObjects = newObjects.ToList();
+            foreach (var newObject in newObjects)
+            {
+                if (objects.Any(o =>
+                            {
+                                var r = PolygonCollisionUtils.PolygonCollision(o.Polygon, newObject.Polygon, Vector.Empty);
+                                return r.WillIntersect;
+                            }))
+                {
+                    filteredObjects.Remove(newObject);
+                }
+            }
+
             blankedImageGray.Dispose();
 
-            return newObjects;
+            return filteredObjects.ToArray();
         }
 
         /// <summary>
@@ -809,12 +828,13 @@ namespace Huddle.Engine.Processor.OpenCv
             }
 
             CvInvoke.cvCopy(depthMap.Ptr, occludedPartsImage.Ptr, mask);
-            occludedPartsImage = occludedPartsImage.Erode(2).Dilate(2);
+            occludedPartsImage = occludedPartsImage.Erode(4).Dilate(4);
+            CvInvoke.cvCopy(depthMap.Ptr, occludedPartsImage.Ptr, mask);
 
             var debugImage3 = occludedPartsImage.Convert<Rgb, byte>();
 
             var fixedImage = image.Or(debugImage3);
-            fixedImage = fixedImage.Dilate(2).Erode(2);
+            //fixedImage = fixedImage.Erode(2);
 
             var debugImage = fixedImage.Copy();
             Task.Factory.StartNew(() =>
@@ -898,7 +918,7 @@ namespace Huddle.Engine.Processor.OpenCv
         {
             points = new List<Point>();
 
-            if (contour.Total < 4) return false; //The contour has less than 3 vertices.
+            if (contour.Total < minDetectAngles) return false; //The contour has less than 3 vertices.
 
             var pts = contour.ToArray();
             var edges = PointCollection.PolyLine(pts, true);
@@ -985,11 +1005,25 @@ namespace Huddle.Engine.Processor.OpenCv
             if (leastDistance > maxRestoreDistance || candidate == null)
                 return false;
 
+            MCvBox2D shape;
+            if (Math.Abs(minAreaRect.angle - candidate.Shape.angle) < 25)
+            {
+                shape = new MCvBox2D(minAreaRect.center, candidate.Shape.size, minAreaRect.angle);
+            }
+            else
+            {
+                //shape = minAreaRect;
+                var size = candidate.Shape.size;
+                shape = new MCvBox2D(minAreaRect.center, new SizeF(size.Height, size.Width), minAreaRect.angle);
+            }
+
+            //var shape = minAreaRect;
+
             candidate.State = occluded ? TrackingState.Occluded : TrackingState.Tracked;
             candidate.LastUpdate = updateTime;
             candidate.Center = new Point((int)cCenter.X, (int)cCenter.Y);
             candidate.Bounds = boundingRectangle;
-            candidate.Shape = minAreaRect;
+            candidate.Shape = shape;
             candidate.Polygon = polygon;
             candidate.Points = points;
 

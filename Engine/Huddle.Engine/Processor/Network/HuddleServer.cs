@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Huddle.Engine.Data;
+using Huddle.Engine.Processor.Network.Huddle;
 using Huddle.Engine.Properties;
 using Huddle.Engine.Util;
 using Newtonsoft.Json;
@@ -37,7 +38,7 @@ namespace Huddle.Engine.Processor.Network
 
         private readonly Dictionary<string, string> _deviceIdToGlyph = new Dictionary<string, string>();
 
-        private readonly ConcurrentDictionary<Guid, FleckClient> _connectedClients = new ConcurrentDictionary<Guid, FleckClient>();
+        private readonly ConcurrentDictionary<Guid, Client> _connectedClients = new ConcurrentDictionary<Guid, Client>();
 
         #endregion
 
@@ -254,36 +255,38 @@ namespace Huddle.Engine.Processor.Network
 
         public override IDataContainer PreProcess(IDataContainer dataContainer)
         {
+            var devices = dataContainer.OfType<Device>().ToArray();
+            var identifiedDevices = devices.Where(d => d.IsIdentified).ToArray();
+
+            var clients = _connectedClients.Values.ToArray();
+
+            #region Reveal QrCode on unidentified clients
+
+            var digital = new Digital(this, "Identify") { Value = true };
+            foreach (var client in clients.Where(c => c.State != ClientState.AwaitIdentification))
+            {
+                if (identifiedDevices.Any(d => Equals(d.DeviceId, client.Id)) || client.Id == null) continue;
+
+                client.Send(digital);
+                client.State = ClientState.AwaitIdentification;
+            }
+
+            var digital2 = new Digital(this, "Identify") { Value = false };
+            foreach (var client in clients.Where(c => c.State == ClientState.AwaitIdentification))
+            {
+                if (identifiedDevices.Any(d => Equals(d.DeviceId, client.Id)))
+                {
+                    client.Send(digital2);
+                    client.State = ClientState.Identified;
+                }
+            }
+
+            #endregion
+
+            #region Send proximity information to clients
+
             if (_limitFpsStopwatch.ElapsedMilliseconds > (1000 / LimitFps))
             {
-                var devices = dataContainer.OfType<Device>().ToArray();
-                var identifiedDevices = devices.Where(d => d.IsIdentified).ToArray();
-
-                var clients = _connectedClients.Values.ToArray();
-
-                #region Reveal QrCode on unidentified clients
-
-                var digital = new Digital(this, "Identify") { Value = true };
-                foreach (var client in clients)
-                {
-                    if (identifiedDevices.Any(d => Equals(d.DeviceId, client.Id)) ||
-                        client.Id == null) continue;
-
-                    client.Send(digital);
-                }
-
-                var digital2 = new Digital(this, "Identify") { Value = false };
-                foreach (var client in clients)
-                {
-                    if (identifiedDevices.Any(d => Equals(d.DeviceId, client.Id)))
-                    {
-                        client.Send(digital2);
-                    }
-                }
-
-                #endregion
-
-                #region Send proximity information to clients
 
                 var proximities = dataContainer.OfType<Proximity>().ToArray();
 
@@ -318,9 +321,9 @@ namespace Huddle.Engine.Processor.Network
                 }
 
                 _limitFpsStopwatch.Restart();
-
-                #endregion
             }
+
+            #endregion
 
             return null;
         }
@@ -335,7 +338,7 @@ namespace Huddle.Engine.Processor.Network
         {
             var clientKey = socket.ConnectionInfo.Id;
 
-            var client = new FleckClient(socket);
+            var client = new Client(socket);
 
             _connectedClients.TryAdd(clientKey, client);
             ClientCount = _connectedClients.Count;
@@ -353,7 +356,7 @@ namespace Huddle.Engine.Processor.Network
         {
             var clientKey = socket.ConnectionInfo.Id;
 
-            FleckClient client;
+            Client client;
             _connectedClients.TryRemove(clientKey, out client);
             ClientCount = _connectedClients.Count;
 
@@ -384,7 +387,7 @@ namespace Huddle.Engine.Processor.Network
         {
             var clientKey = socket.ConnectionInfo.Id;
 
-            FleckClient client;
+            Client client;
             _connectedClients.TryGetValue(clientKey, out client);
 
             // check if client exists for the socket connection
@@ -431,7 +434,7 @@ namespace Huddle.Engine.Processor.Network
         /// </summary>
         /// <param name="client">The sender of the handshake.</param>
         /// <param name="handshake">Handshake message from the client.</param>
-        private void OnHandshake(FleckClient client, dynamic handshake)
+        private void OnHandshake(Client client, dynamic handshake)
         {
             string name = null;
             if (handshake.Name != null)
@@ -488,7 +491,7 @@ namespace Huddle.Engine.Processor.Network
         /// Called each time a client sends an alive message.
         /// </summary>
         /// <param name="sender">The sender of the alive message.</param>
-        private void OnAlive(FleckClient sender)
+        private void OnAlive(Client sender)
         {
             // do nothing yet
         }
@@ -498,7 +501,7 @@ namespace Huddle.Engine.Processor.Network
         /// </summary>
         /// <param name="sender">The sender of the message, which does not receive its message.</param>
         /// <param name="message">Message sent to connected clients.</param>
-        private void OnMessage(FleckClient sender, string message)
+        private void OnMessage(Client sender, string message)
         {
             foreach (var c in _connectedClients.Values.Where(c => !c.Equals(sender)))
             {
@@ -507,126 +510,5 @@ namespace Huddle.Engine.Processor.Network
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// This class wraps around a fleck socket connection and provides high-level methods to communicate
-    /// with the client.
-    /// </summary>
-    public class FleckClient
-    {
-        #region member fields
-
-        // connection to the client
-        private readonly IWebSocketConnection _socket;
-
-        #endregion
-
-        #region properties
-
-        #region Id
-
-        public string Id { get; set; }
-
-        public string Name { get; set; }
-
-        public string DeviceType { get; set; }
-
-        #endregion
-
-        #endregion
-
-        /// <summary>
-        /// A fleck client, which provides high-level methods to send data to the client (socket).
-        /// </summary>
-        /// <param name="socket">Client socket connection</param>
-        public FleckClient(IWebSocketConnection socket)
-        {
-            Id = null;
-            Name = null;
-            _socket = socket;
-        }
-
-        /// <summary>
-        /// Sends a message to the client.
-        /// </summary>
-        /// <param name="message">Message</param>
-        public void Send(string message)
-        {
-            try
-            {
-                _socket.Send(message);
-            }
-            catch (Exception e)
-            {
-                _socket.Send(e.Message);
-            }
-        }
-
-        /// <summary>
-        /// Sends data to the client. The data is serialized with JsonConvert and wrapped into a proper
-        /// Huddle message format.
-        /// 
-        /// {"Type":"[DataType]","Data":[Data]}
-        /// </summary>
-        /// <param name="data">The data object (it must be serializable with Newtonsoft JsonConvert)</param>
-        public void Send(IData data)
-        {
-            var dataSerial = JsonConvert.SerializeObject(data);
-
-            // inject the data type into the message
-            var serial = string.Format(Resources.TemplateDataMessage, data.GetType().Name, dataSerial);
-
-            Send(serial);
-        }
-
-        /// <summary>
-        /// Sends an error to the client.
-        /// </summary>
-        /// <param name="code">Error code to decode message on client.</param>
-        /// <param name="reason">Reason for the error.</param>
-        public void Error(int code, string reason)
-        {
-            var errorMessage = string.Format(Resources.TemplateErrorMessage, code, reason);
-
-            Send(errorMessage);
-        }
-
-        /// <summary>
-        /// Sends a bye bye message to the client and closes the connection.
-        /// </summary>
-        public void Close()
-        {
-            Send(Resources.TemplateByeByeMessage);
-            _socket.Close();
-        }
-
-        // override object.Equals
-        public override bool Equals(object obj)
-        {
-            //       
-            // See the full list of guidelines at
-            //   http://go.microsoft.com/fwlink/?LinkID=85237  
-            // and also the guidance for operator== at
-            //   http://go.microsoft.com/fwlink/?LinkId=85238
-            //
-
-            if (obj == null || GetType() != obj.GetType())
-            {
-                return false;
-            }
-
-            var otherClient = obj as FleckClient;
-            if (otherClient == null)
-                return false;
-
-            return Equals(_socket.ConnectionInfo.Id, otherClient._socket.ConnectionInfo.Id);
-        }
-
-        // override object.GetHashCode
-        public override int GetHashCode()
-        {
-            return _socket.ConnectionInfo.Id.GetHashCode();
-        }
     }
 }

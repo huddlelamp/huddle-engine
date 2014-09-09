@@ -284,8 +284,12 @@
     <Compile Include="Extensions\NumericExtensions.cs" />
     <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
     <Compile Include="Extensions\PointExtensions.cs" />
+    <Compile Include="Processor\Complex\PolygonIntersection\PolygonCollisionUtils.cs" />
+    <Compile Include="Processor\Network\Huddle\Client.cs" />
+    <Compile Include="Processor\Network\Huddle\ClientState.cs" />
     <Compile Include="Processor\OpenCv\FillContours.cs" />
     <Compile Include="Processor\OpenCv\RectangleTrackerColor.cs" />
+    <Compile Include="Processor\OpenCv\Struct\IdentificationState.cs" />
     <Compile Include="Processor\OpenCv\Struct\TrackingState.cs" />
     <Compile Include="Processor\Sensors\Senz3DIntel.cs" />
     <Compile Include="Processor\Sensors\Utils\Senz3DUtils.cs" />
@@ -326,7 +330,6 @@
     <Compile Include="Processor\ITakeLong.cs" />
     <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\HuddleServer.cs" />
-    <Compile Include="Processor\Network\WebSocketServer.cs" />
     <Compile Include="Processor\OpenCv\FindContours.cs" />
     <Compile Include="Processor\OpenCv\SubtractBackground.cs" />
     <Compile Include="Processor\OpenCv\Not.cs" />

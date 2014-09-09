@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media.Media3D;
@@ -7,6 +8,7 @@ using Huddle.Engine.Converter;
 using Huddle.Engine.Processor;
 using Huddle.Engine.Processor.OpenCv.Struct;
 using Newtonsoft.Json;
+using Xceed.Wpf.Toolkit.Panels;
 
 namespace Huddle.Engine.Data
 {
@@ -359,6 +361,35 @@ namespace Huddle.Engine.Data
             foreach (var presence in Presences)
                 presence.Dispose();
             Presences.Clear();
+        }
+
+        // override object.Equals
+        public override bool Equals(object obj)
+        {
+            //       
+            // See the full list of guidelines at
+            //   http://go.microsoft.com/fwlink/?LinkID=85237  
+            // and also the guidance for operator== at
+            //   http://go.microsoft.com/fwlink/?LinkId=85238
+            //
+
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            var otherProximity = obj as Proximity;
+            if (otherProximity == null) return false;
+
+            return Equals(Location, otherProximity.Location) &&
+                   Equals(Orientation, otherProximity.Orientation) &&
+                   Presences.SequenceEqual(otherProximity.Presences);
+        }
+
+// override object.GetHashCode
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         public override string ToString()
