@@ -371,6 +371,41 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #endregion
 
+        #region LastAngle
+
+        /// <summary>
+        /// The <see cref="LastAngle" /> property's name.
+        /// </summary>
+        public const string LastAnglePropertyName = "LastAngle";
+
+        private float _lastAngle = 0.0f;
+
+        /// <summary>
+        /// Sets and gets the LastAngle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public float LastAngle
+        {
+            get
+            {
+                return _lastAngle;
+            }
+
+            set
+            {
+                if (_lastAngle == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(LastAnglePropertyName);
+                _lastAngle = value;
+                RaisePropertyChanged(LastAnglePropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region PredictedCenter

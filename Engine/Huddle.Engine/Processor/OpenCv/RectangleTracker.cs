@@ -1320,6 +1320,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 Center = new Point((int)minAreaRect.center.X, (int)minAreaRect.center.Y),
                 Bounds = boundingRectangle,
                 Shape = minAreaRect,
+                LastAngle = minAreaRect.angle,
                 Polygon = polygon,
                 Points = points,
             };
@@ -1360,14 +1361,30 @@ namespace Huddle.Engine.Processor.OpenCv
             //var dAngle = Math.Abs(candidate.Shape.angle - minAreaRect.angle);
             //Console.WriteLine(minAreaRect.angle);
 
-            var shape = new MCvBox2D(minAreaRect.center, candidate.Size, minAreaRect.angle);
+            var oldAngle = candidate.Shape.angle;
+            var deltaAngle = minAreaRect.angle - candidate.LastAngle;
+
+            // this is a hack but it works pretty good
+            if (deltaAngle > 45)
+            {
+                deltaAngle -= 90;
+                //return;
+            }
+            else if (deltaAngle < -45)
+            {
+                deltaAngle += 90;
+            }
+
+            candidate.Shape = minAreaRect;
+
+            var shape = new MCvBox2D(minAreaRect.center, candidate.Size, oldAngle + deltaAngle);
 
             candidate.State = occluded ? TrackingState.Occluded : TrackingState.Tracked;
             candidate.LastUpdate = updateTime;
             candidate.Center = new Point((int)cCenter.X, (int)cCenter.Y);
             candidate.Bounds = boundingRectangle;
-            candidate.Shape = minAreaRect;
             candidate.Shape = shape;
+            candidate.LastAngle = minAreaRect.angle;
             candidate.Polygon = polygon;
             candidate.Points = points;
 

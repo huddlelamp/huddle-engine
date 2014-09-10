@@ -332,7 +332,6 @@
     <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\HuddleServer.cs" />
     <Compile Include="Processor\OpenCv\FindContours.cs" />
-    <Compile Include="Processor\OpenCv\SubtractBackground.cs" />
     <Compile Include="Processor\OpenCv\Not.cs" />
     <Compile Include="Processor\OpenCv\BasicsGrayFloat.cs" />
     <Compile Include="Processor\OpenCv\HandTracker.cs" />

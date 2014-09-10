@@ -306,10 +306,11 @@
         </StackPanel>
     </DataTemplate>
 
-    <DataTemplate x:Key="SubtractBackground" DataType="openCv:SubtractBackground">
+    <DataTemplate x:Key="BackgroundSubtraction" DataType="openCv:BackgroundSubtraction">
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
@@ -320,11 +321,41 @@
                         <Image Source="{Binding Path=PreProcessImage}" />
                     </Grid>
                 </GroupBox>
-                <GroupBox Header="Post Processed Image"
+                <GroupBox Header="Debug Image"
                           Grid.Column="1">
+                    <Image Source="{Binding Path=DebugImageSource}" />
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="2">
                     <Image Source="{Binding Path=PostProcessImage}" />
                 </GroupBox>
             </Grid>
+
+            <Button Content="Subtract">
+                <i:Interaction.Triggers>
+                    <util:EventTriggerAdvanced EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=SubtractCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </util:EventTriggerAdvanced>
+                </i:Interaction.Triggers>
+            </Button>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Subtraction Samples"/>
+                <Slider Width="200" Value="{Binding Path=BackgroundSubtractionSamples}" Minimum="0" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=BackgroundSubtractionSamples}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Low Cut Off Depth"/>
+                <Slider Value="{Binding Path=LowCutOffDepth}" Width="340" Height="25" Minimum="0" Maximum="255" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=LowCutOffDepth, StringFormat={}{0:#.##}}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="High Cut Off Depth"/>
+                <Slider Value="{Binding Path=HighCutOffDepth}" Width="340" Height="25" Minimum="0" Maximum="255" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=HighCutOffDepth, StringFormat={}{0:#.##}}"/>
+            </StackPanel>
         </StackPanel>
     </DataTemplate>
 
