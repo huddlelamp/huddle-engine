@@ -1,0 +1,18 @@
+{
+  "public": {
+    "huddle": {
+      "host": "134.34.226.168",
+      "port": null
+    },
+    "timer": {
+      "duration": 3000
+    },
+    "benchmark": {
+      "width": 600,
+      "height": 400,
+      "duration": 10000,
+      "columns": 7,
+      "rows": 3
+    }
+  }
+}
