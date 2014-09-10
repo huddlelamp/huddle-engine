@@ -120,7 +120,7 @@ Template.deviceIndicators.unhighlightIndicator = function(indicator) {
   $(indicator).css('transform', '');
 };
 
-Template.deviceIndicators.sendThroughIndicator = function(indicator, text) {
+Template.deviceIndicators.sendThroughIndicator = function(indicator, text, sourcedocID) {
   var targetID = $(indicator).attr("deviceid");
   if (targetID === undefined) return;
 
@@ -128,18 +128,51 @@ Template.deviceIndicators.sendThroughIndicator = function(indicator, text) {
     text = Template.detailDocumentTemplate.currentlySelectedContent();
   }
 
+  //If no source document for the send is provided, we assume that a detial document is open and is
+  //the source
+  if (sourcedocID === undefined) {
+    var doc = Session.get("detailDocument");
+    sourcedocID = doc._id;
+  }
+
   if (text !== undefined && text.length > 0) {
     //If a text selection exists, send it
-    huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+    huddle.broadcast("addtextsnippet", { target: targetID, doc: sourcedocID, snippet: text } );
     pulseIndicator(indicator);
     showSendConfirmation(indicator, "The selected text was sent to the device.");
+
+    var thisDevice = Session.get('thisDevice');
+    var actionSource = (Router.current().route.name === "searchIndex") ? "detailDocument" : "snippets";
+    Logs.insert({
+      timestamp      : Date.now(),
+      route          : Router.current().route.name,
+      deviceID       : thisDevice.id,  
+      actionType     : "shareSnippet",
+      actionSource   : actionSource, 
+      actionSubsource: "deviceIndicator",
+      targetDeviceID : targetID,
+      documentID     : sourcedocID,
+      snippet        : text,
+    });
   } else {
     //If no selection was made but a document is open, send that
-    var doc = Session.get("detailDocument");
+    
     if (doc !== undefined) {
-      huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
+      huddle.broadcast("showdocument", { target: targetID, documentID: sourcedocID } );
       pulseIndicator(indicator);
-      showSendConfirmation(indicator, "The document "+doc._id+" is displayed on the device.");
+      showSendConfirmation(indicator, "The document "+sourcedocID+" is displayed on the device.");
+
+      var thisDevice = Session.get('thisDevice');
+      Logs.insert({
+        timestamp      : Date.now(),
+        route          : Router.current().route.name,
+        deviceID       : thisDevice.id,  
+        actionType     : "shareDocument",
+        actionSource   : "detailDocument", //must be, only source for shareDocument
+        actionSubsource: "deviceIndicator",
+        targetDeviceID : targetID,
+        documentID     : sourcedocID,
+      });
     } else {
       //If no document is open but a query result is shown, send that
       var lastQuery = Session.get('lastQuery');
@@ -155,6 +188,20 @@ Template.deviceIndicators.sendThroughIndicator = function(indicator, text) {
         });
         pulseIndicator(indicator);
         showSendConfirmation(indicator, "Search results were sent to the device.");
+
+        console.log(Router.current());
+        var thisDevice = Session.get('thisDevice');
+        Logs.insert({
+          timestamp      : Date.now(),
+          route          : Router.current().route.name,
+          deviceID       : thisDevice.id,  
+          actionType     : "shareResults",
+          actionSource   : "search", //must be
+          actionSource   : "deviceIndicator",
+          targetDeviceID : targetID,
+          query          : lastQuery,
+          page           : lastQueryPage
+        });
       }
     }
   }

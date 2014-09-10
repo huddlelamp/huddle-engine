@@ -5,7 +5,7 @@ Template.deviceWorldView.rendered = function() {
     content   : $("#worldViewWrapper"),
     container : "body",
     html      : true,
-  });
+  });//
 };
 
 Template.deviceWorldView.deviceBorderColorCSS = function() {
@@ -35,17 +35,9 @@ Template.deviceWorldView.deviceBackgroundColorCSS = function() {
 Template.deviceWorldView.deviceSizeAndPosition = function() {
   var width  = $("#worldViewWrapper").width() / this.ratio.x;
   var height = $("#worldViewWrapper").height() / this.ratio.y;
-  var x      = ($("#worldViewWrapper").width() - width) * this.topLeft.x;
-  var y      = ($("#worldViewWrapper").height() - height) * this.topLeft.y;
+  var x      = ($("#worldViewWrapper").width()) * this.topLeft.x;
+  var y      = ($("#worldViewWrapper").height()) * this.topLeft.y;
   return 'width: '+width+'px; height: '+height+'px; top: '+y+'px; left: '+x+'px;';
-};
-
-Template.deviceWorldView.devicePosition = function() {
-  var width  = $("#worldViewWrapper").width() / this.ratio.x;
-  var height = $("#worldViewWrapper").height() / this.ratio.y;
-  var x      = ($("#worldViewWrapper").width() - width) * this.topLeft.x;
-  var y      = ($("#worldViewWrapper").height() - height) * this.topLeft.y;
-  return 'top: '+y+'px; left: '+x+'px;';
 };
 
 Template.deviceWorldView.thisDevice = function() {
@@ -64,44 +56,6 @@ Template.deviceWorldView.events({
   'click #openWorldView': function(e) {
     Template.deviceWorldView.show();
   },
-
-  'click .worldDevice': function(e) {
-    // e.preventDefault();
-
-    var targetID = $(e.currentTarget).attr("deviceid");
-    if (targetID === undefined) return;
-
-    var text = Session.get("worldViewSnippetToSend");
-    // var text = Template.detailDocumentTemplate.currentlySelectedContent();
-
-    Meteor.setTimeout(function() {
-      Template.deviceWorldView.hide();
-    }, 1000);
-
-    if (text !== undefined && text.length > 0) {
-      //If a text selection exists, send it
-      huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
-      // pulseDevice(e.currentTarget);
-      showSendConfirmation(e.currentTarget, "The selected text was sent to the device.");
-    } else {
-      //If no selection was made but a document is open, send that
-      var doc = Session.get("detailDocument");
-      if (doc !== undefined) {
-        huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
-        // pulseDevice(e.currentTarget);
-        showSendConfirmation(e.currentTarget, "The document "+doc._id+" is displayed on the device.");
-      } else {
-        //If no document is open but a query result is shown, send that
-        var lastQuery = Session.get('lastQuery');
-        var lastQueryPage = Session.get('lastQueryPage');
-        if (lastQuery !== undefined) {
-          huddle.broadcast("dosearch", {target: targetID, query: lastQuery, page: lastQueryPage });
-          // pulseDevice(e.currentTarget);
-          showSendConfirmation(e.currentTarget, "Search results were sent to the device.");
-        }
-      }
-    }
-  }
 });
 
 function pulseDevice(device) {
@@ -182,19 +136,56 @@ Template.deviceWorldView.show = function() {
     if (targetID === undefined) return;
 
     var text = Session.get("worldViewSnippetToSend");
+    var sourcedocID = Session.get("worldViewSnippetDoc");
 
-    if (text !== undefined && text.length > 0) {
+    var doc = Session.get("detailDocument");
+    if (sourcedocID === undefined) {
+      sourcedocID = doc._id;
+    }
+    if (text !== undefined && text.length > 0 && sourcedocID !== undefined) {
       //If a text selection exists, send it
-      huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+      huddle.broadcast("addtextsnippet", { target: targetID, doc: sourcedocID, snippet: text } );
       // pulseDevice(this);
       showSendConfirmation($("#openWorldView"), "The selected text was sent to the device.");
+
+      var thisDevice = Session.get('thisDevice');
+      var actionSource = (Router.current().route.name === "searchIndex") ? "detailDocument" : "snippets";
+      Logs.insert({
+        timestamp       : Date.now(),
+        route           : Router.current().route.name,
+        deviceID        : thisDevice.id,  
+        actionType      : "shareSnippet",
+        actionSource    : actionSource, //must be, only source for sharesnippet
+        actionSubsource : "worldView",
+        targetDeviceID  : targetID,
+        documentID      : sourcedocID,
+        snippet         : text,
+      });
+
+      var remove = Session.get("worldViewSnippetRemove");
+      if (remove !== undefined && remove !== false) {
+        Snippets.remove({_id : remove});
+      }
+      Session.set("worldViewSnippetRemove", undefined);
+      Session.set("worldViewSnippetDoc", undefined);
     } else {
       //If no selection was made but a document is open, send that
-      var doc = Session.get("detailDocument");
       if (doc !== undefined) {
         huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
         // pulseDevice(this);
         showSendConfirmation($("#openWorldView"), "The document "+doc._id+" is displayed on the device.");
+
+        var thisDevice = Session.get('thisDevice');
+        Logs.insert({
+          timestamp       : Date.now(),
+          route           : Router.current().route.name,
+          deviceID        : thisDevice.id,  
+          actionType      : "shareDocument",
+          actionSource    : "detailDocument",
+          actionSubsource : "worldView",
+          targetDeviceID  : targetID,
+          documentID      : doc._id
+        });
       } else {
         //If no document is open but a query result is shown, send that
         var lastQuery = Session.get('lastQuery');
@@ -203,6 +194,19 @@ Template.deviceWorldView.show = function() {
           huddle.broadcast("dosearch", {target: targetID, query: lastQuery, page: lastQueryPage });
           // pulseDevice(this);
           showSendConfirmation($("#openWorldView"), "Search results were sent to the device.");
+
+          var thisDevice = Session.get('thisDevice');
+          Logs.insert({
+            timestamp      : Date.now(),
+            route          : Router.current().route.name,
+            deviceID       : thisDevice.id,  
+            actionType     : "shareResults",
+            actionSource   : "search",
+            actionSubsource: "worldView",
+            targetDeviceID : targetID,
+            query          : lastQuery,
+            page           : lastQueryPage
+          });
         }
       }
     }

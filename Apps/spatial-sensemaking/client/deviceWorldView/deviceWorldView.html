@@ -3,11 +3,11 @@
   <div id="worldViewWrapper" style="">
 
     {{#with thisDevice}}
-      <a class="btn noDeviceCustomization worldDevice thisDevice popupClickable" style="{{deviceBorderColorCSS}} {{deviceBackgroundColorCSS}} {{devicePosition}}"></a>
+      <a class="btn noDeviceCustomization worldDevice thisDevice popupClickable" style="{{deviceBorderColorCSS}} {{deviceBackgroundColorCSS}} {{deviceSizeAndPosition}}"></a>
     {{/with}}
 
     {{#each otherDevices}}
-      <button deviceid="{{id}}" class="btn noDeviceCustomization worldDevice popupClickable" style="{{deviceBorderColorCSS}} {{devicePosition}}" href="#"></button>
+      <button deviceid="{{id}}" class="btn noDeviceCustomization worldDevice popupClickable" style="{{deviceBorderColorCSS}} {{deviceSizeAndPosition}}" href="#"></button>
     {{/each}}
   </div>
   

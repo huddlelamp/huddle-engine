@@ -19,12 +19,16 @@ if (Meteor.isClient) {
   var transformDeviceData = function(data) {
     var newData = {
       id: data.Identity.toString(),
-      topLeft: {
+      center: {
         x: data.Location[0] || 0,
         y: data.Location[1] || 0,
-        // x: Math.round(data.Location[0] * 10) / 10,
-        // y: Math.round(data.Location[1] * 10) / 10
       },
+      // topLeft: {
+      //   x: data.Location[0] || 0,
+      //   y: data.Location[1] || 0,
+      //   // x: Math.round(data.Location[0] * 10) / 10,
+      //   // y: Math.round(data.Location[1] * 10) / 10
+      // },
       ratio: {
         // x: (Math.round(data.RgbImageToDisplayRatio.X * 10) / 10) || 1,
         // y: (Math.round(data.RgbImageToDisplayRatio.Y * 10) / 10) || 1
@@ -36,6 +40,11 @@ if (Meteor.isClient) {
 
     newData.width = 1.0/newData.ratio.x;
     newData.height = 1.0/newData.ratio.y;
+
+    newData.topLeft = {
+      x: newData.center.x - newData.width/2.0,
+      y: newData.center.y - newData.height/2.0
+    };
 
     newData.topRight = {
       x: newData.topLeft.x + newData.width,
@@ -52,10 +61,10 @@ if (Meteor.isClient) {
       y: newData.topLeft.y + newData.height
     };
 
-    newData.center = {
-      x: newData.topLeft.x + newData.width/2.0,
-      y: newData.topLeft.y + newData.height/2.0
-    };
+    // newData.center = {
+    //   x: newData.topLeft.x + newData.width/2.0,
+    //   y: newData.topLeft.y + newData.height/2.0
+    // };
 
     return newData;
   }; //end transformDeviceData
@@ -93,7 +102,9 @@ if (Meteor.isClient) {
       }
     }
 
+    // console.log(data);
     Session.set('thisDevice', transformDeviceData(data));
+    // console.log(Session.get('thisDevice'));
 
     var otherDevices = [];
     data.Presences.forEach(function(presence) {
@@ -127,7 +138,7 @@ if (Meteor.isClient) {
     if (data.target !== thisDevice.id) return;
 
     //TODO also insert source document and the device that sent the snippet
-    Snippets.insert({ device: thisDevice.id, text: data.snippet });
+    Snippets.insert({ device: thisDevice.id, sourcedoc: data.doc, text: data.snippet });
   });
 
   Huddle.on("dosearch", function(data) {

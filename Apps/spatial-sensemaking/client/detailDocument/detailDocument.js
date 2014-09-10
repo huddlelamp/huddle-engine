@@ -252,6 +252,11 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
       href: "#documentDetails",
       autoSize: true,
       autoResize: true,
+      beforeLoad: function() {
+        lockPreviewSnippet = false;
+        Session.set("detailDocumentPreviewSnippet", snippetText);
+        Session.set("detailDocument", doc); 
+      },
       afterLoad: function() { 
         //Dirty hack: 500ms delay so we are pretty sure that all DOM elements arrived
         Meteor.setTimeout(function() {
@@ -275,7 +280,26 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
         lockPreviewSnippet = false;
         Session.set("detailDocumentPreviewSnippet", undefined);
         Session.set("detailDocument", undefined); 
+
+        var thisDevice = Session.get('thisDevice');
+        Logs.insert({ 
+          timestamp       : Date.now(),
+          route           : Router.current().route.name,
+          deviceID        : thisDevice.id,  
+          actionType      : "closeDocument",
+          documentID      : doc._id,
+        });
       },
+    });
+
+    var thisDevice = Session.get('thisDevice');
+    Logs.insert({ 
+      timestamp       : Date.now(),
+      route           : Router.current().route.name,
+      deviceID        : thisDevice.id,  
+      actionType      : "openDocument",
+      documentID      : doc._id,
+      selectedSnippet : $("<span />").html(snippetText).text()
     });
   }, 1);
 };
@@ -297,11 +321,22 @@ var attachEvents = function() {
   var toggleFavorited = function() {
     var doc = Session.get("detailDocument");
     var meta = DocumentMeta.findOne({_id: doc._id});
-    if (meta && meta.favorited) {
-      DocumentMeta._upsert(doc._id, {$set: {favorited: false}});
-    } else {
-      DocumentMeta._upsert(doc._id, {$set: {favorited: true}});
-    }
+    var newValue;
+    if (meta && meta.favorited) newValue = false;
+    else newValue = true;
+
+    DocumentMeta._upsert(doc._id, {$set: {favorited: newValue}});
+
+    var thisDevice = Session.get('thisDevice');
+    Logs.insert({
+      timestamp    : Date.now(),
+      route        : Router.current().route.name,
+      deviceID     : thisDevice.id,  
+      actionType   : "toggledDocumentFavorite",
+      actionSource : "documentDetails",
+      documentID   : doc._id,
+      value        : newValue,
+    });
   };
 
   var addHighlightSelection;
@@ -385,8 +420,17 @@ var attachEvents = function() {
     updatedHighlights.push([ startOffset, endOffset, color ]);
     DocumentMeta._upsert(doc._id, { $set: { textHighlights: updatedHighlights } });
 
-    //Clear selection
-    // rangy.getSelection(0).removeAllRanges();
+    var thisDevice = Session.get('thisDevice');
+    Logs.insert({
+      timestamp    : Date.now(),
+      route        : Router.current().route.name,
+      deviceID     : thisDevice.id,  
+      actionType   : "addedDocumentHighlight",
+      actionSource : "detailDocument",
+      documentID   : doc._id,
+      addedHighlight : [ startOffset, endOffset, color ],
+      documentHighlights : updatedHighlights
+    });
   };
   
   
@@ -444,6 +488,17 @@ var attachEvents = function() {
       Meteor.setTimeout(function() {
         $("#savedText").css("opacity", 0);
       }, 1700);
+
+      var thisDevice = Session.get('thisDevice');
+      Logs.insert({
+        timestamp    : Date.now(),
+        route        : Router.current().route.name,
+        deviceID     : thisDevice.id,  
+        actionType   : "changedDocumentComment",
+        actionSource : "detailDocument",
+        documentID   : doc._id,
+        comment      : newComment
+      });
     }
   };
 
@@ -457,26 +512,8 @@ var attachEvents = function() {
 
   var openShareView = function(e) {
     e.preventDefault();
-    showSharePopup(e.currentTarget);
+    showSharePopup(e.currentTarget, "button");
   };
-
-  // var prepareWorldView = function(e) {
-  //   //Do you really wanna know? Well, I try to keep it short:
-  //   //* Using preventDefault() on touchstart/touchend bugs the text selection in 
-  //   //mobile safari, the text selection handles won't disappear after that
-  //   //* Not using preventDefault for some reason triggers multiple clicks, closing
-  //   //the world view right after opening it
-  //   //* The click event triggers too late, the text selection is already gone there
-  //   //
-  //   //Solution? We remember the selected text on touchend (where it still exists),
-  //   //but open the world view in click
-  //   Session.set("worldViewSnippetToSend", Template.detailDocumentTemplate.currentlySelectedContent());
-  // };
-
-  // var openWorldView = function(e) {
-  //   if (!Template.deviceWorldView) return;
-  //   Template.deviceWorldView.show();
-  // };
 
   var fixFixed = function() {
     //When the keyboard is shown or hidden, elements with position: fixed are
@@ -507,16 +544,11 @@ var attachEvents = function() {
   $("#comment").off("keyup");
   $("#comment").on("keyup", timedSaveComment);
 
-  $("#shareButton").off('touchend mouseup');
-  $("#shareButton").on('touchend mouseup', openShareView);
-
-  // $("#openWorldView").off('touchend');
-  // $("#openWorldView").on('touchend', prepareWorldView);
-  // $("#openWorldView").off('click');
-  // $("#openWorldView").on('click', openWorldView);
+  $("#shareButton").off('touchend');
+  $("#shareButton").on('touchend', openShareView);
 };
 
-var showSharePopup = function(el) {
+var showSharePopup = function(el, source) {
   var otherDevices = Template.detailDocumentTemplate.otherDevices();
   var text = Template.detailDocumentTemplate.currentlySelectedContent();
 
@@ -545,22 +577,45 @@ var showSharePopup = function(el) {
       var targetID = $(this).attr("deviceid");
       if (targetID === undefined) return;
 
+      var doc = Session.get("detailDocument");
       if (text !== undefined && text.length > 0) {
         //If a text selection exists, send it
-        huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
+        huddle.broadcast("addtextsnippet", { target: targetID, doc: doc._id, snippet: text } );
         // pulseIndicator(e.currentTarget);
         // showSendConfirmation(e.currentTarget, "The selected text was sent to the device.");
+        var thisDevice = Session.get('thisDevice');
+        Logs.insert({
+          timestamp       : Date.now(),
+          route           : Router.current().route.name,
+          deviceID        : thisDevice.id,  
+          actionType      : "shareSnippet",
+          actionSource    : "detailDocument",
+          actionSubsource : source,
+          targetDeviceID  : targetID,
+          documentID      : doc._id,
+          snippet         : text,
+        });
       } else {
         //If no selection was made but a document is open, send that
-        var doc = Session.get("detailDocument");
         if (doc !== undefined) {
           huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
           // pulseIndicator(e.currentTarget);
           // showSendConfirmation(e.currentTarget, "The document "+doc._id+" is displayed on the device.");
+          var thisDevice = Session.get('thisDevice');
+          Logs.insert({
+            timestamp       : Date.now(),
+            route           : Router.current().route.name,
+            deviceID        : thisDevice.id,  
+            actionType      : "shareDocument",
+            actionSource    : "detailDocument",
+            actionSubsource : source,
+            targetDeviceID  : targetID,
+            documentID      : doc._id
+          });
         }
       }
 
-      hidePopover(el);
+      hidePopover(el);      
     });
     content.append(link);
   } 
@@ -685,12 +740,15 @@ var deleteSelectedHighlights = function(selection) {
   var doc = Session.get("detailDocument");
   var meta = DocumentMeta.findOne({_id: doc._id});
   var newHighlights = [];
+  var deletedHighlights = [];
   if (meta && meta.textHighlights) {
     for (var i = 0; i < meta.textHighlights.length; i++) {
       var highlight = meta.textHighlights[i];
       var intersection = rangeIntersection(startOffset, endOffset, highlight[0], highlight[1]);
       if (intersection === undefined) {
         newHighlights.push(meta.textHighlights[i]);
+      } else {
+        deletedHighlights.push(meta.textHighlights[i]);
       }
     }
   }
@@ -698,8 +756,17 @@ var deleteSelectedHighlights = function(selection) {
   //Insert the "surviving" highlights back into the DB
   DocumentMeta._upsert(doc._id, { $set: { textHighlights: newHighlights } });
 
-  //Clear selection
-  // rangy.getSelection(0).removeAllRanges();
+  var thisDevice = Session.get('thisDevice');
+  Logs.insert({
+    timestamp  : Date.now(),
+    route      : Router.current().route.name,
+    deviceID   : thisDevice.id,  
+    actionType : "deletedDocumentHighlights",
+    actionSource : "documentDetails",
+    documentID : doc._id,
+    deletedHighlights : deletedHighlights,
+    documentHighlights : newHighlights
+  });
 };
 
 
@@ -737,8 +804,8 @@ var showPopover = function(target, content, options) {
   //popup to close immediatly, therefore we setup the event handlers on body in the
   //next run loop
   Meteor.setTimeout(function() {
-    $("body").off('touchstart mousedown');
-    $("body").on('touchstart mousedown', function(e) {
+    $("body").off('touchstart');
+    $("body").on('touchstart', function(e) {
       if ($(e.target).hasClass("popupClickable") === false) {
         e.preventDefault();
       }
@@ -750,7 +817,7 @@ var showPopover = function(target, content, options) {
       }
 
       hidePopover(target);
-      $("body").off('touchstart mousedown');
+      $("body").off('touchstart');
     });
   }, 1);
 
@@ -769,6 +836,7 @@ var hidePopover = function(target) {
 
 /** Encodes file content for displaying **/
 var encodeContent = function(text) {
+  // return text.replace(/\n\s*/g, "\n");
   return text;
   // var pre = $("<pre></pre>");
   // pre.html(text);
@@ -792,7 +860,7 @@ window.UIMenuController.menuItems = [
           left: menuFrame.x + menuFrame.width/2.0
         });
 
-        showSharePopup($("#sharePopupAnchor"));
+        showSharePopup($("#sharePopupAnchor"), "popout");
       }, 1);
     },
     canPerform: function() { 

@@ -94,6 +94,17 @@ if (Meteor.isClient) {
         } else {
           PastQueries.update({_id: pastQuery._id}, { $inc: {count: 1}});
         }
+
+        var thisDevice = Session.get('thisDevice');
+        Logs.insert({ 
+          timestamp       : Date.now(),
+          route           : Router.current().route.name,
+          deviceID        : thisDevice.id,  
+          actionType      : "search",
+          query           : query,
+          page            : page,
+          numberOfResults : results.hits.total
+        });
       }
     });
   };
@@ -210,11 +221,22 @@ if (Meteor.isClient) {
     },
 
     'click .toggleFavorited': function(e, tmpl) {
-      if (this.documentMeta && this.documentMeta.favorited) {
-        DocumentMeta._upsert(this._id, {$set: {favorited: false}});
-      } else {
-        DocumentMeta._upsert(this._id, {$set: {favorited: true}});
-      }
+      var newValue;
+      if (this.documentMeta && this.documentMeta.favorited) newValue = false;
+      else newValue = true;
+
+      DocumentMeta._upsert(this._id, {$set: {favorited: newValue}});
+
+      var thisDevice = Session.get('thisDevice');
+      Logs.insert({
+        timestamp    : Date.now(),
+        route        : Router.current().route.name,
+        deviceID     : thisDevice.id,  
+        actionType   : "toggledDocumentFavorite",
+        actionSource : "search",
+        documentID   : this._id,
+        value        : newValue,
+      });
     },
 
     'click .hit': function(e, tmpl) {

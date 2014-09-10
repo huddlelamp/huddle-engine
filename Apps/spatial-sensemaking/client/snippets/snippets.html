@@ -9,8 +9,19 @@
   <div class="container">
 
     {{#each snippets}}
-      <span class="snippet" id="snippet_{{_id}}">{{text}}</span>
-      {{initSnippetPosition}}
+      <span class="snippet" id="snippet_{{_id}}">
+        <div class="snippettools">
+          <span class="glyphicon glyphicon-move icon snippetmover"></span> 
+          <span class="glyphicon glyphicon-share icon snippetsharer"></span>
+          <span class="glyphicon glyphicon-trash icon snippetdeleter"></span>
+          <span class="snippetdeleterconfirmation">
+          Really delete? <button class="btn btn-danger noDeviceCustomization">Yes, delete</button> <button class="btn btn-cancel noDeviceCustomization">Cancel</button>
+          </span>
+        </div>
+        <div style="padding: 5px;" class="snippetcontent">{{text}}</div>
+      </span>
+
+      {{initSnippet}}
     {{/each}}
     
   </div>
