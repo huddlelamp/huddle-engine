@@ -530,40 +530,217 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        #region IsSubtractConfidenceImage
+        #region FixMaskErode
 
         /// <summary>
-        /// The <see cref="IsSubtractConfidenceImage" /> property's name.
+        /// The <see cref="FixMaskErode" /> property's name.
         /// </summary>
-        public const string IsSubtractConfidenceImagePropertyName = "IsSubtractConfidenceImage";
+        public const string FixMaskErodePropertyName = "FixMaskErode";
 
-        private bool _isSubtractConfidenceImage = false;
+        private int _fixMaskErode = 0;
 
         /// <summary>
-        /// Sets and gets the IsSubtractConfidenceImage property.
+        /// Sets and gets the FixMaskErode property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public bool IsSubtractConfidenceImage
+        public int FixMaskErode
         {
             get
             {
-                return _isSubtractConfidenceImage;
+                return _fixMaskErode;
             }
 
             set
             {
-                if (_isSubtractConfidenceImage == value)
+                if (_fixMaskErode == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(IsSubtractConfidenceImagePropertyName);
-                _isSubtractConfidenceImage = value;
-                RaisePropertyChanged(IsSubtractConfidenceImagePropertyName);
+                RaisePropertyChanging(FixMaskErodePropertyName);
+                _fixMaskErode = value;
+                RaisePropertyChanged(FixMaskErodePropertyName);
             }
         }
 
         #endregion
+
+        #region FixMaskDilate
+
+        /// <summary>
+        /// The <see cref="FixMaskDilate" /> property's name.
+        /// </summary>
+        public const string FixMaskDilatePropertyName = "FixMaskDilate";
+
+        private int _fixMaskDilate = 0;
+
+        /// <summary>
+        /// Sets and gets the FixMaskDilate property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int FixMaskDilate
+        {
+            get
+            {
+                return _fixMaskDilate;
+            }
+
+            set
+            {
+                if (_fixMaskDilate == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(FixMaskDilatePropertyName);
+                _fixMaskDilate = value;
+                RaisePropertyChanged(FixMaskDilatePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region IsFirstErodeThenDilateFixMask
+
+        /// <summary>
+        /// The <see cref="IsFirstErodeThenDilateFixMask" /> property's name.
+        /// </summary>
+        public const string IsFirstErodeThenDilateFixMaskPropertyName = "IsFirstErodeThenDilateFixMask";
+
+        private bool _isFirstErodeThenDilateFixMask = true;
+
+        /// <summary>
+        /// Sets and gets the IsFirstErodeThenDilateFixMask property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsFirstErodeThenDilateFixMask
+        {
+            get
+            {
+                return _isFirstErodeThenDilateFixMask;
+            }
+
+            set
+            {
+                if (_isFirstErodeThenDilateFixMask == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsFirstErodeThenDilateFixMaskPropertyName);
+                _isFirstErodeThenDilateFixMask = value;
+                RaisePropertyChanged(IsFirstErodeThenDilateFixMaskPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region DepthPatchesErode
+
+        /// <summary>
+        /// The <see cref="DepthPatchesErode" /> property's name.
+        /// </summary>
+        public const string DepthPatchesErodePropertyName = "DepthPatchesErode";
+
+        private int _depthPatchesErode = 4;
+
+        /// <summary>
+        /// Sets and gets the DepthPatchesErode property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int DepthPatchesErode
+        {
+            get
+            {
+                return _depthPatchesErode;
+            }
+
+            set
+            {
+                if (_depthPatchesErode == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DepthPatchesErodePropertyName);
+                _depthPatchesErode = value;
+                RaisePropertyChanged(DepthPatchesErodePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region DepthPatchesDilate
+
+        /// <summary>
+        /// The <see cref="DepthPatchesDilate" /> property's name.
+        /// </summary>
+        public const string DepthPatchesDilatePropertyName = "DepthPatchesDilate";
+
+        private int _depthPatchesDilate = 4;
+
+        /// <summary>
+        /// Sets and gets the DepthPatchesDilate property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int DepthPatchesDilate
+        {
+            get
+            {
+                return _depthPatchesDilate;
+            }
+
+            set
+            {
+                if (_depthPatchesDilate == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DepthPatchesDilatePropertyName);
+                _depthPatchesDilate = value;
+                RaisePropertyChanged(DepthPatchesDilatePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region IsFirstErodeThenDilateDepthPatches
+
+        /// <summary>
+        /// The <see cref="IsFirstErodeThenDilateDepthPatches" /> property's name.
+        /// </summary>
+        public const string IsFirstErodeThenDilateDepthPatchesPropertyName = "IsFirstErodeThenDilateDepthPatches";
+
+        private bool _isFirstErodeThenDilateDepthPatches = true;
+
+        /// <summary>
+        /// Sets and gets the IsFirstErodeThenDilateDepthPatches property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsFirstErodeThenDilateDepthPatches
+        {
+            get
+            {
+                return _isFirstErodeThenDilateDepthPatches;
+            }
+
+            set
+            {
+                if (_isFirstErodeThenDilateDepthPatches == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsFirstErodeThenDilateDepthPatchesPropertyName);
+                _isFirstErodeThenDilateDepthPatches = value;
+                RaisePropertyChanged(IsFirstErodeThenDilateDepthPatchesPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Image Sources
 
         #region DebugImageSource
 
@@ -601,6 +778,116 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #region DepthPatchesImageSource
+
+        /// <summary>
+        /// The <see cref="DepthPatchesImageSource" /> property's name.
+        /// </summary>
+        public const string DepthPatchesImageSourcePropertyName = "DepthPatchesImageSource";
+
+        private BitmapSource _depthPatchesImageSource;
+
+        /// <summary>
+        /// Sets and gets the DepthPatchesImageSource property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public BitmapSource DepthPatchesImageSource
+        {
+            get
+            {
+                return _depthPatchesImageSource;
+            }
+
+            set
+            {
+                if (_depthPatchesImageSource == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DepthPatchesImageSourcePropertyName);
+                _depthPatchesImageSource = value;
+                RaisePropertyChanged(DepthPatchesImageSourcePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region DepthFixedImageSource
+
+        /// <summary>
+        /// The <see cref="DepthFixedImageSource" /> property's name.
+        /// </summary>
+        public const string DepthFixedImageSourcePropertyName = "DepthFixedImageSource";
+
+        private BitmapSource _depthFixedImageSource;
+
+        /// <summary>
+        /// Sets and gets the DepthFixedImageSource property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public BitmapSource DepthFixedImageSource
+        {
+            get
+            {
+                return _depthFixedImageSource;
+            }
+
+            set
+            {
+                if (_depthFixedImageSource == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DepthFixedImageSourcePropertyName);
+                _depthFixedImageSource = value;
+                RaisePropertyChanged(DepthFixedImageSourcePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region FixMaskImageSource
+
+        /// <summary>
+        /// The <see cref="FixMaskImageSource" /> property's name.
+        /// </summary>
+        public const string FixMaskImageSourcePropertyName = "FixMaskImageSource";
+
+        private BitmapSource _fixMaskImageSource;
+
+        /// <summary>
+        /// Sets and gets the FixMaskImageSource property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [IgnoreDataMember]
+        public BitmapSource FixMaskImageSource
+        {
+            get
+            {
+                return _fixMaskImageSource;
+            }
+
+            set
+            {
+                if (_fixMaskImageSource == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(FixMaskImageSourcePropertyName);
+                _fixMaskImageSource = value;
+                RaisePropertyChanged(FixMaskImageSourcePropertyName);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -612,6 +899,16 @@ namespace Huddle.Engine.Processor.OpenCv
         }
 
         #endregion
+
+        public override IDataContainer PreProcess(IDataContainer dataContainer)
+        {
+            if (dataContainer.OfType<GrayFloatImage>().Any())
+                Console.WriteLine("Depth Image Frame: {0}", dataContainer.FrameId);
+            else if (dataContainer.OfType<RgbImageData>().Any())
+                Console.WriteLine("Confidence Image Frame: {0}", dataContainer.FrameId);
+
+            return dataContainer;
+        }
 
         public override IData Process(IData data)
         {
@@ -659,8 +956,6 @@ namespace Huddle.Engine.Processor.OpenCv
                         Log("Updated but also found {0} new objects {1}", foundObjects.Length, foundObjects);
                 }
 
-                threadSafeObjects = _objects.Where(o => !Equals(o.LastUpdate, now)).ToArray();
-                
                 // Update occluded objects. It tries to find not yet identified and maybe occluded objects.
                 if (IsUpdateOccludedRectangles)
                     UpdateOccludedObjects(image, ref outputImage[0], now, threadSafeObjects);
@@ -767,6 +1062,7 @@ namespace Huddle.Engine.Processor.OpenCv
             }
 
             var blankedImageGray = blankedImage.Convert<Gray, Byte>();
+            blankedImageGray = blankedImageGray.Erode(2);
 
             var newObjects = FindRectangles(occlusionTracking, blankedImageGray, ref outputImage, updateTime, objects);
 
@@ -814,7 +1110,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
             if (_depthImage == null) return;
 
-            var occludedPartsImage = new Image<Gray, float>(imageWidth, imageHeight);
+            var depthPatchesImage = new Image<Gray, float>(imageWidth, imageHeight);
 
             var depthMapBinary = _depthImage.ThresholdBinaryInv(new Gray(255), new Gray(255));
             var depthMap = depthMapBinary;
@@ -827,25 +1123,81 @@ namespace Huddle.Engine.Processor.OpenCv
                 depthMap = resizedDepthMap;
             }
 
-            CvInvoke.cvCopy(depthMap.Ptr, occludedPartsImage.Ptr, mask);
-            occludedPartsImage = occludedPartsImage.Erode(4).Dilate(4);
-            CvInvoke.cvCopy(depthMap.Ptr, occludedPartsImage.Ptr, mask);
+            if (IsFirstErodeThenDilateFixMask)
+                mask = mask.Erode(FixMaskErode).Dilate(FixMaskDilate);
+            else
+                mask = mask.Dilate(FixMaskDilate).Erode(FixMaskErode);
 
-            var debugImage3 = occludedPartsImage.Convert<Rgb, byte>();
+            if (IsRenderContent)
+            {
+                #region Render Fix Mask Image
 
-            var fixedImage = image.Or(debugImage3);
+                var maskCopy = mask.Mul(255).Copy();
+                Task.Factory.StartNew(() =>
+                {
+                    var bitmapSource = maskCopy.ToBitmapSource(true);
+                    maskCopy.Dispose();
+                    return bitmapSource;
+                }).ContinueWith(t => FixMaskImageSource = t.Result);
+
+                #endregion
+            }
+
+            CvInvoke.cvCopy(depthMap.Ptr, depthPatchesImage.Ptr, mask);
+
+            // Erode and dilate depth patches image to remove small pixels around device borders.
+            if (IsFirstErodeThenDilateDepthPatches)
+            {
+                CvInvoke.cvErode(depthPatchesImage.Ptr, depthPatchesImage.Ptr, IntPtr.Zero, DepthPatchesErode);
+                CvInvoke.cvDilate(depthPatchesImage.Ptr, depthPatchesImage.Ptr, IntPtr.Zero, DepthPatchesDilate);   
+            }
+            else
+            {
+                CvInvoke.cvDilate(depthPatchesImage.Ptr, depthPatchesImage.Ptr, IntPtr.Zero, DepthPatchesDilate);
+                CvInvoke.cvErode(depthPatchesImage.Ptr, depthPatchesImage.Ptr, IntPtr.Zero, DepthPatchesErode);
+            }
+
+            if (IsRenderContent)
+            {
+                #region Render Depth Patches Image
+
+                var depthPatchesImageCopy = depthPatchesImage.Copy();
+                Task.Factory.StartNew(() =>
+                {
+                    var bitmapSource = depthPatchesImageCopy.ToBitmapSource(true);
+                    depthPatchesImageCopy.Dispose();
+                    return bitmapSource;
+                }).ContinueWith(t => DepthPatchesImageSource = t.Result);
+
+                #endregion 
+            }
+
+            // ??? Clip depth patches image again to avoid depth fixed rectangles to grow.
+            //CvInvoke.cvCopy(depthPatchesImage.Ptr, depthPatchesImage.Ptr, mask);
+
+            var debugImage3 = depthPatchesImage.Convert<Rgb, byte>();
+
+            var depthFixedImage = image.Or(debugImage3);
             //fixedImage = fixedImage.Erode(2);
 
-            var debugImage = fixedImage.Copy();
-            Task.Factory.StartNew(() =>
+            if (IsRenderContent)
             {
-                var bitmapSource = debugImage.ToBitmapSource(true);
-                debugImage.Dispose();
-                return bitmapSource;
-            }).ContinueWith(t => DebugImageSource = t.Result);
+
+                #region Render Depth Fixed Image
+
+                var depthFixedImageCopy = depthFixedImage.Copy();
+                Task.Factory.StartNew(() =>
+                {
+                    var bitmapSource = depthFixedImageCopy.ToBitmapSource(true);
+                    depthFixedImageCopy.Dispose();
+                    return bitmapSource;
+                }).ContinueWith(t => DepthFixedImageSource = t.Result);
+
+                #endregion
+            }
 
             var outputImageEnclosed = outputImage;
-            Parallel.ForEach(occludedObjects, obj => FindObjectByBlankingKnownObjects(true, fixedImage, ref outputImageEnclosed, updateTime, objects, obj));
+            Parallel.ForEach(occludedObjects, obj => FindObjectByBlankingKnownObjects(true, depthFixedImage, ref outputImageEnclosed, updateTime, objects, obj));
         }
 
         /// <summary>
@@ -938,7 +1290,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 // stop if an angle is not in min/max angle range, no need to continue
                 // also stop if connected edges are more than double in ratio
                 if ((angle < minAngle || angle > maxAngle) ||
-                     (edgeRatio > 5.0 || 1 / edgeRatio > 5.0))
+                     (edgeRatio > 3.0 || 1 / edgeRatio > 3.0))
                 {
                     continue;
                 }
@@ -1005,24 +1357,16 @@ namespace Huddle.Engine.Processor.OpenCv
             if (leastDistance > maxRestoreDistance || candidate == null)
                 return false;
 
-            MCvBox2D shape;
-            if (Math.Abs(minAreaRect.angle - candidate.Shape.angle) < 25)
-            {
-                shape = new MCvBox2D(minAreaRect.center, candidate.Shape.size, minAreaRect.angle);
-            }
-            else
-            {
-                //shape = minAreaRect;
-                var size = candidate.Shape.size;
-                shape = new MCvBox2D(minAreaRect.center, new SizeF(size.Height, size.Width), minAreaRect.angle);
-            }
+            //var dAngle = Math.Abs(candidate.Shape.angle - minAreaRect.angle);
+            //Console.WriteLine(minAreaRect.angle);
 
-            //var shape = minAreaRect;
+            var shape = new MCvBox2D(minAreaRect.center, candidate.Size, minAreaRect.angle);
 
             candidate.State = occluded ? TrackingState.Occluded : TrackingState.Tracked;
             candidate.LastUpdate = updateTime;
             candidate.Center = new Point((int)cCenter.X, (int)cCenter.Y);
             candidate.Bounds = boundingRectangle;
+            candidate.Shape = minAreaRect;
             candidate.Shape = shape;
             candidate.Polygon = polygon;
             candidate.Points = points;

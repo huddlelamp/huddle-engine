@@ -288,6 +288,7 @@
     <Compile Include="Processor\Network\Huddle\Client.cs" />
     <Compile Include="Processor\Network\Huddle\ClientState.cs" />
     <Compile Include="Processor\OpenCv\FillContours.cs" />
+    <Compile Include="Processor\OpenCv\BackgroundSubtraction.cs" />
     <Compile Include="Processor\OpenCv\RectangleTrackerColor.cs" />
     <Compile Include="Processor\OpenCv\Struct\IdentificationState.cs" />
     <Compile Include="Processor\OpenCv\Struct\TrackingState.cs" />

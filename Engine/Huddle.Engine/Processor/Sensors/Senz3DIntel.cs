@@ -36,9 +36,6 @@ namespace Huddle.Engine.Processor.Sensors
 
         private long _frameId = -1;
 
-        private double _minDepth = Double.MaxValue;
-        private double _maxDepth = -1.0;
-
         private Rectangle _rgbInDepthROI = Rectangle.Empty;
 
         #region Adaptive Sensing

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using Emgu.CV.Structure;
 using GalaSoft.MvvmLight;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
@@ -12,6 +13,9 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
         #region private fields
 
         private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
+        
+        private SizeF[] _sizes = new SizeF[60];
+        private int _sizesIdx = 0;
 
         #endregion
 
@@ -375,7 +379,7 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
         {
             get
             {
-                return _kalmanFilter.GetPredictedPoint(Center);
+                return Center;// _kalmanFilter.GetPredictedPoint(Center);
             }
         }
 
@@ -387,7 +391,30 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
         {
             get
             {
-                return _kalmanFilter.GetEstimatedPoint(Center);
+                return Center;// _kalmanFilter.GetEstimatedPoint(Center);
+            }
+        }
+
+        #endregion
+
+        #region Size
+
+        public SizeF Size
+        {
+            get
+            {
+                if (_sizesIdx < _sizes.Length)
+                {
+                    _sizes[_sizesIdx] = Shape.size;
+                    ++_sizesIdx;
+                    return Shape.size;
+                }
+                else
+                {
+                    var width = _sizes.Average(s => s.Width);
+                    var height = _sizes.Average(s => s.Height);
+                    return new SizeF(width, height);
+                }
             }
         }
 

@@ -358,18 +358,67 @@
                     <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
-                          Grid.Column="0">
+                          Grid.Column="0" Grid.Row="0">
                     <Image Source="{Binding Path=PreProcessImage}" />
                 </GroupBox>
                 <GroupBox Header="Debug Image"
-                          Grid.Column="1">
+                          Grid.Column="1" Grid.Row="0">
                     <Image Source="{Binding Path=DebugImageSource}" />
                 </GroupBox>
                 <GroupBox Header="Post Processed Image"
-                          Grid.Column="2">
+                          Grid.Column="2" Grid.Row="0">
                     <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+
+                <GroupBox Header="Fix Mask Image"
+                          Grid.Column="0" Grid.Row="1">
+                    <StackPanel Orientation="Vertical">
+                        <Image Source="{Binding Path=FixMaskImageSource}" />
+                        
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Erode"/>
+                            <Slider Width="100" Value="{Binding Path=FixMaskErode}" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" />
+                            <TextBlock Text="{Binding Path=FixMaskErode, StringFormat={}{0} (in pixels)}"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Dilate"/>
+                            <Slider Width="100" Value="{Binding Path=FixMaskDilate}" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" />
+                            <TextBlock Text="{Binding Path=FixMaskDilate, StringFormat={}{0} (in pixels)}"/>
+                        </StackPanel>
+
+                        <CheckBox Content="First Erode then Dilate" IsChecked="{Binding Path=IsFirstErodeThenDilateFixMask}" />
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Depth Patches Image"
+                          Grid.Column="1" Grid.Row="1">
+                    <StackPanel Orientation="Vertical">
+                        <Image Source="{Binding Path=DepthPatchesImageSource}" />
+
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Erode"/>
+                            <Slider Width="100" Value="{Binding Path=DepthPatchesErode}" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" />
+                            <TextBlock Text="{Binding Path=DepthPatchesErode, StringFormat={}{0} (in pixels)}"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Dilate"/>
+                            <Slider Width="100" Value="{Binding Path=DepthPatchesDilate}" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" />
+                            <TextBlock Text="{Binding Path=DepthPatchesDilate, StringFormat={}{0} (in pixels)}"/>
+                        </StackPanel>
+
+                        <CheckBox Content="First Erode then Dilate" IsChecked="{Binding Path=IsFirstErodeThenDilateDepthPatches}" />
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Depth Fixed Image"
+                          Grid.Column="2" Grid.Row="1">
+                    <Image Source="{Binding Path=DepthFixedImageSource}" />
                 </GroupBox>
             </Grid>
 
