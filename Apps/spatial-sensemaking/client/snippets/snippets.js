@@ -33,17 +33,37 @@ if (Meteor.isClient) {
     return Session.get("otherDevices") || [];
   };
 
+  var frontSnippet;
   var dragLastPoint;
   var draggedSnippet;
   var highlightedIndicator;
   Template.snippets.events({
+    'touchstart .snippettools, mousedown .snippettools, touchstart .snippetcontent, mousedown .snippetcontent': function(e) {
+      if (frontSnippet !== undefined) frontSnippet.css({'z-index': ''});
+
+      var snippetID = this._id;
+      frontSnippet = $("#snippet_"+snippetID);
+      frontSnippet.css({'z-index': 9011});
+    },
+
+    // 'touchend .snippettools, mouseup .snippettools, touchend .snippetcontent, mouseup .snippetcontent': function(e) {
+    //   var snippetID = this._id;
+    //   var snippet = $("#snippet_"+snippetID);
+    //   snippet.css({'z-index': ''});
+    // },
+
     'touchstart .snippetmover, mousedown .snippetmover': function(e) {
       e.preventDefault();
-      var snippetID = this._id;
-      var snippet = $("#snippet_"+snippetID);
 
+      if (frontSnippet !== undefined) frontSnippet.css({'z-index': ''});
+
+      var snippetID = this._id;
+
+      draggedSnippet = $("#snippet_"+snippetID);
       dragLastPoint = getEventLocation(e, "client");
-      draggedSnippet = snippet;
+
+      frontSnippet = draggedSnippet;
+      frontSnippet.css({'z-index': 9012});
     },
 
     'touchmove .snippetmover, mousemove .snippetmover, touchmove .deviceIndicator, mousemove .deviceIndicator': function(e) {
@@ -122,6 +142,7 @@ if (Meteor.isClient) {
         $("#openWorldView").click();
       }
 
+      // draggedSnippet.css({'z-index': ''});
       draggedSnippet = undefined;
     },
 
