@@ -415,7 +415,7 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
         {
             get
             {
-                return Center;// _kalmanFilter.GetPredictedPoint(Center);
+                return Center;//_kalmanFilter.GetPredictedPoint(Center);
             }
         }
 

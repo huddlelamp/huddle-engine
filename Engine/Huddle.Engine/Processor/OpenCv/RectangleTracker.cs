@@ -902,15 +902,15 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        public override IDataContainer PreProcess(IDataContainer dataContainer)
-        {
-            if (dataContainer.OfType<GrayFloatImage>().Any())
-                Console.WriteLine("Depth Image Frame: {0}", dataContainer.FrameId);
-            else if (dataContainer.OfType<RgbImageData>().Any())
-                Console.WriteLine("Confidence Image Frame: {0}", dataContainer.FrameId);
+        //public override IDataContainer PreProcess(IDataContainer dataContainer)
+        //{
+        //    if (dataContainer.OfType<GrayFloatImage>().Any())
+        //        Console.WriteLine("Depth Image Frame: {0}", dataContainer.FrameId);
+        //    else if (dataContainer.OfType<RgbImageData>().Any())
+        //        Console.WriteLine("Confidence Image Frame: {0}", dataContainer.FrameId);
 
-            return dataContainer;
-        }
+        //    return dataContainer;
+        //}
 
         public override IData Process(IData data)
         {
@@ -1074,10 +1074,12 @@ namespace Huddle.Engine.Processor.OpenCv
                 blankedImage.Draw(otherObject.Shape, Rgbs.Black, -1);
             }
 
+            var blankedImageGray = blankedImage.Convert<Gray, Byte>();
+
             var roi = blankedImage.ROI;
             if (useROI)
             {
-                const int threshold = 10;
+                const int threshold = 20;
                 var b = obj.Bounds;
 
                 roi = new Rectangle(b.X - threshold, b.Y - threshold, b.Width + 2 * threshold, b.Height + 2 * threshold);
@@ -1092,11 +1094,25 @@ namespace Huddle.Engine.Processor.OpenCv
                 var maskImage = new Image<Gray, byte>(imageWidth, imageHeight);
                 maskImage.Draw(roi, new Gray(255), -1);
 
-                CvInvoke.cvAnd(blankedImage.Ptr, blankedImage.Ptr, blankedImage.Ptr, maskImage.Ptr);
+                CvInvoke.cvAnd(blankedImageGray.Ptr, maskImage.Ptr, blankedImageGray.Ptr, IntPtr.Zero);
             }
 
-            var blankedImageGray = blankedImage.Convert<Gray, Byte>();
             blankedImageGray = blankedImageGray.Erode(2);
+
+            if (IsRenderContent && occlusionTracking)
+            {
+                #region Render Depth Fixed Image
+
+                var debugImageCopy = blankedImageGray.Copy();
+                Task.Factory.StartNew(() =>
+                {
+                    var bitmapSource = debugImageCopy.ToBitmapSource(true);
+                    debugImageCopy.Dispose();
+                    return bitmapSource;
+                }).ContinueWith(t => DebugImageSource = t.Result);
+
+                #endregion
+            }
 
             //var oldROI = outputImage.ROI;
             //outputImage.ROI = roi;
@@ -1131,7 +1147,7 @@ namespace Huddle.Engine.Processor.OpenCv
         /// <param name="updateTime"></param>
         /// <param name="outputImage"></param>
         /// <param name="objects"></param>
-        private void UpdateOccludedObjects(Image<Rgb, byte> image, ref Image<Rgb, byte> outputImage, DateTime updateTime, IEnumerable<RectangularObject> objects)
+        private void UpdateOccludedObjects(Image<Rgb, byte> image, ref Image<Rgb, byte> outputImage, DateTime updateTime, RectangularObject[] objects)
         {
             var occludedObjects = objects.Where(o => !Equals(o.LastUpdate, updateTime)).ToArray();
 
@@ -1140,7 +1156,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 return;
 
             var enclosedOutputImage = outputImage;
-            Parallel.ForEach(occludedObjects, obj => UpdateOccludedObject(image, ref enclosedOutputImage, updateTime, occludedObjects, obj));
+            Parallel.ForEach(occludedObjects, obj => UpdateOccludedObject(image, ref enclosedOutputImage, updateTime, objects, obj));
         }
 
         /// <summary>
@@ -1254,7 +1270,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 #endregion
             }
 
-            FindObjectByBlankingKnownObjects(true, depthFixedImage, ref outputImage, updateTime, objects, obj);
+            FindObjectByBlankingKnownObjects(true, depthFixedImage, ref outputImage, updateTime, objects, obj, true);
         }
 
         /// <summary>
