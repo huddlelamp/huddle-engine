@@ -4,13 +4,15 @@ if (Meteor.isClient) {
     Meteor.setTimeout(function() {
       if ($("#snippet_"+that._id).css("display") !== "none") {
         return;
-    }
+      }
 
-      var top  = that.y || 0;
-      var left = that.x || 0;
+      var top  = that.y;
+      var left = that.x;
 
       if (top === undefined) top = getRandomInt(0, 600);
       if (left === undefined) left = getRandomInt(0, 600);
+
+      console.log(top+" || "+left);
     
       $("#snippet_"+that._id).css({
         top: top,
@@ -45,12 +47,6 @@ if (Meteor.isClient) {
       frontSnippet = $("#snippet_"+snippetID);
       frontSnippet.css({'z-index': 9011});
     },
-
-    // 'touchend .snippettools, mouseup .snippettools, touchend .snippetcontent, mouseup .snippetcontent': function(e) {
-    //   var snippetID = this._id;
-    //   var snippet = $("#snippet_"+snippetID);
-    //   snippet.css({'z-index': ''});
-    // },
 
     'touchstart .snippetmover, mousedown .snippetmover': function(e) {
       e.preventDefault();

@@ -22,12 +22,19 @@ html, body {
   padding: 5px;
 }
 
-.snippettools * {
+.snippettools > * {
   margin-right: 8px;
+  vertical-align: middle;
+}
+
+.snippettools .btn {
+  font-size: 13px;
+  padding: 4px 8px;
 }
 
 .snippetdeleterconfirmation {
   display: none;
+  font-size: 13px;
   /*opacity: 0;*/
   /*display: none;*/
   /*display: inline-block;
@@ -36,6 +43,6 @@ html, body {
   /*overflow: hidden;*/
 }
 
-.snippetdeleterconfirmation, .snippetdeleterconfirmation .btn {
+/*.snippetdeleterconfirmation, .snippetdeleterconfirmation .btn {
   font-size: 0.85em;
-}
+}*/

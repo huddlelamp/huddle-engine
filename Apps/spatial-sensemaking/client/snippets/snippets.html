@@ -12,10 +12,17 @@
       <span class="snippet" id="snippet_{{_id}}">
         <div class="snippettools">
           <span class="glyphicon glyphicon-move icon snippetmover"></span> 
-          <span class="glyphicon glyphicon-share icon snippetsharer"></span>
-          <span class="glyphicon glyphicon-trash icon snippetdeleter"></span>
+          <!-- <span class="glyphicon glyphicon-share icon snippetsharer"></span> -->
+          <!-- <span class="glyphicon glyphicon-trash icon snippetdeleter"></span> -->
+
+          <!-- <button class="btn snippetmover"><span class="glyphicon glyphicon-move"></span> Move</button> -->
+          <button class="btn snippetsharer"><span class="glyphicon glyphicon-share"></span> Share</button>
+          <button class="btn btn-danger noDeviceCustomization snippetdeleter"><span class="glyphicon glyphicon-trash"></span> Delete</button>
+
           <span class="snippetdeleterconfirmation">
-          Really delete? <button class="btn btn-danger noDeviceCustomization">Yes, delete</button> <button class="btn btn-cancel noDeviceCustomization">Cancel</button>
+            Sure? 
+            <button class="btn btn-danger noDeviceCustomization"><span class="glyphicon glyphicon-trash"></span> Yes, delete</button> 
+            <button class="btn btn-cancel noDeviceCustomization">Cancel</button>
           </span>
         </div>
         <div style="padding: 5px;" class="snippetcontent">{{text}}</div>
