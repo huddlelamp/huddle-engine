@@ -110,7 +110,7 @@ Template.detailDocumentTemplate.contentEvent = function() {
   var contentType = doc._source._content_type;
   var meta = DocumentMeta.findOne({_id: this._id});
   if (contentType == "image/jpeg") {
-    return '<img src="data:' + contentType + ';base64,' + doc._source.file + '" />';
+    Session.set('content', '<img src="data:' + contentType + ';base64,' + doc._source.file + '" />')
   } else if (contentType == "application/vnd.ms-excel") {
     var that = this;
     Meteor.call("getOfficeContent", "excel", doc._source.file, function(err, data) {
@@ -281,7 +281,6 @@ Template.detailDocumentTemplate.contentEvent = function() {
     }
 
     content = tempContent.html();
-
     Session.set("content", encodeContent(content));
   }
 };
@@ -351,6 +350,8 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
             disable_search_threshold: 100
           });
         }, 500);
+
+        // $(".container").css({'height': '100%', 'overflow-y':'hidden'});
       },
       beforeClose: function() {
         //Increase popup ID on close, so we know the popup has changed
@@ -360,6 +361,8 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
         if (doc !== undefined) {
           DocumentMeta._upsert(doc._id, {$set: {comment: $("#comment").val()}});
         }
+
+        // $(".container").css({'height': '', 'overflow-y':'visible'});
       },
       afterClose: function() {
         lockPreviewSnippet = false;

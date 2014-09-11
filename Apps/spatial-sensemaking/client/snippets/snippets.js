@@ -39,26 +39,26 @@ if (Meteor.isClient) {
   var draggedSnippet;
   var highlightedIndicator;
   Template.snippets.events({
-    'touchstart .snippettools, mousedown .snippettools, touchstart .snippetcontent, mousedown .snippetcontent': function(e) {
+    'touchstart .snippet, mousedown .snippet': function(e) {
       if (frontSnippet !== undefined) frontSnippet.css({'z-index': ''});
 
       var snippetID = this._id;
       frontSnippet = $("#snippet_"+snippetID);
-      frontSnippet.css({'z-index': 9011});
+      frontSnippet.css({'z-index': 7011});
     },
 
     'touchstart .snippetmover, mousedown .snippetmover': function(e) {
       e.preventDefault();
 
-      if (frontSnippet !== undefined) frontSnippet.css({'z-index': ''});
+      // if (frontSnippet !== undefined) frontSnippet.css({'z-index': ''});
 
       var snippetID = this._id;
 
       draggedSnippet = $("#snippet_"+snippetID);
       dragLastPoint = getEventLocation(e, "client");
 
-      frontSnippet = draggedSnippet;
-      frontSnippet.css({'z-index': 9012});
+      // frontSnippet = draggedSnippet;
+      // frontSnippet.css({'z-index': 7012});
     },
 
     'touchmove .snippetmover, mousemove .snippetmover, touchmove .deviceIndicator, mousemove .deviceIndicator': function(e) {
@@ -141,17 +141,17 @@ if (Meteor.isClient) {
       draggedSnippet = undefined;
     },
 
-    'click .snippetsharer': function(e) {
+    'touchend .snippetsharer': function(e) {
       showSharePopup(e.target, this);
     },
 
-    'click .snippetdeleter': function(e) {
+    'touchend .snippetdeleter': function(e) {
       var snippetID = this._id;
       $(e.target).hide();
       $("#snippet_"+snippetID+" .snippetdeleterconfirmation").show({duration: 400});
     },
 
-    'click .snippetdeleterconfirmation .btn-danger': function(e) {
+    'touchend .snippetdeleterconfirmation .btn-danger': function(e) {
       Snippets.remove({_id: this._id});
 
       var thisDevice = Session.get('thisDevice');
@@ -166,7 +166,7 @@ if (Meteor.isClient) {
       });
     },
 
-    'click .snippetdeleterconfirmation .btn-cancel': function(e) {
+    'touchend .snippetdeleterconfirmation .btn-cancel': function(e) {
       var snippetID = this._id;
       $("#snippet_"+snippetID+" .snippetdeleterconfirmation").hide({
         duration: 400,

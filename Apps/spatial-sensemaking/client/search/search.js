@@ -86,7 +86,7 @@ if (Meteor.isClient) {
 
         //If this is a genuine query (e.g. not one that, for example, originates by clicking a
         //pagination link) then we add it to the past queries
-        if (isGenuine) {
+        if (isGenuine && results.hits.total > 0) {
           var pastQuery = PastQueries.findOne({ query: query.trim().toLowerCase() });
           if (pastQuery === undefined) {
             var newDoc = {

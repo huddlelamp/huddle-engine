@@ -14,12 +14,13 @@ html, body {
   height: 275px;
   overflow: scroll;
   background-color: rgba(255, 255, 255, 0.9);
-  z-index: 9010;
+  z-index: 7010;
 }
 
 .snippettools {
   border-bottom: 1px solid #BFBFBF; 
   padding: 5px;
+  text-align: right;
 }
 
 .snippettools > * {
@@ -27,8 +28,8 @@ html, body {
   vertical-align: middle;
 }
 
-.snippetmover {
-  margin-right: 12px;
+.snippettools > *:last-child {
+  margin-right: 0;
 }
 
 .snippettools .btn {

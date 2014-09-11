@@ -146,7 +146,7 @@ Template.deviceWorldView.show = function() {
 
     var doc = Session.get("detailDocument");
     if (sourcedocID === undefined) {
-      sourcedocID = doc._id;
+      if (doc !== undefined) sourcedocID = doc._id;
     }
     if (text !== undefined && text.length > 0 && sourcedocID !== undefined) {
       //If a text selection exists, send it
@@ -196,9 +196,19 @@ Template.deviceWorldView.show = function() {
         //If no document is open but a query result is shown, send that
         var lastQuery = Session.get('lastQuery');
         var lastQueryPage = Session.get('lastQueryPage');
-        if (lastQuery !== undefined) {
-          huddle.broadcast("dosearch", {target: targetID, query: lastQuery, page: lastQueryPage });
+        var route = Router.current().route.name;
+        if (lastQuery !== undefined && route === "searchIndex") {
+          // huddle.broadcast("dosearch", {target: targetID, query: lastQuery, page: lastQueryPage });
           // pulseDevice(this);
+          // 
+          huddle.broadcast("go", {
+            target: targetID,
+            template: "searchIndex",
+            params: {
+              _query: lastQuery,
+              _page: lastQueryPage
+            }
+          });
           showSendConfirmation($("#openWorldView"), "Search results were sent to the device.");
 
           var thisDevice = Session.get('thisDevice');

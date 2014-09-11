@@ -132,7 +132,7 @@ Template.deviceIndicators.sendThroughIndicator = function(indicator, text, sourc
   //the source
   if (sourcedocID === undefined) {
     var doc = Session.get("detailDocument");
-    sourcedocID = doc._id;
+    if (doc !== undefined) sourcedocID = doc._id;
   }
 
   if (text !== undefined && text.length > 0) {
@@ -177,7 +177,8 @@ Template.deviceIndicators.sendThroughIndicator = function(indicator, text, sourc
       //If no document is open but a query result is shown, send that
       var lastQuery = Session.get('lastQuery');
       var lastQueryPage = Session.get('lastQueryPage');
-      if (lastQuery !== undefined) {
+      var route = Router.current().route.name;
+      if (lastQuery !== undefined && route === "searchIndex") {
         huddle.broadcast("go", {
           target: targetID,
           template: "searchIndex",
