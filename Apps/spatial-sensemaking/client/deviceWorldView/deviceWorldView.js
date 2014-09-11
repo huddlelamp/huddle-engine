@@ -33,11 +33,17 @@ Template.deviceWorldView.deviceBackgroundColorCSS = function() {
 };
 
 Template.deviceWorldView.deviceSizeAndPosition = function() {
-  var width  = $("#worldViewWrapper").width() / this.ratio.x;
-  var height = $("#worldViewWrapper").height() / this.ratio.y;
-  var x      = ($("#worldViewWrapper").width()) * this.topLeft.x;
-  var y      = ($("#worldViewWrapper").height()) * this.topLeft.y;
-  return 'width: '+width+'px; height: '+height+'px; top: '+y+'px; left: '+x+'px;';
+  // var width  = $("#worldViewWrapper").width() / this.ratio.x;
+  // var height = $("#worldViewWrapper").height() / this.ratio.y;
+  // var x      = ($("#worldViewWrapper").width()) * this.topLeft.x;
+  // var y      = ($("#worldViewWrapper").height()) * this.topLeft.y;
+  
+  var width = (1/this.ratio.x)*100.0;
+  var height = (1/this.ratio.y)*100.0;
+  var x = this.topLeft.x*100.0;
+  var y = this.topLeft.y*100.0;
+
+  return 'width: '+width+'%; height: '+height+'%; top: '+y+'%; left: '+x+'%;';
 };
 
 Template.deviceWorldView.thisDevice = function() {

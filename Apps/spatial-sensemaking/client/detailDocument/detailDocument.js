@@ -1,6 +1,103 @@
 var popupID = 0;
-
 var lockPreviewSnippet = false;
+
+var insertHighlightIntoText = function(text, highlight, start, end, cssClasses) {
+  return [
+    text.slice(0, start),
+    '<span class="highlight '+cssClasses+'" style="background-color: '+highlight[2]+';">',
+    text.slice(start, end),
+    '</span>',
+    text.slice(end)
+  ].join('');
+};
+
+var insertHighlightIntoDOM = function(elem, highlight, state) {
+  if (elem === undefined || highlight === undefined) return;
+  if (state === undefined) state = {};
+  if (!state.offset) state.offset = 0;
+  if (!state.opened) state.opened = false;
+  if (!state.closed) state.closed = false;
+  if (!state.cssClasses) state.cssClasses = "";
+
+  if (state.closed) return state;
+
+  var startOffset = highlight[0];
+  var endOffset = highlight[1];
+
+  if (elem.nodeType === 3)  {
+    state.offset += elem.length;
+
+    if (!state.opened && state.offset > startOffset) {
+      //CASE 1: This node contains the start of the highlight
+      state.opened = true;
+
+      //Highlight start is defined by startOffset, highlightEnd depends on
+      //if the highlight ends in this node or goes beyond this node (in which 
+      //case it might be continued in CASE 3 and will be closed in CASE 2)
+      var highlightStart = startOffset - (state.offset - elem.length);
+      var highlightEnd = elem.length;
+      if (state.offset >= endOffset) {
+        highlightEnd = endOffset - (state.offset - elem.length);
+        state.closed = true;
+      }
+
+      $(elem).replaceWith(insertHighlightIntoText(
+        $(elem).text(), 
+        highlight, 
+        highlightStart, 
+        highlightEnd,
+        state.cssClasses
+      ));
+    } else {
+      if (state.opened) {
+        if (state.offset >= endOffset) {
+          //CASE 2: End of highlight is in this node
+          //Since the highlight started before this node, we highlight from the
+          //beginning to endOffset
+          var highlightStart = 0;
+          var highlightEnd = endOffset - (state.offset - elem.length);
+
+          $(elem).replaceWith(insertHighlightIntoText(
+            $(elem).text(), 
+            highlight, 
+            highlightStart, 
+            highlightEnd,
+            state.cssClasses
+          ));
+
+          state.closed = true;
+        } else {
+          //CASE 3: the entire node is part of the highlight, it doesn't end here
+          //Therefore, the entire node needs to be highlighted
+          $(elem).replaceWith(insertHighlightIntoText(
+            $(elem).text(), 
+            highlight, 
+            0, 
+            elem.length,
+            state.cssClasses
+          ));
+        }
+      }
+    }
+  } else {
+    //CASE 4: If this node is not a textnode, we go deeper
+    $(elem).contents().each(function() { state = insertHighlightIntoDOM(this, highlight, state); });
+  }
+
+  return state;
+};
+
+var insertTextHighlights = function(textHighlights, docContent) {
+  if (textHighlights !== undefined) {
+    for (var i=0; i<textHighlights.length; i++) {
+      var highlight = textHighlights[i];
+      var color = new tinycolor(highlight[2]);
+      color = color.setAlpha(0.35).toRgbString();
+      highlight[2] = color;
+      insertHighlightIntoDOM(docContent, textHighlights[i]);
+    }
+  }
+};
 
 Template.detailDocumentTemplate.content = function() {
   return Session.get("content") || "";
@@ -11,14 +108,12 @@ Template.detailDocumentTemplate.contentEvent = function() {
   if (doc === undefined) return undefined;
 
   var contentType = doc._source._content_type;
+  var meta = DocumentMeta.findOne({_id: this._id});
   if (contentType == "image/jpeg") {
     return '<img src="data:' + contentType + ';base64,' + doc._source.file + '" />';
   } else if (contentType == "application/vnd.ms-excel") {
+    var that = this;
     Meteor.call("getOfficeContent", "excel", doc._source.file, function(err, data) {
-      // console.log(err);
-      console.log(data);
-      // Session.set("content", data);
-      
       function getCellValue(cell) {
         if (data.Sheets[data.SheetNames[0]][cell] === undefined) return "";
         return data.Sheets[data.SheetNames[0]][cell].w;
@@ -73,33 +168,44 @@ Template.detailDocumentTemplate.contentEvent = function() {
       var largestColumn = getCellColumn(largestField);
 
       //Now, walk over every possible cell and print its value
-      var content = '<table class="excelsheet">';
+      var content = $('<table></table>');
+      content.addClass("excelsheet");
 
       //Create the column headings
-      content += "<tr><th></th>";
+      var headingRow = $("<tr></tr>");
+      headingRow.append("<th></th>");
       for (var c=smallestColumn; c!=incrementColumn(largestColumn); c=incrementColumn(c)) {
-        content += "<th>"+c+"</th>";
+        headingRow.append("<th>"+c+"</th>");
       }
-      content += "</tr>";
+      content.append(headingRow);
       
       for (var r=smallestRow; r<=largestRow; r++) {
-        content += "<tr>";
-        content += "<th style=''>"+r+"</th>"; //row heading
+        var row = $("<tr></tr>");
+        // content += "<tr>";
+        row.append("<th>"+r+"</th>"); //row heading
 
         for (var c=smallestColumn; c!=incrementColumn(largestColumn); c=incrementColumn(c)) {
-          content += "<td class='type"+getCellType(c+r)+"'>"+getCellValue(c+r)+"</td>";
+          var td = $("<td></td>");
+          td.html(getCellValue(c+r));
+          td.addClass("type"+getCellType(c+r));
+          row.append(td);
+          // row.append("<td>"+getCellValue(c+r)+"</td>");
         }
-        content += "</tr>";
+        content.append(row);
+        // content += "</tr>";
       }
-      content += "</table>";
+      // content += "</table>";
 
-      Session.set('content', content);
+      insertTextHighlights(meta.textHighlights, content[0]);
+      // insertTextHighlights(that._id, content[0]);
+
+      Session.set('content', content[0].outerHTML);
     });
   } else if (contentType === "application/msword") {
     Meteor.call("getOfficeContent", "word", doc._source.file, function(err, data) {
-      // console.log(err);
-      // console.log(data);
-      Session.set("content", data);
+      var tempContent = $("<div />").html(data);
+      insertTextHighlights(meta.textHighlights, tempContent[0]);
+      Session.set("content", tempContent.html());
     });
   } else {
     var content = atob(doc._source.file);
@@ -114,108 +220,12 @@ Template.detailDocumentTemplate.contentEvent = function() {
       });
     }
 
-    var insertHighlightIntoText = function(text, highlight, start, end, cssClasses) {
-      return [
-        text.slice(0, start),
-        '<span class="highlight '+cssClasses+'" style="background-color: '+highlight[2]+';">',
-        text.slice(start, end),
-        '</span>',
-        text.slice(end)
-      ].join('');
-    };
-
-    var insertHighlightIntoDOM = function(elem, highlight, state) {
-      if (elem === undefined || highlight === undefined) return;
-      if (state === undefined) state = {};
-      if (!state.offset) state.offset = 0;
-      if (!state.opened) state.opened = false;
-      if (!state.closed) state.closed = false;
-      if (!state.cssClasses) state.cssClasses = "";
-
-      if (state.closed) return state;
-
-      var startOffset = highlight[0];
-      var endOffset = highlight[1];
-
-      if (elem.nodeType === 3)  {
-        state.offset += elem.length;
-
-        if (!state.opened && state.offset > startOffset) {
-          //CASE 1: This node contains the start of the highlight
-          state.opened = true;
-
-          //Highlight start is defined by startOffset, highlightEnd depends on
-          //if the highlight ends in this node or goes beyond this node (in which 
-          //case it might be continued in CASE 3 and will be closed in CASE 2)
-          var highlightStart = startOffset - (state.offset - elem.length);
-          var highlightEnd = elem.length;
-          if (state.offset >= endOffset) {
-            highlightEnd = endOffset - (state.offset - elem.length);
-            state.closed = true;
-          }
-
-          $(elem).replaceWith(insertHighlightIntoText(
-            $(elem).text(), 
-            highlight, 
-            highlightStart, 
-            highlightEnd,
-            state.cssClasses
-          ));
-        } else {
-          if (state.opened) {
-            if (state.offset >= endOffset) {
-              //CASE 2: End of highlight is in this node
-              //Since the highlight started before this node, we highlight from the
-              //beginning to endOffset
-              var highlightStart = 0;
-              var highlightEnd = endOffset - (state.offset - elem.length);
-
-              $(elem).replaceWith(insertHighlightIntoText(
-                $(elem).text(), 
-                highlight, 
-                highlightStart, 
-                highlightEnd,
-                state.cssClasses
-              ));
-
-              state.closed = true;
-            } else {
-              //CASE 3: the entire node is part of the highlight, it doesn't end here
-              //Therefore, the entire node needs to be highlighted
-              $(elem).replaceWith(insertHighlightIntoText(
-                $(elem).text(), 
-                highlight, 
-                0, 
-                elem.length,
-                state.cssClasses
-              ));
-            }
-          }
-        }
-      } else {
-        //CASE 4: If this node is not a textnode, we go deeper
-        $(elem).contents().each(function() { state = insertHighlightIntoDOM(this, highlight, state); });
-      }
-
-      return state;
-    };
-
     //Add the snippet highlight and text highlights if necessary
     //In order to be able to count the text chars only (without html tags)
     //we create a temporary element that we can walk over and find text nodes
     var tempContent = $("<div />").html(content);
 
-    //TEXT HIGHLIGHTS    
-    var meta = DocumentMeta.findOne({_id: this._id});
-    if (meta !== undefined && meta.textHighlights !== undefined) {
-      for (var i=0; i<meta.textHighlights.length; i++) {
-        var highlight = meta.textHighlights[i];
-        var color = new tinycolor(highlight[2]);
-        color = color.setAlpha(0.35).toRgbString();
-        highlight[2] = color;
-        insertHighlightIntoDOM(tempContent[0], meta.textHighlights[i]);
-      }
-    }
+    insertTextHighlights(meta.textHighlights, tempContent[0]);
 
     //PREVIEW SNIPPET
     var snippet = Session.get('detailDocumentPreviewSnippet');
@@ -273,7 +283,6 @@ Template.detailDocumentTemplate.contentEvent = function() {
     content = tempContent.html();
 
     Session.set("content", encodeContent(content));
-    // return encodeContent(content);
   }
 };
 
@@ -334,13 +343,6 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
         Session.set("detailDocument", doc); 
       },
       afterLoad: function() { 
-        // Meteor.setTimeout(function() {
-        // $(".fancybox-inner").css("overflow", "scroll");
-        // Meteor.setTimeout(function() {
-        //   $(".fancybox-inner").css("overflow", "hidden");
-        // }, 1000);
-      // }, 1000);
-      // 
         //Dirty hack: 500ms delay so we are pretty sure that all DOM elements arrived
         Meteor.setTimeout(function() {
           attachEvents();
