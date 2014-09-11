@@ -24,17 +24,31 @@
           </button>
         </span>
       </div>
-        <div id="querySuggestions" style="max-height: {{querySuggestionHeightCSS}}; box-shadow: {{querySuggestionShadowCSS}};" class="col-md-10 col-md-offset-1">
+      <div class="col-md-10 col-md-offset-1 input-group" id="querySuggestionsWrapper">
+        <!--<span id="search-query-wrapper">
+          <span id="search-tag-wrapper"></span>-->
+          <div id="querySuggestions" style="max-height: {{querySuggestionHeightCSS}}; box-shadow: {{querySuggestionShadowCSS}}; border-width: {{querySuggestionBorderCSS}}; padding: {{querySuggestionPaddingCSS}};">
           {{#each querySuggestions}}
             <a href="#" class="querySuggestion">{{query}}</a><br />
           {{/each}}
         </div>
-    </div>
-
-    <div class="row">
-      <div class="col-md-10 col-md-offset-1 input-group">
-        
+        <!--</span>-->
+        <span class="input-group-btn" style="visibility: hidden;">
+          <button type="button" class="btn btn-primary">
+            <span class="glyphicon glyphicon-search"></span> Search
+          </button>
+        </span>
       </div>
+        <!-- <div id="querySuggestions" style="max-height: {{querySuggestionHeightCSS}}; box-shadow: {{querySuggestionShadowCSS}};" class="col-md-10 col-md-offset-1">
+          {{#each querySuggestions}}
+            <a href="#" class="querySuggestion">{{query}}</a><br />
+          {{/each}}
+        </div>
+        <span class="input-group-btn">
+          <button type="button" id="search-btn" class="btn btn-primary">
+            <span class="glyphicon glyphicon-search"></span> Search
+          </button>
+        </span> -->
     </div>
 
     <div class="row result-info">

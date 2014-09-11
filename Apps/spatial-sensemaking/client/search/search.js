@@ -158,6 +158,26 @@ if (Meteor.isClient) {
     }
   };
 
+  Template.searchIndex.querySuggestionBorderCSS = function() {
+    var suggestions = Session.get("querySuggestions") || [];
+
+    if (suggestions.length === 0) {
+      return "0px";
+    } else {
+      return "1px";
+    }
+  };
+
+  Template.searchIndex.querySuggestionPaddingCSS = function() {
+    var suggestions = Session.get("querySuggestions") || [];
+
+    if (suggestions.length === 0) {
+      return "0px";
+    } else {
+      return "10px";
+    }
+  };
+
   Template.searchIndex.querySuggestionHeightCSS = function() {
     var suggestions = Session.get("querySuggestions") || [];
 

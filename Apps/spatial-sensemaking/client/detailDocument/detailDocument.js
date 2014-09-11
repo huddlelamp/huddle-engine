@@ -334,6 +334,13 @@ Template.detailDocumentTemplate.open = function(doc, snippetText) {
         Session.set("detailDocument", doc); 
       },
       afterLoad: function() { 
+        // Meteor.setTimeout(function() {
+        // $(".fancybox-inner").css("overflow", "scroll");
+        // Meteor.setTimeout(function() {
+        //   $(".fancybox-inner").css("overflow", "hidden");
+        // }, 1000);
+      // }, 1000);
+      // 
         //Dirty hack: 500ms delay so we are pretty sure that all DOM elements arrived
         Meteor.setTimeout(function() {
           attachEvents();
@@ -494,6 +501,7 @@ var attachEvents = function() {
     //Finally, add our selection as a new highlight, which now shouldn't interect
     //any other highlight. Then, write our new highlights in the DB
     updatedHighlights.push([ startOffset, endOffset, color ]);
+    console.log(updatedHighlights);
     DocumentMeta._upsert(doc._id, { $set: { textHighlights: updatedHighlights } });
 
     var thisDevice = Session.get('thisDevice');

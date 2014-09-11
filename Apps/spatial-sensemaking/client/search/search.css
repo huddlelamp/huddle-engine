@@ -41,20 +41,31 @@ body {
 #search-query {
   width: 100%;
   padding: 6px;
-  border: 1px solid #357ebd; 
+  border: 1px solid #357ebd;
+  border-radius: 0 !important; 
 }
 
-#querySuggestions {
+#querySuggestionsWrapper {
   z-index: 999; 
-  background-color: white; 
   box-sizing: border-box; 
   height: auto; 
   position: absolute; 
   top: 35px; 
-  -webkit-transition: max-height 1.0s, box-shadow 0.5s; 
+  -webkit-transition: max-height 1.0s; 
+  overflow: visible;
+}
+
+#querySuggestions {
+  box-sizing: border-box;
+  width: calc(100% - 3px); /*subtract box shadow and margin left */
+  /*margin-left: 2px;*/
+  background-color: white; 
+  overflow: hidden;
   border: 1px solid lightgray; 
   border-top: 0; 
-  overflow: hidden;
+  -webkit-transition: max-height 1.0s, box-shadow 0.5s; 
+  height: auto; 
+  
 }
 
 #search-tag-wrapper {

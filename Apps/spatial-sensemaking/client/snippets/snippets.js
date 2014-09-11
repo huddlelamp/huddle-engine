@@ -82,10 +82,10 @@ if (Meteor.isClient) {
       markSnippetDirty(this);
 
       var hitTarget = document.elementFromPoint(currentPoint.x, currentPoint.y);
-      // if ($(e.target).hasClass("deviceIndicator")) {
-      //   highlightedIndicator = e.target;
-      //   Template.deviceIndicators.highlightIndicator(e.target);
-      // } else 
+      if ($(e.target).hasClass("deviceIndicator")) {
+        highlightedIndicator = e.target;
+        Template.deviceIndicators.highlightIndicator(e.target);
+      } else 
       if ($(hitTarget).hasClass("deviceIndicator")) {
         highlightedIndicator = hitTarget;
         Template.deviceIndicators.highlightIndicator(hitTarget);

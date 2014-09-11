@@ -49,7 +49,7 @@ Template.deviceWorldView.otherDevices = function() {
 };
 
 Template.deviceWorldView.events({
-  'touchend #openWorldView, mouseup #openWorldView': function() {
+  'touchend #openWorldView': function() {
     Session.set("worldViewSnippetToSend", Template.detailDocumentTemplate.currentlySelectedContent());
   },
 
