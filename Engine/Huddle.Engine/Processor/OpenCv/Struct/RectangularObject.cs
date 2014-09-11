@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using Emgu.CV;
 using Emgu.CV.Structure;
 using GalaSoft.MvvmLight;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
@@ -13,7 +14,7 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
         #region private fields
 
         private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
-        
+
         private SizeF[] _sizes = new SizeF[60];
         private int _sizesIdx = 0;
 
@@ -88,7 +89,7 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
                 RaisePropertyChanged(StatePropertyName);
             }
         }
-        
+
         #endregion
 
         #region LastUpdate
@@ -148,7 +149,7 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
             set
             {
-               if (_center == value)
+                if (_center == value)
                 {
                     return;
                 }
@@ -439,18 +440,27 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
             get
             {
                 if (_sizesIdx < _sizes.Length)
-                {
-                    _sizes[_sizesIdx] = Shape.size;
-                    ++_sizesIdx;
                     return Shape.size;
-                }
-                else
-                {
-                    var width = _sizes.Average(s => s.Width);
-                    var height = _sizes.Average(s => s.Height);
-                    return new SizeF(width, height);
-                }
+
+                var width = _sizes.Average(s => s.Width);
+                var height = _sizes.Average(s => s.Height);
+                return new SizeF(width, height);
             }
+        }
+
+        #endregion
+
+        #region public methods
+
+        public bool ApplyShapeAverage(MCvBox2D shape)
+        {
+            if (_sizesIdx < _sizes.Length)
+            {
+                _sizes[_sizesIdx] = Shape.size;
+                ++_sizesIdx;
+                return true;
+            }
+            return false;
         }
 
         #endregion

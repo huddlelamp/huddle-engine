@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Xml.Serialization;
@@ -1086,31 +1087,42 @@ namespace Huddle.Engine.Processor.OpenCv
         }
 
         /// <summary>
-        /// Tries to find objects that are occluded.
+        /// Tries to find occluded objects based on their previous positions.
         /// </summary>
         /// <param name="image"></param>
         /// <param name="updateTime"></param>
         /// <param name="outputImage"></param>
         /// <param name="objects"></param>
-        private void UpdateOccludedObjects(Image<Rgb, byte> image, ref Image<Rgb, byte> outputImage, DateTime updateTime, RectangularObject[] objects)
+        private void UpdateOccludedObjects(Image<Rgb, byte> image, ref Image<Rgb, byte> outputImage, DateTime updateTime, IEnumerable<RectangularObject> objects)
+        {
+            var occludedObjects = objects.Where(o => !Equals(o.LastUpdate, updateTime)).ToArray();
+
+            // ignore if no objects are occluded but continue in case is render content set true to update debug view
+            if (occludedObjects.Length < 1 || _depthImage == null)
+                return;
+
+            var enclosedOutputImage = outputImage;
+            Parallel.ForEach(occludedObjects, obj => UpdateOccludedObject(image, ref enclosedOutputImage, updateTime, occludedObjects, obj));
+        }
+
+        /// <summary>
+        /// Tries to find the occluded object based on its previous position.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="updateTime"></param>
+        /// <param name="outputImage"></param>
+        /// <param name="objects"></param>
+        /// <param name="obj"></param>
+        private void UpdateOccludedObject(Image<Rgb, byte> image, ref Image<Rgb, byte> outputImage, DateTime updateTime, RectangularObject[] objects, RectangularObject obj)
         {
             var imageWidth = image.Width;
             var imageHeight = image.Height;
 
             var mask = new Image<Gray, byte>(imageWidth, imageHeight);
-
-            var occludedObjects = objects.Where(o => !Equals(o.LastUpdate, updateTime)).ToArray();
-
-            // ignore if no objects are occluded but continue in case is render content set true to update debug view
-            if (occludedObjects.Length < 1 && !IsRenderContent)
-                return;
-
-            foreach (var obj in occludedObjects)
-                mask.Draw(obj.Shape, new Gray(1), -1);
-
-            if (_depthImage == null) return;
-
             var depthPatchesImage = new Image<Gray, float>(imageWidth, imageHeight);
+
+            // create mask for objects previousl location
+            mask.Draw(obj.Shape, new Gray(1), -1);
 
             var depthMapBinary = _depthImage.ThresholdBinaryInv(new Gray(255), new Gray(255));
             var depthMap = depthMapBinary;
@@ -1145,11 +1157,19 @@ namespace Huddle.Engine.Processor.OpenCv
 
             CvInvoke.cvCopy(depthMap.Ptr, depthPatchesImage.Ptr, mask);
 
+            var repairedPixels = depthPatchesImage.CountNonzero()[0];
+            var totalPixels = obj.Shape.size.Width * obj.Shape.size.Height;
+            var factorOfRepairedPixels = (double)repairedPixels / totalPixels;
+            Console.WriteLine("{0}% pixels repaired.", factorOfRepairedPixels * 100);
+
+            // Do not account for entire occlusion at this time to avoid phantom objects even if the device is not present anymore.
+            if (factorOfRepairedPixels > 0.95) return;
+
             // Erode and dilate depth patches image to remove small pixels around device borders.
             if (IsFirstErodeThenDilateDepthPatches)
             {
                 CvInvoke.cvErode(depthPatchesImage.Ptr, depthPatchesImage.Ptr, IntPtr.Zero, DepthPatchesErode);
-                CvInvoke.cvDilate(depthPatchesImage.Ptr, depthPatchesImage.Ptr, IntPtr.Zero, DepthPatchesDilate);   
+                CvInvoke.cvDilate(depthPatchesImage.Ptr, depthPatchesImage.Ptr, IntPtr.Zero, DepthPatchesDilate);
             }
             else
             {
@@ -1169,7 +1189,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     return bitmapSource;
                 }).ContinueWith(t => DepthPatchesImageSource = t.Result);
 
-                #endregion 
+                #endregion
             }
 
             // ??? Clip depth patches image again to avoid depth fixed rectangles to grow.
@@ -1196,8 +1216,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 #endregion
             }
 
-            var outputImageEnclosed = outputImage;
-            Parallel.ForEach(occludedObjects, obj => FindObjectByBlankingKnownObjects(true, depthFixedImage, ref outputImageEnclosed, updateTime, objects, obj));
+            FindObjectByBlankingKnownObjects(true, depthFixedImage, ref outputImage, updateTime, objects, obj);
         }
 
         /// <summary>
@@ -1227,6 +1246,9 @@ namespace Huddle.Engine.Processor.OpenCv
                 {
                     var lowApproxContour = contours.ApproxPoly(contours.Perimeter * 0.015, storage);
 
+                    if (IsRenderContent && IsDrawAllContours)
+                        outputImage.Draw(lowApproxContour, Rgbs.FuchsiaRose, 1);
+
                     if (lowApproxContour.Area > ((MinContourArea / 100.0) * pixels) && lowApproxContour.Area < ((MaxContourArea / 100.0) * pixels)) //only consider contours with area greater than
                     {
                         if (IsRenderContent && IsDrawAllContours)
@@ -1246,7 +1268,7 @@ namespace Huddle.Engine.Processor.OpenCv
                         var polygon = new Polygon(points.ToArray(), imageWidth, imageHeight);
                         var contourPoints = highApproxContour.ToArray();
 
-                        if (!UpdateObject(occlusionTracking, maxRestoreDistance, rectangle, minAreaRect, polygon, contourPoints, updateTime, objects))
+                        if (!UpdateObject(occlusionTracking, highApproxContour, maxRestoreDistance, rectangle, minAreaRect, polygon, contourPoints, updateTime, objects))
                         {
                             newObjects.Add(CreateObject(NextId(), rectangle, minAreaRect, polygon, contourPoints, updateTime));
                         }
@@ -1330,6 +1352,7 @@ namespace Huddle.Engine.Processor.OpenCv
         /// Updates an object if it finds an object from last frame at a max restore distance.
         /// </summary>
         /// <param name="occluded"></param>
+        /// <param name="objectContour"></param>
         /// <param name="maxRestoreDistance"></param>
         /// <param name="boundingRectangle"></param>
         /// <param name="minAreaRect"></param>
@@ -1338,25 +1361,11 @@ namespace Huddle.Engine.Processor.OpenCv
         /// <param name="updateTime"></param>
         /// <param name="objects"></param>
         /// <returns></returns>
-        private static bool UpdateObject(bool occluded, double maxRestoreDistance, Rectangle boundingRectangle, MCvBox2D minAreaRect, Polygon polygon, Point[] points, DateTime updateTime, IEnumerable<RectangularObject> objects)
+        private static bool UpdateObject(bool occluded, Contour<Point> objectContour, double maxRestoreDistance, Rectangle boundingRectangle, MCvBox2D minAreaRect, Polygon polygon, Point[] points, DateTime updateTime, IEnumerable<RectangularObject> objects)
         {
-            var cCenter = minAreaRect.center;
+            var candidate = GetObjectCandidate(objects, objectContour, minAreaRect, maxRestoreDistance);
 
-            RectangularObject candidate = null;
-            var leastDistance = double.MaxValue;
-            foreach (var obj in objects)
-            {
-                var oCenter = obj.Shape.center;
-                var distance = Math.Sqrt(Math.Pow(oCenter.X - cCenter.X, 2) + Math.Pow(oCenter.Y - cCenter.Y, 2));
-
-                if (!(leastDistance > distance)) continue;
-
-                candidate = obj;
-                leastDistance = distance;
-            }
-
-            if (leastDistance > maxRestoreDistance || candidate == null)
-                return false;
+            if (candidate == null) return false;
 
             //var dAngle = Math.Abs(candidate.Shape.angle - minAreaRect.angle);
             //Console.WriteLine(minAreaRect.angle);
@@ -1375,13 +1384,20 @@ namespace Huddle.Engine.Processor.OpenCv
                 deltaAngle += 90;
             }
 
-            candidate.Shape = minAreaRect;
+            // add current shape to compute the average shape.
+            if (candidate.ApplyShapeAverage(minAreaRect))
+            {
+                // added shape for candidate shape estimation based on average shape
+            }
 
+            // create new candidate shape based on its previous shape size and the new center point and orientation.
+            // This keeps the objects shape constant and avoids growing shapes when devices are connected closely or
+            // an objects occludes the device.
             var shape = new MCvBox2D(minAreaRect.center, candidate.Size, oldAngle + deltaAngle);
 
             candidate.State = occluded ? TrackingState.Occluded : TrackingState.Tracked;
             candidate.LastUpdate = updateTime;
-            candidate.Center = new Point((int)cCenter.X, (int)cCenter.Y);
+            candidate.Center = new Point((int)shape.center.X, (int)shape.center.Y);
             candidate.Bounds = boundingRectangle;
             candidate.Shape = shape;
             candidate.LastAngle = minAreaRect.angle;
@@ -1389,6 +1405,34 @@ namespace Huddle.Engine.Processor.OpenCv
             candidate.Points = points;
 
             return true;
+        }
+
+        private static RectangularObject GetObjectCandidate(IEnumerable<RectangularObject> objects, Contour<Point> objectContour, MCvBox2D shape, double maxRestoreDistance)
+        {
+            RectangularObject candidate = null;
+            var leastDistance = double.MaxValue;
+            foreach (var obj in objects)
+            {
+                // check current contour to last center point distance (checking last contour with current center point does not work because of MemStorage
+                // which will lead to an inconsistent last contour after last image has been processed completely and after storage is disposed.
+                var distanceToContour = CvInvoke.cvPointPolygonTest(objectContour.Ptr, obj.Shape.center, true);
+
+                var oCenter = obj.Shape.center;
+                var distance = Math.Sqrt(Math.Pow(oCenter.X - shape.center.X, 2) + Math.Pow(oCenter.Y - shape.center.Y, 2));
+
+                // distance < 0 means the point is outside of the contour.
+                if (distanceToContour < 0 || leastDistance < distance) continue;
+
+                //if (distanceToContour )
+
+                candidate = obj;
+                leastDistance = distance;
+            }
+
+            if (leastDistance > maxRestoreDistance || candidate == null)
+                return null;
+
+            return candidate;
         }
     }
 }
