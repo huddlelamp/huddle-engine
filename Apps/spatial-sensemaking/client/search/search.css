@@ -44,6 +44,19 @@ body {
   border: 1px solid #357ebd; 
 }
 
+#querySuggestions {
+  z-index: 999; 
+  background-color: white; 
+  box-sizing: border-box; 
+  height: auto; 
+  position: absolute; 
+  top: 35px; 
+  -webkit-transition: max-height 1.0s, box-shadow 0.5s; 
+  border: 1px solid lightgray; 
+  border-top: 0; 
+  overflow: hidden;
+}
+
 #search-tag-wrapper {
   /*position: absolute;*/
   z-index: 10;

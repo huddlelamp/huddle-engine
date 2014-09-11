@@ -140,6 +140,26 @@ if (Meteor.isClient) {
     return (meta && meta.watched);
   };
 
+  Template.searchIndex.querySuggestionShadowCSS = function() {
+    var suggestions = Session.get("querySuggestions") || [];
+
+    if (suggestions.length === 0) {
+      return "none";
+    } else {
+      return "2px 2px 4px 0px rgba(0,0,0,0.75)";
+    }
+  };
+
+  Template.searchIndex.querySuggestionHeightCSS = function() {
+    var suggestions = Session.get("querySuggestions") || [];
+
+    if (suggestions.length === 0) {
+      return "0px";
+    } else {
+      return "500px";
+    }
+  };
+
   Template.searchIndex.helpers({
     'toSeconds': function(ms) {
       var time = new Date(ms);
@@ -172,7 +192,7 @@ if (Meteor.isClient) {
     'keyup #search-query': function(e, tmpl) {
       var query = tmpl.$('#search-query').val();
       if (query.trim().length === 0) {
-        // $("#search-tag-wrapper").empty();
+        Session.set('querySuggestions', []);
         return;
       }
 
@@ -200,7 +220,7 @@ if (Meteor.isClient) {
         var regexp = new RegExp('.*'+query+'.*', 'i');
         var suggestions = PastQueries.find(
           { query : { $regex: regexp } },
-          { sort  : [["count", "desc"]] }
+          { sort  : [["count", "desc"]], limit: 5 }
         );
         Session.set('querySuggestions', suggestions.fetch());
       }
