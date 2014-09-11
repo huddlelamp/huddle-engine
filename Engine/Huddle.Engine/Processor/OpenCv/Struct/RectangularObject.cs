@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Emgu.CV;
@@ -15,8 +16,8 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
 
-        private readonly SizeF[] _sizes = new SizeF[30];
-        private int _sizesIdx = 0;
+        private readonly List<SizeF> _sizes = new List<SizeF>();
+        private SizeF _averageSize = SizeF.Empty;
 
         #endregion
 
@@ -407,6 +408,41 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #endregion
 
+        #region IsSampleSize
+
+        /// <summary>
+        /// The <see cref="IsSampleSize" /> property's name.
+        /// </summary>
+        public const string IsSampleSizePropertyName = "IsSampleSize";
+
+        private bool _isSampleSize = true;
+
+        /// <summary>
+        /// Sets and gets the IsSampleSize property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsSampleSize
+        {
+            get
+            {
+                return _isSampleSize;
+            }
+
+            set
+            {
+                if (_isSampleSize == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsSampleSizePropertyName);
+                _isSampleSize = value;
+                RaisePropertyChanged(IsSampleSizePropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region PredictedCenter
@@ -439,13 +475,7 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
         {
             get
             {
-                if (_sizesIdx < _sizes.Length)
-                    return Shape.size;
-
-                var width = _sizes.Average(s => s.Width);
-                var height = _sizes.Average(s => s.Height);
-
-                return new SizeF(width, height);
+                return Equals(_averageSize, SizeF.Empty) ? Shape.size : _averageSize;
             }
         }
 
@@ -453,15 +483,19 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #region public methods
 
-        public bool ApplyShapeAverage(MCvBox2D shape)
+        public void ApplyShapeAverage(SizeF size)
         {
-            if (_sizesIdx < _sizes.Length)
+            if (IsSampleSize)
             {
-                _sizes[_sizesIdx] = Shape.size;
-                ++_sizesIdx;
-                return true;
+                _sizes.Add(size);
+                IsSampleSize = _sizes.Count < 30;
             }
-            return false;
+            else
+            {
+                var width = _sizes.Average(s => s.Width);
+                var height = _sizes.Average(s => s.Height);
+                _averageSize = new SizeF(width, height);
+            }
         }
 
         #endregion

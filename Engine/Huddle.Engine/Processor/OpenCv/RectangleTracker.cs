@@ -1079,7 +1079,7 @@ namespace Huddle.Engine.Processor.OpenCv
             var roi = blankedImage.ROI;
             if (useROI)
             {
-                const int threshold = 20;
+                const int threshold = 10;
                 var b = obj.Bounds;
 
                 roi = new Rectangle(b.X - threshold, b.Y - threshold, b.Width + 2 * threshold, b.Height + 2 * threshold);
@@ -1097,7 +1097,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 CvInvoke.cvAnd(blankedImageGray.Ptr, maskImage.Ptr, blankedImageGray.Ptr, IntPtr.Zero);
             }
 
-            blankedImageGray = blankedImageGray.Erode(2);
+            blankedImageGray = blankedImageGray.Erode(2);//.Dilate(1).Erode(1).Dilate(1);
 
             if (IsRenderContent && occlusionTracking)
             {
@@ -1415,7 +1415,8 @@ namespace Huddle.Engine.Processor.OpenCv
         /// <returns></returns>
         private static bool UpdateObject(bool occluded, Contour<Point> objectContour, double maxRestoreDistance, Rectangle boundingRectangle, MCvBox2D minAreaRect, Polygon polygon, Point[] points, DateTime updateTime, IEnumerable<RectangularObject> objects)
         {
-            var candidate = GetObjectCandidate(objects, objectContour, minAreaRect, maxRestoreDistance);
+            double distance;
+            var candidate = GetObjectCandidate(objects, objectContour, minAreaRect, maxRestoreDistance, out distance);
 
             if (candidate == null) return false;
 
@@ -1437,10 +1438,12 @@ namespace Huddle.Engine.Processor.OpenCv
             }
 
             // add current shape to compute the average shape.
-            if (candidate.ApplyShapeAverage(minAreaRect))
+            //if (candidate.IsSampleSize && Math.Abs(minAreaRect.angle - candidate.LastAngle) < 2.0 && distance < 2.0)
+            if (candidate.IsSampleSize)
             {
-                // added shape for candidate shape estimation based on average shape
+                candidate.ApplyShapeAverage(minAreaRect.size);
             }
+                
 
             // create new candidate shape based on its previous shape size and the new center point and orientation.
             // This keeps the objects shape constant and avoids growing shapes when devices are connected closely or
@@ -1459,7 +1462,7 @@ namespace Huddle.Engine.Processor.OpenCv
             return true;
         }
 
-        private static RectangularObject GetObjectCandidate(IEnumerable<RectangularObject> objects, Contour<Point> objectContour, MCvBox2D shape, double maxRestoreDistance)
+        private static RectangularObject GetObjectCandidate(IEnumerable<RectangularObject> objects, Contour<Point> objectContour, MCvBox2D shape, double maxRestoreDistance, out double retDistance)
         {
             RectangularObject candidate = null;
             var leastDistance = double.MaxValue;
@@ -1482,8 +1485,12 @@ namespace Huddle.Engine.Processor.OpenCv
             }
 
             if (leastDistance > maxRestoreDistance || candidate == null)
+            {
+                retDistance = -1;
                 return null;
+            }
 
+            retDistance = leastDistance;
             return candidate;
         }
     }
