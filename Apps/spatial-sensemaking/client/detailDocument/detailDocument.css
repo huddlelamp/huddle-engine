@@ -203,3 +203,27 @@
 hr {
   border-color: #ddd;
 }
+
+.excelsheet {
+  width: 150%; 
+  overflow: scroll; 
+  border-collapse: collapse;
+}
+
+.excelsheet td, .excelsheet th {
+  border: 1px solid lightgray; 
+  height: 25px; 
+  width: 50px; 
+  padding: 2px;
+  text-align: left;
+}
+
+.excelsheet th {
+  border: 0;
+  text-align: center;
+  width: 30px;
+}
+
+.excelsheet td.typen {
+  text-align: right;
+}

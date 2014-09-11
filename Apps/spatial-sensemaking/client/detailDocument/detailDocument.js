@@ -16,8 +16,84 @@ Template.detailDocumentTemplate.contentEvent = function() {
   } else if (contentType == "application/vnd.ms-excel") {
     Meteor.call("getOfficeContent", "excel", doc._source.file, function(err, data) {
       // console.log(err);
-      // console.log(data);
-      Session.set("content", data);
+      console.log(data);
+      // Session.set("content", data);
+      
+      function getCellValue(cell) {
+        if (data.Sheets[data.SheetNames[0]][cell] === undefined) return "";
+        return data.Sheets[data.SheetNames[0]][cell].w;
+      }
+
+      function getCellType(cell) {
+        if (data.Sheets[data.SheetNames[0]][cell] === undefined) return "s";
+        return data.Sheets[data.SheetNames[0]][cell].t;
+      }
+
+      function getCellColumn(cell) {
+        return cell.replace(/([A-Z]+)[0-9]+/ig, "$1");
+      }
+
+      function getCellRow(cell) {
+        return cell.replace(/[A-Z]+([0-9]+)/ig, "$1");
+      }
+
+      function incrementColumn(column, pos) {
+        if (pos === undefined) pos = column.length-1;
+
+        var theChar = column.substr(pos, 1);
+
+        if (theChar == "Z") {
+          if (pos === 0) {
+            //The first character is a Z
+            //We need to make every character an A and append an additional one
+            var result = "A";
+            for (var i=0; i<column.length; i++) {
+              result += "A";
+            }
+            return result;
+          } else {
+            //We reached a Z in the current position, make it an A and increment the position before it
+            var newColumn = column.substr(0, pos) + "A" + column.substr(pos+1);
+            return incrementColumn(newColumn, pos-1);
+          }
+        }
+        else {
+          //Replace the character at pos with the next character
+          var nextChar = String.fromCharCode(theChar.charCodeAt(0)+1);
+          return column.substr(0, pos) + nextChar + column.substr(pos+1);
+        }
+      }
+
+      //Parse the excel data
+      //First, get the smallest and largest field in the sheet
+      var smallestRow = 1;
+      var smallestColumn = "A";
+      var largestField = data.Sheets[data.SheetNames[0]]["!ref"].split(":")[1];
+      var largestRow = getCellRow(largestField);
+      var largestColumn = getCellColumn(largestField);
+
+      //Now, walk over every possible cell, see if there is a value and print it
+      var content = '<table class="excelsheet">';
+      for (var r=smallestRow; r<=largestRow; r++) {
+        if (r === smallestRow) {
+          content += "<tr><th></th>";
+          for (var c=smallestColumn; c!=incrementColumn(largestColumn); c=incrementColumn(c)) {
+            content += "<th>"+c+"</th>";
+          }
+          content += "</tr>";
+        }
+
+        content += "<tr>";
+        content += "<th style=''>"+r+"</th>";
+
+        for (var c=smallestColumn; c!=incrementColumn(largestColumn); c=incrementColumn(c)) {
+          content += "<td class='type"+getCellType(c+r)+"'>"+getCellValue(c+r)+"</td>";
+        }
+        content += "</tr>";
+      }
+      content += "</table>";
+
+      Session.set('content', content);
     });
   } else if (contentType === "application/msword") {
     Meteor.call("getOfficeContent", "word", doc._source.file, function(err, data) {

@@ -2,6 +2,7 @@ if (Meteor.isClient) {
   Template.snippets.initSnippet = function() {
     var that = this;
     Meteor.setTimeout(function() {
+      //If the snippet is already visible we don't need to initialize it
       if ($("#snippet_"+that._id).css("display") !== "none") {
         return;
       }
@@ -12,13 +13,11 @@ if (Meteor.isClient) {
       if (top === undefined) top = getRandomInt(0, 600);
       if (left === undefined) left = getRandomInt(0, 600);
 
-      console.log(top+" || "+left);
-    
       $("#snippet_"+that._id).css({
+        display: 'inline-block',
         top: top,
         left: left
       });
-      $("#snippet_"+that._id).css('display', 'inline-block');
       markSnippetDirty(that);
     }, 1);
   };
