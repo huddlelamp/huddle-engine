@@ -15,7 +15,7 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
 
-        private SizeF[] _sizes = new SizeF[60];
+        private readonly SizeF[] _sizes = new SizeF[30];
         private int _sizesIdx = 0;
 
         #endregion
@@ -444,6 +444,7 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
                 var width = _sizes.Average(s => s.Width);
                 var height = _sizes.Average(s => s.Height);
+
                 return new SizeF(width, height);
             }
         }
