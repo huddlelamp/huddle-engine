@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -947,9 +948,9 @@ namespace Huddle.Engine.Processor.OpenCv
 
             if (threadSafeObjects.Length > 0)
             {
-                // Try to identify objects event if they are connected tightly (without a gap).
+                // Try to identify objects even if they are connected tightly (without a gap).
                 //Parallel.ForEach(threadSafeObjects, obj => FindObjectByBlankingKnownObjects(image, ref outputImage[0], now, threadSafeObjects, obj)); // TODO Parallel.ForEach does not work :(
-                foreach (var foundObjects in threadSafeObjects.Select(obj => FindObjectByBlankingKnownObjects(false, image, ref outputImage[0], now, _objects.ToArray(), obj)))
+                foreach (var foundObjects in threadSafeObjects.Select(obj => FindObjectByBlankingKnownObjects(false, image, ref outputImage[0], now, threadSafeObjects, obj, true)))
                 {
                     _objects.AddRange(foundObjects);
 
@@ -960,6 +961,13 @@ namespace Huddle.Engine.Processor.OpenCv
                 // Update occluded objects. It tries to find not yet identified and maybe occluded objects.
                 if (IsUpdateOccludedRectangles)
                     UpdateOccludedObjects(image, ref outputImage[0], now, threadSafeObjects);
+
+                // Try to find new objects.
+                var foundNewObjects = FindObjectByBlankingKnownObjects(false, image, ref outputImage[0], now, _objects.ToArray());
+                _objects.AddRange(foundNewObjects);
+
+                if (foundNewObjects.Any())
+                    Log("Found {0} new objects {1}", foundNewObjects.Length, foundNewObjects);
             }
             else
             {
@@ -1051,8 +1059,12 @@ namespace Huddle.Engine.Processor.OpenCv
         /// <param name="objects"></param>
         /// <param name="obj"></param>
         /// <param name="updateTime"></param>
-        private RectangularObject[] FindObjectByBlankingKnownObjects(bool occlusionTracking, Image<Rgb, byte> image, ref Image<Rgb, byte> outputImage, DateTime updateTime, RectangularObject[] objects, RectangularObject obj = null)
+        /// <param name="useROI"></param>
+        private RectangularObject[] FindObjectByBlankingKnownObjects(bool occlusionTracking, Image<Rgb, byte> image, ref Image<Rgb, byte> outputImage, DateTime updateTime, RectangularObject[] objects, RectangularObject obj = null, bool useROI = false)
         {
+            var imageWidth = image.Width;
+            var imageHeight = image.Height;
+
             var objectsToBlank = obj != null ? objects.Where(o => o != obj) : objects;
 
             // Blank previous objects from previous frame
@@ -1062,10 +1074,36 @@ namespace Huddle.Engine.Processor.OpenCv
                 blankedImage.Draw(otherObject.Shape, Rgbs.Black, -1);
             }
 
+            var roi = blankedImage.ROI;
+            if (useROI)
+            {
+                const int threshold = 10;
+                var b = obj.Bounds;
+
+                roi = new Rectangle(b.X - threshold, b.Y - threshold, b.Width + 2 * threshold, b.Height + 2 * threshold);
+
+                //blankedImageGray.ROI = roi;
+
+                if (IsRenderContent)
+                {
+                    outputImage.Draw(roi, Rgbs.AquaSky, 2);
+                }
+
+                var maskImage = new Image<Gray, byte>(imageWidth, imageHeight);
+                maskImage.Draw(roi, new Gray(255), -1);
+
+                CvInvoke.cvAnd(blankedImage.Ptr, blankedImage.Ptr, blankedImage.Ptr, maskImage.Ptr);
+            }
+
             var blankedImageGray = blankedImage.Convert<Gray, Byte>();
             blankedImageGray = blankedImageGray.Erode(2);
 
-            var newObjects = FindRectangles(occlusionTracking, blankedImageGray, ref outputImage, updateTime, objects);
+            //var oldROI = outputImage.ROI;
+            //outputImage.ROI = roi;
+
+            var newObjects = FindRectangles(occlusionTracking, blankedImageGray, ref outputImage, updateTime, objects, imageWidth, imageHeight);
+
+            //outputImage.ROI = oldROI;
 
             // Remove objects that intersect with previous objects.
             var filteredObjects = newObjects.ToList();
@@ -1160,7 +1198,7 @@ namespace Huddle.Engine.Processor.OpenCv
             var repairedPixels = depthPatchesImage.CountNonzero()[0];
             var totalPixels = obj.Shape.size.Width * obj.Shape.size.Height;
             var factorOfRepairedPixels = (double)repairedPixels / totalPixels;
-            Console.WriteLine("{0}% pixels repaired.", factorOfRepairedPixels * 100);
+            //Console.WriteLine("{0}% pixels repaired.", factorOfRepairedPixels * 100);
 
             // Do not account for entire occlusion at this time to avoid phantom objects even if the device is not present anymore.
             if (factorOfRepairedPixels > 0.95) return;
@@ -1228,12 +1266,10 @@ namespace Huddle.Engine.Processor.OpenCv
         /// <param name="outputImage"></param>
         /// <param name="updateTime"></param>
         /// <param name="objects"></param>
-        private RectangularObject[] FindRectangles(bool occlusionTracking, Image<Gray, byte> grayImage, ref Image<Rgb, byte> outputImage, DateTime updateTime, RectangularObject[] objects)
+        private RectangularObject[] FindRectangles(bool occlusionTracking, Image<Gray, byte> grayImage, ref Image<Rgb, byte> outputImage, DateTime updateTime, RectangularObject[] objects, int imageWidth, int imageHeight)
         {
             var newObjects = new List<RectangularObject>();
 
-            var imageWidth = grayImage.Width;
-            var imageHeight = grayImage.Height;
             var pixels = imageWidth * imageHeight;
 
             var diagonal = Math.Sqrt(Math.Pow(imageWidth, 2) + Math.Pow(imageHeight, 2));
