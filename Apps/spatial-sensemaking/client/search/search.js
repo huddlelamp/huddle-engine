@@ -87,7 +87,7 @@ if (Meteor.isClient) {
         var pastQuery = PastQueries.findOne({ query: query.trim().toLowerCase() });
         if (pastQuery === undefined) {
           var newDoc = {
-            query : query,
+            query : query.trim().toLowerCase(),
             count : 1
           };
           PastQueries.insert(newDoc);

@@ -72,19 +72,19 @@ Template.detailDocumentTemplate.contentEvent = function() {
       var largestRow = getCellRow(largestField);
       var largestColumn = getCellColumn(largestField);
 
-      //Now, walk over every possible cell, see if there is a value and print it
+      //Now, walk over every possible cell and print its value
       var content = '<table class="excelsheet">';
-      for (var r=smallestRow; r<=largestRow; r++) {
-        if (r === smallestRow) {
-          content += "<tr><th></th>";
-          for (var c=smallestColumn; c!=incrementColumn(largestColumn); c=incrementColumn(c)) {
-            content += "<th>"+c+"</th>";
-          }
-          content += "</tr>";
-        }
 
+      //Create the column headings
+      content += "<tr><th></th>";
+      for (var c=smallestColumn; c!=incrementColumn(largestColumn); c=incrementColumn(c)) {
+        content += "<th>"+c+"</th>";
+      }
+      content += "</tr>";
+      
+      for (var r=smallestRow; r<=largestRow; r++) {
         content += "<tr>";
-        content += "<th style=''>"+r+"</th>";
+        content += "<th style=''>"+r+"</th>"; //row heading
 
         for (var c=smallestColumn; c!=incrementColumn(largestColumn); c=incrementColumn(c)) {
           content += "<td class='type"+getCellType(c+r)+"'>"+getCellValue(c+r)+"</td>";
