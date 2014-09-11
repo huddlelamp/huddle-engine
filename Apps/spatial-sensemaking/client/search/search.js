@@ -3,7 +3,7 @@ if (Meteor.isClient) {
   var SEARCH_RESULTS_PER_PAGE = 10;
   var SEARCH_FIELDS = ["file^10", "_name"];
 
-  search = function(query, page) {
+  search = function(query, page, isGenuine) {
     if (query === undefined) return;
     if (page === undefined) page = 1;
 
@@ -84,15 +84,19 @@ if (Meteor.isClient) {
         Session.set("lastQueryPage", page);
         Session.set("results", results);
 
-        var pastQuery = PastQueries.findOne({ query: query.trim().toLowerCase() });
-        if (pastQuery === undefined) {
-          var newDoc = {
-            query : query.trim().toLowerCase(),
-            count : 1
-          };
-          PastQueries.insert(newDoc);
-        } else {
-          PastQueries.update({_id: pastQuery._id}, { $inc: {count: 1}});
+        //If this is a genuine query (e.g. not one that, for example, originates by clicking a
+        //pagination link) then we add it to the past queries
+        if (isGenuine) {
+          var pastQuery = PastQueries.findOne({ query: query.trim().toLowerCase() });
+          if (pastQuery === undefined) {
+            var newDoc = {
+              query : query.trim().toLowerCase(),
+              count : 1
+            };
+            PastQueries.insert(newDoc);
+          } else {
+            PastQueries.update({_id: pastQuery._id}, { $inc: {count: 1}});
+          }
         }
 
         var thisDevice = Session.get('thisDevice');
@@ -111,6 +115,10 @@ if (Meteor.isClient) {
 
   Template.searchIndex.rendered = function() {
     Template.searchIndex.reflectURL();
+
+    $("body").on("mouseup", function(e) {
+      Session.set('querySuggestions', []);
+    });
   };
 
   Template.searchIndex.results = function() {
@@ -186,7 +194,7 @@ if (Meteor.isClient) {
   Template.searchIndex.events({
     'click #search-btn': function(e, tmpl) {
       var query = tmpl.$('#search-query').val();
-      search(query);
+      search(query, 1, true);
     },
 
     'keyup #search-query': function(e, tmpl) {
@@ -198,7 +206,10 @@ if (Meteor.isClient) {
 
       //On enter, start the search
       if (e.keyCode == 13) {
-        search(query);
+        search(query, 1, true);
+      //On escape, clear the query suggestions
+      } else if (e.keyCode == 27) {
+        Session.set('querySuggestions', []);
       //On every other key, try to fetch some query suggestions
       } else {
         // $("#search-tag-wrapper").empty();

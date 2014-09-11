@@ -40,7 +40,7 @@
     <div class="row result-info">
       <div class="col-md-10 col-md-offset-1 input-group">
         {{#with results}}
-          Found {{hits.total}} results <!-- ({{toSeconds took}} seconds) -->
+          Found {{hits.total}} {{pluralize hits.total ' result' ' results'}} <!-- ({{toSeconds took}} seconds) -->
         {{/with}}
       </div>
     </div>
