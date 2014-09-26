@@ -442,7 +442,7 @@ namespace Huddle.Engine.Processor
                     
                     var location2 = new Point3D(p2.X, p2.Y, 0);
                     var distance2 = (p2 - p1).Length;
-                    proximity.Presences.Add(CreateProximity("Display", device2, location2, distance2, localAngle));
+                    proximity.Presences.Add(CreateProximity("Display", device2, location2, localAngle, distance2));
                 }
 
                 #endregion
