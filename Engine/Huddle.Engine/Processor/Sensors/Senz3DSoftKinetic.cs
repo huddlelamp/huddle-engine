@@ -18,6 +18,8 @@ using Huddle.Engine.Util;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
 using Point = System.Drawing.Point;
 
+using DepthSenseWrapper;
+
 namespace Huddle.Engine.Processor.Sensors
 {
     [ViewTemplate("Senz3D (SoftKinetic)", "Senz3DSoftKinetic", "/Huddle.Engine;component/Resources/kinect.png")]
@@ -37,6 +39,8 @@ namespace Huddle.Engine.Processor.Sensors
         private double _maxDepth = -1.0;
 
         private Rectangle _rgbInDepthROI = new Rectangle(0, 0, 0, 0);
+
+        private Wrapper DSW;
 
         #endregion
 
@@ -758,30 +762,8 @@ namespace Huddle.Engine.Processor.Sensors
 
         public Senz3DSoftKinetic()
         {
-            SoftKinetic a = new SoftKinetic();
-
-            PXCMSession session;
-            var sts = PXCMSession.CreateInstance(out session);
-
-            Debug.Assert(sts >= pxcmStatus.PXCM_STATUS_NO_ERROR, "could not create session instance");
-
-            PropertyChanged += (s, e) =>
-            {
-                switch (e.PropertyName)
-                {
-                    case DepthConfidenceThresholdPropertyName:
-                        if (_device != null)
-                            _device.SetProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_CONFIDENCE_THRESHOLD, _depthConfidenceThreshold);
-                        break;
-
-                    case ColorImageProfilePropertyName:
-                        //Stop();
-                        _rgbInDepthROI = new Rectangle(0, 0, 0, 0);
-                        //Thread.Sleep(2000);
-                        //Start();
-                        break;
-                }
-            };
+            DSW = new Wrapper();
+            bool init = DSW.init();
         }
 
         #endregion
@@ -795,8 +777,11 @@ namespace Huddle.Engine.Processor.Sensors
 
         public override void Start()
         {
-            var thread = new Thread(DoRendering);
+            // TODO check for init fro ctor
+            var thread = new Thread(DSW.start);
             thread.Start();
+            var t2 = new Thread(DoRendering);
+            t2.Start();
             Thread.Sleep(5);
         }
 
@@ -814,131 +799,141 @@ namespace Huddle.Engine.Processor.Sensors
         private void DoRendering()
         {
             _isRunning = true;
-
-            /* UtilMPipeline works best for synchronous color and depth streaming */
-            _pp = new UtilMPipeline();
-
-            /* Set Input Source */
-            _pp.capture.SetFilter("DepthSense Device 325V2");
-
-            /* Set Color & Depth Resolution */
-            PXCMCapture.VideoStream.ProfileInfo cinfo = GetConfiguration(PXCMImage.ColorFormat.COLOR_FORMAT_RGB32);
-            _pp.EnableImage(PXCMImage.ColorFormat.COLOR_FORMAT_RGB32, cinfo.imageInfo.width, cinfo.imageInfo.height);
-            _pp.capture.SetFilter(ref cinfo); // only needed to set FPS
-
-            PXCMCapture.VideoStream.ProfileInfo dinfo2 = GetConfiguration(PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH);
-            _pp.EnableImage(PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH, dinfo2.imageInfo.width, dinfo2.imageInfo.height);
-            _pp.capture.SetFilter(ref dinfo2); // only needed to set FPS
-
-            /* Initialization */
-            if (!_pp.Init())
-            {
-                Log("Could not initialize Senz3D hardware");
-                HasErrorState = true;
-                return;
-            }
-
-            var capture = _pp.capture;
-            _device = capture.device;
-            _device.SetProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_CONFIDENCE_THRESHOLD, DepthConfidenceThreshold);
-            _device.QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_LOW_CONFIDENCE_VALUE, out EmguExtensions.LowConfidence);
-            _device.QueryProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_SATURATION_VALUE, out EmguExtensions.Saturation);
+            ImageData id;
 
             while (_isRunning)
             {
-                /* If raw depth is needed, disable smoothing */
-                _pp.capture.device.SetProperty(PXCMCapture.Device.Property.PROPERTY_DEPTH_SMOOTHING, DepthSmoothing ? 1 : 0);
-
-                /* Wait until a frame is ready */
-                if (!_pp.AcquireFrame(true)) break;
-                if (_pp.IsDisconnected()) break;
+                id = DSW.getImage();
 
                 /* Get RGB color image */
+                if (!id.isColor())
+                    continue;
                 Stopwatch sw = Stopwatch.StartNew();
-                var color = _pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_COLOR);
-                var colorBitmap = GetRgb32Pixels(color);
-                var colorImage = new Image<Rgb, byte>(colorBitmap);
+                var _colorImage = new Image<Bgr, byte>(id.colorMapWidth, id.colorMapHeight);
+                unsafe
+                {
+                    Wrapper.yuy2bgr((byte*)_colorImage.MIplImage.imageData, id.colorMap, id.colorMapWidth, id.colorMapHeight);
+                }
+                //_colorImage.Flip(FLIP.HORIZONTAL);
+                var colorImage = new Image<Rgb, byte>(id.colorMapWidth, id.colorMapHeight);
+                CvInvoke.cvCvtColor(_colorImage, colorImage, COLOR_CONVERSION.BGR2RGB);
                 var colorImageCopy = colorImage.Copy();
                 ColorImageFrameTime = sw.ElapsedMilliseconds;
 
                 /* Get depth image */
+                if (!id.isDepth())
+                    continue;
                 sw.Restart();
-                var depth = _pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_DEPTH);
-                var depthImageAndConfidence = GetHighPrecisionDepthImage(depth);
-                var depthImage = (Image<Gray, float>)depthImageAndConfidence[0];
+                var depthImage = new Image<Gray, float>(id.depthMapWidth, id.depthMapHeight);
+                IntPtr g_depthSyncImage = CvInvoke.cvCreateImage(new System.Drawing.Size(id.depthMapWidth, id.depthMapHeight), IPL_DEPTH.IPL_DEPTH_32F, 1);
+                unsafe
+                {
+                    int count = 0; // DS data index
+                    if (id.depthMap != null && id.isDepth())
+                    {
+                        for (int i = 0; i < id.depthMapHeight / 2; i++)
+                        {
+                            for (int j = 0; j < id.depthMapWidth; j++)
+                            {
+                                // some arbitrary scaling to make this visible
+                                if (count >= id.depthMapSize)
+                                {
+                                    System.Console.WriteLine("SNAFU: {0}", count);
+                                    continue;
+                                }
+                                Int16 val = 0;
+                                try
+                                {
+                                    val = id.depthMap[count];
+                                    count++;
+                                }
+                                catch (System.AccessViolationException exc)
+                                {
+                                    System.Console.WriteLine("{0}", exc.Data);
+                                }
+
+                                if (val < 1000)
+                                {
+                                    val *= 150;
+                                }
+                                else
+                                {
+                                    val = 0;
+                                }
+                                CvInvoke.cvSet2D(g_depthSyncImage, i, j, new MCvScalar(val));
+                            }
+                        }
+                    }
+                }
+                CvInvoke.cvCopy(g_depthSyncImage, depthImage, IntPtr.Zero);
                 var depthImageCopy = depthImage.Copy();
-                var confidenceMapImage = (Image<Rgb, Byte>)depthImageAndConfidence[1];
-                var confidenceMapImageCopy = confidenceMapImage.Copy();
+
+                var confidenceImage = new Image<Rgb, byte>(id.depthMapWidth, id.depthMapHeight);
+                unsafe
+                {
+                    //http://stackoverflow.com/questions/18141103/how-to-access-a-depthmap-value-from-a-depth-camera
+                    //https://github.com/ph4m/DepthSenseGrabber/blob/master/DepthSenseGrabberCV/DepthSenseGrabberCV.cxx
+                    //0 - 31999
+                    //Wrapper.memcpy((byte*)cvi.MIplImage.imageData, (float*)id.depthMap, id.depthMapWidth, id.depthMapHeight);
+                    //cvi.MIplImage.imageData = id.depthMap;
+                    int count = 0; // DS data index
+                    if (id.depthMap != null && id.isDepth())
+                    {
+                        for (int i = 0; i < id.depthMapHeight / 2; i++)
+                        {
+                            for (int j = 0; j < id.depthMapWidth; j++)
+                            {
+                                // some arbitrary scaling to make this visible
+                                if (count >= id.depthMapSize)
+                                {
+                                    System.Console.WriteLine("SNAFU: {0}", count);
+                                    continue;
+                                }
+                                Int16 val = 0;
+                                try
+                                {
+                                    val = id.confidenceMap[count];
+                                    count++;
+                                }
+                                catch (System.AccessViolationException exc)
+                                {
+                                    System.Console.WriteLine("{0}", exc.Data);
+                                }
+
+                                //if (val < _depthDistance)
+                                //{
+                                //    val *= 150;
+                                //}
+                                //else
+                                //{
+                                //    val = 0;
+                                //}
+
+                                //if (!g_saveImageFlag && !g_saveDepthFlag)
+                                //val = (val / 31999) * 255; //normalize
+                                //System.Console.Write("{0}, ",val);
+                                //if (val < 0) val = 255; // catch the saturated points
+                                CvInvoke.cvSet2D(confidenceImage.Ptr, i, j, new MCvScalar(val));
+                            }
+                        }
+                    }
+                }
+                var confidenceImageCopy = confidenceImage.Copy();
+
                 DepthImageFrameTime = sw.ElapsedMilliseconds;
                 ConfidenceMapImageFrameTime = 0;
 
-                bool getRgbInDepthROI = false;
-                /* if rgbInDepthROI is undefined get uvmap and rgbofdepth and rgbInDepthROI */
-                if (_rgbInDepthROI.Left == 0 && _rgbInDepthROI.Right == 0 && _rgbInDepthROI.Width == 0 &&
-                    _rgbInDepthROI.Height == 0)
-                {
-                    getRgbInDepthROI = true;
-                }
-
-
                 /* Get UV map */
-                Image<Rgb, float> uvMapImage, uvMapImageCopy;
-                if (UvMapChecked || getRgbInDepthROI)
-                {
-                    sw.Restart();
-                    uvMapImage = GetDepthUVMap(depth);
-                    uvMapImageCopy = uvMapImage.Copy();
-                    UVMapImageFrameTime = sw.ElapsedMilliseconds;
-                }
-                else
-                {
-                    uvMapImage = null;
-                    uvMapImageCopy = null;
-                    UVMapImageFrameTime = -1;
-                }
-
+                sw.Restart();
+                UVMapImageFrameTime = sw.ElapsedMilliseconds;
+                
                 /* Get RgbOfDepth */
-                Image<Rgb, byte> rgbOfDepthImage, rgbOfDepthImageCopy;
-                if ((RgbOfDepthChecked && uvMapImage != null) || getRgbInDepthROI)
-                {
-                    sw.Restart();
-                    if (getRgbInDepthROI)
-                    {
-                        var tl = new Point();
-                        var br = new Point();
-                        rgbOfDepthImage = GetRgbOfDepthPixels(depthImage, colorImage, uvMapImage, true, ref _rgbInDepthROI);
-                        getRgbInDepthROI = false;
-                    }
-                    else
-                        rgbOfDepthImage = GetRgbOfDepthPixels(depthImage, colorImage, uvMapImage);
-
-                    rgbOfDepthImageCopy = rgbOfDepthImage.Copy();
-                    RgbOfDepthImageFrameTime = sw.ElapsedMilliseconds;
-                }
-                else
-                {
-                    rgbOfDepthImage = null;
-                    rgbOfDepthImageCopy = null;
-                    RgbOfDepthImageFrameTime = -1;
-                }
-
+                sw.Restart();
+                RgbOfDepthImageFrameTime = sw.ElapsedMilliseconds;
+                
                 /* Get DepthOfRGB */
-                Image<Gray, float> depthOfRgbImage, depthOfRgbImageCopy;
-                if (DepthOfRgbChecked && uvMapImage != null)
-                {
-                    sw.Restart();
-                    depthOfRgbImage = GetDepthOfRGBPixels(depthImage, colorImage, uvMapImage);
-                    depthOfRgbImageCopy = depthOfRgbImage.Copy();
-                    DepthOfRgbImageFrameTime = sw.ElapsedMilliseconds;
-                }
-                else
-                {
-                    depthOfRgbImage = null;
-                    depthOfRgbImageCopy = null;
-                    DepthOfRgbImageFrameTime = -1;
-                }
-
-                _pp.ReleaseFrame();
+                sw.Restart();
+                DepthOfRgbImageFrameTime = sw.ElapsedMilliseconds;
 
                 if (IsRenderContent)
                 {
@@ -951,63 +946,28 @@ namespace Huddle.Engine.Processor.Sensors
 
                     Task.Factory.StartNew(() =>
                     {
-                        var bitmap = depthImageCopy.ToGradientBitmapSource(true, EmguExtensions.LowConfidence, EmguExtensions.Saturation);
+                        var bitmap = depthImageCopy.ToGradientBitmapSource(true);
                         depthImageCopy.Dispose();
                         return bitmap;
                     }).ContinueWith(s => DepthImageSource = s.Result);
 
                     Task.Factory.StartNew(() =>
                     {
-                        var bitmap = confidenceMapImageCopy.ToBitmapSource(true);
-                        confidenceMapImageCopy.Dispose();
+                        var bitmap = confidenceImageCopy.ToBitmapSource(true);
+                        confidenceImageCopy.Dispose();
                         return bitmap;
                     }).ContinueWith(s => ConfidenceMapImageSource = s.Result);
-
-                    /* draw uvmap */
-                    if (uvMapImage != null)
-                        Task.Factory.StartNew(() =>
-                            {
-                                var bitmap = uvMapImageCopy.ToBitmapSource(true);
-                                uvMapImageCopy.Dispose();
-                                return bitmap;
-                            }).ContinueWith(s => UVMapImageSource = s.Result);
-
-                    /* draw rgbofdepth */
-                    if (rgbOfDepthImage != null)
-                    {
-                        Task.Factory.StartNew(() =>
-                        {
-                            var bitmap = rgbOfDepthImageCopy.ToBitmapSource(true);
-                            rgbOfDepthImageCopy.Dispose();
-                            return bitmap;
-                        }).ContinueWith(s => RgbOfDepthImageSource = s.Result);
-                    }
-
-                    /* draw depthofrgb */
-                    if (depthOfRgbImage != null)
-                        Task.Factory.StartNew(() =>
-                        {
-                            var bitmap = depthOfRgbImageCopy.ToGradientBitmapSource(true, EmguExtensions.LowConfidence, EmguExtensions.Saturation);
-                            depthOfRgbImageCopy.Dispose();
-                            return bitmap;
-                        }).ContinueWith(s => DepthOfRgbImageSource = s.Result);
                 }
 
-                var dc = new DataContainer(++_frameId, DateTime.Now)
+                var dc = new Huddle.Engine.Data.DataContainer(++_frameId, DateTime.Now)
                     {
                         new RgbImageData(this, "color", colorImage),
                         new GrayFloatImage(this, "depth", depthImage),
-                        new RgbImageData(this, "confidence", confidenceMapImage),
+                        new RgbImageData(this, "confidence", confidenceImage)
                     };
 
-                if (uvMapImage != null) dc.Add(new RgbFloatImage(this, "uvmap", uvMapImage));
-                if (rgbOfDepthImage != null) dc.Add(new RgbImageData(this, "rgbofdepth", rgbOfDepthImage));
-                if (depthOfRgbImage != null) dc.Add(new GrayFloatImage(this, "depthofrgb", depthOfRgbImage));
                 Publish(dc);
             }
-
-            _pp.Close();
-            _pp.Dispose();
         }
 
         private static int Align16(uint width)
