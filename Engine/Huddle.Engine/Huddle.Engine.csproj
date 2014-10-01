@@ -152,6 +152,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
     </Reference>
+    <Reference Include="ClassLibrary1">
+      <HintPath>..\..\..\..\Users\hci\Documents\Visual Studio 2013\Projects\ClassLibrary1\x64\Debug\ClassLibrary1.dll</HintPath>
+    </Reference>
     <Reference Include="Emgu.CV">
       <HintPath>..\..\lib\Emgu.CV\Emgu.CV.dll</HintPath>
     </Reference>
@@ -284,6 +287,8 @@
     <Compile Include="Extensions\NumericExtensions.cs" />
     <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
     <Compile Include="Extensions\PointExtensions.cs" />
+    <Compile Include="Processor\Sensors\Senz3DSoftKinetic.cs" />
+    <Compile Include="Processor\Sensors\Wrapper\SoftKinetic.cs" />
     <Compile Include="Windows\BasicWindow.xaml.cs">
       <DependentUpon>BasicWindow.xaml</DependentUpon>
     </Compile>
