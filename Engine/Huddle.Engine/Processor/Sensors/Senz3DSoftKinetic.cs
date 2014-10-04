@@ -777,9 +777,7 @@ namespace Huddle.Engine.Processor.Sensors
 
         public override void Start()
         {
-            // TODO check for init fro ctor
-            var thread = new Thread(DSW.start);
-            thread.Start();
+            DSW.start();
             var t2 = new Thread(DoRendering);
             t2.Start();
             Thread.Sleep(5);
@@ -788,6 +786,7 @@ namespace Huddle.Engine.Processor.Sensors
         public override void Stop()
         {
             _isRunning = false;
+            DSW.stop();
         }
 
         #endregion
@@ -804,6 +803,8 @@ namespace Huddle.Engine.Processor.Sensors
             while (_isRunning)
             {
                 id = DSW.getImage();
+                if (id == null)
+                    continue;
 
                 /* Get RGB color image */
                 if (!id.isColor())
@@ -831,7 +832,7 @@ namespace Huddle.Engine.Processor.Sensors
                     int count = 0; // DS data index
                     if (id.depthMap != null && id.isDepth())
                     {
-                        for (int i = 0; i < id.depthMapHeight / 2; i++)
+                        for (int i = 0; i < id.depthMapHeight; i++)
                         {
                             for (int j = 0; j < id.depthMapWidth; j++)
                             {
@@ -879,7 +880,7 @@ namespace Huddle.Engine.Processor.Sensors
                     int count = 0; // DS data index
                     if (id.depthMap != null && id.isDepth())
                     {
-                        for (int i = 0; i < id.depthMapHeight / 2; i++)
+                        for (int i = 0; i < id.depthMapHeight; i++)
                         {
                             for (int j = 0; j < id.depthMapWidth; j++)
                             {
@@ -967,6 +968,7 @@ namespace Huddle.Engine.Processor.Sensors
                     };
 
                 Publish(dc);
+                id.Dispose();
             }
         }
 
