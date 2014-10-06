@@ -55,8 +55,7 @@ namespace Huddle.Engine.Processor.Sensors
             {
                 return new[]
                 {
-                    "1280 x 720",
-                    "640 x 480"
+                    "640 x 480"/*,1280 x 720"*/
                 };
             }
         }
@@ -305,78 +304,6 @@ namespace Huddle.Engine.Processor.Sensors
                 RaisePropertyChanging(DepthOfRgbImageSourcePropertyName);
                 _DepthOfRgbImageSource = value;
                 RaisePropertyChanged(DepthOfRgbImageSourcePropertyName);
-            }
-        }
-
-        #endregion
-
-        #region DepthConfidenceThreshold
-
-        /// <summary>
-        /// The <see cref="DepthConfidenceThreshold" /> property's name.
-        /// </summary>
-        public const string DepthConfidenceThresholdPropertyName = "DepthConfidenceThreshold";
-
-        private float _depthConfidenceThreshold = 0;
-
-        /// <summary>
-        /// Sets and gets the DepthConfidenceThreshold property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        [XmlAttribute]
-        public float DepthConfidenceThreshold
-        {
-            get
-            {
-                return _depthConfidenceThreshold;
-            }
-
-            set
-            {
-                if (_depthConfidenceThreshold == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(DepthConfidenceThresholdPropertyName);
-                _depthConfidenceThreshold = value;
-                RaisePropertyChanged(DepthConfidenceThresholdPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region DepthSmoothing
-
-        /// <summary>
-        /// The <see cref="DepthSmoothing" /> property's name.
-        /// </summary>
-        public const string DepthSmoothingPropertyName = "DepthSmoothing";
-
-        private bool _depthSmoothing = false;
-
-        /// <summary>
-        /// Sets and gets the DepthSmoothing property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        [XmlAttribute]
-        public bool DepthSmoothing
-        {
-            get
-            {
-                return _depthSmoothing;
-            }
-
-            set
-            {
-                if (_depthSmoothing == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(DepthSmoothingPropertyName);
-                _depthSmoothing = value;
-                RaisePropertyChanged(DepthSmoothingPropertyName);
             }
         }
 
@@ -756,6 +683,76 @@ namespace Huddle.Engine.Processor.Sensors
 
         #endregion
 
+        #region DepthFrameRate
+
+        /// <summary>
+        /// The <see cref="DepthFrameRate" /> property's name.
+        /// </summary>
+        public const string DepthFrameRatePropertyName = "Depth Camera Framerate";
+
+        private int _depthFrameRate = 60;
+
+        /// <summary>
+        /// Sets and gets the DepthFrameRate property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int DepthFrameRate
+        {
+            get
+            {
+                return _depthFrameRate;
+            }
+
+            set
+            {
+                if (_depthFrameRate == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(DepthFrameRatePropertyName);
+                _depthFrameRate = value;
+                RaisePropertyChanged(DepthFrameRatePropertyName);
+            }
+        }
+
+        #endregion
+
+        #region ColorFrameRate
+
+        /// <summary>
+        /// The <see cref="ColorFrameRate" /> property's name.
+        /// </summary>
+        public const string ColorFrameRatePropertyName = "Color Camera Framerate";
+
+        private int _colorFrameRate = 30;
+
+        /// <summary>
+        /// Sets and gets the ColorFrameRate property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int ColorFrameRate
+        {
+            get
+            {
+                return _colorFrameRate;
+            }
+
+            set
+            {
+                if (_colorFrameRate == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ColorFrameRatePropertyName);
+                _colorFrameRate = value;
+                RaisePropertyChanged(ColorFrameRatePropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -764,6 +761,20 @@ namespace Huddle.Engine.Processor.Sensors
         {
             DSW = new Wrapper();
             bool init = DSW.init();
+
+            PropertyChanged += (s, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case DepthFrameRatePropertyName:
+                        DSW.changeDepthFrameRate(DepthFrameRate);
+                        break;
+
+                    case ColorFrameRatePropertyName:
+                        DSW.changeColorFrameRate(ColorFrameRate);
+                        break;
+                }
+            };
         }
 
         #endregion
@@ -832,6 +843,9 @@ namespace Huddle.Engine.Processor.Sensors
                     int count = 0; // DS data index
                     if (id.depthMap != null && id.isDepth())
                     {
+                        var minValue = MinDepthValue;
+                        var maxValue = MaxDepthValue;
+
                         for (int i = 0; i < id.depthMapHeight; i++)
                         {
                             for (int j = 0; j < id.depthMapWidth; j++)
@@ -853,15 +867,18 @@ namespace Huddle.Engine.Processor.Sensors
                                     System.Console.WriteLine("{0}", exc.Data);
                                 }
 
-                                if (val < 1000)
+                                var test = (val - minValue) / (maxValue - minValue);
+
+                                if (test < 0)
                                 {
-                                    val *= 150;
+                                    test =0.0f;
                                 }
-                                else
+                                else if (test > 1.0)
                                 {
-                                    val = 0;
+                                    test = 1.0f;
                                 }
-                                CvInvoke.cvSet2D(g_depthSyncImage, i, j, new MCvScalar(val));
+                                test *= 255.0f;
+                                CvInvoke.cvSet2D(g_depthSyncImage, i, j, new MCvScalar(test));
                             }
                         }
                     }

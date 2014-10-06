@@ -290,7 +290,6 @@
     <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
     <Compile Include="Extensions\PointExtensions.cs" />
     <Compile Include="Processor\Sensors\Senz3DSoftKinetic.cs" />
-    <Compile Include="Processor\Sensors\Wrapper\SoftKinetic.cs" />
     <Compile Include="Windows\BasicWindow.xaml.cs">
       <DependentUpon>BasicWindow.xaml</DependentUpon>
     </Compile>

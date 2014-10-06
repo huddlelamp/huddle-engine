@@ -185,6 +185,12 @@
                                 <Label Content="Profile"/>
                                 <ComboBox ItemsSource="{Binding Path=ColorImageProfiles}" SelectedValue="{Binding Path=ColorImageProfile}" />
                             </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Fps"/>
+                                <Slider Value="{Binding Path=ColorFrameRate}" Width="340" Height="25" Minimum="25" Maximum="30" IsSnapToTickEnabled="True" Ticks="25, 30"/>
+                                <TextBlock Text="{Binding Path=ColorFrameRate}"/>
+                            </StackPanel>
                         </StackPanel>
                     </GroupBox>
 
@@ -200,12 +206,6 @@
                                 <Label Content=" ms)"/>
                             </StackPanel>
                             <Separator/>
-                            <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=DepthSmoothing}" />
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="Depth Confidence Threshold"/>
-                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThreshold}" />
-                                <TextBlock Text="{Binding Path=DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
-                            </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Min Depth Value (Red)"/>
                                 <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=MinDepthValue}" />
@@ -215,6 +215,12 @@
                                 <Label Content="Max Depth Value (Blue)"/>
                                 <Slider Width="200" Height="25" Minimum="0" Maximum="5000" Value="{Binding Path=MaxDepthValue}" />
                                 <TextBlock Text="{Binding Path=MaxDepthValue, StringFormat={}{0:#}}"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Fps"/>
+                                <Slider Value="{Binding Path=DepthFrameRate}" Width="340" Height="25" Minimum="25" Maximum="60" IsSnapToTickEnabled="True" Ticks="25, 30, 50, 60"/>
+                                <TextBlock Text="{Binding Path=DepthFrameRate}"/>
                             </StackPanel>
                         </StackPanel>
                     </GroupBox>
@@ -280,11 +286,6 @@
 
                 </Grid>
             </ScrollViewer>
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Fps"/>
-                <Slider Value="{Binding Path=Fps}" Width="340" Height="25" Minimum="0" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True" />
-                <TextBlock Text="{Binding Path=Fps}"/>
-            </StackPanel>
         </StackPanel>
     </DataTemplate>
 </ResourceDictionary>
