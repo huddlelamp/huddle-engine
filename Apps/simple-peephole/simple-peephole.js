@@ -65,11 +65,13 @@ if (Meteor.isClient) {
       // array for later removing presences that are not available anymore
       var currentIds = [];
 
+      var $presenceContainer = $('#presences-container');
+
       presences.forEach(function(presence) {
 
         if (presence.Type != "Display") return;
 
-        var id2 = presence.Identity;
+        var id2 = parseInt(presence.Identity);
         var location2 = presence.Location;
         var x2 = location2[0];
         var y2 = location2[1];
@@ -79,8 +81,9 @@ if (Meteor.isClient) {
 
         var $presence = $('#presence-' + id2);
 
-        if (!$presence.length) {
-          $('<div id="presence-' + id2 + '" presence-id="' + id2 + '" class="huddle-presence"></div>').appendTo($('#presences-container'));
+        if (!$presence.length && $presenceContainer.length) {
+          var $presenceElement = $('<div id="presence-' + id2 + '" presence-id="' + id2 + '" class="huddle-presence"></div>');
+          $presenceContainer.append($presenceElement);
         }
 
         var containerWidth = $('#presences-container').width();
@@ -91,17 +94,38 @@ if (Meteor.isClient) {
         var presenceLeft = (containerWidth / 2) - (presenceWidth / 2);
         var presenceTop = (containerHeight / 2);
 
-        // $presence.css('height', presenceHeight + "px");
         $presence.css('left', presenceLeft + "px");
         $presence.css('top', presenceTop + "px");
         $presence.css('height', $(window).width() + "px");
-        $presence.rotate(presence.Orientation - 180);
+        $presence.rotate(parseInt(presence.Orientation) - 180);
       });
 
       // removes all presences that are not available anymore
       $('.huddle-presence').each(function(index, value) {
         var presenceId = parseInt($(this).attr('presence-id'));
+        // console.log("Array: " + currentIds);
+        // console.log("presenceId: " + presenceId);
+        // console.log("comparison: " + $.inArray(presenceId, currentIds));
+
+        // var exists = false;
+        // for (var i = 0; i < currentIds.length; i++) {
+        //
+        //   console.log("curId: " + currentIds[i]);
+        //   console.log("comparison 2: " + presenceId == currentIds[i]);
+        //
+        //   if (presenceId == currentIds[i]) {
+        //     exists = true;
+        //     break;
+        //   }
+        // }
+        //
+        // if (!exists) {
+        //   console.log("Removed")
+        //   $(this).remove();
+        // }
+
         if ($.inArray(presenceId, currentIds) < 0) {
+          console.log("Removed")
           $(this).remove();
         }
       });
