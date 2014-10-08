@@ -1,3 +1,7 @@
 <template name="accounts">
-  {{> accountsAdmin}}
+  {{#if isInRole "admin"}}
+      {{> accountsAdmin}}
+  {{else}}
+      Must be admin to see this...
+  {{/if}}
 </template>

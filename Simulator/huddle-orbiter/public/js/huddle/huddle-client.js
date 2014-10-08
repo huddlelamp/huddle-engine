@@ -24,7 +24,7 @@
  *                           },
  * }
  *
- * @author Roman Rädle [firstname.lastname@outlook.com] replace 'ä' with 'ae'
+ * @author Roman Rädle [firstname.lastname@outlook.com] replace "ä" with "ae"
  * @requires jQuery
  * @namespace Huddle
  * @param {int} Device id.
@@ -54,7 +54,7 @@ window.Huddle = (function ($) {
      * @param {string} name Client name. Does not necessarily need to be a unique name.
      */
     this.client = function (name) {
-        this.name = typeof name !== 'undefined' ? name : "";
+        this.name = typeof name !== "undefined" ? name : "";
 
         this.running = false;
         this.connected = false;
@@ -96,7 +96,7 @@ window.Huddle = (function ($) {
         var dimension = 840;
         var box = dimension / (matrix.length + 2);
 
-        var canvas = document.createElement('canvas');
+        var canvas = document.createElement("canvas");
         canvas.width = dimension;
         canvas.height = dimension;
 
@@ -123,7 +123,7 @@ window.Huddle = (function ($) {
      */
     this.connect = function (host, port) {
         this.host = host;
-        this.port = typeof port !== 'undefined' ? port : 4711;
+        this.port = typeof port !== "undefined" ? port : 4711;
 
         this.running = true;
 
@@ -147,7 +147,7 @@ window.Huddle = (function ($) {
         // connection automatically
         var sendAlive = function () {
             if (this.connected) {
-                var content = '"Id": "{0}"'.format(this.id);
+                var content = ""Id": "{0}"".format(this.id);
                 send("Alive", content);
             }
         }.bind(this);
@@ -169,9 +169,9 @@ window.Huddle = (function ($) {
 
             this.connected = true;
 
-            // set a short timeout before send the handshake (this avoids 'Uncaught InvalidStateError: Failed to execute 'send' on 'WebSocket': Still in CONNECTING state'.
+            // set a short timeout before send the handshake (this avoids "Uncaught InvalidStateError: Failed to execute "send" on "WebSocket": Still in CONNECTING state".
             setTimeout(function () {
-                var content = '"Name": "{0}"'.format(this.name);
+                var content = ""Name": "{0}"".format(this.name);
                 send("Handshake", content);
             }, 500);
 
@@ -297,10 +297,10 @@ window.Huddle = (function ($) {
         if (data.Value) {
 
             // do not add a glyph container if it already exists
-            if ($('#huddle-glyph-container').length)
+            if ($("#huddle-glyph-container").length)
                 return;
 
-            var $glyphContainer = $('<div id="huddle-glyph-container"></div>').appendTo($('body'));
+            var $glyphContainer = $("<div id="huddle-glyph-container"></div>").appendTo($("body"));
             $glyphContainer.css({
                 "top": "0",
                 "left": "0",
@@ -313,7 +313,7 @@ window.Huddle = (function ($) {
                 "height": "100%"
             });
 
-            var $glyph = $glyphContainer.append('<div id="huddle-glyph-{0}"></div>'.format(this.id));
+            var $glyph = $glyphContainer.append("<div id="huddle-glyph-{0}"></div>".format(this.id));
             $glyph.css({
                 "left": "0",
                 "top": "0",
@@ -322,11 +322,11 @@ window.Huddle = (function ($) {
                 "background-size": "contain",
                 "background-repeat": "no-repeat",
                 "background-position": "center",
-                "background-image": "url('" + glyph + "')"
+                "background-image": "url("" + glyph + "")"
             });
         }
         else {
-            $('#huddle-glyph-container').remove();
+            $("#huddle-glyph-container").remove();
         }
 
         EventManager.trigger("identify", data);
@@ -344,10 +344,10 @@ window.Huddle = (function ($) {
         if (data.Value) {
 
             // do not add a register container if it already exists
-            if ($('#huddle-register-container').length)
+            if ($("#huddle-register-container").length)
                 return;
 
-            var $glyphContainer = $('<div id="huddle-register-container"></div>').appendTo($('body'));
+            var $glyphContainer = $("<div id="huddle-register-container"></div>").appendTo($("body"));
             $glyphContainer.css({
                 "top": "0",
                 "left": "0",
@@ -361,7 +361,7 @@ window.Huddle = (function ($) {
             });
       }
       else {
-          $('#huddle-register-container').remove();
+          $("#huddle-register-container").remove();
       }
     }.bind(this);
 
@@ -419,7 +419,7 @@ window.Huddle = (function ($) {
      * @param {string} msg Message content.
      */
     this.broadcast = function (event, msg) {
-        send(DataTypes.Message, '"Event": "{0}", "Data": {1}'.format(event, msg));
+        send(DataTypes.Message, ""Event": "{0}", "Data": {1}".format(event, msg));
         return this;
     };
 
@@ -432,7 +432,7 @@ window.Huddle = (function ($) {
      * @param {string} content Message content.
      */
     var send = function (type, content) {
-        var msg = '{{"Type": "{0}", {1}}}'.format(type, content);
+        var msg = "{{"Type": "{0}", {1}}}".format(type, content);
         this.socket.send(msg);
     }.bind(this);
 

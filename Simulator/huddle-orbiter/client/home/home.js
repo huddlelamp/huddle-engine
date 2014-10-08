@@ -1,14 +1,14 @@
 if (Meteor.isClient) {
   Template.exampleUsage.helpers({
-    'host': function() {
-      var headerHost = headers.get('host').split(':');
+    "host": function() {
+      var headerHost = headers.get("host").split(":");
       return headerHost[0];
     },
 
-    'port': function() {
+    "port": function() {
       var user = Meteor.user();
 
-      if (typeof(user.settings) !== 'undefined') {
+      if (typeof(user.settings) !== "undefined") {
         var userSettings = user.settings;
         return userSettings.orbiterPort;
       }
@@ -18,7 +18,7 @@ if (Meteor.isClient) {
   })
 
   Template.exampleUsage.rendered = function() {
-    $('pre code').each(function(i, block) {
+    $("pre code").each(function(i, block) {
       hljs.highlightBlock(block);
     });
   };

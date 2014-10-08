@@ -30,8 +30,8 @@ $.widget("ui.rotatable", $.ui.mouse, {
     _create: function() {
         var handle;
         if (!this.options.handle) {
-            handle = $(document.createElement('div'));
-            handle.addClass('ui-rotatable-handle');
+            handle = $(document.createElement("div"));
+            handle.addClass("ui-rotatable-handle");
         }
         else {
             handle = this.options.handle;
@@ -43,8 +43,8 @@ $.widget("ui.rotatable", $.ui.mouse, {
             stopRotate: $.proxy(this.stopRotate, this)
         };
 
-        handle.draggable({ helper: 'clone', start: this.dragStart, handle: handle });
-        handle.bind('mousedown', this.listeners.startRotate);
+        handle.draggable({ helper: "clone", start: this.dragStart, handle: handle });
+        handle.bind("mousedown", this.listeners.startRotate);
         handle.appendTo(this.element);
         
         if(this.options.angle != false) {
@@ -57,15 +57,15 @@ $.widget("ui.rotatable", $.ui.mouse, {
     },
 
     _destroy: function() {
-        this.element.removeClass('ui-rotatable');
-        this.element.find('.ui-rotatable-handle').remove();
+        this.element.removeClass("ui-rotatable");
+        this.element.find(".ui-rotatable-handle").remove();
     },
 
     performRotation: function(angle) {
-        this.element.css('transform','rotate(' + angle + 'rad)');
-        this.element.css('-moz-transform','rotate(' + angle + 'rad)');
-        this.element.css('-webkit-transform','rotate(' + angle + 'rad)');
-        this.element.css('-o-transform','rotate(' + angle + 'rad)');
+        this.element.css("transform","rotate(" + angle + "rad)");
+        this.element.css("-moz-transform","rotate(" + angle + "rad)");
+        this.element.css("-webkit-transform","rotate(" + angle + "rad)");
+        this.element.css("-o-transform","rotate(" + angle + "rad)");
     },
 
     getElementOffset: function() {
@@ -98,8 +98,8 @@ $.widget("ui.rotatable", $.ui.mouse, {
 
         this._propagate("start", event);
 
-        $(document).bind('mousemove', this.listeners.rotateElement);
-        $(document).bind('mouseup', this.listeners.stopRotate);
+        $(document).bind("mousemove", this.listeners.rotateElement);
+        $(document).bind("mouseup", this.listeners.stopRotate);
 
         return false;
     },
@@ -136,8 +136,8 @@ $.widget("ui.rotatable", $.ui.mouse, {
             return;
         }
 
-        $(document).unbind('mousemove', this.listeners.rotateElement);
-        $(document).unbind('mouseup', this.listeners.stopRotate);
+        $(document).unbind("mousemove", this.listeners.rotateElement);
+        $(document).unbind("mouseup", this.listeners.stopRotate);
 
         this.elementStopAngle = this.elementCurrentAngle;
         if (this.hasRotated) {

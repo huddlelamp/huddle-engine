@@ -15,15 +15,19 @@ if (Meteor.isClient) {
 
 if (Meteor.isServer) {
   Meteor.publish("user-data", function() {
-    if (!this.userId) return null;
-    return Meteor.users.find({}, { fields:
-      {
-        _id: 1,
-        emails: 1,
-        roles: 1,
-        profile: 1,
-      }
-    });
+    if (this.userId) {
+      return Meteor.users.find({}, { fields: {
+          _id: 1,
+          emails: 1,
+          roles: 1,
+          profile: 1,
+          settinsg: 1,
+        }
+      });
+    }
+    else {
+      this.ready();
+    }
   });
 
   Meteor.users.allow({

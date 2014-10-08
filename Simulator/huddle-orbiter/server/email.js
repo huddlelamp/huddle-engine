@@ -5,7 +5,7 @@ if (Meteor.isServer) {
     });
 
     smtp = {
-      username: 'no-reply@proxemicinteractions.org',   // eg: server@gentlenode.com
+      username: 'no-reply@huddlelamp.org',   // eg: server@gentlenode.com
       password: 'test1234',   // eg: 3eeP1gtizk5eziohfervU
       server:   'smtp.1und1.de',  // eg: mail.gandi.net
       port: 25

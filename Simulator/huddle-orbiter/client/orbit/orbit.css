@@ -30,7 +30,7 @@
 
   width: 200px;
   height: 150px;
-  background-image: url('../../images/device.png');
+  background-image: url("../../images/device.png");
   background-size: 100%;
   background-repeat: no-repeat;
 }*/
@@ -50,7 +50,7 @@
   height: 16px;
   width: 16px;
   cursor: pointer;
-  background-image: url('../images/rotate.png');
+  background-image: url("../images/rotate.png");
   background-size: 100%;
   left: 2px;
   top: 2px;

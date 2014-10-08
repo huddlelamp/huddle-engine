@@ -24,7 +24,7 @@ if (Meteor.isClient) {
     var user = Meteor.user();
 
     if (user) {
-      if (typeof(user.settings) !== 'undefined') {
+      if (typeof(user.settings) !== "undefined") {
         var userSettings = user.settings;
         return userSettings.orbiterPort;
       }
@@ -37,16 +37,16 @@ if (Meteor.isClient) {
    *
    */
   Template.orbiterConnection.events({
-    'click #orbiter-start': function () {
-      var port = parseInt($('#orbiter-port').val());
+    "click #orbiter-start": function () {
+      var port = parseInt($("#orbiter-port").val());
 
-      Meteor.call('startOrbiter', port, function(error, orbiterPort) {
+      Meteor.call("startOrbiter", port, function(error, orbiterPort) {
         if (orbiterPort) {
           console.log("Huddle Orbiter started successfully.");
 
           var user = Meteor.user();
           if (user) {
-            Meteor.users.update({_id: user._id}, { $set: { 'settings.orbiterPort': orbiterPort } }, { multi: true } );
+            Meteor.users.update({_id: user._id}, { $set: { "settings.orbiterPort": orbiterPort } }, { multi: true } );
           }
         }
         else {
@@ -54,8 +54,8 @@ if (Meteor.isClient) {
         }
       });
     },
-    'click #orbiter-stop': function () {
-      Meteor.call('stopOrbiter', function(error, result) {
+    "click #orbiter-stop": function () {
+      Meteor.call("stopOrbiter", function(error, result) {
         if (result) {
           console.log("Huddle Orbiter stopped successfully.");
         }
@@ -70,12 +70,12 @@ if (Meteor.isClient) {
    *
    */
   Template.clientConnection.events({
-    'click #cmd-client-connect': function() {
+    "click #cmd-client-connect": function() {
 
-      var host = $('#cmd-client-host').val();
-      var port = parseInt($('#cmd-client-port').val());
-      var name = $('#cmd-client-name').val();
-      var reconnect = $('#cmd-client-reconnect').val();
+      var host = $("#cmd-client-host").val();
+      var port = parseInt($("#cmd-client-port").val());
+      var name = $("#cmd-client-name").val();
+      var reconnect = $("#cmd-client-reconnect").val();
 
       huddle = Huddle.client(name)
           .on("proximity", function (data) {
@@ -87,7 +87,7 @@ if (Meteor.isClient) {
       huddle.reconnect = reconnect;
       huddle.connect(host, port);
     },
-    'click #cmd-client-disconnect': function() {
+    "click #cmd-client-disconnect": function() {
       if (huddle) {
         huddle.disconnect();
       }

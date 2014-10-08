@@ -1,37 +1,26 @@
 if (Meteor.isServer) {
   Meteor.startup(function () {
 
-    // if (Meteor.users.findOne("oreuNJgGqTBSF2mix"))
-    //     Roles.addUsersToRoles("oreuNJgGqTBSF2mix", ['admin', 'user', 'developer']);
+    // Log environment settings to console on server startup.
+    console.log("PORT: " + process.env.PORT);
+    console.log("ROOT_URL: " + process.env.ROOT_URL);
+    console.log("MONGO_URL: " + process.env.MONGO_URL);
+    console.log("MAIL_URL: " + process.env.MAIL_URL);
 
-    //// create a couple of roles if they don't already exist (THESE ARE NOT NEEDED -- just for the demo)
+    // if (Meteor.users.findOne("oreuNJgGqTBSF2mix"))
+    //     Roles.addUsersToRoles("oreuNJgGqTBSF2mix", ["admin", "user", "developer"]);
+
+    //// create a couple of roles if they don"t already exist (THESE ARE NOT NEEDED -- just for the demo)
     // if(!Meteor.roles.findOne({name: "secret"}))
     //     Roles.createRole("secret");
     //
     // if(!Meteor.roles.findOne({name: "double-secret"}))
     //     Roles.createRole("double-secret");
 
-    Meteor.publish("user-data", function () {
-      if (this.userId) {
-        return Meteor.users.find({_id: this.userId},
-                                 {
-                                   fields: {
-                                     settings: 1
-                                    }
-                                  });
-      }
-      else {
-        this.ready();
-      }
-    });
-
     var orbiter;
 
     Clients.remove({});
     Meteor.publish("clients-subscription", function() {
-
-      console.log(this.userId);
-
       return Clients.find({userId: this.userId});
     });
 

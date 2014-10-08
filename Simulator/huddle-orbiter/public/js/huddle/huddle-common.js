@@ -14,9 +14,9 @@ String.prototype.format = function () {
 };
 
 function namespace(namespaceString) {
-    var parts = namespaceString.split('.'),
+    var parts = namespaceString.split("."),
         parent = window,
-        currentPart = '';
+        currentPart = "";
 
     for(var i = 0, length = parts.length; i < length; i++) {
         currentPart = parts[i];

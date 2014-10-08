@@ -22,56 +22,56 @@ if (Meteor.isClient) {
   };
 
   var isAdminLoggedIn = function() {
-    isUserLoggedInWithRoles(['admin'], 'home');
+    isUserLoggedInWithRoles(["admin"], "home");
   };
 
   var isUserLoggedIn = function() {
-    isUserLoggedInWithRoles(['admin','user'], 'home');
+    isUserLoggedInWithRoles(["admin","user"], "home");
   };
 
   var routeHome = function() {
-    console.log('route home');
-    Router.go('home');
+    console.log("route home");
+    Router.go("home");
   };
 
   Router.configure({
-    layoutTemplate: 'layout',
-    loadingTemplate: 'loading'
+    layoutTemplate: "layout",
+    loadingTemplate: "loading"
   });
 
   // simple route with
-  // name 'about' that
-  // matches '/about' and automatically renders
-  // template 'about'
+  // name "about" that
+  // matches "/about" and automatically renders
+  // template "about"
   Router.map(function () {
-    this.route('home', {
+    this.route("home", {
       path: "/"
     });
 
-    this.route('orbit', {
+    this.route("orbit", {
       path: "/orbit",
       onBeforeAction: isUserLoggedIn,
     });
 
-    this.route('settings', {
+    this.route("settings", {
       path: "/settings",
       onBeforeAction: isUserLoggedIn,
     });
 
-    this.route('faq', {
+    this.route("faq", {
       path: "/faq"
     });
 
-    this.route('help', {
+    this.route("help", {
       path: "/help"
     });
 
-    this.route('accounts', {
+    this.route("accounts", {
       path: "/admin/accounts",
       onBeforeAction: isAdminLoggedIn,
     });
 
-    this.route('notFound', {
+    this.route("notFound", {
       path: "*",
       // onAfterAction: routeHome,
     });

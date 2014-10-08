@@ -2,12 +2,12 @@ if (Meteor.isClient) {
 
   Template.display.helpers({
     isDeveloperUser: function() {
-      return Roles.userIsInRole(Meteor.user(), ['developer','admin']);
+      return Roles.userIsInRole(Meteor.user(), ["developer","admin"]);
     }
   });
 
   var matrixBack = function(tr) {
-    var values = tr.split('(')[1].split(')')[0].split(',');
+    var values = tr.split("(")[1].split(")")[0].split(",");
     var a = values[0];
     var b = values[1];
     var c = values[2];
@@ -41,7 +41,7 @@ if (Meteor.isClient) {
         var width = $this.width();
         var height = $this.height();
 
-        var $orbit = $('#orbit');
+        var $orbit = $("#orbit");
         var orbitWidth = $orbit.width();
         var orbitHeight = $orbit.height();
 
@@ -67,7 +67,7 @@ if (Meteor.isClient) {
 
       }
     });
-    $(client).css('position', 'absolute');
+    $(client).css("position", "absolute");
 
     $(client).rotatable({
       start: function(event, ui) {
@@ -77,7 +77,7 @@ if (Meteor.isClient) {
 
         var id = this.id;
         var $this = $(this);
-        var transform = $this.css('-webkit-transform');
+        var transform = $this.css("-webkit-transform");
 
         // console.log(transform);
 
@@ -107,25 +107,25 @@ if (Meteor.isClient) {
    *
    */
   Template.display.events({
-    'click .cmd-client-identify-on': function() {
+    "click .cmd-client-identify-on": function() {
       var id = this.id;
       Meteor.call("identifyDevice", id, true, function(error, result) {
         console.log(result);
       });
     },
-    'click .cmd-client-identify-off': function() {
+    "click .cmd-client-identify-off": function() {
       var id = this.id;
       Meteor.call("identifyDevice", id, false, function(error, result) {
         console.log(result);
       });
     },
-    'click .cmd-client-showred-on': function() {
+    "click .cmd-client-showred-on": function() {
       var id = this.id;
       Meteor.call("showColor", id, "rgb(255,0,0)", true, function(error, result) {
         console.log(result);
       });
     },
-    'click .cmd-client-showred-off': function() {
+    "click .cmd-client-showred-off": function() {
       var id = this.id;
       Meteor.call("showColor", id, "", false, function(error, result) {
         console.log(result);

@@ -1,7 +1,7 @@
 if (Meteor.isClient) {
 
-  // initialize event hooks
-  Hooks.init();
+  // // initialize event hooks
+  // Hooks.init();
 
   /**
    * Returns a number whose value is limited to the given range.

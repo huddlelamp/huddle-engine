@@ -3,16 +3,10 @@ if (Meteor.isServer) {
   Meteor.startup(function() {
     var _orbiters = { };
 
-    var startOrbiter = function(port) {
+    var startOrbiter = function(userId, port) {
 
-      var user = Meteor.user();
-      if (typeof(user.settings) !== 'undefined') {
-        var userSettings = user.settings;
-        port = userSettings.orbiterPort;
-      }
-
-      if (!_orbiters[user._id]) {
-        _orbiters[user._id] = new HuddleOrbiter()
+      if (!_orbiters[userId]) {
+        _orbiters[userId] = new HuddleOrbiter()
           .on("connect", Meteor.bindEnvironment(function(event) {
             // Clients.insert({
             //   id: event.id,
@@ -25,18 +19,16 @@ if (Meteor.isServer) {
             // });
           }))
           .on("disconnect", Meteor.bindEnvironment(function(event) {
-            Clients.remove({id: event.id});
+            Clients.remove({ id: event.id });
           }))
           .on("Handshake", Meteor.bindEnvironment(function(event) {
 
             var data = event.data;
 
-            console.log(data);
-
             Clients.insert({
               id: event.id,
               deviceType: data.DeviceType,
-              userId: user._id,
+              userId: userId,
               name: data.Name,
               x: 0,
               y: 0,
@@ -52,17 +44,13 @@ if (Meteor.isServer) {
 
         // If port is null or empty HuddleOrbiter will start on a random port
         // which will be returned afterwards.
-        port = _orbiters[user._id].start(port);
-
-        if (user) {
-          Meteor.users.update({_id: user._id}, { $set: { 'settings.orbiterPort': port } }, { multi: true } );
-        }
+        port = _orbiters[userId].start(port);
 
         Settings.update(
           { type: "server" },
           {
             type: "server",
-            userId: user._id,
+            userId: userId,
             isRunning: true
           },
           { upsert: true }
@@ -73,7 +61,7 @@ if (Meteor.isServer) {
           { type: "server" },
           {
             type: "server",
-            userId: user._id,
+            userId: userId,
             isRunning: false
           },
           { upsert: true }
@@ -86,7 +74,7 @@ if (Meteor.isServer) {
 
     var stopOrbiter = function(userId) {
 
-      if (typeof(userId) === 'undefined') {
+      if (typeof(userId) === "undefined") {
         // current user
         var user = Meteor.user();
         userId = user._id;
@@ -217,7 +205,7 @@ if (Meteor.isServer) {
     };
 
     Meteor.setInterval(function() {
-      // console.log('echo');
+      // console.log("echo");
 
       var userId = Meteor.userId;
       var clients = Clients.find({ userId: userId });
@@ -235,18 +223,46 @@ if (Meteor.isServer) {
     //   }
     // });
 
-    Hooks.onLoggedIn = function(userId) {
-      console.log('User ' + userId + ' logged in.');
+    UserStatus.events.on("connectionLogin", function(fields) {
+      var userId = fields.userId;
+      var user = getUser(userId);
 
-      startOrbiter();
-    };
+      if (user) {
+        var email = user.emails[0].address;
 
-    Hooks.onLoggedOut = function(userId) {
-      console.log('User ' + userId + ' logged out.');
+        console.log(email + " logged in at " + fields.loginTime);
 
-      stopOrbiter(userId);
-    };
+        var port = undefined;
+        if (typeof(user.settings) !== "undefined") {
+          var userSettings = user.settings;
+          port = userSettings.orbiterPort;
+        }
 
-    Hooks.treatCloseAsLogout = true;
+        var newPort = startOrbiter(userId, port);
+
+        console.log("Started HuddleOrbiter for user " + email + " on port " + newPort);
+
+        if (newPort !== port) {
+          Meteor.users.update({ _id: user._id }, { $set: {
+            "settings.orbiterPort": newPort
+          }}, { multi: true } );
+        }
+      }
+    });
+
+    UserStatus.events.on("connectionLogout", function(fields) {
+      var userId = fields.userId;
+      var user = getUser(userId);
+
+      if (user) {
+        var email = user.emails[0].address;
+
+        console.log(email + " logged out at " + fields.logoutTime);
+
+        stopOrbiter(userId);
+
+        console.log("Stopped HuddleOrbiter of user " + email);
+      }
+    });
   });
 }
