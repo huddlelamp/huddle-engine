@@ -2,6 +2,12 @@ body {
   padding: 10px; /* same as #deviceIndicatorWrapper border-width */
 }
 
+@media (min-device-width : 768px) {
+  .container {
+    width: 730px;
+  }
+}
+
 #deviceIndicatorWrapper {
   position: fixed;
   top: 0;
@@ -15,7 +21,7 @@ body {
   /*background-color: rgba(255,0,0, 0.05);
   border: 1px solid rgba(255,0,0,0.5);*/
   box-sizing: border-box;
-  z-index: 9999;
+  z-index: 9500;
   pointer-events: none;
 }
 
@@ -29,4 +35,17 @@ body {
   opacity: 0.65; 
   /*z-index: 9999;*/
   pointer-events: auto;
+  -webkit-transition: -webkit-transform 0.3s;
+}
+
+#deviceIndicatorSendText {
+  position: absolute;
+  opacity: 0;
+  -webkit-transition: opacity 0.7s;
+  color: white;
+  background-color: rgba(0,0,0,0.85);
+  border-radius: 12px;
+  padding: 10px;
+  max-width: 150px;
+  text-align: center;
 }

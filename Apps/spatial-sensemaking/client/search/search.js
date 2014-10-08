@@ -3,7 +3,7 @@ if (Meteor.isClient) {
   var SEARCH_RESULTS_PER_PAGE = 10;
   var SEARCH_FIELDS = ["file^10", "_name"];
 
-  var search = function(query, page) {
+  search = function(query, page, isGenuine) {
     if (query === undefined) return;
     if (page === undefined) page = 1;
 
@@ -78,35 +78,47 @@ if (Meteor.isClient) {
           });
         }
 
+        $('#search-query').val(query);
+
         Session.set("lastQuery", query);
         Session.set("lastQueryPage", page);
         Session.set("results", results);
 
-        var pastQuery = PastQueries.findOne({ query: query });
-        if (pastQuery === undefined) {
-          var newDoc = {
-            query : query,
-            count : 1
-          };
-          PastQueries.insert(newDoc);
-        } else {
-          PastQueries.update({_id: pastQuery._id}, { $inc: {count: 1}});
+        //If this is a genuine query (e.g. not one that, for example, originates by clicking a
+        //pagination link) then we add it to the past queries
+        if (isGenuine && results.hits.total > 0) {
+          var pastQuery = PastQueries.findOne({ query: query.trim().toLowerCase() });
+          if (pastQuery === undefined) {
+            var newDoc = {
+              query : query.trim().toLowerCase(),
+              count : 1
+            };
+            PastQueries.insert(newDoc);
+          } else {
+            PastQueries.update({_id: pastQuery._id}, { $inc: {count: 1}});
+          }
         }
+
+        var thisDevice = Session.get('thisDevice');
+        Logs.insert({ 
+          timestamp       : Date.now(),
+          route           : Router.current().route.name,
+          deviceID        : thisDevice.id,  
+          actionType      : "search",
+          query           : query,
+          page            : page,
+          numberOfResults : results.hits.total
+        });
       }
     });
   };
 
   Template.searchIndex.rendered = function() {
-    //If we have some parameters for search passed to us, do the appropiate search
-    var query = Router._currentController.params._query ? decodeURIComponent(Router._currentController.params._query) : undefined;
-    var page = Router._currentController.params._page ? decodeURIComponent(Router._currentController.params._page) : undefined;
+    Template.searchIndex.reflectURL();
 
-    if (query !== undefined) {
-      if (page === undefined) page = 1;
-
-      $('#search-query').val(query);
-      search(query, page);
-    }
+    $("body").on("mouseup", function(e) {
+      Session.set('querySuggestions', []);
+    });
   };
 
   Template.searchIndex.results = function() {
@@ -136,30 +148,46 @@ if (Meteor.isClient) {
     return (meta && meta.watched);
   };
 
-  Template.pagination.currentQuery = function() {
-    return Session.get('lastQuery') || undefined;
-  };
+  Template.searchIndex.querySuggestionShadowCSS = function() {
+    var suggestions = Session.get("querySuggestions") || [];
 
-  Template.pagination.currentPage = function() {
-    return Session.get("lastQueryPage") || 1;
-  };
-
-  Template.pagination.pages = function() {
-    var results = Session.get('results');
-    var pages = Math.ceil(results.hits.total/SEARCH_RESULTS_PER_PAGE);
-
-    var result = [];
-    for (var i=1; i<=pages; i++) result.push(i);
-    return result;
-  };
-
-  Template.pagination.helpers({
-    'isEqual': function(v1, v2) {
-      return v1 === v2;
+    if (suggestions.length === 0) {
+      return "none";
+    } else {
+      return "2px 2px 4px 0px rgba(0,0,0,0.75)";
     }
-  });
+  };
 
-  var highlightDocumentContentDep = new Deps.Dependency();
+  Template.searchIndex.querySuggestionBorderCSS = function() {
+    var suggestions = Session.get("querySuggestions") || [];
+
+    if (suggestions.length === 0) {
+      return "0px";
+    } else {
+      return "1px";
+    }
+  };
+
+  Template.searchIndex.querySuggestionPaddingCSS = function() {
+    var suggestions = Session.get("querySuggestions") || [];
+
+    if (suggestions.length === 0) {
+      return "0px";
+    } else {
+      return "10px";
+    }
+  };
+
+  Template.searchIndex.querySuggestionHeightCSS = function() {
+    var suggestions = Session.get("querySuggestions") || [];
+
+    if (suggestions.length === 0) {
+      return "0px";
+    } else {
+      return "500px";
+    }
+  };
+
   Template.searchIndex.helpers({
     'toSeconds': function(ms) {
       var time = new Date(ms);
@@ -186,19 +214,22 @@ if (Meteor.isClient) {
   Template.searchIndex.events({
     'click #search-btn': function(e, tmpl) {
       var query = tmpl.$('#search-query').val();
-      search(query);
+      search(query, 1, true);
     },
 
     'keyup #search-query': function(e, tmpl) {
       var query = tmpl.$('#search-query').val();
       if (query.trim().length === 0) {
-        // $("#search-tag-wrapper").empty();
+        Session.set('querySuggestions', []);
         return;
       }
 
       //On enter, start the search
       if (e.keyCode == 13) {
-        search(query);
+        search(query, 1, true);
+      //On escape, clear the query suggestions
+      } else if (e.keyCode == 27) {
+        Session.set('querySuggestions', []);
       //On every other key, try to fetch some query suggestions
       } else {
         // $("#search-tag-wrapper").empty();
@@ -220,7 +251,7 @@ if (Meteor.isClient) {
         var regexp = new RegExp('.*'+query+'.*', 'i');
         var suggestions = PastQueries.find(
           { query : { $regex: regexp } },
-          { sort  : [["count", "desc"]] }
+          { sort  : [["count", "desc"]], limit: 5 }
         );
         Session.set('querySuggestions', suggestions.fetch());
       }
@@ -234,24 +265,29 @@ if (Meteor.isClient) {
     'click .paginationLink': function(e) {
       e.preventDefault();
 
-      // var query = encodeURIComponent($(e.currentTarget).attr("query"));
-      // var page = encodeURIComponent($(e.currentTarget).attr("page"));
       var query = $(e.currentTarget).attr("query");
       var page = $(e.currentTarget).attr("page");
-      // location.replace('/search/'+query+'/'+page); //go f* yourself iron router
-      // Router.go('/search/'+query+'/'+page);
-      // Router.go('searchIndex', { _query: 'alderwoodpolice', _page: 3});
-      console.log(query);
-      console.log(page);
-      search(query, page);
+      Router.go('searchIndex', {_query: query, _page: page});
+      Template.searchIndex.reflectURL();
     },
 
     'click .toggleFavorited': function(e, tmpl) {
-      if (this.documentMeta && this.documentMeta.favorited) {
-        DocumentMeta._upsert(this._id, {$set: {favorited: false}});
-      } else {
-        DocumentMeta._upsert(this._id, {$set: {favorited: true}});
-      }
+      var newValue;
+      if (this.documentMeta && this.documentMeta.favorited) newValue = false;
+      else newValue = true;
+
+      DocumentMeta._upsert(this._id, {$set: {favorited: newValue}});
+
+      var thisDevice = Session.get('thisDevice');
+      Logs.insert({
+        timestamp    : Date.now(),
+        route        : Router.current().route.name,
+        deviceID     : thisDevice.id,  
+        actionType   : "toggledDocumentFavorite",
+        actionSource : "search",
+        documentID   : this._id,
+        value        : newValue,
+      });
     },
 
     'click .hit': function(e, tmpl) {
@@ -276,43 +312,52 @@ if (Meteor.isClient) {
         }
       });
     },
-
-    'click .deviceIndicator': function(e, tmpl) {
-      e.preventDefault();
-
-      var targetID = $(e.currentTarget).attr("deviceid");
-      if (targetID === undefined) return;
-
-      var text = Template.detailDocumentTemplate.currentlySelectedContent();
-
-      if (text !== undefined && text.length > 0) {
-        huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
-      } else {
-        //If no selection was made, show the entire document
-        var doc = Session.get("detailDocument");
-        if (doc === undefined) return;
-        huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
-      }
-    },
-
-    'click .worldDevice': function(e, tmpl) {
-      e.preventDefault();
-
-      var targetID = $(e.currentTarget).attr("deviceid");
-      if (targetID === undefined) return;
-
-      var text = Session.get("worldViewSnippetToSend");
-
-      Template.deviceWorldView.hide();
-
-      if (text !== undefined && text.length > 0) {
-        huddle.broadcast("addtextsnippet", { target: targetID, snippet: text } );
-      } else {
-        //If no selection was made, show the entire document
-        var doc = Session.get("detailDocument");
-        if (doc === undefined) return;
-        huddle.broadcast("showdocument", { target: targetID, documentID: doc._id } );
-      }
-    },
   });
 }
+
+//
+// "PUBLIC"
+// 
+
+Template.searchIndex.reflectURL = function() {
+  //If we have some parameters for search passed to us, do the appropiate search
+  var query = Router._currentController.params._query ? decodeURIComponent(Router._currentController.params._query) : undefined;
+  var page = Router._currentController.params._page ? decodeURIComponent(Router._currentController.params._page) : undefined;
+
+  if (query !== undefined) {
+    if (page === undefined) page = 1;
+
+    $('#search-query').val(query);
+    search(query, page);
+  }
+};
+
+
+//
+// PAGINATION 
+//
+
+Template.pagination.currentQuery = function() {
+    return Session.get('lastQuery') || undefined;
+  };
+
+  Template.pagination.currentPage = function() {
+    return Session.get("lastQueryPage") || 1;
+  };
+
+  Template.pagination.pages = function() {
+    var results = Session.get('results');
+    if (results === undefined || !results.hits) return 0;
+    
+    var pages = Math.ceil(results.hits.total/SEARCH_RESULTS_PER_PAGE);
+
+    var result = [];
+    for (var i=1; i<=pages; i++) result.push(i);
+    return result;
+  };
+
+  Template.pagination.helpers({
+    'isEqual': function(v1, v2) {
+      return v1 === v2;
+    }
+  });

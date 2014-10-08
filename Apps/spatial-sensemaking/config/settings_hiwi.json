@@ -8,8 +8,8 @@
       "attachmentsPath": "attachment"
     },
     "huddle": {
-      "host": "huddle-orbiter.proxemicinteractions.org",
-      "port": 49755
+      "host": "134.34.226.233",
+      "port": 4711
     }
   }
 }

@@ -1,3 +1,11 @@
+body {
+  font-size: 15px;
+}
+
+.btn {
+  font-size: 15px; 
+}
+
 .input-group-btn:last-child > .btn {
   margin-left: -4px; /* fixes input grp visual on iPad */
 }
@@ -10,7 +18,7 @@
   /*display: inline-block; */
   border: 1px solid #357ebd; 
   padding: 6px; 
-  width: 100%;
+  width: 70%;
   position: relative;
 }
 
@@ -33,7 +41,31 @@
 #search-query {
   width: 100%;
   padding: 6px;
-  border: 1px solid #357ebd; 
+  border: 1px solid #357ebd;
+  border-radius: 0 !important; 
+}
+
+#querySuggestionsWrapper {
+  z-index: 999; 
+  box-sizing: border-box; 
+  height: auto; 
+  position: absolute; 
+  top: 35px; 
+  -webkit-transition: max-height 1.0s; 
+  overflow: visible;
+}
+
+#querySuggestions {
+  box-sizing: border-box;
+  width: calc(100% - 3px); /*subtract box shadow and margin left */
+  /*margin-left: 2px;*/
+  background-color: white; 
+  overflow: hidden;
+  border: 1px solid lightgray; 
+  border-top: 0; 
+  -webkit-transition: max-height 1.0s, box-shadow 0.5s; 
+  height: auto; 
+  
 }
 
 #search-tag-wrapper {
@@ -66,9 +98,17 @@
 
 .document-highlight {
   /*border: 1px solid black;*/
-  margin: 5px;
-  font-size: 0.9em;
+  /*margin: 5px;*/
+  margin: 0px; 
+  padding: 10px;
+  /*font-size: 0.9em;*/
   cursor: pointer;
+  border-bottom: 1px solid rgba(0,0,0,0);
+  line-height: 18px;
+}
+
+.document-highlight:last-child {
+  border-bottom: 0;
 }
 
 .document-highlight em,
@@ -82,7 +122,7 @@
 .paginationLink {
   display: inline-block;
   color: #357ebd;
-  border: 1px solid #357ebd;
+  border: 2px solid #357ebd;
   width: 35px;
   height: 35px;
   text-align: center;
@@ -104,7 +144,8 @@
   /*border-width: 2px;*/
   /*height: 36px;*/
   color: black;
-  background-color: inherit;
+  background-color: lightgray;
+  /*font-weight: bold;*/
 }
 
 /*.textSelection {
@@ -113,6 +154,20 @@
 
 .icon {
   font-size: 1.55em;
+  margin: 5px;
+}
+
+.icon-larger {
+  font-size: 1.85em;
+  margin: 5px;
+}
+
+.glyphicon-eye-open.icon-larger {
+  font-size: 1.57em !important;
+}
+
+.icon-large {
+  font-size: 2em;
   margin: 5px;
 }
 

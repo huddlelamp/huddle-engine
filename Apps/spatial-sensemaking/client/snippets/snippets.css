@@ -1,0 +1,53 @@
+html, body {
+  height: 100%;
+}
+
+.snippet {
+  display: none; 
+  position: absolute;
+  top: 0;
+  left: 0;
+  /*margin: 20px; */
+  /*padding: 10px; */
+  border: 2px solid lightgray; 
+  width: 350px; 
+  height: 275px;
+  overflow: scroll;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 7010;
+}
+
+.snippettools {
+  border-bottom: 1px solid #BFBFBF; 
+  padding: 5px;
+  text-align: right;
+}
+
+.snippettools > * {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.snippettools > *:last-child {
+  margin-right: 0;
+}
+
+.snippettools .btn {
+  font-size: 13px;
+  padding: 4px 8px;
+}
+
+.snippetdeleterconfirmation {
+  display: none;
+  font-size: 13px;
+  /*opacity: 0;*/
+  /*display: none;*/
+  /*display: inline-block;
+  width: 0;
+  height: 0;*/
+  /*overflow: hidden;*/
+}
+
+/*.snippetdeleterconfirmation, .snippetdeleterconfirmation .btn {
+  font-size: 0.85em;
+}*/

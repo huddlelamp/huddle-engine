@@ -19,11 +19,19 @@ if (Meteor.isClient) {
   var transformDeviceData = function(data) {
     var newData = {
       id: data.Identity.toString(),
-      topLeft: {
+      center: {
         x: data.Location[0] || 0,
         y: data.Location[1] || 0,
       },
+      // topLeft: {
+      //   x: data.Location[0] || 0,
+      //   y: data.Location[1] || 0,
+      //   // x: Math.round(data.Location[0] * 10) / 10,
+      //   // y: Math.round(data.Location[1] * 10) / 10
+      // },
       ratio: {
+        // x: (Math.round(data.RgbImageToDisplayRatio.X * 10) / 10) || 1,
+        // y: (Math.round(data.RgbImageToDisplayRatio.Y * 10) / 10) || 1
         x: data.RgbImageToDisplayRatio.X || 1,
         y: data.RgbImageToDisplayRatio.Y || 1
       },
@@ -32,6 +40,11 @@ if (Meteor.isClient) {
 
     newData.width = 1.0/newData.ratio.x;
     newData.height = 1.0/newData.ratio.y;
+
+    newData.topLeft = {
+      x: newData.center.x - newData.width/2.0,
+      y: newData.center.y - newData.height/2.0
+    };
 
     newData.topRight = {
       x: newData.topLeft.x + newData.width,
@@ -48,17 +61,30 @@ if (Meteor.isClient) {
       y: newData.topLeft.y + newData.height
     };
 
-    newData.center = {
-      x: newData.topLeft.x + newData.width/2.0,
-      y: newData.topLeft.y + newData.height/2.0
-    };
+    // newData.center = {
+    //   x: newData.topLeft.x + newData.width/2.0,
+    //   y: newData.topLeft.y + newData.height/2.0
+    // };
 
     return newData;
   }; //end transformDeviceData
 
-  huddle = Huddle.client("MyHuddleName")
+  var existingID = amplify.store("huddleid");
+  if (existingID === undefined) existingID = null;
+  console.log("EXISTING ID: "+existingID);
+
+  // var start = Date.now();
+  huddle = Huddle.client({ glyphId: existingID+"" })
+  .on("devicelost", function(a) {
+    console.log("DEVICE WAS LOST");
+    console.log(a);
+  })
   .on("proximity", function(data) {
+    // if (capFPS(1)) return;
+
     if (firstProximityData && data.Identity) {
+      console.log("MY ID: "+data.Identity);
+      amplify.store("huddleid", data.Identity);
       firstProximityData = false;
 
       determineDeviceColor(data.Identity.toString());
@@ -76,7 +102,9 @@ if (Meteor.isClient) {
       }
     }
 
+    // console.log(data);
     Session.set('thisDevice', transformDeviceData(data));
+    // console.log(Session.get('thisDevice'));
 
     var otherDevices = [];
     data.Presences.forEach(function(presence) {
@@ -110,7 +138,23 @@ if (Meteor.isClient) {
     if (data.target !== thisDevice.id) return;
 
     //TODO also insert source document and the device that sent the snippet
-    Snippets.insert({ device: thisDevice.id, text: data.snippet });
+    Snippets.insert({ device: thisDevice.id, sourcedoc: data.doc, text: data.snippet });
+  });
+
+  Huddle.on("dosearch", function(data) {
+    var thisDevice = Session.get('thisDevice');
+    if (data.target !== thisDevice.id) return;
+
+    // if (!data.page) data.page = 1;
+    search(data.query, data.page);
+  });
+
+  Huddle.on("go", function(data) {
+    var thisDevice = Session.get('thisDevice');
+    if (data.target !== thisDevice.id) return;
+
+    Router.go(data.template, data.params);
+    Template.searchIndex.reflectURL();
   });
 }
 
@@ -242,6 +286,36 @@ function determineDeviceColor(deviceID) {
   }
 }
 
+var cachedColorDegs = {};
+window.getDeviceColorDeg = function(deviceID) {
+  if (cachedColorDegs[deviceID]) {
+    return cachedColorDegs[deviceID];
+  }
+
+  // var info = DeviceInfo.findOne({ _id: deviceID });
+  // if (info === undefined || info.colorDeg === undefined) return 0;
+  
+  var cursor = DeviceInfo.find({_id: deviceID });
+  var info = cursor.fetch()[0];
+  if (info === undefined || info.colorDeg === undefined) return 0;
+
+  var observer = function(deviceID) {
+    return function(newDocument) {
+      if (newDocument === undefined || newDocument.colorDeg === undefined) return;
+      cachedColorDegs[deviceID] = newDocument.colorDeg;
+    };
+  };
+
+  cursor.observe({
+    added   : observer(deviceID),
+    changed : observer(deviceID),
+    removed : observer(deviceID),
+  });
+
+  cachedColorDegs[deviceID] = info.colorDeg;
+  return info.colorDeg;
+};
+
 window.degreesToColor = function(deg, ensureVisibility) {
   if (ensureVisibility === undefined) ensureVisibility = true;
 
@@ -268,4 +342,17 @@ window.degreesToColor = function(deg, ensureVisibility) {
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+var lastFPSCap = new Date();
+function capFPS(fps) {
+  var now = new Date();
+  var timeDiff = now.getTime() - lastFPSCap.getTime();
+
+  if (timeDiff < (1000.0/fps)) {
+    return true;
+  } else {
+    lastFPSCap = now;
+    return false;
+  }
 }

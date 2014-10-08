@@ -2,9 +2,8 @@
   display: none;
   margin: 0;
   padding: 0;
-  /*width: 722px;*/
-  /*height: 860px;*/
-  overflow: hidden;
+  width: 100%;
+  height: 100%;
 }
 
 .fancybox-inner {
@@ -12,32 +11,90 @@
 }
 
 #editArea {
-  /*posi  tion: fixed;*/
-  height: 172px;
+  overflow: hidden;
+  box-sizing: border-box;
+  height: 200px;
+  margin-top: 0px;
+}
+
+#highlightArea {
+  display: inline-block;
+  max-width: 600px;
+  margin: 0 auto;
+  margin-bottom: 20px;
+  background-color: white;
+  border-radius: 0 0 8px 8px;
+  border: 1px solid #a5a5a5;
+  border-top: 0;
+  padding: 8px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#annotationArea {
+  position: relative;
+  /*margin-bottom: 10px;*/
+  margin: 0;
+  margin-top: 20px;
+}
+
+#comment {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 3px;
+  resize: none;
+}
+
+#savedText {
+  opacity: 0;
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  font-weight: bold;
+  font-size: 1.05em;
+  -webkit-transition: opacity 0.7s;
+  z-index: 9998;
+  background-color: rgba(255,255,255,0.9);
+  border-radius: 25%;
+  padding: 0;
+}
+
+#detailDocumentStar {
+  position: absolute;
+  top: 10px; 
+  right: 10px;
+  z-index: 9998;
+}
+
+#shareArea {
+  max-width: 600px;
+  /*margin: 0 auto;*/
+  text-align: right;
+  margin: 0;
+  /*margin-bottom: 0;*/
+  /*margin-top: 10px;*/
 }
 
 #contentArea {
-  width: 722px;
-  height: 688px;
-}
-
-#contentWrapper {
-  position: relative
-  display: block;
-  margin: 10px auto;
-  width: 700px;
+  height: calc(100% - 200px);
   overflow: scroll;
   -webkit-overflow-scrolling: touch;
-  height: 688px;
-  background-color: #f5f5f5;
   padding: 10px;
+  color: #222;
+  max-width: 600px;
+  /*background-color: #f5f5f5;*/
+  background-color: white;
+  border: 1px solid #a5a5a5;
+  margin: 0 auto;
 }
 
-#content, .highlightWrapper  {
+#content  {
   position: relative;
   white-space:pre-wrap;
-  /*word-wrap: normal;
-  word-break: normal;*/
+  word-wrap: normal;
+  word-break: normal;
   border: 0;
   padding: 0;
   margin: 0;
@@ -45,38 +102,13 @@
   line-height: 20px;
 }
 
-.highlightWrapper {
-  background: transparent;
-  pointer-events: none;
-  position: absolute;
-  top: 0px; 
-  left: 0px; 
-  margin: 20px; /* same as #contentWrapper padding + #contentWrapper margin */
-  width: 680px;
-}
-
 .highlight {
   position: relative;
-  /*max-width: 100%;*/
-  /*opacity: 0.35;*/
   padding: 2px 0;
-  /*padding: 0px;*/
-  /*z-index: 9998;*/
 }
 
 .highlight.previewSnippet {
   -webkit-transition: color 0.7s, background-color 0.7s;
-  /*z-index: 9999;*/
-}
-
-#previewSnippetHighlight {
-  opacity: 0;
-  -webkit-transition: opacity 0.7s;
-}
-
-#previewSnippetHighlight .highlight {
-  display: inline;
-  background-color: red;
 }
 
 .highlightButton, #deleteHighlightButton {
@@ -85,14 +117,113 @@
   height: 30px;
   margin-right: 10px;
   border-radius: 50%;
+  color: white;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.highlightButton:last-child, #deleteHighlightButton:last-child {
+  margin-right: 0;
+}
+
+.highlighticon {
+  /*float: left;*/
+  font-size: 1.4em;
+  vertical-align: middle;
+  text-align: center;
+  margin-top: -3px;
+  margin-right: 5px;
+  color: #222;
 }
 
 #deleteHighlightButton {
-  background: transparent;
+  background: white;
   border: 2px solid red;
+  margin-left: 10px;
 }
+
+#shareButton {
+  width: 150px;
+  margin-bottom: 30px;
+}
+
+.shareDevice {
+  margin: 5px;
+  width: 25px;
+  height: 45px;
+  border-width: 5px !important;
+  background-color: transparent !important;
+}
+
+/*#openWorldView {
+  width: 150px;
+  margin-top: -30px;
+}*/
 
 .chosen-container .chosen-results li.highlighted {
   background-color: rgba(0,0,0,0.2) !important;
   background-image: none !important;
+}
+
+.popover {
+  z-index: 9999;
+}
+
+.btn-cancel {
+  background-color: gray;
+  border-color: slategray;
+  color: white;
+}
+
+.table {
+  display: table;
+  width: 100%;
+}
+
+.tr {
+  display: table-row;
+}
+
+.td {
+  display: table-cell;
+}
+
+.td.vcenter {
+  vertical-align: middle;
+}
+
+.td.vbottom {
+  vertical-align: bottom;
+}
+
+.td.vtop {
+  vertical-align: top;
+}
+
+hr {
+  border-color: #ddd;
+}
+
+.excelsheet {
+  width: 150%; 
+  overflow: scroll; 
+  border-collapse: collapse;
+}
+
+.excelsheet td, .excelsheet th {
+  border: 1px solid lightgray; 
+  height: 25px; 
+  width: 50px; 
+  padding: 2px;
+  text-align: left;
+}
+
+.excelsheet th {
+  border: 0;
+  text-align: center;
+  width: 30px;
+}
+
+.excelsheet td.typen {
+  text-align: right;
 }
