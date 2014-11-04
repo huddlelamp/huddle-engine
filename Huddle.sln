@@ -12,13 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{FA3964
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{34D63E42-579E-4950-8E83-F71DBD95F34E}"
 	ProjectSection(SolutionItems) = preProject
-		Pipelines\Default.pipeline.huddle = Pipelines\Default.pipeline.huddle
-		Pipelines\DemoApp.pipeline.huddle = Pipelines\DemoApp.pipeline.huddle
-		Pipelines\ITS.pipeline.huddle = Pipelines\ITS.pipeline.huddle
-		Pipelines\ITS2.pipeline.huddle = Pipelines\ITS2.pipeline.huddle
-		Pipelines\Recording.pipeline.huddle = Pipelines\Recording.pipeline.huddle
-		Pipelines\Test.pipeline.huddle = Pipelines\Test.pipeline.huddle
-		Pipelines\UISTDemo.pipeline.huddle = Pipelines\UISTDemo.pipeline.huddle
+		Pipelines\HuddleLamp.hep = Pipelines\HuddleLamp.hep
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{28D0E2EA-2631-4C50-8585-55480D58872B}"

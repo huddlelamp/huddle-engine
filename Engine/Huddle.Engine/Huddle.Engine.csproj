@@ -284,6 +284,7 @@
     <Compile Include="Extensions\NumericExtensions.cs" />
     <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
     <Compile Include="Extensions\PointExtensions.cs" />
+    <Compile Include="Filter\OneEuroFilter.cs" />
     <Compile Include="Processor\Complex\PolygonIntersection\PolygonCollisionUtils.cs" />
     <Compile Include="Processor\Network\Huddle\Client.cs" />
     <Compile Include="Processor\Network\Huddle\ClientState.cs" />
@@ -473,10 +474,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Content Include="..\..\Pipelines\Default.pipeline.huddle">
-      <Link>Resources\Default.pipeline.huddle</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None Include="..\..\Pipelines\HuddleLamp.hep">
+      <Link>Resources\HuddleLamp.hep</Link>
+    </None>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

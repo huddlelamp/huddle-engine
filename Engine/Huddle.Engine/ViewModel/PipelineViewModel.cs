@@ -444,7 +444,7 @@ namespace Huddle.Engine.ViewModel
         {
             var openDialog = new OpenFileDialog
             {
-                Filter = "Huddle Engine Pipeline|*.pipeline.huddle",
+                Filter = "Huddle Engine Pipeline|*.hep",
                 Multiselect = false
             };
 
@@ -463,7 +463,7 @@ namespace Huddle.Engine.ViewModel
         {
             var saveDialog = new SaveFileDialog
             {
-                Filter = "Huddle Engine Pipeline|*.pipeline.huddle"
+                Filter = "Huddle Engine Pipeline|*.hep"
             };
 
             var result = saveDialog.ShowDialog(Application.Current.MainWindow);
@@ -475,13 +475,13 @@ namespace Huddle.Engine.ViewModel
             AskForSaveAsDefaultPipeline(fileName);
 
             // crop file type if it has been added to the filename
-            if (fileName.EndsWith(".pipeline.huddle"))
-                fileName = fileName.Substring(0, fileName.Length - ".pipeline.huddle".Length);
+            if (fileName.EndsWith(".hep"))
+                fileName = fileName.Substring(0, fileName.Length - ".hep".Length);
 
-            // sometimes the filename ends twice with ".pipeline.huddle" and sometimes not. If the
-            // filename does not contain a ".pipeline.huddle" it will be added.
-            if (!fileName.EndsWith(".pipeline.huddle"))
-                fileName += ".pipeline.huddle"; 
+            // sometimes the filename ends twice with ".hep" and sometimes not. If the
+            // filename does not contain a ".hep" it will be added.
+            if (!fileName.EndsWith("hep"))
+                fileName += ".hep"; 
 
             Save(fileName);
         }
