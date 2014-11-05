@@ -4,7 +4,7 @@ using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
 {
-    public class ROI : BaseData
+    public sealed class ROI : BaseData
     {
         #region properties
 

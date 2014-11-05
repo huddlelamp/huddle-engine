@@ -131,6 +131,35 @@
   <PropertyGroup>
     <TargetZone>Custom</TargetZone>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Basic UI|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Basic UI\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Basic UI|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Basic UI\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Basic UI|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Basic UI\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="AForge, Version=2.2.5.0, Culture=neutral, PublicKeyToken=c1db6ff4eaa06aeb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -258,14 +287,12 @@
     <Compile Include="Converter\Point3DToJsonArrayConverter.cs" />
     <Compile Include="Data\BaseData.cs" />
     <Compile Include="Data\Disconnected.cs" />
-    <Compile Include="Data\Display.cs" />
     <Compile Include="Data\Marker.cs" />
     <Compile Include="Data\Ratio.cs" />
     <Compile Include="Data\ROI.cs" />
     <Compile Include="Data\BlobData.cs" />
     <Compile Include="Data\DataContainer.cs" />
     <Compile Include="Data\Digital.cs" />
-    <Compile Include="Data\GrayByteImage.cs" />
     <Compile Include="Data\IData.cs" />
     <Compile Include="Data\IDataContainer.cs" />
     <Compile Include="Data\BaseImageData.cs" />

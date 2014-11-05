@@ -7,7 +7,7 @@ using WPoint = System.Windows.Point;
 
 namespace Huddle.Engine.Data
 {
-    public class Hand : LocationData
+    public sealed class Hand : LocationData
     {
         #region private members
 

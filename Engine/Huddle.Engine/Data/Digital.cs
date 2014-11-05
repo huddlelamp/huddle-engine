@@ -2,7 +2,7 @@
 
 namespace Huddle.Engine.Data
 {
-    public class Digital : BaseData
+    public sealed class Digital : BaseData
     {
         #region properties
 

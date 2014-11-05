@@ -6,7 +6,7 @@ using Huddle.Engine.Processor.OpenCv.Struct;
 
 namespace Huddle.Engine.Data
 {
-    public class BlobData : BaseData
+    public sealed class BlobData : BaseData
     {
         #region properties
 

@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Media.Media3D;
 using Huddle.Engine.Converter;
 using Huddle.Engine.Processor;
 using Huddle.Engine.Processor.OpenCv.Struct;
 using Newtonsoft.Json;
-using Xceed.Wpf.Toolkit.Panels;
 
 namespace Huddle.Engine.Data
 {
-    public class Proximity : BaseData
+    public sealed class Proximity : BaseData
     {
         #region properties
 

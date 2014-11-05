@@ -4,7 +4,7 @@ using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
 {
-    public class DataContainer : List<IData>, IDataContainer //SynchronizedCollection<IData>, IDataContainer
+    public sealed class DataContainer : List<IData>, IDataContainer //SynchronizedCollection<IData>, IDataContainer
     {
         #region private fields
 

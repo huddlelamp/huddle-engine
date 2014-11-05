@@ -4,7 +4,7 @@ using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
 {
-    public class RgbImageData : BaseImageData<Rgb, byte>
+    public sealed class RgbImageData : BaseImageData<Rgb, byte>
     {
         #region properties
 

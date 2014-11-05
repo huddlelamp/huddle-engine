@@ -8,7 +8,7 @@ using WPoint = System.Windows.Point;
 
 namespace Huddle.Engine.Data
 {
-    public class Device : BaseData
+    public sealed class Device : BaseData
     {
         #region private members
 
