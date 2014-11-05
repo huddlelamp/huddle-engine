@@ -1030,8 +1030,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 Stage(new BlobData(this, BlobType)
                 {
                     Id = obj.Id,
-                    X = smoothedCenter.X / imageWidth,
-                    Y = smoothedCenter.Y / imageHeight,
+                    Center = new WPoint(smoothedCenter.X / imageWidth, smoothedCenter.Y / imageHeight),
                     State = obj.State,
                     Angle = obj.Shape.angle,
                     //Angle = rawObject.SlidingAngle,

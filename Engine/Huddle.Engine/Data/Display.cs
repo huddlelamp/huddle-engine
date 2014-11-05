@@ -57,8 +57,7 @@ namespace Huddle.Engine.Data
         {
             return new Display(Source, Key)
             {
-                X = X,
-                Y = Y,
+                Center = Center,
                 Angle = Angle,
                 RgbImageToDisplayRatio = RgbImageToDisplayRatio
             };

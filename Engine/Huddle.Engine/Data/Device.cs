@@ -1,12 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Windows;
-using Huddle.Engine.Extensions;
+﻿using System.Windows;
+using Huddle.Engine.Filter;
 using Huddle.Engine.Processor;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
-using Huddle.Engine.Processor.OpenCv.Filter;
 using Huddle.Engine.Processor.OpenCv.Struct;
 using Newtonsoft.Json;
+using WPoint = System.Windows.Point;
 
 namespace Huddle.Engine.Data
 {
@@ -14,15 +12,7 @@ namespace Huddle.Engine.Data
     {
         #region private members
 
-        private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
-
-        private const int SlidingSize = 5;
-        private int _slidingPointerX = -1;
-        private int _slidingPointerY = -1;
-        private int _slidingPointerAngle = -1;
-        private readonly double[] _slidingX = new double[SlidingSize];
-        private readonly double[] _slidingY = new double[SlidingSize];
-        private readonly double[] _slidingAngle = new double[SlidingSize];
+        private readonly ISmoothing _smoothing = new OneEuroSmoothing();
 
         #endregion
 
@@ -134,75 +124,38 @@ namespace Huddle.Engine.Data
 
         #endregion
 
-        #region X
+        #region Center
 
         /// <summary>
-        /// The <see cref="X" /> property's name.
+        /// The <see cref="Center" /> property's name.
         /// </summary>
-        public const string XPropertyName = "X";
+        public const string CenterPropertyName = "Center";
 
-        private double _x = 0.0;
+        private WPoint _center;
 
         /// <summary>
-        /// Sets and gets the X property.
+        /// Sets and gets the Center property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public double X
+        public WPoint Center
         {
             get
             {
-                return _x;
+                return _center;
             }
 
             set
             {
-                _slidingX[++_slidingPointerX % SlidingSize] = value;
-                
-                if (_x == value)
+                if (_center == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(XPropertyName);
-                _x = value;
-                RaisePropertyChanged(XPropertyName);
-            }
-        }
+                _isSmoothedCenter = false;
 
-        #endregion
-
-        #region Y
-
-        /// <summary>
-        /// The <see cref="Y" /> property's name.
-        /// </summary>
-        public const string YPropertyName = "Y";
-
-        private double _y = 0.0;
-
-        /// <summary>
-        /// Sets and gets the Y property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double Y
-        {
-            get
-            {
-                return _y;
-            }
-
-            set
-            {
-                _slidingY[++_slidingPointerY % SlidingSize] = value;
-
-                if (_y == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(YPropertyName);
-                _y = value;
-                RaisePropertyChanged(YPropertyName);
+                RaisePropertyChanging(CenterPropertyName);
+                _center = value;
+                RaisePropertyChanged(CenterPropertyName);
             }
         }
 
@@ -250,7 +203,7 @@ namespace Huddle.Engine.Data
         /// </summary>
         public const string AnglePropertyName = "Angle";
 
-        private double _angle = 0.0;
+        private double _angle;
 
         /// <summary>
         /// Sets and gets the Angle property.
@@ -265,12 +218,12 @@ namespace Huddle.Engine.Data
 
             set
             {
-                _slidingAngle[++_slidingPointerAngle % SlidingSize] = Math.Round(value);
-
                 if (_angle == value)
                 {
                     return;
                 }
+
+                _isSmoothedAngle = false;
 
                 RaisePropertyChanging(AnglePropertyName);
                 _angle = value;
@@ -280,58 +233,39 @@ namespace Huddle.Engine.Data
 
         #endregion
 
-        #region SlidingX
+        #region SmoothedCenter
 
-        public double SlidingX
+        private bool _isSmoothedCenter = false;
+        private Point _smoothedCenter;
+
+        public WPoint SmoothedCenter
         {
             get
             {
-                return _slidingPointerX < SlidingSize ? _slidingX[_slidingPointerX] : _slidingX.Median();
-                return EstimatedPoint.X;
-                return _slidingPointerX < SlidingSize ? _slidingX[_slidingPointerX] : _slidingX.Average();
+                if (_isSmoothedCenter) return _smoothedCenter;
+
+                _smoothedCenter = _smoothing.SmoothPoint(Center);
+                _isSmoothedCenter = true;
+                return _smoothedCenter;
             }
         }
 
         #endregion
 
-        #region SlidingY
+        #region SmoothedAngle
 
-        public double SlidingY
+        private bool _isSmoothedAngle = false;
+        private double _smoothedAngle;
+
+        public double SmoothedAngle
         {
             get
             {
-                return _slidingPointerY < SlidingSize ? _slidingY[_slidingPointerY] : _slidingY.Median();
-                return EstimatedPoint.Y;
-                return _slidingPointerY < SlidingSize ? _slidingY[_slidingPointerY] : _slidingY.Average();
-            }
-        }
+                if (_isSmoothedAngle) return _smoothedAngle;
 
-        #endregion
-
-        #region SlidingAngle
-
-        public double SlidingAngle
-        {
-            get
-            {
-                return _slidingPointerAngle < SlidingSize ? _slidingAngle[_slidingPointerAngle] : _slidingAngle.Median();
-                return _slidingPointerAngle < SlidingSize ? _slidingAngle[_slidingPointerAngle] : _slidingAngle.Average();
-            }
-        }
-
-        #endregion
-
-        #region EstimatedPoint
-
-        public Point EstimatedPoint
-        {
-            get
-            {
-                const double factor = 10000.0;
-
-                var estimatedPoint = _kalmanFilter.GetEstimatedPoint(new System.Drawing.Point((int)(X * factor), (int)(Y * factor)));
-
-                return new Point(estimatedPoint.X / factor, estimatedPoint.Y / factor);
+                _smoothedAngle = _smoothing.SmoothAngle(Angle);
+                _isSmoothedAngle = true;
+                return _smoothedAngle;
             }
         }
 
@@ -493,23 +427,16 @@ namespace Huddle.Engine.Data
         {
             var device = new Device(Source, Key)
             {
-                Angle = Angle,
                 DeviceId = DeviceId,
                 BlobId = BlobId,
                 IsIdentified = IsIdentified,
-                X = X,
-                Y = Y,
+                Center = Center,
+                Angle = Angle,
                 State = State,
                 Shape = Shape,
                 Area = Area,
                 RgbImageToDisplayRatio = RgbImageToDisplayRatio
             };
-            Array.Copy(_slidingX, device._slidingX, SlidingSize);
-            Array.Copy(_slidingY, device._slidingY, SlidingSize);
-            Array.Copy(_slidingAngle, device._slidingAngle, SlidingSize);
-            device._slidingPointerX = _slidingPointerX;
-            device._slidingPointerY = _slidingPointerY;
-            device._slidingPointerAngle = _slidingPointerAngle;
 
             return device;
         }

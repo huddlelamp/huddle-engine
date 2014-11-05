@@ -255,22 +255,24 @@ namespace Huddle.Engine.Processor
 
                 _blobs.Add(blob.Copy() as BlobData);
 
-                AddDrawModel(blob.X * Width, blob.Y * Height, Brushes.DeepPink, 1);
+                var blobCenter = new Point(blob.Center.X * Width, blob.Center.Y * Height);
+                AddDrawModel(blobCenter, Brushes.DeepPink, 1);
 
                 if (Devices.All(d => d.BlobId != blob.Id)) return null;
 
                 var device = Devices.Single(d => d.BlobId == blob.Id);
-                device.X = blob.X * Width;
-                device.Y = blob.Y * Height;
+                device.Center = blobCenter;
             }
             else if (data is LocationData)
             {
                 var loc = data as LocationData;
 
-                var locPoint = new Point(loc.X, loc.Y);
+                var locCenterPoint = loc.Center;
 
-                AddDrawModel(loc.X * Width, loc.Y * Height, Brushes.DeepSkyBlue, 2);
+                var locCenter = new Point(locCenterPoint.X * Width, locCenterPoint.Y * Height);
+                AddDrawModel(locCenter, Brushes.DeepSkyBlue, 2);
 
+                // TODO optimize for each loop -> parallel for each loop?
                 foreach (var blob in _blobs)
                 {
                     // debug hook to check if update of devices works with blob only
@@ -280,41 +282,38 @@ namespace Huddle.Engine.Processor
                         device.Angle = loc.Angle;
                         continue;
                     }
-                        
+
 
                     //var contains = blob.Area.Contains(new Point(loc.X, loc.Y));
 
-                    var blobPoint = new Point(blob.X, blob.Y);
+                    var blobCenter = blob.Center;
 
-                    var length = (locPoint - blobPoint).Length;
+                    var length = (locCenterPoint - blobCenter).Length;
 
                     if (length < Distance)
                     {
                         var blob1 = blob;
-                        DispatcherHelper.RunAsync(() =>
-                            Devices.Add(new Device(this, loc.Key)
-                            {
-                                BlobId = blob1.Id,
-                                X = blob1.X * Width,
-                                Y = blob1.Y * Height,
-                                State = blob1.State,
-                                Angle = loc.Angle
-                            })
-                        );
+                        DispatcherHelper.RunAsync(() => Devices.Add(new Device(this, loc.Key)
+                        {
+                            BlobId = blob1.Id,
+                            Center = blob1.Center,
+                            State = blob1.State,
+                            Angle = loc.Angle
+                        }));
                     }
                 }
             }
             return null;
         }
 
-        private void AddDrawModel(double x, double y, Brush color, int type)
+        private void AddDrawModel(Point center, Brush color, int type)
         {
             DispatcherHelper.RunAsync(() =>
             {
                 var model = new DrawModel
                 {
-                    X = x,
-                    Y = y,
+                    X = center.X,
+                    Y = center.Y,
                     Color = color,
                     Type = type
                 };

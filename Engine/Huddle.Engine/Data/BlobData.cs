@@ -45,71 +45,36 @@ namespace Huddle.Engine.Data
 
         #endregion
 
-        #region X
+        #region Center
 
         /// <summary>
-        /// The <see cref="X" /> property's name.
+        /// The <see cref="Center" /> property's name.
         /// </summary>
-        public const string XPropertyName = "X";
+        public const string CenterPropertyName = "Center";
 
-        private double _x = 0.0;
+        private Point _center;
 
         /// <summary>
-        /// Sets and gets the X property.
+        /// Sets and gets the Center property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public double X
+        public Point Center
         {
             get
             {
-                return _x;
+                return _center;
             }
 
             set
             {
-                if (_x == value)
+                if (_center == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(XPropertyName);
-                _x = value;
-                RaisePropertyChanged(XPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region Y
-
-        /// <summary>
-        /// The <see cref="Y" /> property's name.
-        /// </summary>
-        public const string YPropertyName = "Y";
-
-        private double _y = 0.0;
-
-        /// <summary>
-        /// Sets and gets the Y property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double Y
-        {
-            get
-            {
-                return _y;
-            }
-
-            set
-            {
-                if (_y == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(YPropertyName);
-                _y = value;
-                RaisePropertyChanged(YPropertyName);
+                RaisePropertyChanging(CenterPropertyName);
+                _center = value;
+                RaisePropertyChanged(CenterPropertyName);
             }
         }
 
@@ -306,8 +271,7 @@ namespace Huddle.Engine.Data
             var blob = new BlobData(Source, Key)
             {
                 Id = Id,
-                X = X,
-                Y = Y,
+                Center = Center,
                 State = State,
                 Angle = Angle,
                 Area = Area,

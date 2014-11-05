@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 using Emgu.CV;
@@ -12,14 +12,12 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
-using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
 using Huddle.Engine.Extensions;
-using Huddle.Engine.Processor.OpenCv.Filter;
-using Huddle.Engine.Processor.OpenCv.Struct;
 using Huddle.Engine.Util;
+using WPoint = System.Windows.Point;
+using DPoint = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
 {
@@ -326,7 +324,7 @@ namespace Huddle.Engine.Processor.OpenCv
             }
         }
 
-        #endregion  
+        #endregion
 
         #region IsDrawHandLocationSamples
 
@@ -582,8 +580,8 @@ namespace Huddle.Engine.Processor.OpenCv
 
             double[] minValues;
             double[] maxValues;
-            Point[] minLocations;
-            Point[] maxLocations;
+            DPoint[] minLocations;
+            DPoint[] maxLocations;
             imageWithOriginalDepth.MinMax(out minValues, out maxValues, out minLocations, out maxLocations);
 
             var minHandArmArea = MinHandArmArea;
@@ -663,10 +661,10 @@ namespace Huddle.Engine.Processor.OpenCv
             {
                 foreach (var hand in _hands)
                 {
-                    debugOutput.Draw(new CircleF(new PointF(hand.Center.X, hand.Center.Y), 5), Rgbs.Red, 3);
-                    debugOutput.Draw(new CircleF(new PointF(hand.EstimatedCenter.X, hand.EstimatedCenter.Y), 5), Rgbs.Green, 3);
+                    debugOutput.Draw(new CircleF(new PointF((float)hand.Center.X, (float)hand.Center.Y), 5), Rgbs.Red, 3);
+                    debugOutput.Draw(new CircleF(new PointF((float)hand.SmoothedCenter.X, (float)hand.SmoothedCenter.Y), 5), Rgbs.Green, 3);
 
-                    debugOutput.Draw(string.Format("Id {0} ({1:F1})", hand.Id, hand.Depth), ref EmguFont, new Point(hand.EstimatedCenter.X, hand.EstimatedCenter.Y), Rgbs.TrueRed);
+                    debugOutput.Draw(string.Format("Id {0} ({1:F1})", hand.Id, hand.Depth), ref EmguFont, new DPoint((int)hand.SmoothedCenter.X, (int)hand.SmoothedCenter.Y), Rgbs.TrueRed);
                 }
 
                 var debugOutputCopy = debugOutput.Copy();
@@ -729,8 +727,8 @@ namespace Huddle.Engine.Processor.OpenCv
 
             var minVal = double.MaxValue;
             var maxVal = 0.0;
-            var minLoc = new Point();
-            var maxLoc = new Point();
+            var minLoc = new DPoint();
+            var maxLoc = new DPoint();
             var handSegmentData = handSegment.Data;
             var imageRemovedBackgroundData = imageRemovedBackground.Data;
 
@@ -788,38 +786,35 @@ namespace Huddle.Engine.Processor.OpenCv
             //depth = 255 - depth;
 
             Hand hand;
-            var point = new Point(x, y);
+            var point = new WPoint(x, y);
 
+            // TODO optimize code below
             if (_hands.Count > 0)
             {
-                hand = _hands.Aggregate((curmin, p) => p.EstimatedCenter.Length(point) < curmin.EstimatedCenter.Length(point) ? p : curmin);
+                hand = _hands.Aggregate((curmin, p) => p.SmoothedCenter.Length(point) < curmin.SmoothedCenter.Length(point) ? p : curmin);
             }
             else
             {
                 var id = NextId();
                 hand = new Hand(this, string.Format("Hand{0}", id), id, point)
                 {
-                    X = nx,
-                    Y = ny,
+                    Center = new WPoint(nx, ny),
                     Depth = depth,
                     LastUpdate = now,
                     Segment = segment.Copy()
                 };
-                hand.RelativeX = hand.PredictedCenter.X / width;
-                hand.RelativeY = hand.PredictedCenter.Y / height;
+                hand.RelativeCenter = new WPoint(hand.SmoothedCenter.X / width, hand.SmoothedCenter.Y / height);
 
                 _hands.Add(hand);
             }
 
-            if (hand.EstimatedCenter.Length(point) < IntegrationDistance)
+            if (hand.SmoothedCenter.Length(point) < IntegrationDistance)
             {
-                hand.X = nx;
-                hand.Y = ny;
+                hand.Center = new WPoint(nx, ny);
                 hand.Center = point;
                 hand.Depth = depth;
                 hand.LastUpdate = now;
-                hand.RelativeX = hand.PredictedCenter.X / width;
-                hand.RelativeY = hand.PredictedCenter.Y / height;
+                hand.RelativeCenter = new WPoint(hand.SmoothedCenter.X / width, hand.SmoothedCenter.Y / height);
                 hand.Segment = segment.Copy();
             }
             else
@@ -827,14 +822,12 @@ namespace Huddle.Engine.Processor.OpenCv
                 var id = NextId();
                 hand = new Hand(this, string.Format("Hand{0}", id), id, point)
                 {
-                    X = nx,
-                    Y = ny,
+                    Center = new WPoint(nx, ny),
                     Depth = depth,
                     LastUpdate = now,
                     Segment = segment.Copy()
                 };
-                hand.RelativeX = hand.PredictedCenter.X / width;
-                hand.RelativeY = hand.PredictedCenter.Y / height;
+                hand.RelativeCenter = new WPoint(hand.SmoothedCenter.X / width, hand.SmoothedCenter.Y / height);
                 _hands.Add(hand);
             }
         }

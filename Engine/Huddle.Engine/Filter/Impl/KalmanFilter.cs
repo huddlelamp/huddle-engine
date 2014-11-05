@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
+using Huddle.Engine.Processor.OpenCv.Filter;
 
-namespace Huddle.Engine.Processor.OpenCv.Filter
+namespace Huddle.Engine.Filter.Impl
 {
     public class KalmanFilter
     {

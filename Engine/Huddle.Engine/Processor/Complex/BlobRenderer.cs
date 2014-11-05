@@ -47,8 +47,8 @@ namespace Huddle.Engine.Processor.Complex
                 else if (typeof(RectangleTrackerColor) == blob.Source.GetType())
                     color = Rgbs.Yellow;
 
-                var centerX = (int)(blob.X * width);
-                var centerY = (int)(blob.Y * height);
+                var centerX = (int)(blob.Center.X * width);
+                var centerY = (int)(blob.Center.Y * height);
 
                 image.DrawPolyline(polyline.ToArray(), true, color, 5);
                 image.Draw(string.Format("Id {0}", blob.Id), ref EmguFontBig, new Point(centerX, centerY), Rgbs.White);

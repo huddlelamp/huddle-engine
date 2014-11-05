@@ -7,8 +7,9 @@ using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
 using Huddle.Engine.Processor.BarCodes.ZXingHelper;
-using Huddle.Engine.Properties;
 using Huddle.Engine.Util;
+using WPoint = System.Windows.Point;
+using DPoint = System.Drawing.Point;
 
 namespace Huddle.Engine.Processor.BarCodes
 {
@@ -168,8 +169,7 @@ namespace Huddle.Engine.Processor.BarCodes
                 Stage(new Marker(this, string.Format("QrCode{0}", results[i].Text))
                 {
                     Id = results[i].Text,
-                    X = centerX / image.Width,
-                    Y = centerY / image.Height,
+                    Center = new WPoint(centerX / image.Width, centerY / image.Height),
                     Angle = qrOrientation
                 });
             }

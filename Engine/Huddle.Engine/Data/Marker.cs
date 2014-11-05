@@ -94,13 +94,11 @@ namespace Huddle.Engine.Data
             return new Marker(Source, Key)
             {
                 Id = Id,
-                X = X,
-                Y = Y,
+                Center = Center,
                 Angle = Angle,
                 RgbImageToDisplayRatio = RgbImageToDisplayRatio,
                 EnclosingRectangle = EnclosingRectangle,
-                RelativeX = RelativeX,
-                RelativeY = RelativeY,
+                RelativeCenter = RelativeCenter
             };
         }
 

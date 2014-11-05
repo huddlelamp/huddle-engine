@@ -664,8 +664,7 @@ namespace Huddle.Engine.Processor.BarCodes
                             Stage(new Marker(this, string.Format("Glyph{0}", name))
                             {
                                 Id = name,
-                                X = centerX / width,
-                                Y = centerY / height,
+                                Center = new System.Windows.Point(centerX / width, centerY / height),
                                 Angle = degOrientation
                             });
 

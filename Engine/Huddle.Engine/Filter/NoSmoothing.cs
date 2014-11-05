@@ -13,5 +13,10 @@ namespace Huddle.Engine.Filter
         {
             return angle;
         }
+
+        public double SmoothDepth(double depth)
+        {
+            return depth;
+        }
     }
 }

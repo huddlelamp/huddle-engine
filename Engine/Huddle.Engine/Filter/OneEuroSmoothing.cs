@@ -11,6 +11,7 @@ namespace Huddle.Engine.Filter
         private readonly OneEuroFilter _xFilter = new OneEuroFilter(2.0, 0.0);
         private readonly OneEuroFilter _yFilter = new OneEuroFilter(2.0, 0.0);
         private readonly OneEuroFilter _angleFilter = new OneEuroFilter(2.0, 0.0);
+        private readonly OneEuroFilter _depthFilter = new OneEuroFilter(2.0, 0.0);
 
         #endregion
 
@@ -24,6 +25,11 @@ namespace Huddle.Engine.Filter
         public double SmoothAngle(double angle)
         {
             return _angleFilter.Filter(angle, Rate);
+        }
+
+        public double SmoothDepth(double depth)
+        {
+            return _depthFilter.Filter(depth, Rate);
         }
     }
 }

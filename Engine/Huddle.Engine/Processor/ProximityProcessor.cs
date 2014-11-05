@@ -238,36 +238,6 @@ namespace Huddle.Engine.Processor
             // Make collection accessible in current processor thread => UI Thread
             DispatcherHelper.CheckBeginInvokeOnUI(() => BindingOperations.EnableCollectionSynchronization(Devices, _deviceLock));
             DispatcherHelper.CheckBeginInvokeOnUI(() => BindingOperations.EnableCollectionSynchronization(DrawModels, _drawModelsLock));
-
-            AddFakeDeviceCommand = new RelayCommand<SenderAwareEventArgs>(args =>
-            {
-                var sender = args.Sender as IInputElement;
-                var e = args.OriginalEventArgs as MouseEventArgs;
-
-                if (sender == null || e == null) return;
-
-                var position = e.GetPosition(sender);
-
-                e.Handled = true;
-
-                Devices.Add(new Device(this, string.Format("{0}{1}", FakeDevicePrefix, ++_fakeDeviceId))
-                {
-                    BlobId = 999,
-                    DeviceId = "999",
-                    State = TrackingState.Tracked,
-                    IsIdentified = true,
-                    X = position.X,
-                    Y = position.Y,
-                    Angle = 0,//Math.PI
-                    Shape = new Polygon(),
-                    Area = Rect.Empty
-                });
-            });
-
-            RemoveFakeDeviceCommand = new RelayCommand<Device>(d =>
-            {
-                Console.WriteLine();
-            });
         }
 
         #endregion
@@ -346,15 +316,16 @@ namespace Huddle.Engine.Processor
             // Remove all devices that are not present by a blob anymore
             Devices.RemoveAll(device => blobs.All(b => b.Id != device.BlobId));
 
+            // TODO optimize for each loop -> use parallel for each loop?
             foreach (var blob in blobs)
             {
                 if (!DeviceExists(blob))
                     CreateDevice(blob);
 
-                var blobPoint = new Point(blob.X, blob.Y);
+                var blobCenter = blob.Center;
 
                 // Find matching QrCode for current blob
-                var codes = marker.Where(c => (new Point(c.X, c.Y) - blobPoint).Length < Distance).ToArray();
+                var codes = marker.Where(c => (c.Center - blobCenter).Length < Distance).ToArray();
 
                 if (codes.Any())
                 {
@@ -386,22 +357,23 @@ namespace Huddle.Engine.Processor
             var identifiedDevices0 = devices.Where(d => d.IsIdentified).ToArray();
             foreach (var device1 in identifiedDevices)
             {
-                var p1 = new Point(device1.SlidingX / Width, device1.SlidingY / Height);
+                var p1 = new Point(device1.SmoothedCenter.X / Width, device1.SmoothedCenter.Y / Height);
                 
                 var location = new Point3D(p1.X, p1.Y, 0);
-                var orientation = device1.SlidingAngle;
+                var orientation = device1.SmoothedAngle;
                 var proximity = CreateProximity("Display", device1, location, orientation);
 
                 #region Calculate Proximities
 
+                // TODO optimize for each loop -> parallel for each loop?
                 foreach (var device2 in identifiedDevices0)
                 {
                     if (Equals(device1, device2)) continue;
 
                     if (device1.Key.StartsWith(FakeDevicePrefix)) continue;
 
-                    var x = device2.X - device1.X;
-                    var y = device2.Y - device1.Y;
+                    var x = device2.SmoothedCenter.X - device1.SmoothedCenter.X;
+                    var y = device2.SmoothedCenter.Y - device1.SmoothedCenter.Y;
 
                     var distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
 
@@ -418,7 +390,7 @@ namespace Huddle.Engine.Processor
                         globalAngle = 270 + globalAngle;
 
                     // subtract own angle
-                    var localAngle = globalAngle + (360 - device1.SlidingAngle); // angle -= (device1.Angle % 180);
+                    var localAngle = globalAngle + (360 - device1.SmoothedAngle); // angle -= (device1.Angle % 180);
                     localAngle %= 360;
 
                     var log = new StringBuilder();
@@ -438,7 +410,7 @@ namespace Huddle.Engine.Processor
 
                     Log(log.ToString());
 
-                    var p2 = new Point(device2.SlidingX / Width, device2.SlidingY / Height);
+                    var p2 = new Point(device2.SmoothedCenter.X / Width, device2.SmoothedCenter.Y / Height);
                     
                     var location2 = new Point3D(p2.X, p2.Y, 0);
                     var distance2 = (p2 - p1).Length;
@@ -447,10 +419,11 @@ namespace Huddle.Engine.Processor
 
                 #endregion
 
+                // TODO optimize -> the hand calculation below uses absolute values
                 foreach (var hand in dataContainer.OfType<Hand>().ToArray())
                 {
-                    var x = hand.SlidingX * 320 - device1.SlidingX;
-                    var y = hand.SlidingY * 240 - device1.SlidingY;
+                    var x = hand.SmoothedCenter.X * 320 - device1.SmoothedCenter.X;
+                    var y = hand.SmoothedCenter.Y * 240 - device1.SmoothedCenter.Y;
 
                     var distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
 
@@ -463,7 +436,7 @@ namespace Huddle.Engine.Processor
                     {
                         Identity = "" + hand.Id,
                         Distance = distance,
-                        Location = new Point3D(hand.SlidingX, hand.SlidingY, hand.SlidingDepth),
+                        Location = new Point3D(hand.SmoothedCenter.X, hand.SmoothedCenter.Y, hand.SlidingDepth),
                     });
                 }
 
@@ -494,12 +467,12 @@ namespace Huddle.Engine.Processor
 
         private void CreateDevice(BlobData blob)
         {
+            var center = new Point(blob.Center.X*Width, blob.Center.Y*Height);
             var device = new Device(this, "unknown")
             {
                 BlobId = blob.Id,
                 IsIdentified = false,
-                X = blob.X * Width,
-                Y = blob.Y * Height,
+                Center = center,
                 State = blob.State,
                 LastBlobAngle = blob.Angle,
                 Shape = blob.Polygon,
@@ -511,10 +484,10 @@ namespace Huddle.Engine.Processor
         private void UpdateDevice(BlobData blob, Marker marker = null)
         {
             var device = Devices.Single(d => d.BlobId == blob.Id);
+            var center = new Point(blob.Center.X * Width, blob.Center.Y * Height);
             device.Key = "identified";
             device.BlobId = blob.Id;
-            device.X = blob.X * Width;
-            device.Y = blob.Y * Height;
+            device.Center = center;
             device.State = blob.State;
             device.Shape = blob.Polygon;
             device.Area = blob.Area;
@@ -566,12 +539,12 @@ namespace Huddle.Engine.Processor
             DrawModels.Clear();
         }
 
-        private void AddDrawModel(double x, double y, Brush color, int type)
+        private void AddDrawModel(Point center, Brush color, int type)
         {
             var model = new DrawModel2
             {
-                X = x,
-                Y = y,
+                X = center.X * Width,
+                Y = center.Y * Height,
                 Color = color,
                 Type = type
             };
@@ -585,13 +558,13 @@ namespace Huddle.Engine.Processor
             ClearDrawModels();
 
             foreach (var blob in blobs)
-                AddDrawModel(blob.X * Width, blob.Y * Height, Brushes.DeepPink, 1);
+                AddDrawModel(blob.Center, Brushes.DeepPink, 1);
 
             foreach (var code in qrCodes)
-                AddDrawModel(code.X * Width, code.Y * Height, Brushes.DeepSkyBlue, 2);
+                AddDrawModel(code.Center, Brushes.DeepSkyBlue, 2);
 
             foreach (var hand in hands)
-                AddDrawModel(hand.X * Width, hand.Y * Height, Brushes.DarkSlateBlue, 3);
+                AddDrawModel(hand.Center, Brushes.DarkSlateBlue, 3);
 
             #endregion
         }

@@ -680,10 +680,8 @@ namespace Huddle.Engine.Processor.Complex
                         markers.Add(new Marker(this, "Display")
                         {
                             Id = name,
-                            X = centerX / width,
-                            Y = centerY / height,
-                            RelativeX = centerX / imageWidth,
-                            RelativeY = centerY / imageHeight,
+                            Center = new System.Windows.Point(centerX / width, centerY / height),
+                            RelativeCenter = new System.Windows.Point(centerX / imageWidth, centerY / imageHeight),
                             Angle = degOrientation
                         });
 
@@ -744,8 +742,8 @@ namespace Huddle.Engine.Processor.Complex
             var imageWidth = grayscaleImage.Width;
             var imageHeight = grayscaleImage.Height;
 
-            var x = (int)(marker.RelativeX * imageWidth) - roi.X;
-            var y = (int)(marker.RelativeY * imageHeight) - roi.Y;
+            var x = (int)(marker.RelativeCenter.X * imageWidth) - roi.X;
+            var y = (int)(marker.RelativeCenter.Y * imageHeight) - roi.Y;
 
             var grayscaleImageRoi = grayscaleImage.ROI;
             grayscaleImage.ROI = roi;
@@ -759,8 +757,7 @@ namespace Huddle.Engine.Processor.Complex
             return new Marker(this, "Display")
             {
                 Id = marker.Id,
-                X = marker.X,
-                Y = marker.Y,
+                Center = marker.Center,
                 Angle = marker.Angle,
                 RgbImageToDisplayRatio = new Ratio
                 {

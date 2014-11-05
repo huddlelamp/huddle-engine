@@ -60,8 +60,7 @@ namespace Huddle.Engine.Processor.Complex
                     {
                         if (IsInTolerance(depthBlob, colorBlob, 0.01))
                         {
-                            depthBlob.X = colorBlob.X;
-                            depthBlob.Y = colorBlob.Y;
+                            depthBlob.Center = colorBlob.Center;
                             depthBlob.Angle = colorBlob.Angle;
                         }
                         pushableColorBlobs.Remove(colorBlob);
@@ -102,10 +101,9 @@ namespace Huddle.Engine.Processor.Complex
 
         private bool IsInTolerance(BlobData blob1, BlobData blob2, double tolerance)
         {
-            var dx = Math.Abs(blob1.X - blob2.X);
-            var dy = Math.Abs(blob1.Y - blob2.Y);
+            var delta = blob1.Center - blob2.Center;
             //var dAngle = Math.Abs(blob1.Angle - blob2.Angle);
-            return dx < tolerance && dy < tolerance;
+            return delta.X < tolerance && delta.Y < tolerance;
         }
     }
 }

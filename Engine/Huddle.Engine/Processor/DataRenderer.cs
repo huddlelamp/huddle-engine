@@ -1,24 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using AForge.Imaging;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
 using Huddle.Engine.Extensions;
-using Huddle.Engine.Processor.OpenCv;
 using Huddle.Engine.Util;
 
 namespace Huddle.Engine.Processor
@@ -109,8 +101,8 @@ namespace Huddle.Engine.Processor
                     polyline.Add(new Point((int)x, (int)y));
                 }
 
-                var centerX = (int)(device.SlidingX / 320 * Width);
-                var centerY = (int)(device.SlidingY / 240 * Height);
+                var centerX = (int)(device.SmoothedCenter.X / 320 * Width);
+                var centerY = (int)(device.SmoothedCenter.Y / 240 * Height);
 
                 _debugOutputImage.DrawPolyline(polyline.ToArray(), true, device.IsIdentified ? Rgbs.Red : Rgbs.White, 5);
 
@@ -127,8 +119,8 @@ namespace Huddle.Engine.Processor
 
                 resizedHandSegment.Dispose();
 
-                var point = new Point((int)(hand.RelativeX * Width), (int)(hand.RelativeY * Height));
-                var labelPoint = new Point((int)(hand.RelativeX * Width + 30), (int)(hand.RelativeY * Height));
+                var point = new Point((int)(hand.RelativeCenter.X * Width), (int)(hand.RelativeCenter.Y * Height));
+                var labelPoint = new Point((int)(hand.RelativeCenter.X * Width + 30), (int)(hand.RelativeCenter.Y * Height));
 
                 _debugOutputImage.Draw(new CircleF(point, 10), Rgbs.Red, 6);
                 _debugOutputImage.Draw(string.Format("Id {0} (d={1:F0})", hand.Id, hand.Depth), ref EmguFontBig, labelPoint, Rgbs.Red);
