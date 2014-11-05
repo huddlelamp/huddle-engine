@@ -463,7 +463,6 @@
             <CheckBox Content="Draw Contours" IsChecked="{Binding Path=IsDrawContours}" />
             <CheckBox Content="Draw All Contours" IsChecked="{Binding Path=IsDrawAllContours}" />
             <CheckBox Content="Draw Center" IsChecked="{Binding Path=IsDrawCenter}" />
-            <CheckBox Content="Subract Confidence Image" IsChecked="{Binding Path=IsSubtractConfidenceImage}" />
             <CheckBox Content="Retrieve External" IsChecked="{Binding Path=IsRetrieveExternal}" />
             <CheckBox Content="Update Occluded Rectangles" IsChecked="{Binding Path=IsUpdateOccludedRectangles}" />
             <TextBlock Width="320" Foreground="Blue" HorizontalAlignment="Left" TextAlignment="Left" TextWrapping="Wrap">NOTE: Active 'Update Occluded Rectangles' requires depth image input with the same ROI as the confidence image.</TextBlock>
@@ -476,14 +475,14 @@
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="Min Contour Area"/>
-                <Slider Width="200" Value="{Binding Path=MinContourArea}" Minimum="0" Maximum="100" />
-                <TextBlock Text="{Binding Path=MinContourArea, StringFormat={}{0:#.#} %}"/>
+                <Slider Width="200" Value="{Binding Path=MinContourArea}" Minimum="0" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="0.01" />
+                <TextBlock Text="{Binding Path=MinContourArea, StringFormat={}{0:#.##} %}"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="Max Contour Area"/>
-                <Slider Width="200" Value="{Binding Path=MaxContourArea}" Minimum="0" Maximum="100" />
-                <TextBlock Text="{Binding Path=MaxContourArea, StringFormat={}{0:#.#} %}"/>
+                <Slider Width="200" Value="{Binding Path=MaxContourArea}" Minimum="0" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="0.01" />
+                <TextBlock Text="{Binding Path=MaxContourArea, StringFormat={}{0:#.##} %}"/>
             </StackPanel>
             
             <StackPanel Orientation="Horizontal">

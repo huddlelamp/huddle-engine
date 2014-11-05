@@ -17,7 +17,7 @@ namespace Huddle.Engine.Filter
         public Point SmoothPoint(Point point)
         {
             var x = _xFilter.Filter(point.X, Rate);
-            var y = _yFilter.Filter(point.X, Rate);
+            var y = _yFilter.Filter(point.Y, Rate);
             return new Point(x, y);
         }
 
