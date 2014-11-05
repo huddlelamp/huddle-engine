@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -379,37 +380,22 @@ namespace Huddle.Engine.ViewModel
             var container = e.Sender as FrameworkElement;
             var eventArgs = e.OriginalEventArgs as StrokeEventArgs;
 
+            Debug.Assert(eventArgs != null, "event args need to be != null");
+
             var pg = PathGeometry.CreateFromGeometry(eventArgs.Stroke.GetGeometry());
-
-            //pg.Transform = new ScaleTransform(Model.Scale, Model.Scale);
-
-            //if (eventArgs.Device == Device.Stylus)
-            //{
-            //    //throw new Exception("Analyze text");
-            //    Console.WriteLine("STROKE {0}", AnalyzeStroke(eventArgs.Stroke));
-            //    RecognizeGesture(pg);
-            //}
-            //else if (eventArgs.Device == Device.StylusInverted)
-            //{
-            //    var nodesToDelete = HitTestHelper.GetElementsInGeometry<UserControl>(pg, inkCanvas)
-            //        .Select(view => view.DataContext)
-            //        .OfType<QueryCanvasNodeViewModel>().ToArray();
-
-            //    foreach (var vm in nodesToDelete)
-            //    {
-            //        var node = vm.Model as QueryCanvasNode;
-            //        Debug.Assert(node != null, "node != null");
-
-            //        Model.RemoveNode(node);
-            //    }
-            //}
 
             var elementsInGeometry = HitTestHelper.GetElementsInGeometry<PipeView>(pg, container);
 
-            var linksToDelete = elementsInGeometry.Select(view => view.DataContext)
-                .OfType<PipeViewModel>().ToArray();
+            var linksToDelete = elementsInGeometry.Select(view => view.DataContext).OfType<PipeViewModel>().ToArray();
 
-            ////TODO: add method to model, which is capable of deleting more than one link safely
+            // As user if pipes should be deleted.
+            if (linksToDelete.Any())
+            {
+                var deletePipes = MessageBox.Show("Do you want to delete pipes?", "Delete Pipes", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (deletePipes != MessageBoxResult.Yes) return;
+            }
+
+            // TODO: add method to model, which is capable of deleting more than one link safely
             foreach (var vm in linksToDelete)
             {
                 var source = vm.Source as BaseProcessor;

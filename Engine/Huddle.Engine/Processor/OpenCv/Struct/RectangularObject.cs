@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using WPoint = System.Windows.Point;
 using System.Linq;
-using Emgu.CV;
 using Emgu.CV.Structure;
 using GalaSoft.MvvmLight;
+using Huddle.Engine.Filter;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
-using Huddle.Engine.Processor.OpenCv.Filter;
 
 namespace Huddle.Engine.Processor.OpenCv.Struct
 {
@@ -14,7 +14,7 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
     {
         #region private fields
 
-        private readonly KalmanFilter _kalmanFilter = new KalmanFilter();
+        private readonly ISmoothing _smoothing = new NoSmoothing();
 
         private readonly List<SizeF> _sizes = new List<SizeF>();
         private SizeF _averageSize = SizeF.Empty;
@@ -135,13 +135,13 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
         /// </summary>
         public const string CenterPropertyName = "Center";
 
-        private Point _center = Point.Empty;
+        private WPoint _center;
 
         /// <summary>
         /// Sets and gets the Center property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public Point Center
+        public WPoint Center
         {
             get
             {
@@ -445,25 +445,13 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #endregion
 
-        #region PredictedCenter
+        #region SmoothedCenter
 
-        public Point PredictedCenter
+        public WPoint SmoothedCenter
         {
             get
             {
-                return Center;//_kalmanFilter.GetPredictedPoint(Center);
-            }
-        }
-
-        #endregion
-
-        #region EstimatedCenter
-
-        public Point EstimatedCenter
-        {
-            get
-            {
-                return Center;// _kalmanFilter.GetEstimatedPoint(Center);
+                return _smoothing.SmoothPoint(Center);
             }
         }
 

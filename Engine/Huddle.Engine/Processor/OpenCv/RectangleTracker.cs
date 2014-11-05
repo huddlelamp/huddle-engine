@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -16,12 +15,11 @@ using Emgu.CV.External.Extensions;
 using Emgu.CV.External.Structure;
 using Emgu.CV.Structure;
 using Huddle.Engine.Data;
-using Huddle.Engine.Extensions;
-using Huddle.Engine.Processor.Complex;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
 using Huddle.Engine.Processor.OpenCv.Struct;
 using Huddle.Engine.Util;
-using Point = System.Drawing.Point;
+using DPoint = System.Drawing.Point;
+using WPoint = System.Windows.Point;
 using Polygon = Huddle.Engine.Processor.Complex.PolygonIntersection.Polygon;
 using Rectangle = System.Drawing.Rectangle;
 using Vector = Huddle.Engine.Processor.Complex.PolygonIntersection.Vector;
@@ -1009,26 +1007,31 @@ namespace Huddle.Engine.Processor.OpenCv
 
                     if (IsDrawCenter)
                     {
-                        var circle = new CircleF(obj.Center, 2);
+                        var center = obj.Center;
+                        var centerPoint = new PointF((float)center.X, (float)center.Y);
+                        var circle = new CircleF(centerPoint, 2);
                         outputImage[0].Draw(circle, Rgbs.Green, 3);
                     }
 
                     if (IsDrawCenter)
                     {
-                        var circle = new CircleF(obj.EstimatedCenter, 2);
+                        var center = obj.SmoothedCenter;
+                        var centerPoint = new PointF((float)center.X, (float)center.Y);
+                        var circle = new CircleF(centerPoint, 2);
                         outputImage[0].Draw(circle, Rgbs.Blue, 3);
                     }
 
-                    outputImage[0].Draw(string.Format("Id {0}", obj.Id), ref EmguFont, new Point((int)obj.Shape.center.X, (int)obj.Shape.center.Y), Rgbs.White);
+                    outputImage[0].Draw(string.Format("Id {0}", obj.Id), ref EmguFont, new DPoint((int)obj.Shape.center.X,(int) obj.Shape.center.Y), Rgbs.White);
                 }
 
                 var bounds = obj.Bounds;
-                var estimatedCenter = obj.EstimatedCenter;
+                var smoothedCenter = obj.SmoothedCenter;
+                //var smoothedAngle = obj.SmoothedAngle;
                 Stage(new BlobData(this, BlobType)
                 {
                     Id = obj.Id,
-                    X = estimatedCenter.X / (double)imageWidth,
-                    Y = estimatedCenter.Y / (double)imageHeight,
+                    X = smoothedCenter.X / imageWidth,
+                    Y = smoothedCenter.Y / imageHeight,
                     State = obj.State,
                     Angle = obj.Shape.angle,
                     //Angle = rawObject.SlidingAngle,
@@ -1308,7 +1311,7 @@ namespace Huddle.Engine.Processor.OpenCv
                         //outputImage.Draw(currentContour.GetConvexHull(ORIENTATION.CV_CLOCKWISE), Rgbs.BlueTorquoise, 2);
 
                         // Continue with next contour if current contour is not a rectangle.
-                        List<Point> points;
+                        List<DPoint> points;
                         if (!IsPlausibleRectangle(lowApproxContour, MinAngle, MaxAngle, MinDetectRightAngles, out points)) continue;
 
                         var highApproxContour = contours.ApproxPoly(contours.Perimeter * 0.05, storage);
@@ -1340,9 +1343,9 @@ namespace Huddle.Engine.Processor.OpenCv
         /// <param name="minDetectAngles"></param>
         /// <param name="points"></param>
         /// <returns></returns>
-        private bool IsPlausibleRectangle(Seq<Point> contour, int minAngle, int maxAngle, int minDetectAngles, out List<Point> points)
+        private bool IsPlausibleRectangle(Seq<DPoint> contour, int minAngle, int maxAngle, int minDetectAngles, out List<DPoint> points)
         {
-            points = new List<Point>();
+            points = new List<DPoint>();
 
             if (contour.Total < minDetectAngles) return false; //The contour has less than 3 vertices.
 
@@ -1384,14 +1387,14 @@ namespace Huddle.Engine.Processor.OpenCv
         /// <param name="polygon"></param>
         /// <param name="points"></param>
         /// <param name="updateTime"></param>
-        private static RectangularObject CreateObject(long id, Rectangle boundingRectangle, MCvBox2D minAreaRect, Polygon polygon, Point[] points, DateTime updateTime)
+        private static RectangularObject CreateObject(long id, Rectangle boundingRectangle, MCvBox2D minAreaRect, Polygon polygon, DPoint[] points, DateTime updateTime)
         {
             return new RectangularObject
             {
                 Id = id,
                 State = TrackingState.Tracked,
                 LastUpdate = updateTime,
-                Center = new Point((int)minAreaRect.center.X, (int)minAreaRect.center.Y),
+                Center = new WPoint(minAreaRect.center.X, minAreaRect.center.Y),
                 Bounds = boundingRectangle,
                 Shape = minAreaRect,
                 LastAngle = minAreaRect.angle,
@@ -1413,7 +1416,7 @@ namespace Huddle.Engine.Processor.OpenCv
         /// <param name="updateTime"></param>
         /// <param name="objects"></param>
         /// <returns></returns>
-        private static bool UpdateObject(bool occluded, Contour<Point> objectContour, double maxRestoreDistance, Rectangle boundingRectangle, MCvBox2D minAreaRect, Polygon polygon, Point[] points, DateTime updateTime, IEnumerable<RectangularObject> objects)
+        private static bool UpdateObject(bool occluded, Contour<DPoint> objectContour, double maxRestoreDistance, Rectangle boundingRectangle, MCvBox2D minAreaRect, Polygon polygon, DPoint[] points, DateTime updateTime, IEnumerable<RectangularObject> objects)
         {
             double distance;
             var candidate = GetObjectCandidate(objects, objectContour, minAreaRect, maxRestoreDistance, out distance);
@@ -1452,7 +1455,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
             candidate.State = occluded ? TrackingState.Occluded : TrackingState.Tracked;
             candidate.LastUpdate = updateTime;
-            candidate.Center = new Point((int)shape.center.X, (int)shape.center.Y);
+            candidate.Center = new WPoint(shape.center.X, shape.center.Y);
             candidate.Bounds = boundingRectangle;
             candidate.Shape = shape;
             candidate.LastAngle = minAreaRect.angle;
@@ -1462,7 +1465,7 @@ namespace Huddle.Engine.Processor.OpenCv
             return true;
         }
 
-        private static RectangularObject GetObjectCandidate(IEnumerable<RectangularObject> objects, Contour<Point> objectContour, MCvBox2D shape, double maxRestoreDistance, out double retDistance)
+        private static RectangularObject GetObjectCandidate(IEnumerable<RectangularObject> objects, Contour<DPoint> objectContour, MCvBox2D shape, double maxRestoreDistance, out double retDistance)
         {
             RectangularObject candidate = null;
             var leastDistance = double.MaxValue;
