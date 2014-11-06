@@ -218,6 +218,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Linq.Dynamic">
+      <HintPath>..\..\packages\System.Linq.Dynamic.1.0.3\lib\net40\System.Linq.Dynamic.dll</HintPath>
+    </Reference>
     <Reference Include="System.Reactive.Core">
       <HintPath>..\..\packages\Rx-Core.2.2.2\lib\net45\System.Reactive.Core.dll</HintPath>
     </Reference>
@@ -326,6 +329,12 @@
     <Compile Include="Processor\OpenCv\Struct\TrackingState.cs" />
     <Compile Include="Processor\Sensors\Senz3DIntel.cs" />
     <Compile Include="Processor\Sensors\Utils\Senz3DUtils.cs" />
+    <Compile Include="Util\LambdaExtensions.cs" />
+    <Compile Include="Util\LambdaValueConverter.cs" />
+    <Compile Include="Util\MultiConverterMarkupExtension.cs" />
+    <Compile Include="Util\PresenceTemplateSelector.cs" />
+    <Compile Include="Util\RatioConverter.cs" />
+    <Compile Include="Util\ScaleConverter.cs" />
     <Compile Include="Windows\BasicWindow.xaml.cs">
       <DependentUpon>BasicWindow.xaml</DependentUpon>
     </Compile>

@@ -154,8 +154,10 @@ namespace Huddle.Engine.Data
                 _isSmoothedCenter = false;
 
                 RaisePropertyChanging(CenterPropertyName);
+                RaisePropertyChanging(SmoothedCenterPropertyName);
                 _center = value;
                 RaisePropertyChanged(CenterPropertyName);
+                RaisePropertyChanged(SmoothedCenterPropertyName);
             }
         }
 
@@ -226,8 +228,10 @@ namespace Huddle.Engine.Data
                 _isSmoothedAngle = false;
 
                 RaisePropertyChanging(AnglePropertyName);
+                RaisePropertyChanging(SmoothedAnglePropertyName);
                 _angle = value;
                 RaisePropertyChanged(AnglePropertyName);
+                RaisePropertyChanged(SmoothedAnglePropertyName);
             }
         }
 
@@ -235,7 +239,13 @@ namespace Huddle.Engine.Data
 
         #region SmoothedCenter
 
-        private bool _isSmoothedCenter = false;
+        /// <summary>
+        /// The <see cref="SmoothedCenter" /> property's name.
+        /// </summary>
+        public const string SmoothedCenterPropertyName = "SmoothedCenter";
+
+        // ATTENTION: do not change to false!!!
+        private bool _isSmoothedCenter = true;
         private Point _smoothedCenter;
 
         public WPoint SmoothedCenter
@@ -254,7 +264,13 @@ namespace Huddle.Engine.Data
 
         #region SmoothedAngle
 
-        private bool _isSmoothedAngle = false;
+        /// <summary>
+        /// The <see cref="SmoothedAngle" /> property's name.
+        /// </summary>
+        public const string SmoothedAnglePropertyName = "SmoothedAngle";
+
+        // ATTENTION: do not change to false!!!
+        private bool _isSmoothedAngle = true;
         private double _smoothedAngle;
 
         public double SmoothedAngle
@@ -384,7 +400,7 @@ namespace Huddle.Engine.Data
         /// </summary>
         public const string RgbImageToDisplayRatioPropertyName = "RgbImageToDisplayRatio";
 
-        private Ratio _rgbImageToDisplayRatio = Ratio.Empty;
+        private Ratio _rgbImageToDisplayRatio = Ratio.Identity;
 
         /// <summary>
         /// Sets and gets the RgbImageToDisplayRatio property.

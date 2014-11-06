@@ -2,7 +2,7 @@
 {
     public struct Ratio
     {
-        public static Ratio Empty = new Ratio { X = 0, Y = 0 };
+        public static Ratio Identity = new Ratio { X = 1.0, Y = 1.0 };
 
         public double X { get; set; }
 

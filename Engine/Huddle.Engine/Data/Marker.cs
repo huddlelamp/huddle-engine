@@ -14,7 +14,7 @@ namespace Huddle.Engine.Data
         /// </summary>
         public const string RgbImageToDisplayRatioPropertyName = "RgbImageToDisplayRatio";
 
-        private Ratio _rgbImageToDisplayRatio = Ratio.Empty;
+        private Ratio _rgbImageToDisplayRatio = Ratio.Identity;
 
         /// <summary>
         /// Sets and gets the RgbImageToDisplayRatio property.
