@@ -286,11 +286,6 @@
             <Grid x:Name="DeviceContainer"
                   Width="{Binding Path=Width}"
                   Height="{Binding Path=Height}">
-                <i:Interaction.Triggers>
-                    <util:EventTriggerAdvanced EventName="MouseLeftButtonDown">
-                        <command:EventToCommand Command="{Binding Path=AddFakeDeviceCommand}" PassEventArgsToCommand="True" />
-                    </util:EventTriggerAdvanced>
-                </i:Interaction.Triggers>
                 <ItemsControl ItemsSource="{Binding Path=Devices}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -300,11 +295,6 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid RenderTransformOrigin="0.5,0.5" ClipToBounds="False">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="MouseRightButtonDown">
-                                        <command:EventToCommand Command="{Binding ElementName=DeviceContainer, Path=DataContext.RemoveFakeDeviceCommand}" CommandParameter="{Binding}" />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
                                 <Grid.RenderTransform>
                                     <TransformGroup>
                                         <RotateTransform Angle="{Binding Path=Angle}" />
@@ -321,8 +311,8 @@
                     </ItemsControl.ItemTemplate>
                     <ItemsControl.ItemContainerStyle>
                         <Style>
-                            <Setter Property="Canvas.Left" Value="{Binding Path=X}" />
-                            <Setter Property="Canvas.Top" Value="{Binding Path=Y}" />
+                            <Setter Property="Canvas.Left" Value="{Binding Path=Center.X}" />
+                            <Setter Property="Canvas.Top" Value="{Binding Path=Center.Y}" />
                         </Style>
                     </ItemsControl.ItemContainerStyle>
                 </ItemsControl>

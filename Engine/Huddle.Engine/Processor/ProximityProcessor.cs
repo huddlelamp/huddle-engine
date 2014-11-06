@@ -393,22 +393,25 @@ namespace Huddle.Engine.Processor
                     var localAngle = globalAngle + (360 - device1.SmoothedAngle); // angle -= (device1.Angle % 180);
                     localAngle %= 360;
 
-                    var log = new StringBuilder();
+                    if (IsRenderContent)
+                    {
+                        var log = new StringBuilder();
 
-                    if (localAngle >= 225 && localAngle < 315)
-                        log.AppendFormat("Device {0} is right of device {1}", device1.Key, device2.Key);
-                    else if (localAngle >= 45 && localAngle < 135)
-                        log.AppendFormat("Device {0} is left of device {1}", device1.Key, device2.Key);
-                    else if (localAngle >= 135 && localAngle < 225)
-                        log.AppendFormat("Device {0} is top of device {1}", device1.Key, device2.Key);
-                    else //
-                        log.AppendFormat("Device {0} is bottom of device {1}", device1.Key, device2.Key);
+                        if (localAngle >= 225 && localAngle < 315)
+                            log.AppendFormat("Device {0} is right of device {1}", device1.Key, device2.Key);
+                        else if (localAngle >= 45 && localAngle < 135)
+                            log.AppendFormat("Device {0} is left of device {1}", device1.Key, device2.Key);
+                        else if (localAngle >= 135 && localAngle < 225)
+                            log.AppendFormat("Device {0} is top of device {1}", device1.Key, device2.Key);
+                        else //
+                            log.AppendFormat("Device {0} is bottom of device {1}", device1.Key, device2.Key);
 
-                    log.AppendFormat(" in a distance of {0}", distance);
+                        log.AppendFormat(" in a distance of {0}", distance);
 
-                    log.AppendFormat(" and its local angle is {0} (Global Angle {1})", localAngle, globalAngle);
+                        log.AppendFormat(" and its local angle is {0} (Global Angle {1})", localAngle, globalAngle);
 
-                    Log(log.ToString());
+                        Log(log.ToString());
+                    }
 
                     var p2 = new Point(device2.SmoothedCenter.X / Width, device2.SmoothedCenter.Y / Height);
                     
