@@ -447,16 +447,17 @@ namespace Huddle.Engine.Processor.Complex
                 Push();
             }
 
-            // draw debug output
-            var debugImageCopy = debugImage.Copy();
-            Task.Factory.StartNew(() =>
+            if (IsRenderContent)
             {
-                var bitmapSource = debugImageCopy.ToBitmapSource(true);
-                debugImageCopy.Dispose();
-                return bitmapSource;
-            }).ContinueWith(t => DebugImageBitmapSource = t.Result);
-
-            //Stage(new RgbImageData(this, "DebugImage", debugImage));
+                // draw debug output
+                var debugImageCopy = debugImage.Copy();
+                Task.Factory.StartNew(() =>
+                {
+                    var bitmapSource = debugImageCopy.ToBitmapSource(true);
+                    debugImageCopy.Dispose();
+                    return bitmapSource;
+                }).ContinueWith(t => DebugImageBitmapSource = t.Result);
+            }
 
             debugImage.Dispose();
 
