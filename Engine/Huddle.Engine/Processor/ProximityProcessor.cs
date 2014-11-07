@@ -116,42 +116,6 @@ namespace Huddle.Engine.Processor
 
         #endregion
 
-        #region DrawModels
-
-        /// <summary>
-        /// The <see cref="DrawModels" /> property's name.
-        /// </summary>
-        public const string DrawModelsPropertyName = "DrawModels";
-
-        private ObservableCollection<DrawModel2> _drawModels = new ObservableCollection<DrawModel2>();
-
-        /// <summary>
-        /// Sets and gets the DrawModels property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        [IgnoreDataMember]
-        public ObservableCollection<DrawModel2> DrawModels
-        {
-            get
-            {
-                return _drawModels;
-            }
-
-            set
-            {
-                if (_drawModels == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(DrawModelsPropertyName);
-                _drawModels = value;
-                RaisePropertyChanged(DrawModelsPropertyName);
-            }
-        }
-
-        #endregion
-
         #endregion
 
         #region ctor
@@ -160,7 +124,6 @@ namespace Huddle.Engine.Processor
         {
             // Make collection accessible in current processor thread => UI Thread
             DispatcherHelper.CheckBeginInvokeOnUI(() => BindingOperations.EnableCollectionSynchronization(Devices, _deviceLock));
-            DispatcherHelper.CheckBeginInvokeOnUI(() => BindingOperations.EnableCollectionSynchronization(DrawModels, _drawModelsLock));
         }
 
         #endregion
@@ -178,11 +141,10 @@ namespace Huddle.Engine.Processor
                 while (_thresholdThreadRunning)
                 {
                     var timeDiff = (DateTime.Now - _lastUpdateTime).TotalMilliseconds;
-                    if (timeDiff > 1000)
+                    if (timeDiff > 200)
                     {
                         Devices.Clear();
-                        ClearDrawModels();
-                        Thread.Sleep(1000);
+                        Thread.Sleep(200);
                     }
                     else
                     {
@@ -205,7 +167,6 @@ namespace Huddle.Engine.Processor
 
             // cleanup data
             Devices.Clear();
-            DrawModels.Clear();
 
             #region Timeout Handling
 
@@ -232,13 +193,6 @@ namespace Huddle.Engine.Processor
             var blobs = dataContainer.OfType<BlobData>().ToList();
             var markers = dataContainer.OfType<Marker>().ToList();
             var hands = dataContainer.OfType<Hand>().ToList();
-
-            // Update output only if processor view is visible
-            if (IsRenderContent)
-            {
-                // Update view
-                UpdateView(blobs, markers, hands);
-            }
 
             // Remove all devices that are not present by a blob anymore
             Devices.RemoveAll(device => blobs.All(b => b.Id != device.BlobId));
@@ -276,7 +230,6 @@ namespace Huddle.Engine.Processor
             var devices = Devices.ToArray();
 
             var identifiedDevices = devices.Where(d => d.IsIdentified).ToArray();
-            var identifiedDevices0 = devices.Where(d => d.IsIdentified).ToArray();
             foreach (var device1 in identifiedDevices)
             {
                 var p1 = new Point(device1.SmoothedCenter.X, device1.SmoothedCenter.Y);
@@ -288,7 +241,7 @@ namespace Huddle.Engine.Processor
                 #region Calculate Proximities
 
                 // TODO optimize for each loop -> parallel for each loop?
-                foreach (var device2 in identifiedDevices0)
+                foreach (var device2 in identifiedDevices)
                 {
                     if (Equals(device1, device2)) continue;
 
@@ -481,187 +434,5 @@ namespace Huddle.Engine.Processor
             retDistance = leastDistance;
             return candidate;
         }
-
-        private void ClearDrawModels()
-        {
-            DrawModels.Clear();
-        }
-
-        private void AddDrawModel(Point center, Brush color, int type)
-        {
-            var model = new DrawModel2
-            {
-                X = center.X,
-                Y = center.Y,
-                Color = color,
-                Type = type
-            };
-            DrawModels.Add(model);
-        }
-
-        private void UpdateView(IEnumerable<BlobData> blobs, IEnumerable<Marker> qrCodes, IEnumerable<Hand> hands)
-        {
-            #region Update DrawModels
-
-            ClearDrawModels();
-
-            foreach (var blob in blobs)
-                AddDrawModel(blob.Center, Brushes.DeepPink, 1);
-
-            foreach (var code in qrCodes)
-                AddDrawModel(code.Center, Brushes.DeepSkyBlue, 2);
-
-            foreach (var hand in hands)
-                AddDrawModel(hand.Center, Brushes.DarkSlateBlue, 3);
-
-            #endregion
-        }
-    }
-
-    public class DrawModel2 : ObservableObject
-    {
-        #region properties
-
-        #region X
-
-        /// <summary>
-        /// The <see cref="X" /> property's name.
-        /// </summary>
-        public const string XPropertyName = "X";
-
-        private double _x = 0.0;
-
-        /// <summary>
-        /// Sets and gets the X property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double X
-        {
-            get
-            {
-                return _x;
-            }
-
-            set
-            {
-                if (_x == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(XPropertyName);
-                _x = value;
-                RaisePropertyChanged(XPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region Y
-
-        /// <summary>
-        /// The <see cref="Y" /> property's name.
-        /// </summary>
-        public const string YPropertyName = "Y";
-
-        private double _y = 0.0;
-
-        /// <summary>
-        /// Sets and gets the Y property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double Y
-        {
-            get
-            {
-                return _y;
-            }
-
-            set
-            {
-                if (_y == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(YPropertyName);
-                _y = value;
-                RaisePropertyChanged(YPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region Color
-
-        /// <summary>
-        /// The <see cref="Color" /> property's name.
-        /// </summary>
-        public const string ColorPropertyName = "Color";
-
-        private Brush _color = Brushes.Yellow;
-
-        /// <summary>
-        /// Sets and gets the Color property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public Brush Color
-        {
-            get
-            {
-                return _color;
-            }
-
-            set
-            {
-                if (_color == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(ColorPropertyName);
-                _color = value;
-                RaisePropertyChanged(ColorPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region Type
-
-        /// <summary>
-        /// The <see cref="Type" /> property's name.
-        /// </summary>
-        public const string TypePropertyName = "Type";
-
-        private int _type = -1;
-
-        /// <summary>
-        /// Sets and gets the Type property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public int Type
-        {
-            get
-            {
-                return _type;
-            }
-
-            set
-            {
-                if (_type == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(TypePropertyName);
-                _type = value;
-                RaisePropertyChanged(TypePropertyName);
-            }
-        }
-
-        #endregion
-
-        #endregion
     }
 }

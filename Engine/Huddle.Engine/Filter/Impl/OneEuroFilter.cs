@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Huddle.Engine.Filter
+namespace Huddle.Engine.Filter.Impl
 {
     /// <summary>
     /// This is a variation of the 1€ Filter at http://www.lifl.fr/~casiez/1euro/OneEuroFilter.cs

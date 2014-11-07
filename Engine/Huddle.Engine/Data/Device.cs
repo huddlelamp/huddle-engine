@@ -12,7 +12,7 @@ namespace Huddle.Engine.Data
     {
         #region private members
 
-        private readonly ISmoothing _smoothing = new OneEuroSmoothing();
+        private readonly ISmoothing _smoothing = SmoothingFilterFactory.CreateDefault();
 
         #endregion
 

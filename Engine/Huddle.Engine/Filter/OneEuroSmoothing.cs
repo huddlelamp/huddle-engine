@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using Huddle.Engine.Filter.Impl;
 
 namespace Huddle.Engine.Filter
 {
@@ -25,6 +26,7 @@ namespace Huddle.Engine.Filter
         public double SmoothAngle(double angle)
         {
             return _angleFilter.Filter(angle, Rate);
+            //return angle;
         }
 
         public double SmoothDepth(double depth)

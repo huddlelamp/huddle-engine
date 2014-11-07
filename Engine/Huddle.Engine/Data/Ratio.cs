@@ -7,5 +7,10 @@
         public double X { get; set; }
 
         public double Y { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("Ratio [X={0:#.##}, Y={1:.#.##}]", X, Y);
+        }
     }
 }
