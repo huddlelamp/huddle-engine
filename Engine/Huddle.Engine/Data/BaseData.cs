@@ -46,7 +46,37 @@ namespace Huddle.Engine.Data
 
         #region Key
 
-        public string Key { get; set; }
+        /// <summary>
+        /// The <see cref="Key" /> property's name.
+        /// </summary>
+        public const string KeyPropertyName = "Key";
+
+        private string _key = string.Empty;
+
+        /// <summary>
+        /// Sets and gets the Key property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        [JsonIgnore]
+        public string Key
+        {
+            get
+            {
+                return _key;
+            }
+
+            set
+            {
+                if (_key == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(KeyPropertyName);
+                _key = value;
+                RaisePropertyChanged(KeyPropertyName);
+            }
+        }
 
         #endregion
 

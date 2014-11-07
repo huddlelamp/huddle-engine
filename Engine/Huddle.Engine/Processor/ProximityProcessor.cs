@@ -27,12 +27,7 @@ namespace Huddle.Engine.Processor
     {
         #region member fields
 
-        private const string FakeDevicePrefix = "FakeDevice";
-
-        private long _fakeDeviceId;
-
         private readonly object _deviceLock = new object();
-        private readonly object _drawModelsLock = new object();
 
         #endregion
 
@@ -248,8 +243,6 @@ namespace Huddle.Engine.Processor
                 {
                     if (Equals(device1, device2)) continue;
 
-                    if (device1.Key.StartsWith(FakeDevicePrefix)) continue;
-
                     var x = device2.SmoothedCenter.X - device1.SmoothedCenter.X;
                     var y = device2.SmoothedCenter.Y - device1.SmoothedCenter.Y;
 
@@ -371,7 +364,7 @@ namespace Huddle.Engine.Processor
         {
             var device = Devices.Single(d => d.BlobId == blob.Id);
             var center = new Point(blob.Center.X, blob.Center.Y);
-            device.Key = "identified";
+            device.Key = blob.Key;
             device.BlobId = blob.Id;
             device.Center = center;
             device.State = blob.State;

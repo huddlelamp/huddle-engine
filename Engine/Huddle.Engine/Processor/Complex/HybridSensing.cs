@@ -60,7 +60,7 @@ namespace Huddle.Engine.Processor.Complex
                     {
                         if (IsInTolerance(depthBlob, colorBlob, 0.05))
                         {
-                            //depthBlob.Key = "HybridBlob";
+                            depthBlob.Key = "HybridBlob";
                             depthBlob.Center = colorBlob.Center;
                             depthBlob.Angle = colorBlob.Angle;
                         }
