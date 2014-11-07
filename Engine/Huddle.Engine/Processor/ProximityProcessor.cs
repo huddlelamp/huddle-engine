@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.Windows.Forms.VisualStyles;
 using System.Windows.Media.Media3D;
 using System.Xml.Serialization;
 using GalaSoft.MvvmLight;
@@ -198,7 +199,8 @@ namespace Huddle.Engine.Processor
             Devices.RemoveAll(device => blobs.All(b => b.Id != device.BlobId));
 
             // TODO optimize for each loop -> use parallel for each loop?
-            Parallel.ForEach(blobs, blob =>
+            //Parallel.ForEach(blobs, blob =>
+            foreach (var blob in blobs)
             {
                 if (!DeviceExists(blob))
                     CreateDevice(blob);
@@ -215,7 +217,8 @@ namespace Huddle.Engine.Processor
                 {
                     UpdateDevice(blob);
                 }
-            });
+            }
+            //});
 
             return dataContainer;
         }
