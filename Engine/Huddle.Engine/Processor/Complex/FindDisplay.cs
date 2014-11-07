@@ -37,8 +37,6 @@ namespace Huddle.Engine.Processor.Complex
 
         #region member fields
 
-        private Image<Rgb, byte> _lastRgbImage;
-
         private readonly GlyphRecognizer _glyphRecognizer;
         private GlyphMetadata[] _glyphTable;
 
@@ -399,13 +397,28 @@ namespace Huddle.Engine.Processor.Complex
 
         public override IDataContainer PreProcess(IDataContainer dataContainer)
         {
-            var rgbImages = dataContainer.OfType<RgbImageData>().ToArray();
-            if (rgbImages.Any())
-            {
-                if (_lastRgbImage != null) _lastRgbImage.Dispose();
-                _lastRgbImage = rgbImages.First().Image.Copy();
+            var devices = dataContainer.OfType<Device>().ToArray();
+            var unknownDevices = devices.Where(d => !d.IsIdentified).ToArray();
+            if (!devices.Any())
+                return base.PreProcess(dataContainer);
 
-                var lastRgbImageCopy = _lastRgbImage.Copy();
+            // For debugging the flag IsFindDisplayContinuously can be set 'true' -> 'false' is recommended however
+            var devicesToFind = IsFindDisplayContiuously ? devices : unknownDevices;
+
+            if (!devicesToFind.Any()) return null;
+
+            var rgbImages = dataContainer.OfType<RgbImageData>().ToArray();
+
+            // Do only process if RGB image is set
+            if (!rgbImages.Any())
+                return null;
+
+            var rgbImage = rgbImages.First().Image.Copy();
+            var debugImage = rgbImage.Copy();
+
+            if (IsRenderContent)
+            {
+                var lastRgbImageCopy = rgbImage.Copy();
                 Task.Factory.StartNew(() =>
                 {
                     var bitmapSource = lastRgbImageCopy.ToBitmapSource(true);
@@ -414,38 +427,22 @@ namespace Huddle.Engine.Processor.Complex
                 }).ContinueWith(t => InputImageBitmapSource = t.Result);
             }
 
-            // Do not process if last Rgb image frame is not set
-            if (_lastRgbImage == null) return null;
+            var colorImage = rgbImage.Copy();
 
-            var devices = dataContainer.OfType<Device>().ToArray();
-            var unknownDevices = devices.Where(d => !d.IsIdentified).ToArray();
-            if (!devices.Any())
-                return base.PreProcess(dataContainer);
+            // TODO: is the copy required or does convert already create a copy? _lastRgbImage.Copy() 
+            var grayscaleImage = rgbImage.Copy().Convert<Gray, byte>();
 
-            var debugImage = _lastRgbImage.Copy();
+            var width = rgbImage.Width;
+            var height = rgbImage.Height;
 
-            // For debugging the flag IsFindDisplayContinuously can be set 'true' -> 'false' is recommended however
-            var devicesToFind = IsFindDisplayContiuously ? devices : unknownDevices;
-
-            if (devicesToFind.Any())
+            foreach (var device in devicesToFind)
             {
-                var colorImage = _lastRgbImage.Copy();
-
-                // TODO: is the copy required or does convert already create a copy? _lastRgbImage.Copy() 
-                var grayscaleImage = _lastRgbImage.Copy().Convert<Gray, byte>();
-
-                var width = _lastRgbImage.Width;
-                var height = _lastRgbImage.Height;
-
-                foreach (var device in devicesToFind)
-                {
-                    ProcessDevice(device, colorImage, grayscaleImage, width, height, ref debugImage);
-                }
-
-                colorImage.Dispose();
-                grayscaleImage.Dispose();
-                Push();
+                ProcessDevice(device, colorImage, grayscaleImage, width, height, ref debugImage);
             }
+
+            colorImage.Dispose();
+            grayscaleImage.Dispose();
+            Push();
 
             if (IsRenderContent)
             {
@@ -471,7 +468,7 @@ namespace Huddle.Engine.Processor.Complex
 
         #region private methods
 
-        private void ProcessDevice(Device device, Image<Rgb, byte> colorImage, Image<Gray, byte> grayscaleImage, int width, int height, ref Image<Rgb, byte>  debugImage)
+        private void ProcessDevice(Device device, Image<Rgb, byte> colorImage, Image<Gray, byte> grayscaleImage, int width, int height, ref Image<Rgb, byte> debugImage)
         {
             var deviceRoi = CalculateRoiFromNormalizedBounds(device.Area, colorImage);
             deviceRoi = deviceRoi.GetInflatedBy(RoiExpandFactor, colorImage.ROI);

@@ -450,7 +450,7 @@ namespace Huddle.Engine.Processor.Network
 
             // TODO is this console log necessary???
             if (handshake.Options != null)
-                Console.WriteLine(handshake.Options);
+                Log(handshake.Options);
 
             // if glyph id is not set by the client then assign a random id.
             if (glyphId == null || !_deviceIdToGlyph.ContainsKey(glyphId))

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -445,25 +446,34 @@ namespace Huddle.Engine.ViewModel
 
         public override void Start()
         {
-            foreach (var processor in Processors)
-                processor.Start();
+            Task.Factory.StartNew(() =>
+            {
+                foreach (var processor in Processors)
+                    processor.Start();
 
-            Mode = PipelineMode.Started;
+                Mode = PipelineMode.Started;
+            });
         }
 
         public override void Stop()
         {
-            foreach (var processor in Processors)
-                processor.Stop();
+            Task.Factory.StartNew(() =>
+            {
+                foreach (var processor in Processors)
+                    processor.Stop();
 
-            Mode = PipelineMode.Stopped;
+                Mode = PipelineMode.Stopped;
+            });
         }
 
         public void Pause()
         {
-            Mode = PipelineMode.Paused;
-
             throw new NotImplementedException();
+
+            Task.Factory.StartNew(() =>
+            {
+                Mode = PipelineMode.Paused;
+            });
         }
 
         public void Resume()

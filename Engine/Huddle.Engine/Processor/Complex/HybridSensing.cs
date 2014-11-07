@@ -54,12 +54,13 @@ namespace Huddle.Engine.Processor.Complex
                     //if (colorBlob.Area.IntersectsWith(depthBlob.Area))
                     //    pushableColorBlobs.Remove(colorBlob);
 
-                    PolygonCollisionUtils.PolygonCollisionResult r = PolygonCollisionUtils.PolygonCollision(depthBlob.Polygon, colorBlob.Polygon, Vector.Empty);
+                    var r = PolygonCollisionUtils.PolygonCollision(depthBlob.Polygon, colorBlob.Polygon, Vector.Empty);
 
                     if (r.WillIntersect)
                     {
-                        if (IsInTolerance(depthBlob, colorBlob, 0.01))
+                        if (IsInTolerance(depthBlob, colorBlob, 0.015))
                         {
+                            //depthBlob.Key = "HybridBlob";
                             depthBlob.Center = colorBlob.Center;
                             depthBlob.Angle = colorBlob.Angle;
                         }

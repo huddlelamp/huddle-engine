@@ -321,6 +321,7 @@
     <Compile Include="Filter\OneEuroSmoothing.cs" />
     <Compile Include="Filter\SmoothingFilterFactory.cs" />
     <Compile Include="Processor\Complex\PolygonIntersection\PolygonCollisionUtils.cs" />
+    <Compile Include="Processor\MergeRgbImageAndDevice.cs" />
     <Compile Include="Processor\Network\Huddle\Client.cs" />
     <Compile Include="Processor\Network\Huddle\ClientState.cs" />
     <Compile Include="Processor\OpenCv\FillContours.cs" />
@@ -371,7 +372,6 @@
     <Compile Include="Processor\DataViewer.cs" />
     <Compile Include="Processor\ISnapshot.cs" />
     <Compile Include="Processor\ITakeLong.cs" />
-    <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\HuddleServer.cs" />
     <Compile Include="Processor\OpenCv\BasicsGrayFloat.cs" />
     <Compile Include="Processor\OpenCv\HandTracker.cs" />
