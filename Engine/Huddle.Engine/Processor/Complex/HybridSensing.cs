@@ -58,7 +58,7 @@ namespace Huddle.Engine.Processor.Complex
 
                     if (r.WillIntersect)
                     {
-                        if (IsInTolerance(depthBlob, colorBlob, 0.015))
+                        if (IsInTolerance(depthBlob, colorBlob, 0.05))
                         {
                             //depthBlob.Key = "HybridBlob";
                             depthBlob.Center = colorBlob.Center;

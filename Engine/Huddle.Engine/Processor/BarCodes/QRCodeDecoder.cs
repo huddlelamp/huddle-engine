@@ -106,11 +106,11 @@ namespace Huddle.Engine.Processor.BarCodes
             if (results != null)
             {
                 numQRs = results.Length;
-                Log("Found {0} QR tags", numQRs);
+                LogFormat("Found {0} QR tags", numQRs);
             }
             else
             {
-                Log("Failed");
+                LogFormat("Failed");
                 //base.DrawDebug(image);
                 return outputImage;
             }
@@ -157,7 +157,7 @@ namespace Huddle.Engine.Processor.BarCodes
                 //// Get orientation of tag
                 var qrOrientation = Math.Atan2(dy, dx) / Math.PI * 180 + 90;
 
-                Log("Text={0} | Orientation={1}°", qrText, qrOrientation);
+                LogFormat("Text={0} | Orientation={1}°", qrText, qrOrientation);
 
                 var centerX = (minX + (maxX - minX) / 2);
                 var centerY = (minY + (maxY - minY) / 2);

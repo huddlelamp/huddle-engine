@@ -651,7 +651,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     _objects.AddRange(foundObjects);
 
                     if (foundObjects.Any())
-                        Log("Updated but also found {0} new objects {1}", foundObjects.Length, foundObjects);
+                        LogFormat("Updated but also found {0} new objects {1}", foundObjects.Length, foundObjects);
                 }
             }
             else
@@ -661,7 +661,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 _objects.AddRange(foundObjects);
 
                 if (foundObjects.Any())
-                    Log("Found {0} new objects {1}", foundObjects.Length, foundObjects);
+                    LogFormat("Found {0} new objects {1}", foundObjects.Length, foundObjects);
             }
 
             // Update occluded objects. It tries to find not yet identified and maybe occluded objects.

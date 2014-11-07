@@ -142,10 +142,10 @@ namespace Huddle.Engine.Processor
                 while (_thresholdThreadRunning)
                 {
                     var timeDiff = (DateTime.Now - _lastUpdateTime).TotalMilliseconds;
-                    if (timeDiff > 200)
+                    if (timeDiff > 1000)
                     {
                         Devices.Clear();
-                        Thread.Sleep(200);
+                        Thread.Sleep(1000);
                     }
                     else
                     {
@@ -289,7 +289,7 @@ namespace Huddle.Engine.Processor
 
                         log.AppendFormat(" and its local angle is {0} (Global Angle {1})", localAngle, globalAngle);
 
-                        Log(log.ToString());
+                        LogFormat(log.ToString());
                     }
 
                     var p2 = new Point(device2.SmoothedCenter.X, device2.SmoothedCenter.Y);
@@ -314,7 +314,7 @@ namespace Huddle.Engine.Processor
                     {
                         if (distance < 30 && hand.Depth < 80)
                         {
-                            Log("Hand {0} close to {1}", hand.Id, device1.DeviceId);
+                            LogFormat("Hand {0} close to {1}", hand.Id, device1.DeviceId);
                         }
                     }
 

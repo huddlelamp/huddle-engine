@@ -378,7 +378,7 @@ namespace Huddle.Engine.Processor.OpenCv
             }
             catch (Exception e)
             {
-                Log("{0}", e.StackTrace);
+                LogFormat("{0}", e.StackTrace);
                 return null;
             }
         }

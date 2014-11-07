@@ -27,13 +27,17 @@ namespace Huddle.Engine.Processor
             var rgbImages = dataContainer.OfType<RgbImageData>().ToArray();
             if (rgbImages.Any())
             {
+                if (_rgbImageData != null)
+                    _rgbImageData.Dispose();
+
                 _rgbImageData = rgbImages.First().Copy() as RgbImageData;
                 return null;
             }
 
             if (_rgbImageData != null)
             {
-                dataContainer.Add(_rgbImageData);
+                dataContainer.Add(_rgbImageData.Copy());
+                _rgbImageData.Dispose();
                 _rgbImageData = null;
             }
 

@@ -653,7 +653,7 @@ namespace Huddle.Engine.Processor
                 }
                 catch (Exception e)
                 {
-                    Log("Processing error {0}", e.ToString());
+                    LogFormat("Processing error {0}", e.ToString());
                 }
 
                 if (processedData == null)
@@ -721,7 +721,18 @@ namespace Huddle.Engine.Processor
             return _id++;
         }
 
-        protected void Log(string format, params object[] args)
+        protected void Log(string message)
+        {
+            DispatcherHelper.RunAsync(() =>
+            {
+                if (Logs.Count > 100)
+                    Logs.RemoveAt(100);
+
+                Logs.Insert(0, string.Format("[{0}] {1}", DateTime.Now, message));
+            });
+        }
+
+        protected void LogFormat(string format, params object[] args)
         {
             DispatcherHelper.RunAsync(() =>
             {

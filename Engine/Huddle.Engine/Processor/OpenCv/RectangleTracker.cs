@@ -900,16 +900,6 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        //public override IDataContainer PreProcess(IDataContainer dataContainer)
-        //{
-        //    if (dataContainer.OfType<GrayFloatImage>().Any())
-        //        Console.WriteLine("Depth Image Frame: {0}", dataContainer.FrameId);
-        //    else if (dataContainer.OfType<RgbImageData>().Any())
-        //        Console.WriteLine("Confidence Image Frame: {0}", dataContainer.FrameId);
-
-        //    return dataContainer;
-        //}
-
         public override IData Process(IData data)
         {
             var depthImageData = data as GrayFloatImage;
@@ -953,7 +943,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     _objects.AddRange(foundObjects);
 
                     if (foundObjects.Any())
-                        Log("Updated but also found {0} new objects {1}", foundObjects.Length, foundObjects);
+                        LogFormat("Updated but also found {0} new objects {1}", foundObjects.Length, foundObjects);
                 }
 
                 // Update occluded objects. It tries to find not yet identified and maybe occluded objects.
@@ -965,7 +955,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 _objects.AddRange(foundNewObjects);
 
                 if (foundNewObjects.Any())
-                    Log("Found {0} new objects {1}", foundNewObjects.Length, foundNewObjects);
+                    LogFormat("Found {0} new objects {1}", foundNewObjects.Length, foundNewObjects);
             }
             else
             {
@@ -974,7 +964,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 _objects.AddRange(foundObjects);
 
                 if (foundObjects.Any())
-                    Log("Found {0} new objects {1}", foundObjects.Length, foundObjects);
+                    LogFormat("Found {0} new objects {1}", foundObjects.Length, foundObjects);
             }
 
             foreach (var obj in _objects.ToArray())

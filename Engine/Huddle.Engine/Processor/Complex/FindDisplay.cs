@@ -389,7 +389,7 @@ namespace Huddle.Engine.Processor.Complex
             }
             catch (Exception e)
             {
-                Log(e + e.Message + e.StackTrace);
+                LogFormat(e + e.Message + e.StackTrace);
             }
         }
 
