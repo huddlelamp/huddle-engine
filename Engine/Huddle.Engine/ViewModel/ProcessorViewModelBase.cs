@@ -470,6 +470,9 @@ namespace Huddle.Engine.ViewModel
 
         protected virtual void OnRemove()
         {
+            var deleteProcessor = MessageBox.Show("Do you want to delete processor?", "Delete Processor", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (deleteProcessor != MessageBoxResult.Yes) return;
+
             // Stop processing (ViewModel and Model)
             Stop();
 

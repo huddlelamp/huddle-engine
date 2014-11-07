@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -71,6 +72,41 @@ namespace Huddle.Engine.ViewModel
         #endregion
 
         #region properties
+
+        #region Name
+
+        /// <summary>
+        /// The <see cref="Name" /> property's name.
+        /// </summary>
+        public const string NamePropertyName = "Name";
+
+        private string _name = string.Empty;
+
+        /// <summary>
+        /// Sets and gets the Name property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+
+            set
+            {
+                if (_name == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(NamePropertyName);
+                _name = value;
+                RaisePropertyChanged(NamePropertyName);
+            }
+        }
+
+        #endregion
 
         #region Mode
 
@@ -212,6 +248,41 @@ namespace Huddle.Engine.ViewModel
 
         #endregion
 
+        #region ProximityProcessor
+
+        /// <summary>
+        /// The <see cref="ProximityProcessor" /> property's name.
+        /// </summary>
+        public const string ProximityProcessorPropertyName = "ProximityProcessor";
+
+        private ProximityProcessor _proximityProcessor = null;
+
+        /// <summary>
+        /// Sets and gets the Name property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public ProximityProcessor ProximityProcessor
+        {
+            get
+            {
+                return _proximityProcessor;
+            }
+
+            set
+            {
+                if (_proximityProcessor == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ProximityProcessorPropertyName);
+                _proximityProcessor = value;
+                RaisePropertyChanged(ProximityProcessorPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -234,6 +305,35 @@ namespace Huddle.Engine.ViewModel
                 ProcessorTypes = new ObservableCollection<ViewTemplateAttribute>(types);
             }
 
+            Processors.CollectionChanged += (sender, args) =>
+            {
+                switch (args.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        foreach (var newItem in args.NewItems)
+                        {
+                            var nodeViewModel = newItem as NodeViewModel;
+                            if (nodeViewModel == null) continue;
+
+                            var processor = nodeViewModel.Model as ProximityProcessor;
+                            if (processor != null)
+                                ProximityProcessor = processor;
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        foreach (var oldItem in args.OldItems)
+                        {
+                            var nodeViewModel = oldItem as NodeViewModel;
+                            if (nodeViewModel == null) continue;
+
+                            var processor = nodeViewModel.Model as ProximityProcessor;
+                            if (processor != null && ProximityProcessor == processor)
+                                ProximityProcessor = null;
+                        }
+                        break;
+                }
+            };
+
             // exit hook to stop input source --> replaced by Application.Current.MainWindow.Closing
             //Application.Current.Exit += (s, e) =>
             //{
@@ -246,7 +346,7 @@ namespace Huddle.Engine.ViewModel
                 Stop();
 
                 // Only show message box if it is the editor window.
-                if (typeof (EditorWindow) != Application.Current.MainWindow.GetType()) return;
+                if (typeof(EditorWindow) != Application.Current.MainWindow.GetType()) return;
 
                 var savePipeline = MessageBox.Show("Do you want to save changes?", "Save Changes", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (savePipeline == MessageBoxResult.Yes)
@@ -467,7 +567,7 @@ namespace Huddle.Engine.ViewModel
             // sometimes the filename ends twice with ".hep" and sometimes not. If the
             // filename does not contain a ".hep" it will be added.
             if (!fileName.EndsWith("hep"))
-                fileName += ".hep"; 
+                fileName += ".hep";
 
             Save(fileName);
         }
@@ -522,6 +622,8 @@ namespace Huddle.Engine.ViewModel
             {
                 ExceptionMessageBox.ShowException(e, String.Format("Could not load pipeline. {0}.", e.Message));
             }
+
+            Name = fileName;
         }
 
         private static void AskForSaveAsDefaultPipeline(string fileName)

@@ -4,6 +4,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:command="http://www.galasoft.ch/mvvmlight"
         xmlns:util="clr-namespace:Huddle.Engine.Util"
+        xmlns:data="clr-namespace:Huddle.Engine.Data"
         Title="Huddle"
         Width="300" Height="300"
         x:Name="Self"
@@ -21,13 +22,13 @@
             <command:EventToCommand Command="{Binding Source={StaticResource ResourceKey=Locator}, Path=ShutdownCommand}" PassEventArgsToCommand="False" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
+
         <StackPanel Orientation="Horizontal"
                     Background="DeepSkyBlue"
                     Grid.Row="0">
@@ -47,12 +48,38 @@
                 </i:Interaction.Triggers>
                 <Image Source="/Huddle.Engine;component/Resources/stop.png" />
             </Button>
-            
-            <Label Content="{Binding Path=Pipeline.Model.Fps, Mode=OneWay}" FontSize="44" />
+
+            <TextBlock Text="{Binding Path=Pipeline.Model.Fps, Mode=OneWay, StringFormat={}{0:#.#} Fps}" FontSize="44" />
         </StackPanel>
-        
-        <Grid Grid.Row="1">
-            <Label Content="Text" />
+
+        <Grid x:Name="DeviceContainer" Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding Path=Pipeline.ProximityProcessor.Devices}" ItemTemplateSelector="{StaticResource ResourceKey=PresenceTemplateSelector}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas Background="White" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemContainerStyle>
+                    <Style>
+                        <Setter Property="Canvas.Left">
+                            <Setter.Value>
+                                <MultiBinding Converter="{util:ScaleConverter}">
+                                    <Binding Path="SmoothedCenter.X" />
+                                    <Binding Path="ActualWidth" ElementName="DeviceContainer" />
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Canvas.Top">
+                            <Setter.Value>
+                                <MultiBinding Converter="{util:ScaleConverter}">
+                                    <Binding Path="SmoothedCenter.Y" />
+                                    <Binding Path="ActualHeight" ElementName="DeviceContainer" />
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+            </ItemsControl>
         </Grid>
     </Grid>
 </Window>

@@ -384,47 +384,7 @@
                         </Style>
                     </ItemsControl.ItemContainerStyle>
                 </ItemsControl>
-                <ItemsControl ItemsSource="{Binding Path=DrawModels}"
-                      Width="{Binding Path=Width}"
-                      Height="{Binding Path=Height}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Canvas Background="Transparent" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Rectangle Fill="{Binding Path=Color}" Width="10" Height="10" RenderTransformOrigin="0.5,0.5">
-                                <Rectangle.RenderTransform>
-                                    <TransformGroup>
-                                        <TranslateTransform X="-5" Y="-5" />
-                                    </TransformGroup>
-                                </Rectangle.RenderTransform>
-                            </Rectangle>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                    <ItemsControl.ItemContainerStyle>
-                        <Style>
-                            <Setter Property="Canvas.Left" Value="{Binding Path=X}" />
-                            <Setter Property="Canvas.Top" Value="{Binding Path=Y}" />
-                        </Style>
-                    </ItemsControl.ItemContainerStyle>
-                </ItemsControl>
             </Grid>
-            <!--<ItemsControl ItemsSource="{Binding Path=Devices}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <GroupBox Header="{Binding Path=Key}">
-                            <StackPanel>
-                                <Label Content="{Binding Path=Id}" />
-                                <Label Content="{Binding Path=X}" />
-                                <Label Content="{Binding Path=Y}" />
-                                <Label Content="{Binding Path=Angle}" />
-                            </StackPanel>
-                        </GroupBox>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>-->
         </StackPanel>
     </DataTemplate>
 

@@ -24,7 +24,7 @@ namespace Huddle.Engine.Windows
 
             #region System Tray Initialization
 
-            var iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/Huddle.Engine;component/Resources/FlockingDevice.ico")).Stream;
+            var iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/Huddle.Engine;component/Resources/HuddleLamp.ico")).Stream;
             var icon = new Icon(iconStream);
             _notifyIcon = new NotifyIcon { Icon = icon };
 

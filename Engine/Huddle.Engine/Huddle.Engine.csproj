@@ -68,7 +68,7 @@
     <StartupObject>Huddle.Engine.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\FlockingDevice.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\HuddleLamp.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
@@ -586,10 +586,6 @@
     <Resource Include="Resources\qrcode.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\FlockingDevice.ico" />
-    <SplashScreen Include="Resources\FlockingDevice.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\ppl_256px.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -618,6 +614,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\256x256\ppl_256px.ico" />
+    <SplashScreen Include="Resources\SplashScreen.png" />
+    <Resource Include="Resources\HuddleLamp.ico" />
+    <Resource Include="Resources\HuddleLamp.png" />
     <Content Include="Resources\TagDefinitions.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
