@@ -95,13 +95,13 @@ namespace Huddle.Engine.Processor.Network.Huddle
                 var z = proximity.Location.Z;
                 var angle = proximity.Orientation;
 
-                //var rx = Math.Round(x, 2);
-                //var ry = Math.Round(y, 2);
-                //var rz = Math.Round(z, 2);
-                //var rangle = Math.Round(angle, 2);
+                var rx = Math.Round(x, 5);
+                var ry = Math.Round(y, 5);
+                var rz = Math.Round(z, 5);
+                var rangle = Math.Round(angle, 5);
 
-                //proximity.Location = new Point3D(rx, ry, rz);
-                //proximity.Orientation = rangle;
+                proximity.Location = new Point3D(rx, ry, rz);
+                proximity.Orientation = rangle;
 
                 data = proximity;
 

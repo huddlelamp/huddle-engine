@@ -20,7 +20,7 @@ namespace Huddle.Engine.Processor.Network
 
         #region Limit Fps
 
-        private Stopwatch _limitFpsStopwatch = new Stopwatch();
+        private readonly Stopwatch _limitFpsStopwatch = new Stopwatch();
 
         #endregion
 
