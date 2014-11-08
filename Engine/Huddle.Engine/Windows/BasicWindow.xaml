@@ -58,7 +58,7 @@
                     <ItemsPanelTemplate>
                         <Canvas>
                             <Canvas.Background>
-                                <ImageBrush ImageSource="/Huddle.Engine;component/Resources/where-is-waldo1.jpg" Stretch="None" Opacity="0.75" AlignmentX="Left" />
+                                <ImageBrush ImageSource="/Huddle.Engine;component/Resources/where-is-waldo1.jpg" Stretch="Uniform" Opacity="0.5" AlignmentX="Left" AlignmentY="Top" />
                             </Canvas.Background>
                         </Canvas>
                     </ItemsPanelTemplate>
