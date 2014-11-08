@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
+using Emgu.CV.Util;
 using Huddle.Engine.Filter.Impl;
 
 namespace Huddle.Engine.Filter
@@ -11,7 +13,8 @@ namespace Huddle.Engine.Filter
 
         private readonly OneEuroFilter _xFilter = new OneEuroFilter(2.0, 0.0);
         private readonly OneEuroFilter _yFilter = new OneEuroFilter(2.0, 0.0);
-        private readonly OneEuroFilter _angleFilter = new OneEuroFilter(2.0, 0.0);
+        private readonly OneEuroFilter _angleSXFilter = new OneEuroFilter(2.0, 0.0);
+        private readonly OneEuroFilter _angleSYFilter = new OneEuroFilter(2.0, 0.0);
         private readonly OneEuroFilter _depthFilter = new OneEuroFilter(2.0, 0.0);
 
         #endregion
@@ -25,8 +28,17 @@ namespace Huddle.Engine.Filter
 
         public double SmoothAngle(double angle)
         {
-            //return _angleFilter.Filter(angle, Rate);
             return angle;
+
+            //var radiansAngle = Math.PI * (angle % 360) / 180.0;
+
+            //var sy = Math.Cos(radiansAngle);
+            //var sx = Math.Sin(radiansAngle);
+
+            //var smoothedAngleSX = _angleSXFilter.Filter(sx, Rate);
+            //var smoothedAngleSY = _angleSYFilter.Filter(sy, Rate);
+
+            //return Math.Atan2(smoothedAngleSX, smoothedAngleSY) * 180 / Math.PI;
         }
 
         public double SmoothDepth(double depth)
