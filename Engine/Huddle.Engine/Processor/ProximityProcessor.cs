@@ -347,7 +347,7 @@ namespace Huddle.Engine.Processor
         private void CreateDevice(BlobData blob)
         {
             var center = new Point(blob.Center.X, blob.Center.Y);
-            var device = new Device(this, "unknown")
+            var device = new Device(this, blob.OriginalId, "unknown")
             {
                 BlobId = blob.Id,
                 IsIdentified = false,
@@ -365,7 +365,7 @@ namespace Huddle.Engine.Processor
             var device = Devices.Single(d => d.BlobId == blob.Id);
             var center = new Point(blob.Center.X, blob.Center.Y);
             device.Key = blob.Key;
-            device.BlobId = blob.Id;
+            //device.BlobId = blob.Id;
             device.Center = center;
             device.State = blob.State;
             device.Shape = blob.Polygon;

@@ -717,7 +717,7 @@ namespace Huddle.Engine.Processor.OpenCv
 
                 var bounds = obj.Bounds;
                 var smoothedCenter = obj.SmoothedCenter;
-                Stage(new BlobData(this, BlobType)
+                Stage(new BlobData(this, obj.Id, BlobType)
                 {
                     Id = obj.Id,
                     Center = new WPoint(smoothedCenter.X / imageWidth, smoothedCenter.Y / imageHeight),

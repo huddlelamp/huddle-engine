@@ -911,6 +911,33 @@ namespace Huddle.Engine.Processor.OpenCv
                 _depthImage = depthImageData.Image.Copy();
             }
 
+            var device = data as Device;
+            var objects = _objects.ToArray();
+            if (device != null && device.IsIdentified)
+            {
+                var anyBlob = objects.Any(o => o.Id == device.OriginalBlobId);
+                if (anyBlob)
+                {
+                    var objectForDevice = objects.Single(o => o.Id == device.OriginalBlobId);
+                    if (!objectForDevice.IsCorrectSize && _depthImage != null)
+                    {
+                        var width = _depthImage.Width * (1 / device.RgbImageToDisplayRatio.X);
+                        var height = _depthImage.Height * (1 / device.RgbImageToDisplayRatio.Y);
+
+                        var angle = device.Angle % 180;
+
+                        if (Math.Abs(angle + objectForDevice.LastAngle) > 45)
+                            objectForDevice.SetCorrectSize((float)width, (float)height);
+                        else
+                            objectForDevice.SetCorrectSize((float)height, (float)width);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("WHAAAT?");
+                }
+            }
+
             return base.Process(data);
         }
 
@@ -1011,13 +1038,13 @@ namespace Huddle.Engine.Processor.OpenCv
                         outputImage[0].Draw(circle, Rgbs.Blue, 3);
                     }
 
-                    outputImage[0].Draw(string.Format("Id {0}", obj.Id), ref EmguFont, new DPoint((int)obj.Shape.center.X,(int) obj.Shape.center.Y), Rgbs.White);
+                    outputImage[0].Draw(string.Format("Id {0}", obj.Id), ref EmguFont, new DPoint((int)obj.Shape.center.X, (int)obj.Shape.center.Y), Rgbs.White);
                 }
 
                 var bounds = obj.Bounds;
                 var smoothedCenter = obj.SmoothedCenter;
                 //var smoothedAngle = obj.SmoothedAngle;
-                Stage(new BlobData(this, BlobType)
+                Stage(new BlobData(this, obj.Id, BlobType)
                 {
                     Id = obj.Id,
                     Center = new WPoint(smoothedCenter.X / imageWidth, smoothedCenter.Y / imageHeight),
@@ -1435,7 +1462,7 @@ namespace Huddle.Engine.Processor.OpenCv
             {
                 candidate.ApplyShapeAverage(minAreaRect.size);
             }
-                
+
 
             // create new candidate shape based on its previous shape size and the new center point and orientation.
             // This keeps the objects shape constant and avoids growing shapes when devices are connected closely or
