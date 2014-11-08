@@ -932,10 +932,10 @@ namespace Huddle.Engine.Processor.OpenCv
                             objectForDevice.SetCorrectSize((float)height, (float)width);
                     }
                 }
-                else
-                {
-                    Console.WriteLine("WHAAAT?");
-                }
+                //else
+                //{
+                //    Console.WriteLine("WHAAAT?");
+                //}
             }
 
             return base.Process(data);
