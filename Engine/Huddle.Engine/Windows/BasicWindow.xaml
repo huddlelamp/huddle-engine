@@ -56,7 +56,11 @@
             <ItemsControl ItemsSource="{Binding Path=Pipeline.ProximityProcessor.Devices}" ItemTemplateSelector="{StaticResource ResourceKey=PresenceTemplateSelector}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <Canvas Background="White" />
+                        <Canvas>
+                            <Canvas.Background>
+                                <ImageBrush ImageSource="/Huddle.Engine;component/Resources/where-is-waldo1.jpg" Stretch="None" Opacity="0.75" AlignmentX="Left" />
+                            </Canvas.Background>
+                        </Canvas>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemContainerStyle>

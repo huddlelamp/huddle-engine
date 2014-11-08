@@ -613,6 +613,7 @@
     <Resource Include="Resources\32x32\save_as.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\where-is-waldo1.jpg" />
     <Content Include="Resources\256x256\ppl_256px.ico" />
     <SplashScreen Include="Resources\SplashScreen.png" />
     <Resource Include="Resources\HuddleLamp.ico" />

@@ -288,7 +288,7 @@
                         </TransformGroup>
                     </Grid.RenderTransform>
                     <Border x:Name="DeviceBorder" Visibility="{Binding Path=IsIdentified, Converter={util:BoolToVisibilityConverter}}"
-                                        Background="Lime"
+                                        Background="Transparent"
                                         BorderBrush="Black"
                                         BorderThickness="10">
                         <Border.Width>
