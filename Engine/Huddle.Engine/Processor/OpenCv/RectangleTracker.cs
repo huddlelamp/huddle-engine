@@ -924,12 +924,37 @@ namespace Huddle.Engine.Processor.OpenCv
                         var width = _depthImage.Width * (1 / device.RgbImageToDisplayRatio.X);
                         var height = _depthImage.Height * (1 / device.RgbImageToDisplayRatio.Y);
 
-                        var angle = device.Angle % 180;
+                        Console.WriteLine("{0},{1}", width, height);
 
-                        if (Math.Abs(angle + objectForDevice.LastAngle) > 45)
-                            objectForDevice.SetCorrectSize((float)width, (float)height);
+                        var angle = (float) device.Angle % 360;
+                        ////var deltaAngle = Math.Abs(angle + objectForDevice.LastAngle);
+
+                        //Console.WriteLine("deviceAngle={0}, angle={1}, deltaAngle={2}, blobAngle={3}", device.Angle, angle, deltaAngle, objectForDevice.LastAngle);
+
+                        objectForDevice.SetCorrectSize((float)width, (float)height);
+
+                        // this is a hack but it works pretty good
+                        if ((angle > 0 && angle < 90) || (angle > 180 && angle < 270))
+                        {
+                             //objectForDevice.LastAngle -= 90;
+                            //return;
+                            //objectForDevice.LastAngle -= 90;
+                            //objectForDevice.LastAngle -= 90;
+                            objectForDevice.CorrectAngleBy = -90;
+                            objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, objectForDevice.LastAngle + 90);
+                        }
                         else
-                            objectForDevice.SetCorrectSize((float)height, (float)width);
+                        {
+                            //objectForDevice.LastAngle += 90;
+                        }
+                    
+                        //objectForDevice.LastAngle = objectForDevice.Shape.angle + 90;
+                        //objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, objectForDevice.LastAngle);
+
+                        //objectForDevice.LastAngle += deltaAngle;
+
+                        //var shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, oldAngle);
+                        //objectForDevice.Shape = shape;
                     }
                 }
                 //else
@@ -1049,7 +1074,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     Id = obj.Id,
                     Center = new WPoint(smoothedCenter.X / imageWidth, smoothedCenter.Y / imageHeight),
                     State = obj.State,
-                    Angle = obj.Shape.angle,
+                    Angle = obj.Shape.angle + obj.CorrectAngleBy,
                     //Angle = rawObject.SlidingAngle,
                     Shape = obj.Shape,
                     Polygon = obj.Polygon,
