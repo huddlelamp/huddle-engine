@@ -20,7 +20,7 @@ namespace Huddle.Engine.Processor.Network
 
         #region Limit Fps
 
-        private Stopwatch _limitFpsStopwatch = new Stopwatch();
+        private readonly Stopwatch _limitFpsStopwatch = new Stopwatch();
 
         #endregion
 
@@ -345,7 +345,7 @@ namespace Huddle.Engine.Processor.Network
 
             // Log client connected message.
             var info = socket.ConnectionInfo;
-            Log("Client {0}:{1} connected", info.ClientIpAddress, info.ClientPort);
+            LogFormat("Client {0}:{1} connected", info.ClientIpAddress, info.ClientPort);
         }
 
         /// <summary>
@@ -363,12 +363,12 @@ namespace Huddle.Engine.Processor.Network
             if (client == null)
             {
                 var info = socket.ConnectionInfo;
-                Log("Client does exists for socket connection: {0}:{1}", info.ClientIpAddress, info.ClientPort);
+                LogFormat("Client does exists for socket connection: {0}:{1}", info.ClientIpAddress, info.ClientPort);
                 return;
             }
 
             // Log client disconnected message.
-            Log("Client {0} [id={1}, deviceType={2}] disconnected", client.Name, client.Id, client.DeviceType);
+            LogFormat("Client {0} [id={1}, deviceType={2}] disconnected", client.Name, client.Id, client.DeviceType);
 
             // Put unused device id back to queue.
             _deviceIdQueue.Enqueue(client.Id);
@@ -394,7 +394,7 @@ namespace Huddle.Engine.Processor.Network
             if (client == null)
             {
                 var info = socket.ConnectionInfo;
-                Log("Client does exists for socket connection: {0}:{1}", info.ClientIpAddress, info.ClientPort);
+                LogFormat("Client does exists for socket connection: {0}:{1}", info.ClientIpAddress, info.ClientPort);
                 return;
             }
 
@@ -420,7 +420,7 @@ namespace Huddle.Engine.Processor.Network
             catch (Exception e)
             {
                 client.Error(300, "Could not deserialize message. Not a valid JSON format.");
-                Log("Could not deserialize message. Not a valid JSON format: {0}", e.Message);
+                LogFormat("Could not deserialize message. Not a valid JSON format: {0}", e.Message);
             }
         }
 
@@ -450,7 +450,7 @@ namespace Huddle.Engine.Processor.Network
 
             // TODO is this console log necessary???
             if (handshake.Options != null)
-                Console.WriteLine(handshake.Options);
+                Log(handshake.Options.ToString());
 
             // if glyph id is not set by the client then assign a random id.
             if (glyphId == null || !_deviceIdToGlyph.ContainsKey(glyphId))
@@ -475,7 +475,7 @@ namespace Huddle.Engine.Processor.Network
             client.DeviceType = deviceType;
 
             // Log client disconnected message.
-            Log("Client {0} [id={1}, deviceType={2}] identified", client.Name, client.Id, client.DeviceType);
+            LogFormat("Client {0} [id={1}, deviceType={2}] identified", client.Name, client.Id, client.DeviceType);
 
             // Get glyph data for device id.
             var glyphData = _deviceIdToGlyph[glyphId];

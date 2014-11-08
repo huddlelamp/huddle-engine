@@ -665,7 +665,7 @@ namespace Huddle.Engine.Processor.Sensors
             /* Initialization */
             if (!_pp.Init())
             {
-                Log("Could not initialize Senz3D hardware");
+                LogFormat("Could not initialize Senz3D hardware");
                 HasErrorState = true;
                 return false;
             }
@@ -928,7 +928,7 @@ namespace Huddle.Engine.Processor.Sensors
             });
             Push();
 
-            Log("Identified rgbInDepthROI as {0}", _rgbInDepthROI);
+            LogFormat("Identified rgbInDepthROI as {0}", _rgbInDepthROI);
         }
 
         private PXCMCapture.VideoStream.ProfileInfo GetConfiguration(PXCMImage.ColorFormat format)

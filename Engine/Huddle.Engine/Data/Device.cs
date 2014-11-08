@@ -53,6 +53,13 @@ namespace Huddle.Engine.Data
 
         #endregion
 
+        #region OriginalBlobId
+
+        // this is the id before HybridSensing assings a new id.
+        public long OriginalBlobId { get; private set; }
+
+        #endregion
+
         #region DeviceId
 
         /// <summary>
@@ -432,16 +439,17 @@ namespace Huddle.Engine.Data
 
         #region ctor
 
-        public Device(IProcessor source, string key)
+        public Device(IProcessor source, long originalBlobId, string key)
             : base(source, key)
         {
+            OriginalBlobId = originalBlobId;
         }
 
         #endregion
 
         public override IData Copy()
         {
-            var device = new Device(Source, Key)
+            var device = new Device(Source, OriginalBlobId, Key)
             {
                 DeviceId = DeviceId,
                 BlobId = BlobId,

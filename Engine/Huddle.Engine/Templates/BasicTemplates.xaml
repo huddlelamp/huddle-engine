@@ -288,7 +288,7 @@
                         </TransformGroup>
                     </Grid.RenderTransform>
                     <Border x:Name="DeviceBorder" Visibility="{Binding Path=IsIdentified, Converter={util:BoolToVisibilityConverter}}"
-                                        Background="Lime"
+                                        Background="Transparent"
                                         BorderBrush="Black"
                                         BorderThickness="10">
                         <Border.Width>
@@ -311,7 +311,14 @@
 
                             <StackPanel Grid.Row="0" Orientation="Vertical" Margin="5">
                                 <TextBlock ClipToBounds="False" Text="{Binding Path=DeviceId, StringFormat='ID {0}'}" />
-                                <TextBlock ClipToBounds="False" Text="{Binding Path=BlobId, StringFormat='Blob ID {0}'}" />
+                                <TextBlock ClipToBounds="False">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="Blob ID {0} (Key={1})">
+                                            <Binding Path="BlobId" />
+                                            <Binding Path="Key" />
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
                                 <TextBlock ClipToBounds="False">
                                     <TextBlock.Text>
                                         <MultiBinding StringFormat="Center X={0:#.##}, Y={1:#.##}">

@@ -45,6 +45,12 @@ namespace Huddle.Engine.Data
 
         #endregion
 
+        #region OriginalId
+
+        public long OriginalId { get; private set; }
+
+        #endregion
+
         #region Center
 
         /// <summary>
@@ -259,16 +265,17 @@ namespace Huddle.Engine.Data
 
         #region ctor
 
-        public BlobData(IProcessor source, string key)
+        public BlobData(IProcessor source, long originalId, string key)
             : base(source, key)
         {
+            OriginalId = originalId;
         }
 
         #endregion
 
         public override IData Copy()
         {
-            var blob = new BlobData(Source, Key)
+            var blob = new BlobData(Source, OriginalId, Key)
             {
                 Id = Id,
                 Center = Center,

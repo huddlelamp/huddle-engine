@@ -900,16 +900,6 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        //public override IDataContainer PreProcess(IDataContainer dataContainer)
-        //{
-        //    if (dataContainer.OfType<GrayFloatImage>().Any())
-        //        Console.WriteLine("Depth Image Frame: {0}", dataContainer.FrameId);
-        //    else if (dataContainer.OfType<RgbImageData>().Any())
-        //        Console.WriteLine("Confidence Image Frame: {0}", dataContainer.FrameId);
-
-        //    return dataContainer;
-        //}
-
         public override IData Process(IData data)
         {
             var depthImageData = data as GrayFloatImage;
@@ -919,6 +909,58 @@ namespace Huddle.Engine.Processor.OpenCv
                     _depthImage.Dispose();
 
                 _depthImage = depthImageData.Image.Copy();
+            }
+
+            var device = data as Device;
+            var objects = _objects.ToArray();
+            if (device != null && device.IsIdentified)
+            {
+                var anyBlob = objects.Any(o => o.Id == device.OriginalBlobId);
+                if (anyBlob)
+                {
+                    var objectForDevice = objects.Single(o => o.Id == device.OriginalBlobId);
+                    if (!objectForDevice.IsCorrectSize && _depthImage != null)
+                    {
+                        var width = _depthImage.Width * (1 / device.RgbImageToDisplayRatio.X);
+                        var height = _depthImage.Height * (1 / device.RgbImageToDisplayRatio.Y);
+
+                        Console.WriteLine("{0},{1}", width, height);
+
+                        var angle = (float) device.Angle % 360;
+                        ////var deltaAngle = Math.Abs(angle + objectForDevice.LastAngle);
+
+                        //Console.WriteLine("deviceAngle={0}, angle={1}, deltaAngle={2}, blobAngle={3}", device.Angle, angle, deltaAngle, objectForDevice.LastAngle);
+
+                        objectForDevice.SetCorrectSize((float)width, (float)height);
+
+                        // this is a hack but it works pretty good
+                        if ((angle > 0 && angle < 90) || (angle > 180 && angle < 270))
+                        {
+                             //objectForDevice.LastAngle -= 90;
+                            //return;
+                            //objectForDevice.LastAngle -= 90;
+                            //objectForDevice.LastAngle -= 90;
+                            objectForDevice.CorrectAngleBy = -90;
+                            objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, objectForDevice.LastAngle + 90);
+                        }
+                        else
+                        {
+                            //objectForDevice.LastAngle += 90;
+                        }
+                    
+                        //objectForDevice.LastAngle = objectForDevice.Shape.angle + 90;
+                        //objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, objectForDevice.LastAngle);
+
+                        //objectForDevice.LastAngle += deltaAngle;
+
+                        //var shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, oldAngle);
+                        //objectForDevice.Shape = shape;
+                    }
+                }
+                //else
+                //{
+                //    Console.WriteLine("WHAAAT?");
+                //}
             }
 
             return base.Process(data);
@@ -953,7 +995,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     _objects.AddRange(foundObjects);
 
                     if (foundObjects.Any())
-                        Log("Updated but also found {0} new objects {1}", foundObjects.Length, foundObjects);
+                        LogFormat("Updated but also found {0} new objects {1}", foundObjects.Length, foundObjects);
                 }
 
                 // Update occluded objects. It tries to find not yet identified and maybe occluded objects.
@@ -965,7 +1007,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 _objects.AddRange(foundNewObjects);
 
                 if (foundNewObjects.Any())
-                    Log("Found {0} new objects {1}", foundNewObjects.Length, foundNewObjects);
+                    LogFormat("Found {0} new objects {1}", foundNewObjects.Length, foundNewObjects);
             }
             else
             {
@@ -974,7 +1016,7 @@ namespace Huddle.Engine.Processor.OpenCv
                 _objects.AddRange(foundObjects);
 
                 if (foundObjects.Any())
-                    Log("Found {0} new objects {1}", foundObjects.Length, foundObjects);
+                    LogFormat("Found {0} new objects {1}", foundObjects.Length, foundObjects);
             }
 
             foreach (var obj in _objects.ToArray())
@@ -1021,18 +1063,18 @@ namespace Huddle.Engine.Processor.OpenCv
                         outputImage[0].Draw(circle, Rgbs.Blue, 3);
                     }
 
-                    outputImage[0].Draw(string.Format("Id {0}", obj.Id), ref EmguFont, new DPoint((int)obj.Shape.center.X,(int) obj.Shape.center.Y), Rgbs.White);
+                    outputImage[0].Draw(string.Format("Id {0}", obj.Id), ref EmguFont, new DPoint((int)obj.Shape.center.X, (int)obj.Shape.center.Y), Rgbs.White);
                 }
 
                 var bounds = obj.Bounds;
                 var smoothedCenter = obj.SmoothedCenter;
                 //var smoothedAngle = obj.SmoothedAngle;
-                Stage(new BlobData(this, BlobType)
+                Stage(new BlobData(this, obj.Id, BlobType)
                 {
                     Id = obj.Id,
                     Center = new WPoint(smoothedCenter.X / imageWidth, smoothedCenter.Y / imageHeight),
                     State = obj.State,
-                    Angle = obj.Shape.angle,
+                    Angle = obj.Shape.angle + obj.CorrectAngleBy,
                     //Angle = rawObject.SlidingAngle,
                     Shape = obj.Shape,
                     Polygon = obj.Polygon,
@@ -1445,7 +1487,7 @@ namespace Huddle.Engine.Processor.OpenCv
             {
                 candidate.ApplyShapeAverage(minAreaRect.size);
             }
-                
+
 
             // create new candidate shape based on its previous shape size and the new center point and orientation.
             // This keeps the objects shape constant and avoids growing shapes when devices are connected closely or

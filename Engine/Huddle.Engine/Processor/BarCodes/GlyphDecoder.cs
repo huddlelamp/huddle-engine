@@ -333,7 +333,7 @@ namespace Huddle.Engine.Processor.BarCodes
             }
             catch (Exception e)
             {
-                Log(e + e.Message + e.StackTrace);
+                LogFormat(e + e.Message + e.StackTrace);
             }
         }
 

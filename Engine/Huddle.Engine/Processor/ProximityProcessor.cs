@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.Windows.Forms.VisualStyles;
 using System.Windows.Media.Media3D;
 using System.Xml.Serialization;
 using GalaSoft.MvvmLight;
@@ -26,12 +27,7 @@ namespace Huddle.Engine.Processor
     {
         #region member fields
 
-        private const string FakeDevicePrefix = "FakeDevice";
-
-        private long _fakeDeviceId;
-
         private readonly object _deviceLock = new object();
-        private readonly object _drawModelsLock = new object();
 
         #endregion
 
@@ -141,10 +137,10 @@ namespace Huddle.Engine.Processor
                 while (_thresholdThreadRunning)
                 {
                     var timeDiff = (DateTime.Now - _lastUpdateTime).TotalMilliseconds;
-                    if (timeDiff > 200)
+                    if (timeDiff > 1000)
                     {
                         Devices.Clear();
-                        Thread.Sleep(200);
+                        Thread.Sleep(1000);
                     }
                     else
                     {
@@ -198,7 +194,8 @@ namespace Huddle.Engine.Processor
             Devices.RemoveAll(device => blobs.All(b => b.Id != device.BlobId));
 
             // TODO optimize for each loop -> use parallel for each loop?
-            Parallel.ForEach(blobs, blob =>
+            //Parallel.ForEach(blobs, blob =>
+            foreach (var blob in blobs)
             {
                 if (!DeviceExists(blob))
                     CreateDevice(blob);
@@ -215,7 +212,8 @@ namespace Huddle.Engine.Processor
                 {
                     UpdateDevice(blob);
                 }
-            });
+            }
+            //});
 
             return dataContainer;
         }
@@ -244,8 +242,6 @@ namespace Huddle.Engine.Processor
                 foreach (var device2 in identifiedDevices)
                 {
                     if (Equals(device1, device2)) continue;
-
-                    if (device1.Key.StartsWith(FakeDevicePrefix)) continue;
 
                     var x = device2.SmoothedCenter.X - device1.SmoothedCenter.X;
                     var y = device2.SmoothedCenter.Y - device1.SmoothedCenter.Y;
@@ -286,7 +282,7 @@ namespace Huddle.Engine.Processor
 
                         log.AppendFormat(" and its local angle is {0} (Global Angle {1})", localAngle, globalAngle);
 
-                        Log(log.ToString());
+                        LogFormat(log.ToString());
                     }
 
                     var p2 = new Point(device2.SmoothedCenter.X, device2.SmoothedCenter.Y);
@@ -311,7 +307,7 @@ namespace Huddle.Engine.Processor
                     {
                         if (distance < 30 && hand.Depth < 80)
                         {
-                            Log("Hand {0} close to {1}", hand.Id, device1.DeviceId);
+                            LogFormat("Hand {0} close to {1}", hand.Id, device1.DeviceId);
                         }
                     }
 
@@ -351,7 +347,7 @@ namespace Huddle.Engine.Processor
         private void CreateDevice(BlobData blob)
         {
             var center = new Point(blob.Center.X, blob.Center.Y);
-            var device = new Device(this, "unknown")
+            var device = new Device(this, blob.OriginalId, "unknown")
             {
                 BlobId = blob.Id,
                 IsIdentified = false,
@@ -368,8 +364,8 @@ namespace Huddle.Engine.Processor
         {
             var device = Devices.Single(d => d.BlobId == blob.Id);
             var center = new Point(blob.Center.X, blob.Center.Y);
-            device.Key = "identified";
-            device.BlobId = blob.Id;
+            device.Key = blob.Key;
+            //device.BlobId = blob.Id;
             device.Center = center;
             device.State = blob.State;
             device.Shape = blob.Polygon;

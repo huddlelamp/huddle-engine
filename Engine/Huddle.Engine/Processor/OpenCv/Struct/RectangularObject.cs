@@ -373,6 +373,42 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #endregion
 
+        #region CorrectAngleBy
+
+        /// <summary>
+        /// The <see cref="CorrectAngleBy" /> property's name.
+        /// </summary>
+        public const string CorrectAngleByPropertyName = "CorrectAngleBy";
+
+        private float _correctAngleBy = 0.0f;
+
+        /// <summary>
+        /// Sets and gets the CorrectAngleBy property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public float CorrectAngleBy
+        {
+            get
+            {
+                return _correctAngleBy;
+            }
+
+            set
+            {
+                if (_correctAngleBy == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(CorrectAngleByPropertyName);
+                _correctAngleBy = value;
+                RaisePropertyChanged(CorrectAngleByPropertyName);
+            }
+        }
+
+        #endregion
+
+
         #region LastAngle
 
         /// <summary>
@@ -443,6 +479,41 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #endregion
 
+        #region IsCorrectSize
+
+        /// <summary>
+        /// The <see cref="IsCorrectSize" /> property's name.
+        /// </summary>
+        public const string IsCorrectSizePropertyName = "IsCorrectSize";
+
+        private bool _isCorrectSize = false;
+
+        /// <summary>
+        /// Sets and gets the IsCorrectSize property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsCorrectSize
+        {
+            get
+            {
+                return _isCorrectSize;
+            }
+
+            set
+            {
+                if (_isCorrectSize == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsCorrectSizePropertyName);
+                _isCorrectSize = value;
+                RaisePropertyChanged(IsCorrectSizePropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region SmoothedCenter
@@ -487,5 +558,12 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
         }
 
         #endregion
+
+        public void SetCorrectSize(float width, float height)
+        {
+            IsSampleSize = false;
+            _averageSize = new SizeF(width, height);
+            IsCorrectSize = true;
+        }
     }
 }
