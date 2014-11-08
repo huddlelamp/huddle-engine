@@ -14,8 +14,8 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal">
-                    <Label Content="Limit Fps"/>
-                    <Slider Width="200" Value="{Binding Path=LimitFps}" Minimum="1" Maximum="100" />
+                    <Label Content="Limit Fps (0 = unlimited)"/>
+                    <Slider Width="200" Value="{Binding Path=LimitFps}" Minimum="0" Maximum="150" />
                     <TextBlock Text="{Binding Path=LimitFps, StringFormat={}{0:#} Fps}"/>
                 </StackPanel>
             </StackPanel>

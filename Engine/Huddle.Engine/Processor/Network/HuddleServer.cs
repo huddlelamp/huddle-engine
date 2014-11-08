@@ -285,7 +285,7 @@ namespace Huddle.Engine.Processor.Network
 
             #region Send proximity information to clients
 
-            if (_limitFpsStopwatch.ElapsedMilliseconds > (1000 / LimitFps))
+            if (LimitFps == 0 || _limitFpsStopwatch.ElapsedMilliseconds > (1000 / LimitFps))
             {
 
                 var proximities = dataContainer.OfType<Proximity>().ToArray();
