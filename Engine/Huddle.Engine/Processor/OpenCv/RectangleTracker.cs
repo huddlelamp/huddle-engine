@@ -1134,6 +1134,7 @@ namespace Huddle.Engine.Processor.OpenCv
             }
 
             var blankedImageGray = blankedImage.Convert<Gray, Byte>();
+            blankedImageGray = blankedImageGray.Erode(2);
 
             var roi = blankedImage.ROI;
             if (useROI)
