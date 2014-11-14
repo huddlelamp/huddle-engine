@@ -29,6 +29,7 @@ namespace Huddle.Engine.Filter
         public double SmoothAngle(double angle)
         {
             return angle;
+            //return _angleSXFilter.Filter(angle, Rate);
 
             //var radiansAngle = Math.PI * (angle % 360) / 180.0;
 

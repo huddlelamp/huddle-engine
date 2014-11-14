@@ -926,25 +926,40 @@ namespace Huddle.Engine.Processor.OpenCv
 
                         Console.WriteLine("{0},{1}", width, height);
 
-                        var angle = (float) device.Angle % 360;
+                        var angle = (float) device.Angle % 180;
+                        var angle2 = (float)device.Angle;
                         ////var deltaAngle = Math.Abs(angle + objectForDevice.LastAngle);
 
                         //Console.WriteLine("deviceAngle={0}, angle={1}, deltaAngle={2}, blobAngle={3}", device.Angle, angle, deltaAngle, objectForDevice.LastAngle);
 
-                        objectForDevice.SetCorrectSize((float)width, (float)height);
+                        //objectForDevice.SetCorrectSize((float)width, (float)height);
+
+                        var sum = Math.Abs(angle2 % 90 - objectForDevice.LastAngle % 90);
+                        objectForDevice.CorrectAngleBy = -90;
 
                         // this is a hack but it works pretty good
-                        if ((angle > 0 && angle < 90) || (angle > 180 && angle < 270))
+                        //if ((angle > 0 && angle <= 90) && (sum == 0 || sum == 90 || (sum > 2 && sum < 88)))
+                        if (angle > 0 && angle <= 90)
                         {
+                            Console.WriteLine("dev {3}, angle {0}, last angle {1}, sum {2}", angle, objectForDevice.LastAngle, sum, objectForDevice.Id);
+
+                            objectForDevice.LastAngle = angle2;
+                            objectForDevice.SetCorrectSize((float)width, (float)height);
+                            objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, angle2);
+                            //objectForDevice.CorrectAngleBy = -90;
                              //objectForDevice.LastAngle -= 90;
                             //return;
                             //objectForDevice.LastAngle -= 90;
                             //objectForDevice.LastAngle -= 90;
-                            objectForDevice.CorrectAngleBy = -90;
-                            objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, objectForDevice.LastAngle + 90);
+                            //objectForDevice.CorrectAngleBy = -90;
+                            //objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, objectForDevice.LastAngle + 90);
                         }
                         else
                         {
+                            objectForDevice.LastAngle = angle2;
+                            objectForDevice.SetCorrectSize((float)height, (float)width);
+                            Console.WriteLine("No correction dev {3}, angle {0}, last angle {1}, sum {2}", angle, objectForDevice.LastAngle, sum, objectForDevice.Id);
+                            objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, angle2);
                             //objectForDevice.LastAngle += 90;
                         }
                     
@@ -1474,7 +1489,6 @@ namespace Huddle.Engine.Processor.OpenCv
             if (deltaAngle > 45)
             {
                 deltaAngle -= 90;
-                //return;
             }
             else if (deltaAngle < -45)
             {
