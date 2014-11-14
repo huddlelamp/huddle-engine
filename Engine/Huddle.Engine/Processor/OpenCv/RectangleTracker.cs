@@ -1481,18 +1481,18 @@ namespace Huddle.Engine.Processor.OpenCv
                 deltaAngle += 90;
             }
 
-            // add current shape to compute the average shape.
-            //if (candidate.IsSampleSize && Math.Abs(minAreaRect.angle - candidate.LastAngle) < 2.0 && distance < 2.0)
-            if (candidate.IsSampleSize)
-            {
-                candidate.ApplyShapeAverage(minAreaRect.size);
-            }
-
-
             // create new candidate shape based on its previous shape size and the new center point and orientation.
             // This keeps the objects shape constant and avoids growing shapes when devices are connected closely or
             // an objects occludes the device.
-            var shape = new MCvBox2D(minAreaRect.center, candidate.Size, oldAngle + deltaAngle);
+            MCvBox2D shape;
+            if (candidate.IsCorrectSize)
+            {
+                shape = new MCvBox2D(minAreaRect.center, candidate.Size, oldAngle + deltaAngle);
+            }
+            else
+            {
+                shape = minAreaRect;
+            }
 
             candidate.State = occluded ? TrackingState.Occluded : TrackingState.Tracked;
             candidate.LastUpdate = updateTime;

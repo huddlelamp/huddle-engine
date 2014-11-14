@@ -16,7 +16,6 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         private readonly ISmoothing _smoothing = new NoSmoothing();
 
-        private readonly List<SizeF> _sizes = new List<SizeF>();
         private SizeF _averageSize = SizeF.Empty;
 
         #endregion
@@ -408,7 +407,6 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #endregion
 
-
         #region LastAngle
 
         /// <summary>
@@ -535,25 +533,6 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
             get
             {
                 return Equals(_averageSize, SizeF.Empty) ? Shape.size : _averageSize;
-            }
-        }
-
-        #endregion
-
-        #region public methods
-
-        public void ApplyShapeAverage(SizeF size)
-        {
-            if (IsSampleSize)
-            {
-                _sizes.Add(size);
-                IsSampleSize = _sizes.Count < 30;
-            }
-            else
-            {
-                var width = _sizes.Average(s => s.Width);
-                var height = _sizes.Average(s => s.Height);
-                _averageSize = new SizeF(width, height);
             }
         }
 

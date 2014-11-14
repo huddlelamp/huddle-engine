@@ -611,9 +611,10 @@ namespace Huddle.Engine.Processor.Complex
             // update all entries in glyph table using recognized glyphs
 
             quadrilaterals = new List<Point[]>();
-            for (int i = 0; i < _glyphTable.Length; i++)
+            var length = _glyphTable.Length;
+            for (int i = 0; i < length; i++)
             {
-                var name = i.ToString(CultureInfo.InvariantCulture);
+                var name = (i + 1).ToString(CultureInfo.InvariantCulture);
 
                 Glyph glyph = null;
                 Point[] quad = null;
