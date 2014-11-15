@@ -1134,12 +1134,12 @@ namespace Huddle.Engine.Processor.OpenCv
             }
 
             var blankedImageGray = blankedImage.Convert<Gray, Byte>();
-            blankedImageGray = blankedImageGray.Erode(2);
+            blankedImageGray = blankedImageGray.Erode(3);
 
             var roi = blankedImage.ROI;
             if (useROI)
             {
-                const int threshold = 10;
+                const int threshold = 20;
                 var b = obj.Bounds;
 
                 roi = new Rectangle(b.X - threshold, b.Y - threshold, b.Width + 2 * threshold, b.Height + 2 * threshold);
