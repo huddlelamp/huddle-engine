@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Huddle.Engine.Processor;
+﻿using Huddle.Engine.Processor;
 using Huddle.Engine.Processor.Complex;
 
 namespace Huddle.Engine.Data
 {
-    public class Marker: LocationData
+    public sealed class Marker: LocationData
     {
         #region properties
 
@@ -20,7 +14,7 @@ namespace Huddle.Engine.Data
         /// </summary>
         public const string RgbImageToDisplayRatioPropertyName = "RgbImageToDisplayRatio";
 
-        private Ratio _rgbImageToDisplayRatio = Ratio.Empty;
+        private Ratio _rgbImageToDisplayRatio = Ratio.Identity;
 
         /// <summary>
         /// Sets and gets the RgbImageToDisplayRatio property.
@@ -94,13 +88,11 @@ namespace Huddle.Engine.Data
             return new Marker(Source, Key)
             {
                 Id = Id,
-                X = X,
-                Y = Y,
+                Center = Center,
                 Angle = Angle,
                 RgbImageToDisplayRatio = RgbImageToDisplayRatio,
                 EnclosingRectangle = EnclosingRectangle,
-                RelativeX = RelativeX,
-                RelativeY = RelativeY,
+                RelativeCenter = RelativeCenter
             };
         }
 

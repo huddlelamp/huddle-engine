@@ -2,7 +2,7 @@
 
 namespace Huddle.Engine.Data
 {
-    public class Disconnected : BaseData
+    public sealed class Disconnected : BaseData
     {
         #region properties
 

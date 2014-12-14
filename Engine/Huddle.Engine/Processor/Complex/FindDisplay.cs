@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.ServiceModel.Syndication;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using AForge.Imaging.Filters;
 using AForge.Vision.GlyphRecognition;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -39,8 +36,6 @@ namespace Huddle.Engine.Processor.Complex
         #endregion
 
         #region member fields
-
-        private Image<Rgb, byte> _lastRgbImage;
 
         private readonly GlyphRecognizer _glyphRecognizer;
         private GlyphMetadata[] _glyphTable;
@@ -394,7 +389,7 @@ namespace Huddle.Engine.Processor.Complex
             }
             catch (Exception e)
             {
-                Log(e + e.Message + e.StackTrace);
+                LogFormat(e + e.Message + e.StackTrace);
             }
         }
 
@@ -402,13 +397,28 @@ namespace Huddle.Engine.Processor.Complex
 
         public override IDataContainer PreProcess(IDataContainer dataContainer)
         {
-            var rgbImages = dataContainer.OfType<RgbImageData>().ToArray();
-            if (rgbImages.Any())
-            {
-                if (_lastRgbImage != null) _lastRgbImage.Dispose();
-                _lastRgbImage = rgbImages.First().Image.Copy();
+            var devices = dataContainer.OfType<Device>().ToArray();
+            var unknownDevices = devices.Where(d => !d.IsIdentified).ToArray();
+            if (!devices.Any())
+                return base.PreProcess(dataContainer);
 
-                var lastRgbImageCopy = _lastRgbImage.Copy();
+            // For debugging the flag IsFindDisplayContinuously can be set 'true' -> 'false' is recommended however
+            var devicesToFind = IsFindDisplayContiuously ? devices : unknownDevices;
+
+            if (!devicesToFind.Any()) return null;
+
+            var rgbImages = dataContainer.OfType<RgbImageData>().ToArray();
+
+            // Do only process if RGB image is set
+            if (!rgbImages.Any())
+                return null;
+
+            var rgbImage = rgbImages.First().Image.Copy();
+            var debugImage = rgbImage.Copy();
+
+            if (IsRenderContent)
+            {
+                var lastRgbImageCopy = rgbImage.Copy();
                 Task.Factory.StartNew(() =>
                 {
                     var bitmapSource = lastRgbImageCopy.ToBitmapSource(true);
@@ -417,47 +427,34 @@ namespace Huddle.Engine.Processor.Complex
                 }).ContinueWith(t => InputImageBitmapSource = t.Result);
             }
 
-            // Do not process if last Rgb image frame is not set
-            if (_lastRgbImage == null) return null;
+            var colorImage = rgbImage.Copy();
 
-            var devices = dataContainer.OfType<Device>().ToArray();
-            var unknownDevices = devices.Where(d => !d.IsIdentified).ToArray();
-            if (!devices.Any())
-                return base.PreProcess(dataContainer);
+            // TODO: is the copy required or does convert already create a copy? _lastRgbImage.Copy() 
+            var grayscaleImage = rgbImage.Copy().Convert<Gray, byte>();
 
-            var debugImage = _lastRgbImage.Copy();
+            var width = rgbImage.Width;
+            var height = rgbImage.Height;
 
-            // For debugging the flag IsFindDisplayContinuously can be set 'true' -> 'false' is recommended however
-            var devicesToFind = IsFindDisplayContiuously ? devices : unknownDevices;
-
-            if (devicesToFind.Any())
+            foreach (var device in devicesToFind)
             {
-                var colorImage = _lastRgbImage.Copy();
-                var grayscaleImage = _lastRgbImage.Copy().Convert<Gray, byte>();
-
-                var width = _lastRgbImage.Width;
-                var height = _lastRgbImage.Height;
-
-                foreach (var device in devicesToFind)
-                {
-                    ProcessDevice(device, colorImage, grayscaleImage, width, height, ref debugImage);
-                }
-
-                colorImage.Dispose();
-                grayscaleImage.Dispose();
-                Push();
+                ProcessDevice(device, colorImage, grayscaleImage, width, height, ref debugImage);
             }
 
-            // draw debug output
-            var debugImageCopy = debugImage.Copy();
-            Task.Factory.StartNew(() =>
-            {
-                var bitmapSource = debugImageCopy.ToBitmapSource(true);
-                debugImageCopy.Dispose();
-                return bitmapSource;
-            }).ContinueWith(t => DebugImageBitmapSource = t.Result);
+            colorImage.Dispose();
+            grayscaleImage.Dispose();
+            Push();
 
-            //Stage(new RgbImageData(this, "DebugImage", debugImage));
+            if (IsRenderContent)
+            {
+                // draw debug output
+                var debugImageCopy = debugImage.Copy();
+                Task.Factory.StartNew(() =>
+                {
+                    var bitmapSource = debugImageCopy.ToBitmapSource(true);
+                    debugImageCopy.Dispose();
+                    return bitmapSource;
+                }).ContinueWith(t => DebugImageBitmapSource = t.Result);
+            }
 
             debugImage.Dispose();
 
@@ -471,7 +468,7 @@ namespace Huddle.Engine.Processor.Complex
 
         #region private methods
 
-        private void ProcessDevice(Device device, Image<Rgb, byte> colorImage, Image<Gray, byte> grayscaleImage, int width, int height, ref Image<Rgb, byte>  debugImage)
+        private void ProcessDevice(Device device, Image<Rgb, byte> colorImage, Image<Gray, byte> grayscaleImage, int width, int height, ref Image<Rgb, byte> debugImage)
         {
             var deviceRoi = CalculateRoiFromNormalizedBounds(device.Area, colorImage);
             deviceRoi = deviceRoi.GetInflatedBy(RoiExpandFactor, colorImage.ROI);
@@ -614,9 +611,10 @@ namespace Huddle.Engine.Processor.Complex
             // update all entries in glyph table using recognized glyphs
 
             quadrilaterals = new List<Point[]>();
-            for (int i = 0; i < _glyphTable.Length; i++)
+            var length = _glyphTable.Length;
+            for (int i = 0; i < length; i++)
             {
-                var name = i.ToString(CultureInfo.InvariantCulture);
+                var name = (i + 1).ToString(CultureInfo.InvariantCulture);
 
                 Glyph glyph = null;
                 Point[] quad = null;
@@ -681,10 +679,8 @@ namespace Huddle.Engine.Processor.Complex
                         markers.Add(new Marker(this, "Display")
                         {
                             Id = name,
-                            X = centerX / width,
-                            Y = centerY / height,
-                            RelativeX = centerX / imageWidth,
-                            RelativeY = centerY / imageHeight,
+                            Center = new System.Windows.Point(centerX / width, centerY / height),
+                            RelativeCenter = new System.Windows.Point(centerX / imageWidth, centerY / imageHeight),
                             Angle = degOrientation
                         });
 
@@ -745,8 +741,8 @@ namespace Huddle.Engine.Processor.Complex
             var imageWidth = grayscaleImage.Width;
             var imageHeight = grayscaleImage.Height;
 
-            var x = (int)(marker.RelativeX * imageWidth) - roi.X;
-            var y = (int)(marker.RelativeY * imageHeight) - roi.Y;
+            var x = (int)(marker.RelativeCenter.X * imageWidth) - roi.X;
+            var y = (int)(marker.RelativeCenter.Y * imageHeight) - roi.Y;
 
             var grayscaleImageRoi = grayscaleImage.ROI;
             grayscaleImage.ROI = roi;
@@ -760,8 +756,7 @@ namespace Huddle.Engine.Processor.Complex
             return new Marker(this, "Display")
             {
                 Id = marker.Id,
-                X = marker.X,
-                Y = marker.Y,
+                Center = marker.Center,
                 Angle = marker.Angle,
                 RgbImageToDisplayRatio = new Ratio
                 {

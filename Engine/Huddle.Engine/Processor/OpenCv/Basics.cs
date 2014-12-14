@@ -359,46 +359,26 @@ namespace Huddle.Engine.Processor.OpenCv
                 {
                     var imageCopy2 = new Image<Rgb, byte>((int)(imageCopy.Width * Scale), (int)(imageCopy.Height * Scale));
                     CvInvoke.cvResize(imageCopy.Ptr, imageCopy2.Ptr, INTER.CV_INTER_CUBIC);
-                    
+
                     imageCopy.Dispose();
                     imageCopy = imageCopy2;
                 }
 
-                //if (GpuInvoke.HasCuda)
-                if (false)
-                {
-                    var gpuImage = new GpuImage<Rgb, byte>(imageCopy);
+                var flipCode = FLIP.NONE;
 
-                    var flipCode = FLIP.NONE;
+                if (FlipHorizontal)
+                    flipCode |= FLIP.HORIZONTAL;
+                if (FlipVertical)
+                    flipCode |= FLIP.VERTICAL;
 
-                    if (FlipHorizontal)
-                        flipCode |= FLIP.HORIZONTAL;
-                    if (FlipVertical)
-                        flipCode |= FLIP.VERTICAL;
+                if (flipCode != FLIP.NONE)
+                    CvInvoke.cvFlip(imageCopy.Ptr, imageCopy.Ptr, flipCode);
 
-                    if (flipCode != FLIP.NONE)
-
-                        GpuInvoke.Flip(gpuImage.Ptr, gpuImage.Ptr, FLIP.HORIZONTAL | FLIP.VERTICAL, null);
-                    return gpuImage.ToImage();
-                }
-                else
-                {
-                    var flipCode = FLIP.NONE;
-
-                    if (FlipHorizontal)
-                        flipCode |= FLIP.HORIZONTAL;
-                    if (FlipVertical)
-                        flipCode |= FLIP.VERTICAL;
-
-                    if (flipCode != FLIP.NONE)
-                        CvInvoke.cvFlip(imageCopy.Ptr, imageCopy.Ptr, flipCode);
-
-                    return imageCopy;
-                }
+                return imageCopy;
             }
             catch (Exception e)
             {
-                Log("{0}", e.StackTrace);
+                LogFormat("{0}", e.StackTrace);
                 return null;
             }
         }

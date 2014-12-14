@@ -171,7 +171,7 @@ namespace Huddle.Engine.Processor
                 }
                 catch (Exception e)
                 {
-                    Log("Exception occured in ProcessAndView:{0}{1}{2}", e.Message, Environment.NewLine, e.StackTrace);
+                    LogFormat("Exception occured in ProcessAndView:{0}{1}{2}", e.Message, Environment.NewLine, e.StackTrace);
                 }
             }
             catch (Exception)
@@ -234,6 +234,9 @@ namespace Huddle.Engine.Processor
 
         public override Bitmap[] TakeSnapshots()
         {
+            if (PreProcessImage == null || PostProcessImage == null)
+                return new Bitmap[0];
+
             return new[]
             {
                 PreProcessImage.BitmapFromSource(),

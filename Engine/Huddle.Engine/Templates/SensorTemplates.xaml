@@ -1,6 +1,9 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:sensors="clr-namespace:Huddle.Engine.Processor.Sensors">
+                    xmlns:sensors="clr-namespace:Huddle.Engine.Processor.Sensors"
+                    xmlns:util="clr-namespace:Huddle.Engine.Util"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:command="http://www.galasoft.ch/mvvmlight">
     <DataTemplate x:Key="Senz3D" DataType="sensors:Senz3D">
         <StackPanel>
             <ScrollViewer Width="1200" Height="650" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
@@ -16,18 +19,20 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
+                    <!-- Row 0 -->
+
                     <GroupBox Header="color" Grid.Column="0" Grid.Row="0">
                         <StackPanel>
                             <Image Source="{Binding Path=ColorImageSource}" Width="320" Height="240" VerticalAlignment="Top"/>
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="{Binding Path=ColorImageSource.PixelWidth}"/>
-                                <Label Content=" x "/>                              
+                                <Label Content=" x "/>
                                 <Label Content="{Binding Path=ColorImageSource.PixelHeight}"/>
                                 <Label Content=" ("/>
                                 <Label Content="{Binding Path=ColorImageFrameTime}"/>
                                 <Label Content=" ms)"/>
                             </StackPanel>
-                            
+
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Profile"/>
                                 <ComboBox ItemsSource="{Binding Path=ColorImageProfiles}" SelectedValue="{Binding Path=ColorImageProfile}" />
@@ -50,17 +55,17 @@
                             <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=DepthSmoothing}" />
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Depth Confidence Threshold"/>
-                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThreshold}" />
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThreshold}" IsSnapToTickEnabled="True" TickFrequency="1" />
                                 <TextBlock Text="{Binding Path=DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Min Depth Value (Red)"/>
-                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=MinDepthValue}" />
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=MinDepthValue}" IsSnapToTickEnabled="True" TickFrequency="1" />
                                 <TextBlock Text="{Binding Path=MinDepthValue, StringFormat={}{0:#}}"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Max Depth Value (Blue)"/>
-                                <Slider Width="200" Height="25" Minimum="0" Maximum="5000" Value="{Binding Path=MaxDepthValue}" />
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="5000" Value="{Binding Path=MaxDepthValue}" IsSnapToTickEnabled="True" TickFrequency="1" />
                                 <TextBlock Text="{Binding Path=MaxDepthValue, StringFormat={}{0:#}}"/>
                             </StackPanel>
                         </StackPanel>
@@ -80,6 +85,8 @@
                         </StackPanel>
                     </GroupBox>
 
+                    <!-- Row 1 -->
+
                     <GroupBox Header="uvmap" Grid.Column="0" Grid.Row="1">
                         <StackPanel>
                             <Image Source="{Binding Path=UVMapImageSource}" Width="320" Height="240" VerticalAlignment="Top" />
@@ -92,7 +99,7 @@
                                 <Label Content=" ms)"/>
                             </StackPanel>
                             <CheckBox Content="Active?" IsChecked="{Binding Path=UvMapChecked}"/>
-                        </StackPanel>                        
+                        </StackPanel>
                     </GroupBox>
 
                     <GroupBox Header="rgbofdepth" Grid.Column="1" Grid.Row="1">
@@ -107,7 +114,7 @@
                                 <Label Content=" ms)"/>
                             </StackPanel>
                             <CheckBox Content="Active?" IsChecked="{Binding Path=RgbOfDepthChecked}"/>
-                        </StackPanel>                        
+                        </StackPanel>
                     </GroupBox>
 
                     <GroupBox Header="depthofrgb" Grid.Column="2" Grid.Row="1">
@@ -122,16 +129,125 @@
                                 <Label Content=" ms)"/>
                             </StackPanel>
                             <CheckBox Content="Active?" IsChecked="{Binding Path=DepthOfRgbChecked}"/>
-                        </StackPanel>                        
+                        </StackPanel>
                     </GroupBox>
 
                 </Grid>
             </ScrollViewer>
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Fps"/>
-                <Slider Value="{Binding Path=Fps}" Width="340" Height="25" Minimum="0" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True" />
-                <TextBlock Text="{Binding Path=Fps}"/>
-            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Senz3DIntel" DataType="sensors:Senz3DIntel">
+        <StackPanel>
+            <ScrollViewer Width="1200" Height="650" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Row 0 -->
+
+                    <GroupBox Header="color" Grid.Column="0" Grid.Row="0">
+                        <StackPanel>
+                            <Image Source="{Binding Path=ColorImageSource}" Width="320" Height="240" VerticalAlignment="Top"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=ColorImageSource.PixelWidth}"/>
+                                <Label Content=" x "/>
+                                <Label Content="{Binding Path=ColorImageSource.PixelHeight}"/>
+                                <Label Content=" ("/>
+                                <Label Content="{Binding Path=ColorImageFrameTime}"/>
+                                <Label Content=" ms)"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Profile"/>
+                                <ComboBox ItemsSource="{Binding Path=ColorImageProfiles}" SelectedValue="{Binding Path=ColorImageProfile}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="depth" Grid.Column="1" Grid.Row="0">
+                        <StackPanel>
+                            <Image Source="{Binding Path=DepthImageSource}" Width="320" Height="240" VerticalAlignment="Top" />
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=DepthImageSource.PixelWidth}"/>
+                                <Label Content=" x "/>
+                                <Label Content="{Binding Path=DepthImageSource.PixelHeight}"/>
+                                <Label Content=" ("/>
+                                <Label Content="{Binding Path=DepthImageFrameTime}"/>
+                                <Label Content=" ms)"/>
+                            </StackPanel>
+                            <Separator/>
+                            <CheckBox Content="Depth Smoothing" VerticalAlignment="Center" IsChecked="{Binding Path=DepthSmoothing}" />
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Depth Confidence Threshold (low)"/>
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThreshold}" IsSnapToTickEnabled="True" TickFrequency="1" />
+                                <TextBlock Text="{Binding Path=DepthConfidenceThreshold, StringFormat={}{0:#}}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Min Depth Value (Red)"/>
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=MinDepthValue}" IsSnapToTickEnabled="True" TickFrequency="1" />
+                                <TextBlock Text="{Binding Path=MinDepthValue, StringFormat={}{0:#}}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Max Depth Value (Blue)"/>
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="5000" Value="{Binding Path=MaxDepthValue}" IsSnapToTickEnabled="True" TickFrequency="1" />
+                                <TextBlock Text="{Binding Path=MaxDepthValue, StringFormat={}{0:#}}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="confidence" Grid.Column="2" Grid.Row="0">
+                        <StackPanel>
+                            <Image Source="{Binding Path=ConfidenceMapImageSource}" Width="320" Height="240" VerticalAlignment="Top" />
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=ConfidenceMapImageSource.PixelWidth}"/>
+                                <Label Content=" x "/>
+                                <Label Content="{Binding Path=ConfidenceMapImageSource.PixelHeight}"/>
+                                <Label Content=" ("/>
+                                <Label Content="{Binding Path=ConfidenceMapImageFrameTime}"/>
+                                <Label Content=" ms)"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Row 1 -->
+
+                    <GroupBox Header="Adaptive Sensing Mask" Grid.Column="0" Grid.Row="1">
+                        <StackPanel>
+                            <Image Source="{Binding Path=AdaptiveSensingMaskImageSource}" Width="320" Height="240" VerticalAlignment="Top" />
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=AdaptiveSensingMaskImageSource.PixelWidth}"/>
+                                <Label Content=" x "/>
+                                <Label Content="{Binding Path=AdaptiveSensingMaskImageSource.PixelHeight}"/>
+                            </StackPanel>
+                            <Separator />
+                            <Button Content="Update Adaptive Sensing Mask">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Click">
+                                        <command:EventToCommand Command="{Binding Path=UpdateAdaptiveSensingMaskCommand, Mode=OneWay}" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </Button>
+                            <CheckBox Content="Adaptive Sensing" IsChecked="{Binding Path=IsAdaptiveSensing}"/>
+                            <TextBlock Width="320" Foreground="Red" HorizontalAlignment="Left" TextAlignment="Left" TextWrapping="Wrap">WARNING: Active 'Adaptive Sensing' can cause unsync outer/inner region of depth and confidence frames on fast movements.</TextBlock>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Depth Confidence Threshold (High)"/>
+                                <Slider Width="200" Height="25" Minimum="0" Maximum="1000" Value="{Binding Path=DepthConfidenceThresholdHigh}" IsSnapToTickEnabled="True" TickFrequency="1" />
+                                <TextBlock Text="{Binding Path=DepthConfidenceThresholdHigh, StringFormat={}{0:#}}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                </Grid>
+            </ScrollViewer>
         </StackPanel>
     </DataTemplate>
 

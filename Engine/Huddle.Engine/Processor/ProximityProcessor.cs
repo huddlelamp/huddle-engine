@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
-using System.Windows;
+using System.Threading.Tasks;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
+using System.Windows.Forms.VisualStyles;
 using System.Windows.Media.Media3D;
 using System.Xml.Serialization;
 using GalaSoft.MvvmLight;
@@ -17,9 +15,6 @@ using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
 using Huddle.Engine.Extensions;
-using Huddle.Engine.Processor.BarCodes;
-using Huddle.Engine.Processor.Complex.PolygonIntersection;
-using Huddle.Engine.Processor.OpenCv;
 using Huddle.Engine.Util;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
@@ -32,12 +27,7 @@ namespace Huddle.Engine.Processor
     {
         #region member fields
 
-        private const string FakeDevicePrefix = "FakeDevice";
-
-        private long _fakeDeviceId;
-
         private readonly object _deviceLock = new object();
-        private readonly object _drawModelsLock = new object();
 
         #endregion
 
@@ -122,112 +112,6 @@ namespace Huddle.Engine.Processor
 
         #endregion
 
-        #region Width
-
-        /// <summary>
-        /// The <see cref="Width" /> property's name.
-        /// </summary>
-        public const string WidthPropertyName = "Width";
-
-        private double _width = 320.0;
-
-        /// <summary>
-        /// Sets and gets the Width property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double Width
-        {
-            get
-            {
-                return _width;
-            }
-
-            set
-            {
-                if (_width == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(WidthPropertyName);
-                _width = value;
-                RaisePropertyChanged(WidthPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region Height
-
-        /// <summary>
-        /// The <see cref="Height" /> property's name.
-        /// </summary>
-        public const string HeightPropertyName = "Height";
-
-        private double _height = 240.0;
-
-        /// <summary>
-        /// Sets and gets the Height property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double Height
-        {
-            get
-            {
-                return _height;
-            }
-
-            set
-            {
-                if (_height == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(HeightPropertyName);
-                _height = value;
-                RaisePropertyChanged(HeightPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region DrawModels
-
-        /// <summary>
-        /// The <see cref="DrawModels" /> property's name.
-        /// </summary>
-        public const string DrawModelsPropertyName = "DrawModels";
-
-        private ObservableCollection<DrawModel2> _drawModels = new ObservableCollection<DrawModel2>();
-
-        /// <summary>
-        /// Sets and gets the DrawModels property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        [IgnoreDataMember]
-        public ObservableCollection<DrawModel2> DrawModels
-        {
-            get
-            {
-                return _drawModels;
-            }
-
-            set
-            {
-                if (_drawModels == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(DrawModelsPropertyName);
-                _drawModels = value;
-                RaisePropertyChanged(DrawModelsPropertyName);
-            }
-        }
-
-        #endregion
-
         #endregion
 
         #region ctor
@@ -236,36 +120,6 @@ namespace Huddle.Engine.Processor
         {
             // Make collection accessible in current processor thread => UI Thread
             DispatcherHelper.CheckBeginInvokeOnUI(() => BindingOperations.EnableCollectionSynchronization(Devices, _deviceLock));
-            DispatcherHelper.CheckBeginInvokeOnUI(() => BindingOperations.EnableCollectionSynchronization(DrawModels, _drawModelsLock));
-
-            AddFakeDeviceCommand = new RelayCommand<SenderAwareEventArgs>(args =>
-            {
-                var sender = args.Sender as IInputElement;
-                var e = args.OriginalEventArgs as MouseEventArgs;
-
-                if (sender == null || e == null) return;
-
-                var position = e.GetPosition(sender);
-
-                e.Handled = true;
-
-                Devices.Add(new Device(this, string.Format("{0}{1}", FakeDevicePrefix, ++_fakeDeviceId))
-                {
-                    BlobId = 999,
-                    DeviceId = "999",
-                    IsIdentified = true,
-                    X = position.X,
-                    Y = position.Y,
-                    Angle = 0,//Math.PI
-                    Shape = new Polygon(),
-                    Area = Rect.Empty
-                });
-            });
-
-            RemoveFakeDeviceCommand = new RelayCommand<Device>(d =>
-            {
-                Console.WriteLine();
-            });
         }
 
         #endregion
@@ -286,7 +140,6 @@ namespace Huddle.Engine.Processor
                     if (timeDiff > 1000)
                     {
                         Devices.Clear();
-                        ClearDrawModels();
                         Thread.Sleep(1000);
                     }
                     else
@@ -310,11 +163,10 @@ namespace Huddle.Engine.Processor
 
             // cleanup data
             Devices.Clear();
-            DrawModels.Clear();
 
             #region Timeout Handling
 
-            _thresholdThreadRunning = false; 
+            _thresholdThreadRunning = false;
 
             #endregion
         }
@@ -335,38 +187,33 @@ namespace Huddle.Engine.Processor
             _lastUpdateTime = DateTime.Now;
 
             var blobs = dataContainer.OfType<BlobData>().ToList();
-            var marker = dataContainer.OfType<Marker>().ToList();
+            var markers = dataContainer.OfType<Marker>().ToList();
             var hands = dataContainer.OfType<Hand>().ToList();
-
-            // Update view
-            UpdateView(blobs, marker, hands);
 
             // Remove all devices that are not present by a blob anymore
             Devices.RemoveAll(device => blobs.All(b => b.Id != device.BlobId));
 
+            // TODO optimize for each loop -> use parallel for each loop?
+            //Parallel.ForEach(blobs, blob =>
             foreach (var blob in blobs)
             {
                 if (!DeviceExists(blob))
                     CreateDevice(blob);
 
-                var blobPoint = new Point(blob.X, blob.Y);
-
                 // Find matching QrCode for current blob
-                var codes = marker.Where(c => (new Point(c.X, c.Y) - blobPoint).Length < Distance).ToArray();
+                double distance;
+                var marker = GetClosestMarker(markers, blob, out distance);
 
-                if (codes.Any())
+                if (marker != null && distance < Distance)
                 {
-                    var code = codes.First();
-
-                    //Console.WriteLine("Update device {0} with blob {1}", code.Id, blob.Id);
-                    UpdateDevice(blob, code);
+                    UpdateDevice(blob, marker);
                 }
                 else
                 {
-                    //Console.WriteLine("Update blob {0}", blob.Id);
                     UpdateDevice(blob);
                 }
             }
+            //});
 
             return dataContainer;
         }
@@ -381,28 +228,23 @@ namespace Huddle.Engine.Processor
             var devices = Devices.ToArray();
 
             var identifiedDevices = devices.Where(d => d.IsIdentified).ToArray();
-            var identifiedDevices0 = devices.Where(d => d.IsIdentified).ToArray();
             foreach (var device1 in identifiedDevices)
             {
-                var p1 = new Point(device1.SlidingX / Width, device1.SlidingY / Height);
-                var proximity = new Proximity(this, "Display", device1.Key)
-                {
-                    Identity = device1.DeviceId,
-                    Location = new Point3D(p1.X, p1.Y, 0),
-                    Orientation = device1.SlidingAngle,
-                    RgbImageToDisplayRatio = device1.RgbImageToDisplayRatio
-                };
+                var p1 = new Point(device1.SmoothedCenter.X, device1.SmoothedCenter.Y);
+
+                var location = new Point3D(p1.X, p1.Y, 0);
+                var orientation = device1.SmoothedAngle;
+                var proximity = CreateProximity("Display", device1, location, orientation);
 
                 #region Calculate Proximities
 
-                foreach (var device2 in identifiedDevices0)
+                // TODO optimize for each loop -> parallel for each loop?
+                foreach (var device2 in identifiedDevices)
                 {
                     if (Equals(device1, device2)) continue;
 
-                    if (device1.Key.StartsWith(FakeDevicePrefix)) continue;
-
-                    var x = device2.X - device1.X;
-                    var y = device2.Y - device1.Y;
+                    var x = device2.SmoothedCenter.X - device1.SmoothedCenter.X;
+                    var y = device2.SmoothedCenter.Y - device1.SmoothedCenter.Y;
 
                     var distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
 
@@ -419,57 +261,61 @@ namespace Huddle.Engine.Processor
                         globalAngle = 270 + globalAngle;
 
                     // subtract own angle
-                    var localAngle = globalAngle + (360 - device1.SlidingAngle); // angle -= (device1.Angle % 180);
+                    var localAngle = globalAngle + (360 - device1.SmoothedAngle); // angle -= (device1.Angle % 180);
                     localAngle %= 360;
 
-                    var log = new StringBuilder();
-
-                    if (localAngle >= 225 && localAngle < 315)
-                        log.AppendFormat("Device {0} is right of device {1}", device1.Key, device2.Key);
-                    else if (localAngle >= 45 && localAngle < 135)
-                        log.AppendFormat("Device {0} is left of device {1}", device1.Key, device2.Key);
-                    else if (localAngle >= 135 && localAngle < 225)
-                        log.AppendFormat("Device {0} is top of device {1}", device1.Key, device2.Key);
-                    else //
-                        log.AppendFormat("Device {0} is bottom of device {1}", device1.Key, device2.Key);
-
-                    log.AppendFormat(" in a distance of {0}", distance);
-
-                    log.AppendFormat(" and its local angle is {0} (Global Angle {1})", localAngle, globalAngle);
-
-                    Log(log.ToString());
-
-                    var p2 = new Point(device2.SlidingX / Width, device2.SlidingY / Height);
-
-                    proximity.Presences.Add(new Proximity(this, "Display", device2.Key)
+                    // Log device locations only if processor view is visible
+                    if (IsRenderContent)
                     {
-                        Identity = device2.DeviceId,
-                        Location = new Point3D(p2.X, p2.Y, 0),
-                        Distance = (p2 - p1).Length,
-                        Orientation = localAngle,
-                        RgbImageToDisplayRatio = device2.RgbImageToDisplayRatio
-                    });
+                        var log = new StringBuilder();
+
+                        if (localAngle >= 225 && localAngle < 315)
+                            log.AppendFormat("Device {0} is right of device {1}", device1.Key, device2.Key);
+                        else if (localAngle >= 45 && localAngle < 135)
+                            log.AppendFormat("Device {0} is left of device {1}", device1.Key, device2.Key);
+                        else if (localAngle >= 135 && localAngle < 225)
+                            log.AppendFormat("Device {0} is top of device {1}", device1.Key, device2.Key);
+                        else //
+                            log.AppendFormat("Device {0} is bottom of device {1}", device1.Key, device2.Key);
+
+                        log.AppendFormat(" in a distance of {0}", distance);
+
+                        log.AppendFormat(" and its local angle is {0} (Global Angle {1})", localAngle, globalAngle);
+
+                        LogFormat(log.ToString());
+                    }
+
+                    var p2 = new Point(device2.SmoothedCenter.X, device2.SmoothedCenter.Y);
+
+                    var location2 = new Point3D(p2.X, p2.Y, 0);
+                    var distance2 = (p2 - p1).Length;
+                    proximity.Presences.Add(CreateProximity("Display", device2, location2, localAngle, distance2));
                 }
 
                 #endregion
 
+                // TODO optimize -> the hand calculation below uses absolute values
                 foreach (var hand in dataContainer.OfType<Hand>().ToArray())
                 {
-                    var x = hand.SlidingX * 320 - device1.SlidingX;
-                    var y = hand.SlidingY * 240 - device1.SlidingY;
+                    var x = hand.SmoothedCenter.X * 320 - device1.SmoothedCenter.X;
+                    var y = hand.SmoothedCenter.Y * 240 - device1.SmoothedCenter.Y;
 
                     var distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
 
-                    if (distance < 30 && hand.Depth < 80)
+                    // Log only if processor view is visible
+                    if (IsRenderContent)
                     {
-                        Log("Hand {0} close to {1}", hand.Id, device1.DeviceId);
+                        if (distance < 30 && hand.Depth < 80)
+                        {
+                            LogFormat("Hand {0} close to {1}", hand.Id, device1.DeviceId);
+                        }
                     }
 
                     proximity.Presences.Add(new Proximity(this, "Hand", hand.Key)
                     {
                         Identity = "" + hand.Id,
                         Distance = distance,
-                        Location = new Point3D(hand.SlidingX, hand.SlidingY, hand.SlidingDepth),
+                        Location = new Point3D(hand.SmoothedCenter.X, hand.SmoothedCenter.Y, hand.SlidingDepth),
                     });
                 }
 
@@ -485,14 +331,28 @@ namespace Huddle.Engine.Processor
 
         #endregion
 
+        private Proximity CreateProximity(string type, Device device, Point3D location, double orientation, double distance = 0.0)
+        {
+            return new Proximity(this, type, device.Key)
+                   {
+                       State = device.State,
+                       Identity = device.DeviceId,
+                       Location = location,
+                       Distance = distance,
+                       Orientation = orientation,
+                       RgbImageToDisplayRatio = device.RgbImageToDisplayRatio
+                   };
+        }
+
         private void CreateDevice(BlobData blob)
         {
-            var device = new Device(this, "unknown")
+            var center = new Point(blob.Center.X, blob.Center.Y);
+            var device = new Device(this, blob.OriginalId, "unknown")
             {
                 BlobId = blob.Id,
                 IsIdentified = false,
-                X = blob.X * Width,
-                Y = blob.Y * Height,
+                Center = center,
+                State = blob.State,
                 LastBlobAngle = blob.Angle,
                 Shape = blob.Polygon,
                 Area = blob.Area,
@@ -503,10 +363,11 @@ namespace Huddle.Engine.Processor
         private void UpdateDevice(BlobData blob, Marker marker = null)
         {
             var device = Devices.Single(d => d.BlobId == blob.Id);
-            device.Key = "identified";
-            device.BlobId = blob.Id;
-            device.X = blob.X * Width;
-            device.Y = blob.Y * Height;
+            var center = new Point(blob.Center.X, blob.Center.Y);
+            device.Key = blob.Key;
+            //device.BlobId = blob.Id;
+            device.Center = center;
+            device.State = blob.State;
             device.Shape = blob.Polygon;
             device.Area = blob.Area;
 
@@ -522,15 +383,15 @@ namespace Huddle.Engine.Processor
                 var deltaAngle = blob.Angle - device.LastBlobAngle;
 
                 // this is a hack but it works pretty good
-                if (deltaAngle > 45)
-                {
-                    deltaAngle -= 90;
-                    //return;
-                }
-                else if (deltaAngle < -45)
-                {
-                    deltaAngle += 90;
-                }
+                //if (deltaAngle > 45)
+                //{
+                //    deltaAngle -= 90;
+                //    //return;
+                //}
+                //else if (deltaAngle < -45)
+                //{
+                //    deltaAngle += 90;
+                //}
 
                 //Console.WriteLine("Delta Angle {0}", deltaAngle);
 
@@ -552,186 +413,22 @@ namespace Huddle.Engine.Processor
             Devices.Add(device);
         }
 
-        private void ClearDrawModels()
+        private static Marker GetClosestMarker(IEnumerable<Marker> markers, BlobData blob, out double retDistance)
         {
-            DrawModels.Clear();
+            Marker candidate = null;
+            var leastDistance = double.MaxValue;
+            foreach (var marker in markers)
+            {
+                var distance = (marker.Center - blob.Center).Length;
+
+                if (leastDistance < distance) continue;
+
+                candidate = marker;
+                leastDistance = distance;
+            }
+
+            retDistance = leastDistance;
+            return candidate;
         }
-
-        private void AddDrawModel(double x, double y, Brush color, int type)
-        {
-            var model = new DrawModel2
-            {
-                X = x,
-                Y = y,
-                Color = color,
-                Type = type
-            };
-            DrawModels.Add(model);
-        }
-
-        private void UpdateView(IEnumerable<BlobData> blobs, IEnumerable<Marker> qrCodes, IEnumerable<Hand> hands)
-        {
-            #region Update DrawModels
-
-            ClearDrawModels();
-
-            foreach (var blob in blobs)
-                AddDrawModel(blob.X * Width, blob.Y * Height, Brushes.DeepPink, 1);
-
-            foreach (var code in qrCodes)
-                AddDrawModel(code.X * Width, code.Y * Height, Brushes.DeepSkyBlue, 2);
-
-            foreach (var hand in hands)
-                AddDrawModel(hand.X * Width, hand.Y * Height, Brushes.DarkSlateBlue, 3);
-
-            #endregion
-        }
-    }
-
-    public class DrawModel2 : ObservableObject
-    {
-        #region properties
-
-        #region X
-
-        /// <summary>
-        /// The <see cref="X" /> property's name.
-        /// </summary>
-        public const string XPropertyName = "X";
-
-        private double _x = 0.0;
-
-        /// <summary>
-        /// Sets and gets the X property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double X
-        {
-            get
-            {
-                return _x;
-            }
-
-            set
-            {
-                if (_x == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(XPropertyName);
-                _x = value;
-                RaisePropertyChanged(XPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region Y
-
-        /// <summary>
-        /// The <see cref="Y" /> property's name.
-        /// </summary>
-        public const string YPropertyName = "Y";
-
-        private double _y = 0.0;
-
-        /// <summary>
-        /// Sets and gets the Y property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double Y
-        {
-            get
-            {
-                return _y;
-            }
-
-            set
-            {
-                if (_y == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(YPropertyName);
-                _y = value;
-                RaisePropertyChanged(YPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region Color
-
-        /// <summary>
-        /// The <see cref="Color" /> property's name.
-        /// </summary>
-        public const string ColorPropertyName = "Color";
-
-        private Brush _color = Brushes.Yellow;
-
-        /// <summary>
-        /// Sets and gets the Color property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public Brush Color
-        {
-            get
-            {
-                return _color;
-            }
-
-            set
-            {
-                if (_color == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(ColorPropertyName);
-                _color = value;
-                RaisePropertyChanged(ColorPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region Type
-
-        /// <summary>
-        /// The <see cref="Type" /> property's name.
-        /// </summary>
-        public const string TypePropertyName = "Type";
-
-        private int _type = -1;
-
-        /// <summary>
-        /// Sets and gets the Type property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public int Type
-        {
-            get
-            {
-                return _type;
-            }
-
-            set
-            {
-                if (_type == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(TypePropertyName);
-                _type = value;
-                RaisePropertyChanged(TypePropertyName);
-            }
-        }
-
-        #endregion
-
-        #endregion
     }
 }

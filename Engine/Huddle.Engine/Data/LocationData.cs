@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Windows;
 using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
@@ -43,141 +44,71 @@ namespace Huddle.Engine.Data
 
         #endregion
 
-        #region X
+        #region Center
 
         /// <summary>
-        /// The <see cref="X" /> property's name.
+        /// The <see cref="Center" /> property's name.
         /// </summary>
-        public const string XPropertyName = "X";
+        public const string CenterPropertyName = "Center";
 
-        private double _x = 0.0;
+        private Point _center;
 
         /// <summary>
-        /// Sets and gets the X property.
+        /// Sets and gets the Center property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public double X
+        public Point Center
         {
             get
             {
-                return _x;
+                return _center;
             }
 
             set
             {
-                if (_x == value)
+                if (_center == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(XPropertyName);
-                _x = value;
-                RaisePropertyChanged(XPropertyName);
+                RaisePropertyChanging(CenterPropertyName);
+                _center = value;
+                RaisePropertyChanged(CenterPropertyName);
             }
         }
 
         #endregion
 
-        #region Y
+        #region RelativeCenter
 
         /// <summary>
-        /// The <see cref="Y" /> property's name.
+        /// The <see cref="RelativeCenter" /> property's name.
         /// </summary>
-        public const string YPropertyName = "Y";
+        public const string RelativeCenterPropertyName = "RelativeCenter";
 
-        private double _y = 0.0;
+        private Point _relativeCenter;
 
         /// <summary>
-        /// Sets and gets the Y property.
+        /// Sets and gets the RelativeCenter property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public double Y
+        public Point RelativeCenter
         {
             get
             {
-                return _y;
+                return _relativeCenter;
             }
 
             set
             {
-                if (_y == value)
+                if (_relativeCenter == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(YPropertyName);
-                _y = value;
-                RaisePropertyChanged(YPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region RelativeX
-
-        /// <summary>
-        /// The <see cref="RelativeX" /> property's name.
-        /// </summary>
-        public const string RelativeXPropertyName = "RelativeX";
-
-        private double _relativeX = 0.0;
-
-        /// <summary>
-        /// Sets and gets the RelativeX property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double RelativeX
-        {
-            get
-            {
-                return _relativeX;
-            }
-
-            set
-            {
-                if (_relativeX == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(RelativeXPropertyName);
-                _relativeX = value;
-                RaisePropertyChanged(RelativeXPropertyName);
-            }
-        }
-
-        #endregion
-
-        #region RelativeY
-
-        /// <summary>
-        /// The <see cref="RelativeY" /> property's name.
-        /// </summary>
-        public const string RelativeYPropertyName = "RelativeY";
-
-        private double _relativeY = 0.0;
-
-        /// <summary>
-        /// Sets and gets the RelativeY property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double RelativeY
-        {
-            get
-            {
-                return _relativeY;
-            }
-
-            set
-            {
-                if (_relativeY == value)
-                {
-                    return;
-                }
-
-                RaisePropertyChanging(RelativeYPropertyName);
-                _relativeY = value;
-                RaisePropertyChanged(RelativeYPropertyName);
+                RaisePropertyChanging(RelativeCenterPropertyName);
+                _relativeCenter = value;
+                RaisePropertyChanged(RelativeCenterPropertyName);
             }
         }
 

@@ -64,7 +64,7 @@ namespace Huddle.Engine.Util
                 parameters[i] = System.Linq.Expressions.Expression.Parameter(
                     Params[i].ParamType, Params[i].ParamName);
 
-            return DynamicExpression.ParseLambda(parameters,
+            return System.Linq.Dynamic.DynamicExpression.ParseLambda(parameters,
                 HasReturnValue ? typeof(object) : null,
                 Expression, null);
         }

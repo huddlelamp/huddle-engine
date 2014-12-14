@@ -2,10 +2,11 @@
 using Emgu.CV.Structure;
 using Huddle.Engine.Processor;
 using Huddle.Engine.Processor.Complex.PolygonIntersection;
+using Huddle.Engine.Processor.OpenCv.Struct;
 
 namespace Huddle.Engine.Data
 {
-    public class BlobData : BaseData
+    public sealed class BlobData : BaseData
     {
         #region properties
 
@@ -44,71 +45,77 @@ namespace Huddle.Engine.Data
 
         #endregion
 
-        #region X
+        #region OriginalId
+
+        public long OriginalId { get; private set; }
+
+        #endregion
+
+        #region Center
 
         /// <summary>
-        /// The <see cref="X" /> property's name.
+        /// The <see cref="Center" /> property's name.
         /// </summary>
-        public const string XPropertyName = "X";
+        public const string CenterPropertyName = "Center";
 
-        private double _x = 0.0;
+        private Point _center;
 
         /// <summary>
-        /// Sets and gets the X property.
+        /// Sets and gets the Center property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public double X
+        public Point Center
         {
             get
             {
-                return _x;
+                return _center;
             }
 
             set
             {
-                if (_x == value)
+                if (_center == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(XPropertyName);
-                _x = value;
-                RaisePropertyChanged(XPropertyName);
+                RaisePropertyChanging(CenterPropertyName);
+                _center = value;
+                RaisePropertyChanged(CenterPropertyName);
             }
         }
 
         #endregion
 
-        #region Y
+        #region State
 
         /// <summary>
-        /// The <see cref="Y" /> property's name.
+        /// The <see cref="State" /> property's name.
         /// </summary>
-        public const string YPropertyName = "Y";
+        public const string StatePropertyName = "State";
 
-        private double _y = 0.0;
+        private TrackingState _state = TrackingState.NotTracked;
 
         /// <summary>
-        /// Sets and gets the Y property.
+        /// Sets and gets the State property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public double Y
+        public TrackingState State
         {
             get
             {
-                return _y;
+                return _state;
             }
 
             set
             {
-                if (_y == value)
+                if (_state == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(YPropertyName);
-                _y = value;
-                RaisePropertyChanged(YPropertyName);
+                RaisePropertyChanging(StatePropertyName);
+                _state = value;
+                RaisePropertyChanged(StatePropertyName);
             }
         }
 
@@ -258,20 +265,21 @@ namespace Huddle.Engine.Data
 
         #region ctor
 
-        public BlobData(IProcessor source, string key)
+        public BlobData(IProcessor source, long originalId, string key)
             : base(source, key)
         {
+            OriginalId = originalId;
         }
 
         #endregion
 
         public override IData Copy()
         {
-            var blob = new BlobData(Source, Key)
+            var blob = new BlobData(Source, OriginalId, Key)
             {
                 Id = Id,
-                X = X,
-                Y = Y,
+                Center = Center,
+                State = State,
                 Angle = Angle,
                 Area = Area,
                 Shape = Shape,

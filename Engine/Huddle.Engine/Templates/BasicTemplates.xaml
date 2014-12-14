@@ -4,7 +4,8 @@
                     xmlns:command="http://www.galasoft.ch/mvvmlight"
                     xmlns:processor="clr-namespace:Huddle.Engine.Processor"
                     xmlns:barCodes="clr-namespace:Huddle.Engine.Processor.BarCodes"
-                    xmlns:util="clr-namespace:Huddle.Engine.Util">
+                    xmlns:util="clr-namespace:Huddle.Engine.Util"
+                    xmlns:data="clr-namespace:Huddle.Engine.Data">
 
     <DataTemplate x:Key="DefaultTemplate">
         <Label Content="No template defined" />
@@ -14,7 +15,8 @@
         <StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="Type"/>
-                <ComboBox ItemsSource="{Binding Path=Types}"
+                <ComboBox Width="200"
+                          ItemsSource="{Binding Path=Types}"
                           SelectedValue="{Binding Path=Type}" />
             </StackPanel>
 
@@ -274,6 +276,83 @@
             </ItemsControl>
         </StackPanel>
     </DataTemplate>
+    
+    <util:PresenceTemplateSelector x:Key="PresenceTemplateSelector">
+        <util:PresenceTemplateSelector.DeviceTemplate>
+            <DataTemplate DataType="{x:Type data:Device}">
+                <Grid RenderTransformOrigin="0.5,0.5" ClipToBounds="False">
+                    <Grid.RenderTransform>
+                        <TransformGroup>
+                            <RotateTransform Angle="{Binding Path=SmoothedAngle}" />
+                            <TranslateTransform X="{Binding ElementName=DeviceBorder, Path=ActualWidth, Converter={util:LambdaValueConverter (-param / 2)}}" Y="{Binding ElementName=DeviceBorder, Path=ActualHeight, Converter={util:LambdaValueConverter (-param / 2)}}" />
+                        </TransformGroup>
+                    </Grid.RenderTransform>
+                    <Border x:Name="DeviceBorder" Visibility="{Binding Path=IsIdentified, Converter={util:BoolToVisibilityConverter}}"
+                                        Background="Transparent"
+                                        BorderBrush="Black"
+                                        BorderThickness="10">
+                        <Border.Width>
+                            <MultiBinding Converter="{util:RatioConverter}">
+                                <Binding Path="RgbImageToDisplayRatio.X" />
+                                <Binding Path="ActualWidth" ElementName="DeviceContainer" />
+                            </MultiBinding>
+                        </Border.Width>
+                        <Border.Height>
+                            <MultiBinding Converter="{util:RatioConverter}">
+                                <Binding Path="RgbImageToDisplayRatio.Y" />
+                                <Binding Path="ActualHeight" ElementName="DeviceContainer" />
+                            </MultiBinding>
+                        </Border.Height>
+                        <Grid>
+                            <Line X1="0" X2="0" Y1="0" Y2="{Binding ElementName=DeviceBorder, Path=ActualHeight, Converter={util:LambdaValueConverter (-param * 0.4)}}"
+                                  Stroke="DeepPink"
+                                  StrokeThickness="{Binding ElementName=DeviceBorder, Path=ActualHeight, Converter={util:LambdaValueConverter (-param * 0.05)}}"
+                                  VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                            <StackPanel Grid.Row="0" Orientation="Vertical" Margin="5">
+                                <TextBlock ClipToBounds="False" Text="{Binding Path=DeviceId, StringFormat='ID {0}'}" />
+                                <TextBlock ClipToBounds="False">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="Blob ID {0} (Key={1})">
+                                            <Binding Path="BlobId" />
+                                            <Binding Path="Key" />
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock ClipToBounds="False">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="Center X={0:#.##}, Y={1:#.##}">
+                                            <Binding Path="Center.X" />
+                                            <Binding Path="Center.Y" />
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock ClipToBounds="False">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="Center X={0:#.##}, Y={1:#.##} (smoothed)">
+                                            <Binding Path="SmoothedCenter.X" />
+                                            <Binding Path="SmoothedCenter.Y" />
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                                <TextBlock ClipToBounds="False" Text="{Binding Path=Angle, StringFormat='Angle {0:#.##}'}" />
+                                <TextBlock ClipToBounds="False" Text="{Binding Path=SmoothedAngle, StringFormat='Angle {0:#.##} (smoothed)'}" />
+                                <TextBlock ClipToBounds="False">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="Ratio X={0:#.##}, Y={1:#.##}">
+                                            <Binding Path="RgbImageToDisplayRatio.X" />
+                                            <Binding Path="RgbImageToDisplayRatio.Y" />
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <Rectangle Fill="Red" Width="40" Height="40" Visibility="{Binding Path=IsIdentified, Converter={util:BoolToVisibilityConverter Invert=True}}" />
+                </Grid>
+            </DataTemplate>
+        </util:PresenceTemplateSelector.DeviceTemplate>
+    </util:PresenceTemplateSelector>
 
     <DataTemplate x:Key="ProximityProcessorTemplate" DataType="processor:ProximityProcessor">
         <StackPanel>
@@ -283,89 +362,36 @@
                 <TextBlock Text="{Binding Path=Distance, StringFormat={}{0:###}}"/>
             </StackPanel>
             <Grid x:Name="DeviceContainer"
-                  Width="{Binding Path=Width}"
-                  Height="{Binding Path=Height}">
-                <i:Interaction.Triggers>
-                    <util:EventTriggerAdvanced EventName="MouseLeftButtonDown">
-                        <command:EventToCommand Command="{Binding Path=AddFakeDeviceCommand}" PassEventArgsToCommand="True" />
-                    </util:EventTriggerAdvanced>
-                </i:Interaction.Triggers>
-                <ItemsControl ItemsSource="{Binding Path=Devices}">
+                  Width="1280"
+                  Height="720">
+                <ItemsControl ItemsSource="{Binding Path=Devices}" ItemTemplateSelector="{StaticResource ResourceKey=PresenceTemplateSelector}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <Canvas Background="White" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid RenderTransformOrigin="0.5,0.5" ClipToBounds="False">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="MouseRightButtonDown">
-                                        <command:EventToCommand Command="{Binding ElementName=DeviceContainer, Path=DataContext.RemoveFakeDeviceCommand}" CommandParameter="{Binding}" />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                                <Grid.RenderTransform>
-                                    <TransformGroup>
-                                        <RotateTransform Angle="{Binding Path=Angle}" />
-                                        <TranslateTransform X="-25" Y="-20" />
-                                    </TransformGroup>
-                                </Grid.RenderTransform>
-                                <Rectangle Fill="Lime" Width="50" Height="40" Visibility="{Binding Path=IsIdentified, Converter={util:BoolToVisibilityConverter}}" />
-                                <Rectangle Fill="Red" Width="40" Height="40" Visibility="{Binding Path=IsIdentified, Converter={util:BoolToVisibilityConverter Invert=True}}" />
-                                <Line X1="25" X2="25" Y1="20" Y2="-5" Stroke="Black" StrokeThickness="3" Visibility="{Binding Path=IsIdentified, Converter={util:BoolToVisibilityConverter}}" />
-
-                                <Label ClipToBounds="False" Width="50" Content="{Binding Path=DeviceId}" Visibility="{Binding Path=IsIdentified, Converter={util:BoolToVisibilityConverter}}" />
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
                     <ItemsControl.ItemContainerStyle>
                         <Style>
-                            <Setter Property="Canvas.Left" Value="{Binding Path=X}" />
-                            <Setter Property="Canvas.Top" Value="{Binding Path=Y}" />
-                        </Style>
-                    </ItemsControl.ItemContainerStyle>
-                </ItemsControl>
-                <ItemsControl ItemsSource="{Binding Path=DrawModels}"
-                      Width="{Binding Path=Width}"
-                      Height="{Binding Path=Height}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Canvas Background="Transparent" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Rectangle Fill="{Binding Path=Color}" Width="10" Height="10" RenderTransformOrigin="0.5,0.5">
-                                <Rectangle.RenderTransform>
-                                    <TransformGroup>
-                                        <TranslateTransform X="-5" Y="-5" />
-                                    </TransformGroup>
-                                </Rectangle.RenderTransform>
-                            </Rectangle>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                    <ItemsControl.ItemContainerStyle>
-                        <Style>
-                            <Setter Property="Canvas.Left" Value="{Binding Path=X}" />
-                            <Setter Property="Canvas.Top" Value="{Binding Path=Y}" />
+                            <Setter Property="Canvas.Left">
+                                <Setter.Value>
+                                    <MultiBinding Converter="{util:ScaleConverter}">
+                                        <Binding Path="SmoothedCenter.X" />
+                                        <Binding Path="ActualWidth" ElementName="DeviceContainer" />
+                                    </MultiBinding>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Canvas.Top">
+                                <Setter.Value>
+                                    <MultiBinding Converter="{util:ScaleConverter}">
+                                        <Binding Path="SmoothedCenter.Y" />
+                                        <Binding Path="ActualHeight" ElementName="DeviceContainer" />
+                                    </MultiBinding>
+                                </Setter.Value>
+                            </Setter>
                         </Style>
                     </ItemsControl.ItemContainerStyle>
                 </ItemsControl>
             </Grid>
-            <!--<ItemsControl ItemsSource="{Binding Path=Devices}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <GroupBox Header="{Binding Path=Key}">
-                            <StackPanel>
-                                <Label Content="{Binding Path=Id}" />
-                                <Label Content="{Binding Path=X}" />
-                                <Label Content="{Binding Path=Y}" />
-                                <Label Content="{Binding Path=Angle}" />
-                            </StackPanel>
-                        </GroupBox>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>-->
         </StackPanel>
     </DataTemplate>
 

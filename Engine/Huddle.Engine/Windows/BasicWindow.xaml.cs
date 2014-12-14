@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.Reactive.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
 using Application = System.Windows.Application;
@@ -24,7 +26,7 @@ namespace Huddle.Engine.Windows
 
             #region System Tray Initialization
 
-            var iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/Huddle.Engine;component/Resources/FlockingDevice.ico")).Stream;
+            var iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/Huddle.Engine;component/Resources/HuddleLamp.ico")).Stream;
             var icon = new Icon(iconStream);
             _notifyIcon = new NotifyIcon { Icon = icon };
 
@@ -45,6 +47,16 @@ namespace Huddle.Engine.Windows
             // Start Huddle Engine in system tray
             WindowState = WindowState.Minimized;
 #endif
+
+            SizeChanged += BasicWindow_SizeChanged;
+        }
+
+        void BasicWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var size = e.NewSize;
+
+            DeviceContainer.Width = size.Width - 200;
+            DeviceContainer.Height = (size.Width - 200) * (9.0 / 16.0);
         }
 
         #region System Tray

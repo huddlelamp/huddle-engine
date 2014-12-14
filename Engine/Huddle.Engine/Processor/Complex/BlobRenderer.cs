@@ -41,14 +41,14 @@ namespace Huddle.Engine.Processor.Complex
                     polyline.Add(new Point((int)x, (int)y));
                 }
 
-                Rgb color = Rgbs.White;
-                if (typeof(FindContours) == blob.Source.GetType())
+                var color = Rgbs.White;
+                if (typeof(RectangleTracker) == blob.Source.GetType())
                     color = Rgbs.Red;
-                else if (typeof(FindContours3) == blob.Source.GetType())
+                else if (typeof(RectangleTrackerColor) == blob.Source.GetType())
                     color = Rgbs.Yellow;
 
-                var centerX = (int)(blob.X * width);
-                var centerY = (int)(blob.Y * height);
+                var centerX = (int)(blob.Center.X * width);
+                var centerY = (int)(blob.Center.Y * height);
 
                 image.DrawPolyline(polyline.ToArray(), true, color, 5);
                 image.Draw(string.Format("Id {0}", blob.Id), ref EmguFontBig, new Point(centerX, centerY), Rgbs.White);

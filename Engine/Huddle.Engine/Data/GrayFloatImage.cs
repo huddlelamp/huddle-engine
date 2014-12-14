@@ -4,7 +4,7 @@ using Huddle.Engine.Processor;
 
 namespace Huddle.Engine.Data
 {
-    public class GrayFloatImage : BaseImageData<Gray, float>
+    public sealed class GrayFloatImage : BaseImageData<Gray, float>
     {
         #region properties
 

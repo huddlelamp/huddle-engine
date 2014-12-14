@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,6 +21,7 @@ using Huddle.Engine.Processor;
 using Huddle.Engine.Properties;
 using Huddle.Engine.Util;
 using Huddle.Engine.View;
+using Huddle.Engine.Windows;
 using Microsoft.Win32;
 using Xceed.Wpf.Toolkit.Zoombox;
 
@@ -69,6 +73,41 @@ namespace Huddle.Engine.ViewModel
         #endregion
 
         #region properties
+
+        #region Name
+
+        /// <summary>
+        /// The <see cref="Name" /> property's name.
+        /// </summary>
+        public const string NamePropertyName = "Name";
+
+        private string _name = string.Empty;
+
+        /// <summary>
+        /// Sets and gets the Name property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+
+            set
+            {
+                if (_name == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(NamePropertyName);
+                _name = value;
+                RaisePropertyChanged(NamePropertyName);
+            }
+        }
+
+        #endregion
 
         #region Mode
 
@@ -210,6 +249,41 @@ namespace Huddle.Engine.ViewModel
 
         #endregion
 
+        #region ProximityProcessor
+
+        /// <summary>
+        /// The <see cref="ProximityProcessor" /> property's name.
+        /// </summary>
+        public const string ProximityProcessorPropertyName = "ProximityProcessor";
+
+        private ProximityProcessor _proximityProcessor = null;
+
+        /// <summary>
+        /// Sets and gets the Name property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public ProximityProcessor ProximityProcessor
+        {
+            get
+            {
+                return _proximityProcessor;
+            }
+
+            set
+            {
+                if (_proximityProcessor == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ProximityProcessorPropertyName);
+                _proximityProcessor = value;
+                RaisePropertyChanged(ProximityProcessorPropertyName);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region ctor
@@ -232,11 +306,55 @@ namespace Huddle.Engine.ViewModel
                 ProcessorTypes = new ObservableCollection<ViewTemplateAttribute>(types);
             }
 
+            Processors.CollectionChanged += (sender, args) =>
+            {
+                switch (args.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        foreach (var newItem in args.NewItems)
+                        {
+                            var nodeViewModel = newItem as NodeViewModel;
+                            if (nodeViewModel == null) continue;
+
+                            var processor = nodeViewModel.Model as ProximityProcessor;
+                            if (processor != null)
+                                ProximityProcessor = processor;
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        foreach (var oldItem in args.OldItems)
+                        {
+                            var nodeViewModel = oldItem as NodeViewModel;
+                            if (nodeViewModel == null) continue;
+
+                            var processor = nodeViewModel.Model as ProximityProcessor;
+                            if (processor != null && ProximityProcessor == processor)
+                                ProximityProcessor = null;
+                        }
+                        break;
+                }
+            };
+
+            // exit hook to stop input source --> replaced by Application.Current.MainWindow.Closing
+            //Application.Current.Exit += (s, e) =>
+            //{
+            //    Stop();
+            //};
+
             // exit hook to stop input source
-            Application.Current.Exit += (s, e) =>
+            Application.Current.MainWindow.Closing += (s, e) =>
             {
                 Stop();
-                Save(Settings.Default.DefaultPipelineFileName);
+
+                // Only show message box if it is the editor window.
+                if (typeof(EditorWindow) != Application.Current.MainWindow.GetType()) return;
+
+                var savePipeline = MessageBox.Show("Do you want to save changes?", "Save Changes", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (savePipeline == MessageBoxResult.Yes)
+                {
+                    // Saves pipeline on application exit
+                    Save(Settings.Default.DefaultPipelineFileName);
+                }
             };
 
             Model = new Pipeline();
@@ -328,25 +446,34 @@ namespace Huddle.Engine.ViewModel
 
         public override void Start()
         {
-            foreach (var processor in Processors)
-                processor.Start();
+            Task.Factory.StartNew(() =>
+            {
+                foreach (var processor in Processors)
+                    processor.Start();
 
-            Mode = PipelineMode.Started;
+                Mode = PipelineMode.Started;
+            });
         }
 
         public override void Stop()
         {
-            foreach (var processor in Processors)
-                processor.Stop();
+            Task.Factory.StartNew(() =>
+            {
+                foreach (var processor in Processors)
+                    processor.Stop();
 
-            Mode = PipelineMode.Stopped;
+                Mode = PipelineMode.Stopped;
+            });
         }
 
         public void Pause()
         {
-            Mode = PipelineMode.Paused;
-
             throw new NotImplementedException();
+
+            Task.Factory.StartNew(() =>
+            {
+                Mode = PipelineMode.Paused;
+            });
         }
 
         public void Resume()
@@ -363,37 +490,22 @@ namespace Huddle.Engine.ViewModel
             var container = e.Sender as FrameworkElement;
             var eventArgs = e.OriginalEventArgs as StrokeEventArgs;
 
+            Debug.Assert(eventArgs != null, "event args need to be != null");
+
             var pg = PathGeometry.CreateFromGeometry(eventArgs.Stroke.GetGeometry());
-
-            //pg.Transform = new ScaleTransform(Model.Scale, Model.Scale);
-
-            //if (eventArgs.Device == Device.Stylus)
-            //{
-            //    //throw new Exception("Analyze text");
-            //    Console.WriteLine("STROKE {0}", AnalyzeStroke(eventArgs.Stroke));
-            //    RecognizeGesture(pg);
-            //}
-            //else if (eventArgs.Device == Device.StylusInverted)
-            //{
-            //    var nodesToDelete = HitTestHelper.GetElementsInGeometry<UserControl>(pg, inkCanvas)
-            //        .Select(view => view.DataContext)
-            //        .OfType<QueryCanvasNodeViewModel>().ToArray();
-
-            //    foreach (var vm in nodesToDelete)
-            //    {
-            //        var node = vm.Model as QueryCanvasNode;
-            //        Debug.Assert(node != null, "node != null");
-
-            //        Model.RemoveNode(node);
-            //    }
-            //}
 
             var elementsInGeometry = HitTestHelper.GetElementsInGeometry<PipeView>(pg, container);
 
-            var linksToDelete = elementsInGeometry.Select(view => view.DataContext)
-                .OfType<PipeViewModel>().ToArray();
+            var linksToDelete = elementsInGeometry.Select(view => view.DataContext).OfType<PipeViewModel>().ToArray();
 
-            ////TODO: add method to model, which is capable of deleting more than one link safely
+            // As user if pipes should be deleted.
+            if (linksToDelete.Any())
+            {
+                var deletePipes = MessageBox.Show("Do you want to delete pipes?", "Delete Pipes", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (deletePipes != MessageBoxResult.Yes) return;
+            }
+
+            // TODO: add method to model, which is capable of deleting more than one link safely
             foreach (var vm in linksToDelete)
             {
                 var source = vm.Source as BaseProcessor;
@@ -428,7 +540,7 @@ namespace Huddle.Engine.ViewModel
         {
             var openDialog = new OpenFileDialog
             {
-                Filter = "Huddle Engine Pipeline|*.pipeline.huddle",
+                Filter = "Huddle Engine Pipeline|*.hep",
                 Multiselect = false
             };
 
@@ -447,7 +559,7 @@ namespace Huddle.Engine.ViewModel
         {
             var saveDialog = new SaveFileDialog
             {
-                Filter = "Huddle Engine Pipeline|*.pipeline.huddle"
+                Filter = "Huddle Engine Pipeline|*.hep"
             };
 
             var result = saveDialog.ShowDialog(Application.Current.MainWindow);
@@ -457,6 +569,15 @@ namespace Huddle.Engine.ViewModel
             var fileName = saveDialog.FileName;
 
             AskForSaveAsDefaultPipeline(fileName);
+
+            // crop file type if it has been added to the filename
+            if (fileName.EndsWith(".hep"))
+                fileName = fileName.Substring(0, fileName.Length - ".hep".Length);
+
+            // sometimes the filename ends twice with ".hep" and sometimes not. If the
+            // filename does not contain a ".hep" it will be added.
+            if (!fileName.EndsWith("hep"))
+                fileName += ".hep";
 
             Save(fileName);
         }
@@ -511,6 +632,8 @@ namespace Huddle.Engine.ViewModel
             {
                 ExceptionMessageBox.ShowException(e, String.Format("Could not load pipeline. {0}.", e.Message));
             }
+
+            Name = fileName;
         }
 
         private static void AskForSaveAsDefaultPipeline(string fileName)
@@ -620,5 +743,6 @@ namespace Huddle.Engine.ViewModel
             {
                 return String.Compare(x.Name, y.Name, StringComparison.Ordinal);
             }
-        }}
+        }
+    }
 }

@@ -2,9 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:complex="clr-namespace:Huddle.Engine.Processor.Complex">
 
-    <DataTemplate x:Key="HybridTracking" DataType="complex:HybridTracking">
+    <DataTemplate x:Key="BinaryThresholding" DataType="complex:BinaryThresholding">
         <StackPanel>
-
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="320" />
@@ -22,28 +21,6 @@
                     <Image Source="{Binding Path=PostProcessImage}" />
                 </GroupBox>
             </Grid>
-
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Canny Edges Threshold"/>
-                <Slider Value="{Binding Path=CannyEdgesThreshold}" Width="340" Height="25" Minimum="0" Maximum="500" TickFrequency="1" IsSnapToTickEnabled="True" />
-                <TextBlock Text="{Binding Path=CannyEdgesThreshold, StringFormat={}{0}}"/>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Canny Edges Threshold Linking"/>
-                <Slider Value="{Binding Path=CannyEdgesThresholdLinking}" Width="340" Height="25" Minimum="0" Maximum="500" TickFrequency="1" IsSnapToTickEnabled="True" />
-                <TextBlock Text="{Binding Path=CannyEdgesThresholdLinking, StringFormat={}{0}}"/>
-            </StackPanel>
-
-            <CheckBox Content="Is Smooth Gaussian" IsChecked="{Binding Path=IsSmoothGaussian}" />
-
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Smooth Gaussian"/>
-                <Slider Value="{Binding Path=SmoothGaussian}" Width="340" Height="25" Minimum="1" Maximum="51" TickFrequency="2" IsSnapToTickEnabled="True" />
-                <TextBlock Text="{Binding Path=SmoothGaussian, StringFormat={}{0}}"/>
-            </StackPanel>
-
-            <CheckBox Content="Is Gaussian Pyramid Down Up Decomposition" IsChecked="{Binding Path=GaussianPyramidDownUpDecomposition}" />
 
             <StackPanel Orientation="Horizontal">
                 <Label Content="Binary Threshold"/>
@@ -113,6 +90,28 @@
                 <Slider Value="{Binding Path=FloodFillDifference}" Width="340" Height="25" Minimum="0" Maximum="255" TickFrequency="1" IsSnapToTickEnabled="True" />
                 <TextBlock Text="{Binding Path=FloodFillDifference, StringFormat={}{0}}"/>
             </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="HybridSensing" DataType="complex:HybridSensing">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Grid>
+                        <Image Source="{Binding Path=PreProcessImage}" />
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </Grid>
         </StackPanel>
     </DataTemplate>
 </ResourceDictionary>

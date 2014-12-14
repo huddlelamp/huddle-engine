@@ -16,7 +16,7 @@ using Point = System.Windows.Point;
 
 namespace Huddle.Engine.Processor.OpenCv
 {
-    [ViewTemplate("BasicsGrayFloat", "BasicsGrayFloat")]
+    [ViewTemplate("Basics (Gray/Float)", "Basics")]
     public class BasicsGrayFloat : BaseImageProcessor<Gray, float>
     {
         #region private fields
@@ -36,6 +36,48 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #region public properties
 
+        #region IsInitialized
+
+        // IsInitialized is used to set ROI if filter is used the first time.
+        public bool IsInitialized { get; set; }
+
+        #endregion
+
+        #region IsUseROI
+
+        /// <summary>
+        /// The <see cref="IsUseROI" /> property's name.
+        /// </summary>
+        public const string IsUseROIPropertyName = "IsUseROI";
+
+        private bool _isUseROI = true;
+
+        /// <summary>
+        /// Sets and gets the IsUseROI property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsUseROI
+        {
+            get
+            {
+                return _isUseROI;
+            }
+
+            set
+            {
+                if (_isUseROI == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsUseROIPropertyName);
+                _isUseROI = value;
+                RaisePropertyChanged(IsUseROIPropertyName);
+            }
+        }
+
+        #endregion
+
         #region ROI
 
         /// <summary>
@@ -43,7 +85,7 @@ namespace Huddle.Engine.Processor.OpenCv
         /// </summary>
         public const string ROIPropertyName = "ROI";
 
-        private Rectangle _roi = new Rectangle(20, 20, 280, 200);
+        private Rectangle _roi = new Rectangle(0, 0, 1, 1);
 
         /// <summary>
         /// Sets and gets the ROI property.
@@ -101,6 +143,41 @@ namespace Huddle.Engine.Processor.OpenCv
                 RaisePropertyChanging(ROITempPropertyName);
                 _roiTemp = value;
                 RaisePropertyChanged(ROITempPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region Scale
+
+        /// <summary>
+        /// The <see cref="Scale" /> property's name.
+        /// </summary>
+        public const string ScalePropertyName = "Scale";
+
+        private double _scale = 1.0;
+
+        /// <summary>
+        /// Sets and gets the Scale property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double Scale
+        {
+            get
+            {
+                return _scale;
+            }
+
+            set
+            {
+                if (_scale == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ScalePropertyName);
+                _scale = value;
+                RaisePropertyChanged(ScalePropertyName);
             }
         }
 
@@ -178,10 +255,14 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #endregion
+
         #region ctor
 
         public BasicsGrayFloat()
+            : base(false)
         {
+            IsInitialized = false;
             MouseDownCommand = new RelayCommand<SenderAwareEventArgs>(args =>
             {
                 var sender = args.Sender as IInputElement;
@@ -237,8 +318,6 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
-        #endregion
-
         public override IData Process(IData data)
         {
             var roi = data as ROI;
@@ -250,9 +329,16 @@ namespace Huddle.Engine.Processor.OpenCv
 
         public override Image<Gray, float> PreProcess(Image<Gray, float> image0)
         {
+            if (!IsInitialized)
+            {
+                ROI = new Rectangle(0, 0, image0.Width, image0.Height);
+
+                IsInitialized = true;
+            }
+
             var image = base.PreProcess(image0);
 
-            image.Draw(ROI, new Gray(255), 1);
+            image.Draw(ROI, new Gray(255.0), 1);
 
             return image;
         }
@@ -262,17 +348,34 @@ namespace Huddle.Engine.Processor.OpenCv
             // mirror image
             try
             {
-                var imageCopy = image.Copy(ROI);
+                var imageCopy = IsUseROI ? image.Copy(ROI) : image.Copy();
+
+                // TODO Revise code.
+                if (Scale != 1.0)
+                {
+                    var imageCopy2 = new Image<Gray, float>((int)(imageCopy.Width * Scale), (int)(imageCopy.Height * Scale));
+                    CvInvoke.cvResize(imageCopy.Ptr, imageCopy2.Ptr, INTER.CV_INTER_CUBIC);
+
+                    imageCopy.Dispose();
+                    imageCopy = imageCopy2;
+                }
+
+
+                var flipCode = FLIP.NONE;
 
                 if (FlipHorizontal)
-                    imageCopy = imageCopy.Flip(FLIP.HORIZONTAL);
+                    flipCode |= FLIP.HORIZONTAL;
                 if (FlipVertical)
-                    imageCopy = imageCopy.Flip(FLIP.VERTICAL);
+                    flipCode |= FLIP.VERTICAL;
+
+                if (flipCode != FLIP.NONE)
+                    CvInvoke.cvFlip(imageCopy.Ptr, imageCopy.Ptr, flipCode);
 
                 return imageCopy;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                LogFormat("{0}", e.StackTrace);
                 return null;
             }
         }

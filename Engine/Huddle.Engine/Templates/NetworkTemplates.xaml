@@ -12,11 +12,11 @@
                     <TextBox Width="100" Text="{Binding Path=Port}" VerticalAlignment="Center" TextAlignment="Center" />
                     <Button Content="Apply" />
                 </StackPanel>
-                
+
                 <StackPanel Orientation="Horizontal">
-                    <Label Content="Outgoing Fps"/>
-                    <Slider Width="200" Height="25" Minimum="1" Maximum="100" Value="{Binding Path=OutgoingFps}" />
-                    <TextBlock Text="{Binding Path=OutgoingFps, StringFormat={}{0:#}}"/>
+                    <Label Content="Limit Fps (0 = unlimited)"/>
+                    <Slider Width="200" Value="{Binding Path=LimitFps}" Minimum="0" Maximum="150" />
+                    <TextBlock Text="{Binding Path=LimitFps, StringFormat={}{0:#} Fps}"/>
                 </StackPanel>
             </StackPanel>
         </Grid>

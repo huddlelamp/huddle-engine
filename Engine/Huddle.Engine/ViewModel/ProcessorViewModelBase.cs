@@ -470,6 +470,9 @@ namespace Huddle.Engine.ViewModel
 
         protected virtual void OnRemove()
         {
+            var deleteProcessor = MessageBox.Show("Do you want to delete processor?", "Delete Processor", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (deleteProcessor != MessageBoxResult.Yes) return;
+
             // Stop processing (ViewModel and Model)
             Stop();
 
@@ -556,7 +559,13 @@ namespace Huddle.Engine.ViewModel
 
                     if (snapshotBitmaps == null)
                     {
-                        MessageBox.Show(string.Format("Snapshot function not implemented for {0}", Model.GetType().Name));
+                        MessageBox.Show(string.Format("Snapshot function not implemented for {0}.", Model.GetType().Name));
+                        return;
+                    }
+
+                    if (snapshotBitmaps.Length == 0)
+                    {
+                        MessageBox.Show("No images available.");
                         return;
                     }
 

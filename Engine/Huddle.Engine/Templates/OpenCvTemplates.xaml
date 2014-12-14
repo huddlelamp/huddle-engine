@@ -306,10 +306,11 @@
         </StackPanel>
     </DataTemplate>
 
-    <DataTemplate x:Key="SubtractBackground" DataType="openCv:SubtractBackground">
+    <DataTemplate x:Key="BackgroundSubtraction" DataType="openCv:BackgroundSubtraction">
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
@@ -320,11 +321,41 @@
                         <Image Source="{Binding Path=PreProcessImage}" />
                     </Grid>
                 </GroupBox>
-                <GroupBox Header="Post Processed Image"
+                <GroupBox Header="Debug Image"
                           Grid.Column="1">
+                    <Image Source="{Binding Path=DebugImageSource}" />
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="2">
                     <Image Source="{Binding Path=PostProcessImage}" />
                 </GroupBox>
             </Grid>
+
+            <Button Content="Subtract">
+                <i:Interaction.Triggers>
+                    <util:EventTriggerAdvanced EventName="Click">
+                        <command:EventToCommand Command="{Binding Path=SubtractCommand, Mode=OneWay}" PassEventArgsToCommand="False" />
+                    </util:EventTriggerAdvanced>
+                </i:Interaction.Triggers>
+            </Button>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Subtraction Samples"/>
+                <Slider Width="200" Value="{Binding Path=BackgroundSubtractionSamples}" Minimum="0" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=BackgroundSubtractionSamples}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Low Cut Off Depth"/>
+                <Slider Value="{Binding Path=LowCutOffDepth}" Width="340" Height="25" Minimum="0" Maximum="255" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=LowCutOffDepth, StringFormat={}{0:#.##}}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="High Cut Off Depth"/>
+                <Slider Value="{Binding Path=HighCutOffDepth}" Width="340" Height="25" Minimum="0" Maximum="255" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=HighCutOffDepth, StringFormat={}{0:#.##}}"/>
+            </StackPanel>
         </StackPanel>
     </DataTemplate>
 
@@ -350,79 +381,141 @@
         </StackPanel>
     </DataTemplate>
 
-    <DataTemplate x:Key="FindContours" DataType="openCv:FindContours">
+    <DataTemplate x:Key="RectangleTracker" DataType="openCv:RectangleTracker">
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
                 <GroupBox Header="Pre Processed Image"
-                          Grid.Column="0">
+                          Grid.Column="0" Grid.Row="0">
                     <Image Source="{Binding Path=PreProcessImage}" />
                 </GroupBox>
+                <GroupBox Header="Debug Image"
+                          Grid.Column="1" Grid.Row="0">
+                    <Image Source="{Binding Path=DebugImageSource}" />
+                </GroupBox>
                 <GroupBox Header="Post Processed Image"
-                          Grid.Column="1">
+                          Grid.Column="2" Grid.Row="0">
                     <Image Source="{Binding Path=PostProcessImage}" />
                 </GroupBox>
+
+                <GroupBox Header="Fix Mask Image"
+                          Grid.Column="0" Grid.Row="1">
+                    <StackPanel Orientation="Vertical">
+                        <Image Source="{Binding Path=FixMaskImageSource}" />
+                        
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Erode"/>
+                            <Slider Width="100" Value="{Binding Path=FixMaskErode}" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" />
+                            <TextBlock Text="{Binding Path=FixMaskErode, StringFormat={}{0} (in pixels)}"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Dilate"/>
+                            <Slider Width="100" Value="{Binding Path=FixMaskDilate}" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" />
+                            <TextBlock Text="{Binding Path=FixMaskDilate, StringFormat={}{0} (in pixels)}"/>
+                        </StackPanel>
+
+                        <CheckBox Content="First Erode then Dilate" IsChecked="{Binding Path=IsFirstErodeThenDilateFixMask}" />
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Depth Patches Image"
+                          Grid.Column="1" Grid.Row="1">
+                    <StackPanel Orientation="Vertical">
+                        <Image Source="{Binding Path=DepthPatchesImageSource}" />
+
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Erode"/>
+                            <Slider Width="100" Value="{Binding Path=DepthPatchesErode}" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" />
+                            <TextBlock Text="{Binding Path=DepthPatchesErode, StringFormat={}{0} (in pixels)}"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Dilate"/>
+                            <Slider Width="100" Value="{Binding Path=DepthPatchesDilate}" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" />
+                            <TextBlock Text="{Binding Path=DepthPatchesDilate, StringFormat={}{0} (in pixels)}"/>
+                        </StackPanel>
+
+                        <CheckBox Content="First Erode then Dilate" IsChecked="{Binding Path=IsFirstErodeThenDilateDepthPatches}" />
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Depth Fixed Image"
+                          Grid.Column="2" Grid.Row="1">
+                    <Image Source="{Binding Path=DepthFixedImageSource}" />
+                </GroupBox>
             </Grid>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Blob Type"/>
+                <TextBox Width="100" Text="{Binding Path=BlobType}" VerticalAlignment="Center" TextAlignment="Center" />
+                <Button Content="Apply" />
+            </StackPanel>
 
             <CheckBox Content="Fill Contours" IsChecked="{Binding Path=IsFillContours}" />
             <CheckBox Content="Draw Contours" IsChecked="{Binding Path=IsDrawContours}" />
             <CheckBox Content="Draw All Contours" IsChecked="{Binding Path=IsDrawAllContours}" />
             <CheckBox Content="Draw Center" IsChecked="{Binding Path=IsDrawCenter}" />
-            <CheckBox Content="Subract Confidence Image" IsChecked="{Binding Path=IsSubtractConfidenceImage}" />
             <CheckBox Content="Retrieve External" IsChecked="{Binding Path=IsRetrieveExternal}" />
+            <CheckBox Content="Update Occluded Rectangles" IsChecked="{Binding Path=IsUpdateOccludedRectangles}" />
+            <TextBlock Width="320" Foreground="Blue" HorizontalAlignment="Left" TextAlignment="Left" TextWrapping="Wrap">NOTE: Active 'Update Occluded Rectangles' requires depth image input with the same ROI as the confidence image.</TextBlock>
 
-            <StackPanel>
-                <Label Content="Min Detect Right Angle"/>
-                <Slider Value="{Binding Path=MinDetectRightAngles}" Minimum="0" Maximum="10" />
-                <TextBlock Text="{Binding Path=MinDetectRightAngles}"/>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Maximal Restore Distance"/>
+                <Slider Width="200" Value="{Binding Path=MaxRestoreDistance}" Minimum="0" Maximum="100" />
+                <TextBlock Text="{Binding Path=MaxRestoreDistance, StringFormat={}{0:#.#} %}"/>
             </StackPanel>
 
-            <StackPanel>
-                <Label Content="Max Distance Restore Id"/>
-                <Slider Value="{Binding Path=MaxDistanceRestoreId}" Minimum="0" Maximum="300" />
-                <TextBlock Text="{Binding Path=MaxDistanceRestoreId}"/>
-            </StackPanel>
-
-            <StackPanel>
+            <StackPanel Orientation="Horizontal">
                 <Label Content="Min Contour Area"/>
-                <Slider Value="{Binding Path=MinContourArea}" Minimum="0" Maximum="50000" />
-                <TextBlock Text="{Binding Path=MinContourArea}"/>
+                <Slider Width="200" Value="{Binding Path=MinContourArea}" Minimum="0" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="0.01" />
+                <TextBlock Text="{Binding Path=MinContourArea, StringFormat={}{0:#.##} %}"/>
             </StackPanel>
 
-            <StackPanel>
+            <StackPanel Orientation="Horizontal">
                 <Label Content="Max Contour Area"/>
-                <Slider Value="{Binding Path=MaxContourArea}" Minimum="0" Maximum="50000" />
-                <TextBlock Text="{Binding Path=MaxContourArea}"/>
+                <Slider Width="200" Value="{Binding Path=MaxContourArea}" Minimum="0" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="0.01" />
+                <TextBlock Text="{Binding Path=MaxContourArea, StringFormat={}{0:#.##} %}"/>
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Min Detect Right Angle"/>
+                <Slider Width="200" Value="{Binding Path=MinDetectRightAngles}" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=MinDetectRightAngles, StringFormat={} #{0} Angles}"/>
             </StackPanel>
 
-            <StackPanel>
+            <StackPanel Orientation="Horizontal">
                 <Label Content="Min Angle"/>
-                <Slider Value="{Binding Path=MinAngle}" Minimum="0" Maximum="180" />
-                <TextBlock Text="{Binding Path=MinAngle}"/>
+                <Slider Width="200" Value="{Binding Path=MinAngle}" Minimum="0" Maximum="180" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=MinAngle, StringFormat={}{0}° (in degree)}"/>
             </StackPanel>
 
-            <StackPanel>
+            <StackPanel Orientation="Horizontal">
                 <Label Content="Max Angle"/>
-                <Slider Value="{Binding Path=MaxAngle}" Minimum="0" Maximum="180" />
-                <TextBlock Text="{Binding Path=MaxAngle}"/>
+                <Slider Width="200" Value="{Binding Path=MaxAngle}" Minimum="0" Maximum="180" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <TextBlock Text="{Binding Path=MaxAngle, StringFormat={}{0}° (in degree)}"/>
             </StackPanel>
 
-            <StackPanel>
+            <StackPanel Orientation="Horizontal">
                 <Label Content="Timeout"/>
-                <Slider Value="{Binding Path=Timeout}" Minimum="0" Maximum="10000" />
-                <TextBlock Text="{Binding Path=Timeout}"/>
+                <Slider Width="200" Value="{Binding Path=Timeout}" Minimum="0" Maximum="20000" IsSnapToTickEnabled="True" TickFrequency="10" />
+                <TextBlock Text="{Binding Path=Timeout, StringFormat={}{0} ms}"/>
             </StackPanel>
         </StackPanel>
     </DataTemplate>
-    
-    <DataTemplate x:Key="FindContours2" DataType="openCv:FindContours2">
+
+    <DataTemplate x:Key="FillContours" DataType="openCv:FillContours">
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
@@ -431,62 +524,18 @@
                           Grid.Column="0">
                     <Image Source="{Binding Path=PreProcessImage}" />
                 </GroupBox>
-                <GroupBox Header="Post Processed Image"
+                <GroupBox Header="Debug Image"
                           Grid.Column="1">
+                    <Image Source="{Binding Path=DebugImageSource}" />
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="2">
                     <Image Source="{Binding Path=PostProcessImage}" />
                 </GroupBox>
             </Grid>
-
-            <CheckBox Content="Fill Contours" IsChecked="{Binding Path=IsFillContours}" />
-            <CheckBox Content="Draw Contours" IsChecked="{Binding Path=IsDrawContours}" />
-            <CheckBox Content="Draw Center" IsChecked="{Binding Path=IsDrawCenter}" />
-            <CheckBox Content="Subract Confidence Image" IsChecked="{Binding Path=IsSubtractConfidenceImage}" />
-            <CheckBox Content="Retrieve External" IsChecked="{Binding Path=IsRetrieveExternal}" />
-
-            <StackPanel>
-                <Label Content="Min Detect Right Angle"/>
-                <Slider Value="{Binding Path=MinDetectRightAngles}" Minimum="0" Maximum="10" />
-                <TextBlock Text="{Binding Path=MinDetectRightAngles}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Max Distance Restore Id"/>
-                <Slider Value="{Binding Path=MaxDistanceRestoreId}" Minimum="0" Maximum="300" />
-                <TextBlock Text="{Binding Path=MaxDistanceRestoreId}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Min Contour Area"/>
-                <Slider Value="{Binding Path=MinContourArea}" Minimum="0" Maximum="15000" />
-                <TextBlock Text="{Binding Path=MinContourArea}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Max Contour Area"/>
-                <Slider Value="{Binding Path=MaxContourArea}" Minimum="0" Maximum="15000" />
-                <TextBlock Text="{Binding Path=MaxContourArea}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Min Angle"/>
-                <Slider Value="{Binding Path=MinAngle}" Minimum="0" Maximum="180" />
-                <TextBlock Text="{Binding Path=MinAngle}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Max Angle"/>
-                <Slider Value="{Binding Path=MaxAngle}" Minimum="0" Maximum="180" />
-                <TextBlock Text="{Binding Path=MaxAngle}"/>
-            </StackPanel>
-
-            <StackPanel>
-                <Label Content="Timeout"/>
-                <Slider Value="{Binding Path=Timeout}" Minimum="0" Maximum="10000" />
-                <TextBlock Text="{Binding Path=Timeout}"/>
-            </StackPanel>
         </StackPanel>
     </DataTemplate>
-    
+
     <DataTemplate x:Key="FillConvexHulls" DataType="openCv:FillConvexHulls">
         <StackPanel>
             <Grid>

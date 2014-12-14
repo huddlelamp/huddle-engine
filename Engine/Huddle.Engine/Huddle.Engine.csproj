@@ -69,7 +69,7 @@
     <StartupObject>Huddle.Engine.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\FlockingDevice.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\HuddleLamp.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
@@ -132,6 +132,35 @@
   <PropertyGroup>
     <TargetZone>Custom</TargetZone>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Basic UI|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Basic UI\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Basic UI|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Basic UI\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Basic UI|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Basic UI\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="AForge, Version=2.2.5.0, Culture=neutral, PublicKeyToken=c1db6ff4eaa06aeb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -190,6 +219,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Linq.Dynamic">
+      <HintPath>..\..\packages\System.Linq.Dynamic.1.0.3\lib\net40\System.Linq.Dynamic.dll</HintPath>
+    </Reference>
     <Reference Include="System.Reactive.Core">
       <HintPath>..\..\packages\Rx-Core.2.2.2\lib\net45\System.Reactive.Core.dll</HintPath>
     </Reference>
@@ -259,14 +291,12 @@
     <Compile Include="Converter\Point3DToJsonArrayConverter.cs" />
     <Compile Include="Data\BaseData.cs" />
     <Compile Include="Data\Disconnected.cs" />
-    <Compile Include="Data\Display.cs" />
     <Compile Include="Data\Marker.cs" />
     <Compile Include="Data\Ratio.cs" />
     <Compile Include="Data\ROI.cs" />
     <Compile Include="Data\BlobData.cs" />
     <Compile Include="Data\DataContainer.cs" />
     <Compile Include="Data\Digital.cs" />
-    <Compile Include="Data\GrayByteImage.cs" />
     <Compile Include="Data\IData.cs" />
     <Compile Include="Data\IDataContainer.cs" />
     <Compile Include="Data\BaseImageData.cs" />
@@ -285,6 +315,29 @@
     <Compile Include="Extensions\NumericExtensions.cs" />
     <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
     <Compile Include="Extensions\PointExtensions.cs" />
+    <Compile Include="Filter\ISmoothing.cs" />
+    <Compile Include="Filter\Impl\OneEuroFilter.cs" />
+    <Compile Include="Filter\KalmanSmoothing.cs" />
+    <Compile Include="Filter\NoSmoothing.cs" />
+    <Compile Include="Filter\OneEuroSmoothing.cs" />
+    <Compile Include="Filter\SmoothingFilterFactory.cs" />
+    <Compile Include="Processor\Complex\PolygonIntersection\PolygonCollisionUtils.cs" />
+    <Compile Include="Processor\MergeRgbImageAndDevice.cs" />
+    <Compile Include="Processor\Network\Huddle\Client.cs" />
+    <Compile Include="Processor\Network\Huddle\ClientState.cs" />
+    <Compile Include="Processor\OpenCv\FillContours.cs" />
+    <Compile Include="Processor\OpenCv\BackgroundSubtraction.cs" />
+    <Compile Include="Processor\OpenCv\RectangleTrackerColor.cs" />
+    <Compile Include="Processor\OpenCv\Struct\IdentificationState.cs" />
+    <Compile Include="Processor\OpenCv\Struct\TrackingState.cs" />
+    <Compile Include="Processor\Sensors\Senz3DIntel.cs" />
+    <Compile Include="Processor\Sensors\Utils\Senz3DUtils.cs" />
+    <Compile Include="Util\LambdaExtensions.cs" />
+    <Compile Include="Util\LambdaValueConverter.cs" />
+    <Compile Include="Util\MultiConverterMarkupExtension.cs" />
+    <Compile Include="Util\PresenceTemplateSelector.cs" />
+    <Compile Include="Util\RatioConverter.cs" />
+    <Compile Include="Util\ScaleConverter.cs" />
     <Compile Include="Windows\BasicWindow.xaml.cs">
       <DependentUpon>BasicWindow.xaml</DependentUpon>
     </Compile>
@@ -305,13 +358,13 @@
     <Compile Include="Processor\BarCodes\ZXingHelper\BarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\IBarcodeReaderImage.cs" />
     <Compile Include="Processor\BarCodes\ZXingHelper\ImageLuminanceSource.cs" />
-    <Compile Include="Processor\Complex\BlobFusion.cs" />
+    <Compile Include="Processor\Complex\HybridSensing.cs" />
     <Compile Include="Processor\Complex\BlobRenderer.cs" />
     <Compile Include="Processor\Complex\FindDisplay.cs" />
     <Compile Include="Processor\Complex\PolygonIntersection\Polygon.cs" />
     <Compile Include="Processor\Complex\PolygonIntersection\Vector.cs" />
     <Compile Include="Processor\Complex\SyncFusion.cs" />
-    <Compile Include="Processor\Complex\HybridTracking.cs" />
+    <Compile Include="Processor\Complex\BinaryThresholding.cs" />
     <Compile Include="Processor\DataRenderer.cs" />
     <Compile Include="Processor\GenericImageProcessor.cs" />
     <Compile Include="Processor\BaseProcessor.cs" />
@@ -320,24 +373,16 @@
     <Compile Include="Processor\DataViewer.cs" />
     <Compile Include="Processor\ISnapshot.cs" />
     <Compile Include="Processor\ITakeLong.cs" />
-    <Compile Include="Processor\MergeProcessor.cs" />
     <Compile Include="Processor\Network\HuddleServer.cs" />
-    <Compile Include="Processor\Network\WebSocketServer.cs" />
-    <Compile Include="Processor\OpenCv\FindContours3.cs" />
-    <Compile Include="Processor\OpenCv\FindContours2.cs" />
-    <Compile Include="Processor\OpenCv\FindConvexHulls2.cs" />
-    <Compile Include="Processor\OpenCv\SubtractBackground.cs" />
-    <Compile Include="Processor\OpenCv\Not.cs" />
     <Compile Include="Processor\OpenCv\BasicsGrayFloat.cs" />
     <Compile Include="Processor\OpenCv\HandTracker.cs" />
     <Compile Include="Processor\OpenCv\FloodFill.cs" />
     <Compile Include="Processor\OpenCv\ErodeDilate.cs" />
-    <Compile Include="Processor\OpenCv\Filter\KalmanFilter.cs" />
-    <Compile Include="Processor\OpenCv\Filter\SyntheticData.cs" />
+    <Compile Include="Filter\Impl\KalmanFilter.cs" />
+    <Compile Include="Filter\Impl\SyntheticData.cs" />
     <Compile Include="Processor\OpenCv\FillConvexHulls.cs" />
-    <Compile Include="Processor\OpenCv\Kalman.cs" />
     <Compile Include="Data\Hand.cs" />
-    <Compile Include="Processor\OpenCv\Struct\RawObject.cs" />
+    <Compile Include="Processor\OpenCv\Struct\RectangularObject.cs" />
     <Compile Include="Processor\PipelineMode.cs" />
     <Compile Include="Processor\Sampler.cs" />
     <Compile Include="Processor\Sensors\Senz3D.cs" />
@@ -346,11 +391,10 @@
     <Compile Include="Processor\OpenCv\CannyEdges.cs" />
     <Compile Include="Processor\BaseImageProcessor.cs" />
     <Compile Include="Processor\OpenCv\Basics.cs" />
-    <Compile Include="Processor\OpenCv\BlobTracker.cs" />
     <Compile Include="Processor\OpenCv\DepthProcessor.cs" />
     <Compile Include="Processor\IProcessor.cs" />
     <Compile Include="Processor\RgbProcessor.cs" />
-    <Compile Include="Processor\OpenCv\FindContours.cs" />
+    <Compile Include="Processor\OpenCv\RectangleTracker.cs" />
     <Compile Include="IO\WrappingStream.cs" />
     <Compile Include="Processor\ProximityProcessor.cs" />
     <Compile Include="Processor\UnsyncFusion.cs" />
@@ -468,10 +512,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Content Include="..\..\Pipelines\Default.pipeline.huddle">
-      <Link>Resources\Default.pipeline.huddle</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None Include="..\..\Pipelines\HuddleLamp.hep">
+      <Link>Resources\HuddleLamp.hep</Link>
+    </None>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -544,10 +587,6 @@
     <Resource Include="Resources\qrcode.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\FlockingDevice.ico" />
-    <SplashScreen Include="Resources\FlockingDevice.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\ppl_256px.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -575,7 +614,11 @@
     <Resource Include="Resources\32x32\save_as.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\where-is-waldo1.jpg" />
     <Content Include="Resources\256x256\ppl_256px.ico" />
+    <SplashScreen Include="Resources\SplashScreen.png" />
+    <Resource Include="Resources\HuddleLamp.ico" />
+    <Resource Include="Resources\HuddleLamp.png" />
     <Content Include="Resources\TagDefinitions.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
