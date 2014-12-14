@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{FA396419-A3D5-49AE-94A4-E7D3A34206B8}"
 	ProjectSection(SolutionItems) = preProject
@@ -130,7 +130,6 @@ Global
 		{CF6FF186-CD4D-480B-AD9F-6BD3AC6669E3}.DVD-5|x86.ActiveCfg = DVD-5
 		{CF6FF186-CD4D-480B-AD9F-6BD3AC6669E3}.DVD-5|x86.Build.0 = DVD-5
 		{CF6FF186-CD4D-480B-AD9F-6BD3AC6669E3}.Release|Any CPU.ActiveCfg = SingleImage
-		{CF6FF186-CD4D-480B-AD9F-6BD3AC6669E3}.Release|Any CPU.Build.0 = SingleImage
 		{CF6FF186-CD4D-480B-AD9F-6BD3AC6669E3}.Release|x64.ActiveCfg = SingleImage
 		{CF6FF186-CD4D-480B-AD9F-6BD3AC6669E3}.Release|x64.Build.0 = SingleImage
 		{CF6FF186-CD4D-480B-AD9F-6BD3AC6669E3}.Release|x86.ActiveCfg = SingleImage
