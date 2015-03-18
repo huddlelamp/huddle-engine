@@ -996,51 +996,31 @@ namespace Huddle.Engine.Processor.OpenCv
 
                         Console.WriteLine("{0},{1}", width, height);
 
-                        var angle = (float) device.Angle % 180;
-                        var angle2 = (float)device.Angle;
-                        ////var deltaAngle = Math.Abs(angle + objectForDevice.LastAngle);
+                        var angle = (float) (device.Angle % 90) - 90;
+                        var deviceAngle = (float)device.Angle;
 
-                        //Console.WriteLine("deviceAngle={0}, angle={1}, deltaAngle={2}, blobAngle={3}", device.Angle, angle, deltaAngle, objectForDevice.LastAngle);
+                        Console.WriteLine("Device Angle: {0}", angle);
 
-                        //objectForDevice.SetCorrectSize((float)width, (float)height);
-
-                        var sum = Math.Abs(angle2 % 90 - objectForDevice.LastAngle % 90);
-                        objectForDevice.CorrectAngleBy = -90;
+                        objectForDevice.OriginDepthShape = objectForDevice.Shape;
 
                         // this is a hack but it works pretty good
-                        //if ((angle > 0 && angle <= 90) && (sum == 0 || sum == 90 || (sum > 2 && sum < 88)))
-                        if (angle > 0 && angle <= 90)
+                        if ((deviceAngle > 0 && deviceAngle <= 90) || (deviceAngle > 180 && deviceAngle <= 270))
                         {
-                            Console.WriteLine("dev {3}, angle {0}, last angle {1}, sum {2}", angle, objectForDevice.LastAngle, sum, objectForDevice.Id);
+                            Console.WriteLine("A dev {2}, angle {0}, device angle {1}", angle, deviceAngle, objectForDevice.Id);
 
-                            objectForDevice.OriginDepthShape = objectForDevice.Shape;
-                            objectForDevice.LastAngle = angle2;
+                            objectForDevice.LastAngle = deviceAngle;
                             objectForDevice.SetCorrectSize((float)width, (float)height);
-                            objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, angle2);
-                            //objectForDevice.CorrectAngleBy = -90;
-                             //objectForDevice.LastAngle -= 90;
-                            //return;
-                            //objectForDevice.LastAngle -= 90;
-                            //objectForDevice.LastAngle -= 90;
-                            //objectForDevice.CorrectAngleBy = -90;
-                            //objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, objectForDevice.LastAngle + 90);
+                            objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, new SizeF((float)width, (float)height), deviceAngle);
+                            objectForDevice.CorrectAngleBy = -90;
                         }
                         else
                         {
-                            objectForDevice.LastAngle = angle2;
-                            objectForDevice.SetCorrectSize((float)height, (float)width);
-                            Console.WriteLine("No correction dev {3}, angle {0}, last angle {1}, sum {2}", angle, objectForDevice.LastAngle, sum, objectForDevice.Id);
-                            objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, angle2);
-                            //objectForDevice.LastAngle += 90;
+                            Console.WriteLine("B dev {2}, angle {0}, device angle {1}", angle, deviceAngle, objectForDevice.Id);
+
+                            objectForDevice.LastAngle = deviceAngle;
+                            objectForDevice.SetCorrectSize((float)width, (float)height);
+                            objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, new SizeF((float)width, (float)height), deviceAngle - 90);
                         }
-                    
-                        //objectForDevice.LastAngle = objectForDevice.Shape.angle + 90;
-                        //objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, objectForDevice.LastAngle);
-
-                        //objectForDevice.LastAngle += deltaAngle;
-
-                        //var shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, oldAngle);
-                        //objectForDevice.Shape = shape;
                     }
                 }
                 //else
