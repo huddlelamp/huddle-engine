@@ -424,6 +424,12 @@
                             <TextBlock Text="{Binding Path=FixMaskDilate, StringFormat={}{0} (in pixels)}"/>
                         </StackPanel>
 
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Allowed Fix Pixels Ratio"/>
+                            <Slider Width="100" Value="{Binding Path=AllowedRepairPixelsRatio}" Minimum="0" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="1" />
+                            <TextBlock Text="{Binding Path=AllowedRepairPixelsRatio, StringFormat={}{0} (in %)}"/>
+                        </StackPanel>
+
                         <CheckBox Content="First Erode then Dilate" IsChecked="{Binding Path=IsFirstErodeThenDilateFixMask}" />
                     </StackPanel>
                 </GroupBox>

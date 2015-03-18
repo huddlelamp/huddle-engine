@@ -197,6 +197,41 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #endregion
 
+        #region OriginDepthShape
+
+        /// <summary>
+        /// The <see cref="OriginDepthShape" /> property's name.
+        /// </summary>
+        public const string OriginDepthShapePropertyName = "OriginDepthShape";
+
+        private MCvBox2D _originDepthShape;
+
+        /// <summary>
+        /// Sets and gets the Shape property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public MCvBox2D OriginDepthShape
+        {
+            get
+            {
+                return _originDepthShape;
+            }
+
+            set
+            {
+                if (Equals(_originDepthShape, value))
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(OriginDepthShapePropertyName);
+                _originDepthShape = value;
+                RaisePropertyChanged(OriginDepthShapePropertyName);
+            }
+        }
+
+        #endregion
+
         #region Polygon
 
         /// <summary>

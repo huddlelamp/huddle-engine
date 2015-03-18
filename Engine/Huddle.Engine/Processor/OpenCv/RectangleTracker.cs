@@ -740,6 +740,41 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #region AllowedRepairPixelsRatio
+        
+        /// <summary>
+        /// The <see cref="AllowedRepairPixelsRatio" /> property's name.
+        /// </summary>
+        public const string AllowedRepairPixelsRatioPropertyName = "AllowedRepairPixelsRatio";
+
+        private int _allowedRepairPixelsRatio = 95;
+
+        /// <summary>
+        /// Sets and gets the DepthPatchesDilate property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int AllowedRepairPixelsRatio
+        {
+            get
+            {
+                return _allowedRepairPixelsRatio;
+            }
+
+            set
+            {
+                if (_allowedRepairPixelsRatio == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(AllowedRepairPixelsRatioPropertyName);
+                _allowedRepairPixelsRatio = value;
+                RaisePropertyChanged(AllowedRepairPixelsRatioPropertyName);
+            }
+        }
+
+        #endregion
+
         #region Image Sources
 
         #region DebugImageSource
@@ -943,6 +978,7 @@ namespace Huddle.Engine.Processor.OpenCv
                         {
                             Console.WriteLine("dev {3}, angle {0}, last angle {1}, sum {2}", angle, objectForDevice.LastAngle, sum, objectForDevice.Id);
 
+                            objectForDevice.OriginDepthShape = objectForDevice.Shape;
                             objectForDevice.LastAngle = angle2;
                             objectForDevice.SetCorrectSize((float)width, (float)height);
                             objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, objectForDevice.Size, angle2);
@@ -1272,13 +1308,19 @@ namespace Huddle.Engine.Processor.OpenCv
 
             CvInvoke.cvCopy(depthMap.Ptr, depthPatchesImage.Ptr, mask);
 
+            var originPixels = new Image<Rgb, byte>(image.Width, image.Height);
+            CvInvoke.cvCopy(image.Ptr, originPixels.Ptr, mask);
+
+            var pixelsSurvived = originPixels.CountNonzero()[0];
+            if (pixelsSurvived < 5) return;
+
             var repairedPixels = depthPatchesImage.CountNonzero()[0];
-            var totalPixels = obj.Shape.size.Width * obj.Shape.size.Height;
+            var totalPixels = obj.OriginDepthShape.size.Width * obj.OriginDepthShape.size.Height;
             var factorOfRepairedPixels = (double)repairedPixels / totalPixels;
             //Console.WriteLine("{0}% pixels repaired.", factorOfRepairedPixels * 100);
 
             // Do not account for entire occlusion at this time to avoid phantom objects even if the device is not present anymore.
-            if (factorOfRepairedPixels > 0.98) return;
+            if (factorOfRepairedPixels > (AllowedRepairPixelsRatio / 100.0)) return;
 
             // Erode and dilate depth patches image to remove small pixels around device borders.
             if (IsFirstErodeThenDilateDepthPatches)
