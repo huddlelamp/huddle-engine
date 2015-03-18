@@ -740,8 +740,43 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        #region SurvivePixelThreshold
+
+        /// <summary>
+        /// The <see cref="SurvivePixelThreshold" /> property's name.
+        /// </summary>
+        public const string SurvivePixelThresholdPropertyName = "SurvivePixelThreshold";
+
+        private int _survivePixelThreshold = 5;
+
+        /// <summary>
+        /// Sets and gets the DepthPatchesDilate property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int SurvivePixelThreshold
+        {
+            get
+            {
+                return _survivePixelThreshold;
+            }
+
+            set
+            {
+                if (_survivePixelThreshold == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(SurvivePixelThresholdPropertyName);
+                _survivePixelThreshold = value;
+                RaisePropertyChanged(SurvivePixelThresholdPropertyName);
+            }
+        }
+
+        #endregion
+
         #region AllowedRepairPixelsRatio
-        
+
         /// <summary>
         /// The <see cref="AllowedRepairPixelsRatio" /> property's name.
         /// </summary>
@@ -1312,7 +1347,7 @@ namespace Huddle.Engine.Processor.OpenCv
             CvInvoke.cvCopy(image.Ptr, originPixels.Ptr, mask);
 
             var pixelsSurvived = originPixels.CountNonzero()[0];
-            if (pixelsSurvived < 5) return;
+            if (pixelsSurvived < SurvivePixelThreshold) return;
 
             var repairedPixels = depthPatchesImage.CountNonzero()[0];
             var totalPixels = obj.OriginDepthShape.size.Width * obj.OriginDepthShape.size.Height;
