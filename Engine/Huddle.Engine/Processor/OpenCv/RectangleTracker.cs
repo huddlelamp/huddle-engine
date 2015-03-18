@@ -1134,7 +1134,7 @@ namespace Huddle.Engine.Processor.OpenCv
             }
 
             var blankedImageGray = blankedImage.Convert<Gray, Byte>();
-            blankedImageGray = blankedImageGray.Erode(3);
+            //blankedImageGray = blankedImageGray.Erode(3);
 
             var roi = blankedImage.ROI;
             if (useROI)
@@ -1157,7 +1157,8 @@ namespace Huddle.Engine.Processor.OpenCv
                 CvInvoke.cvAnd(blankedImageGray.Ptr, maskImage.Ptr, blankedImageGray.Ptr, IntPtr.Zero);
             }
 
-            blankedImageGray = blankedImageGray.Erode(2);//.Dilate(1).Erode(1).Dilate(1);
+            //blankedImageGray = blankedImageGray.Erode(2).Dilate(1).Erode(1).Dilate(1);
+            //blankedImageGray = blankedImageGray.Dilate(6).Erode(8);
 
             if (IsRenderContent && occlusionTracking)
             {
@@ -1277,7 +1278,7 @@ namespace Huddle.Engine.Processor.OpenCv
             //Console.WriteLine("{0}% pixels repaired.", factorOfRepairedPixels * 100);
 
             // Do not account for entire occlusion at this time to avoid phantom objects even if the device is not present anymore.
-            if (factorOfRepairedPixels > 0.95) return;
+            if (factorOfRepairedPixels > 0.98) return;
 
             // Erode and dilate depth patches image to remove small pixels around device borders.
             if (IsFirstErodeThenDilateDepthPatches)
