@@ -970,6 +970,13 @@ namespace Huddle.Engine.Processor.OpenCv
 
         #endregion
 
+        public override void Stop()
+        {
+            _objects.Clear();
+
+            base.Stop();
+        }
+
         public override IData Process(IData data)
         {
             var depthImageData = data as GrayFloatImage;
@@ -991,42 +998,31 @@ namespace Huddle.Engine.Processor.OpenCv
                     var objectForDevice = objects.Single(o => o.Id == device.OriginalBlobId);
                     if (!objectForDevice.IsCorrectSize && _depthImage != null)
                     {
-                        var width = _depthImage.Width * (1 / device.RgbImageToDisplayRatio.X);
-                        var height = _depthImage.Height * (1 / device.RgbImageToDisplayRatio.Y);
+                        var width = (float)(_depthImage.Width * (1 / device.RgbImageToDisplayRatio.X));
+                        var height = (float)(_depthImage.Height * (1 / device.RgbImageToDisplayRatio.Y));
 
-                        Console.WriteLine("{0},{1}", width, height);
-
-                        var angle = (float) (device.Angle % 90) - 90;
-                        var deviceAngle = (float)device.Angle;
-
-                        Console.WriteLine("Device Angle: {0}", angle);
+                        var angle = (float)(device.Angle % 90) - 90;
+                        var deviceAngle = (float)device.Angle % 360;
 
                         objectForDevice.OriginDepthShape = objectForDevice.Shape;
 
-                        // this is a hack but it works pretty good
-                        if ((deviceAngle > 0 && deviceAngle <= 90) || (deviceAngle > 180 && deviceAngle <= 270))
-                        {
-                            Console.WriteLine("A dev {2}, angle {0}, device angle {1}", angle, deviceAngle, objectForDevice.Id);
+                        var oldShape = objectForDevice.Shape;
+                        var shapeSize = oldShape.size;
+                        var shapeAngle = oldShape.angle;
 
-                            objectForDevice.LastAngle = deviceAngle;
-                            objectForDevice.SetCorrectSize((float)width, (float)height);
-                            objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, new SizeF((float)width, (float)height), deviceAngle);
-                            objectForDevice.CorrectAngleBy = -90;
+                        objectForDevice.LastAngle = shapeAngle;
+                        if (shapeSize.Width > shapeSize.Height)
+                        {
+                            objectForDevice.SetCorrectSize(width, height);
+                            objectForDevice.Shape = new MCvBox2D(oldShape.center, new SizeF(width, height), shapeAngle);
                         }
                         else
                         {
-                            Console.WriteLine("B dev {2}, angle {0}, device angle {1}", angle, deviceAngle, objectForDevice.Id);
-
-                            objectForDevice.LastAngle = deviceAngle;
-                            objectForDevice.SetCorrectSize((float)width, (float)height);
-                            objectForDevice.Shape = new MCvBox2D(objectForDevice.Shape.center, new SizeF((float)width, (float)height), deviceAngle - 90);
+                            objectForDevice.SetCorrectSize(height, width);
+                            objectForDevice.Shape = new MCvBox2D(oldShape.center, new SizeF(height, width), shapeAngle);
                         }
                     }
                 }
-                //else
-                //{
-                //    Console.WriteLine("WHAAAT?");
-                //}
             }
 
             return base.Process(data);
@@ -1140,7 +1136,7 @@ namespace Huddle.Engine.Processor.OpenCv
                     Id = obj.Id,
                     Center = new WPoint(smoothedCenter.X / imageWidth, smoothedCenter.Y / imageHeight),
                     State = obj.State,
-                    Angle = obj.Shape.angle + obj.CorrectAngleBy,
+                    Angle = obj.Angle,
                     //Angle = rawObject.SlidingAngle,
                     Shape = obj.Shape,
                     Polygon = obj.Polygon,
@@ -1538,10 +1534,6 @@ namespace Huddle.Engine.Processor.OpenCv
 
             if (candidate == null) return false;
 
-            //var dAngle = Math.Abs(candidate.Shape.angle - minAreaRect.angle);
-            //Console.WriteLine(minAreaRect.angle);
-
-            var oldAngle = candidate.Shape.angle;
             var deltaAngle = minAreaRect.angle - candidate.LastAngle;
 
             // this is a hack but it works pretty good
@@ -1560,7 +1552,20 @@ namespace Huddle.Engine.Processor.OpenCv
             MCvBox2D shape;
             if (candidate.IsCorrectSize)
             {
-                shape = new MCvBox2D(minAreaRect.center, candidate.Size, oldAngle + deltaAngle);
+                var oldAngle = candidate.Shape.angle;
+                var diff = Math.Abs(Math.Abs(minAreaRect.angle) - Math.Abs(oldAngle));
+
+                var size = candidate.Size;
+                if (diff > 45)
+                {
+                    candidate.SetCorrectSize(size.Height, size.Width);
+                    shape = new MCvBox2D(minAreaRect.center, new SizeF(size.Height, size.Width), minAreaRect.angle);
+                }
+                else
+                {
+                    candidate.SetCorrectSize(size.Width, size.Height);
+                    shape = new MCvBox2D(minAreaRect.center, new SizeF(size.Width, size.Height), minAreaRect.angle);
+                }
             }
             else
             {
@@ -1572,6 +1577,7 @@ namespace Huddle.Engine.Processor.OpenCv
             candidate.Center = new WPoint(shape.center.X, shape.center.Y);
             candidate.Bounds = boundingRectangle;
             candidate.Shape = shape;
+            candidate.Angle = (candidate.Angle + deltaAngle) % 360;
             candidate.LastAngle = minAreaRect.angle;
             candidate.Polygon = polygon;
             candidate.Points = points;

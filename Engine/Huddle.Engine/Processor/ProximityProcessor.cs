@@ -322,7 +322,10 @@ namespace Huddle.Engine.Processor
                 Stage(proximity);
             }
 
-            Stage(devices.ToArray<IData>());
+            foreach (var device in devices.ToArray<IData>())
+            {
+                Stage(device);
+            }
 
             Push();
 

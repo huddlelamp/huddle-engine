@@ -407,36 +407,36 @@ namespace Huddle.Engine.Processor.OpenCv.Struct
 
         #endregion
 
-        #region CorrectAngleBy
+        #region Angle
 
         /// <summary>
-        /// The <see cref="CorrectAngleBy" /> property's name.
+        /// The <see cref="Angle" /> property's name.
         /// </summary>
-        public const string CorrectAngleByPropertyName = "CorrectAngleBy";
+        public const string AnglePropertyName = "Angle";
 
-        private float _correctAngleBy = 0.0f;
+        private double _angle = 0.0;
 
         /// <summary>
-        /// Sets and gets the CorrectAngleBy property.
+        /// Sets and gets the Angle property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public float CorrectAngleBy
+        public double Angle
         {
             get
             {
-                return _correctAngleBy;
+                return _angle;
             }
 
             set
             {
-                if (_correctAngleBy == value)
+                if (_angle == value)
                 {
                     return;
                 }
 
-                RaisePropertyChanging(CorrectAngleByPropertyName);
-                _correctAngleBy = value;
-                RaisePropertyChanged(CorrectAngleByPropertyName);
+                RaisePropertyChanging(AnglePropertyName);
+                _angle = value;
+                RaisePropertyChanged(AnglePropertyName);
             }
         }
 

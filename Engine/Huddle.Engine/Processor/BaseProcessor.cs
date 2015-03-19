@@ -50,7 +50,7 @@ namespace Huddle.Engine.Processor
         #region properties
 
         #region Pipeline
-        
+
         /// <summary>
         /// The <see cref="Pipeline" /> property's name.
         /// </summary>
@@ -598,25 +598,25 @@ namespace Huddle.Engine.Processor
             _benchmark.QueueCount = _dataQueue.Count;
 
             // Add data container to processing queue.
-            if (!_dataQueue.IsCompleted)
-                try
-                {
+            try
+            {
+                if (!_dataQueue.IsCompleted)
                     if (_dataQueue.Count == _dataQueue.BoundedCapacity)
-                    { 
+                    {
                         _dataQueue = new BlockingCollection<IDataContainer>(QueueSize);
                         HasErrorState = true;
                     }
 
-                    _dataQueue.Add(dataContainer);
+                _dataQueue.Add(dataContainer);
 
 #if DEBUG
-                    //Console.WriteLine("QUEUE: {0}, IsProcessing: {1} Name: {2}", _dataQueue.Count, _processing, GetType().Name);
+                //Console.WriteLine("QUEUE: {0}, IsProcessing: {1} Name: {2}", _dataQueue.Count, _processing, GetType().Name);
 #endif
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         private IDataContainer ProcessInternal(IDataContainer dataContainer)
