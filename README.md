@@ -1,15 +1,21 @@
 # Get Started in Minutes (Huddle.Engine for Tracking and Huddle Web Applications - Meteor)
 
-1. Install OpenCV 2.4.9 (http://opencv.org/)
-2. Download and install Huddle.Engine. (download link not yet available)
-3. Install Meteor (https://www.meteor.com)
-4. Further details on the Huddle JavaScript API in the Wiki at https://bitbucket.org/raedle/huddle/wiki/Home
-
+1. Download and install Huddle.Engine. (download link not yet available, see below how to build and run Huddle.Engine)
+2. Install Meteor (https://www.meteor.com)
+3. Further details on the Huddle JavaScript API at https://github.com/huddlelamp/meteor-huddle
 
 # Development of Huddle Processors (C#/WPF Development and for Advanced Users only!)
 
-1. Install Emgu CV (http://www.emgu.com/ or direct from SourceForge.net http://sourceforge.net/projects/emgucv/)
-1.1 Huddle.Engine was implemented with Emgu CV version 2.4.9-alpha
+1. Install EmguCV (http://www.emgu.com/ or direct from SourceForge.net http://sourceforge.net/projects/emgucv/)
+2. Huddle.Engine was implemented with Emgu CV version 2.4.9-alpha
+3. Copy all dlls from %EMGU_HOME%/bin/x64 to %HUDDLE_ENGINE_HOME%/lib/OpenCV
+4. Open Huddle.sln in Visual Studio 2013
+5. Set Huddle.Engine as startup project.
+6. Rebuild solution!! (this step might be important if an EmguCV exception appears.
+7. Run Huddle.Engine by starting the project in Visual Studio 2013. (run project in DEBUG mode!!!)
+8. An error indicating that pipeline could not be loaded might occur. Close exception and UI will appear.
+9. Click open button in tool bar and open HuddleLamp.hep in %HUDDLE_ENGINE_HOME%/Pipelines/HuddleLamp.hep
+10. Run pipeline.
 
 This section addresses the development a new processor and its integration into the tracking framework. It is split into the three parts *Processor Logic*, *Processor Properties*, and *Processor User Interface*. If each part is implemented as described, a processor can be integrated into a processing pipeline using the drag and drop user interface of the tracking framework.
 
