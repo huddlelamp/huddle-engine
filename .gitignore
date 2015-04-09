@@ -2,6 +2,8 @@ bin/
 obj/
 /publish/
 /packages/
+/lib/OpenCV/*.dll
+/lib/OpenCV/*.exe
 *.pfx
 *.suo
 *.bak
