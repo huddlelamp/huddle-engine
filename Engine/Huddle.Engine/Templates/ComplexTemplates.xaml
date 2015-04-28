@@ -134,6 +134,7 @@
                     <Image Source="{Binding Path=PostProcessImage}" />
                 </GroupBox>
             </Grid>
+            <CheckBox Content="Warp Image" VerticalAlignment="Center" IsChecked="{Binding Path=IsWarpImage}" />
         </StackPanel>
     </DataTemplate>
 </ResourceDictionary>

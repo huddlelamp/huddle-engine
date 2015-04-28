@@ -26,42 +26,84 @@ namespace Huddle.Engine.Processor.Complex
     [ViewTemplate("Image WarpPerspective", "ImageWarpPerspective")]
     public class ImageWarpPerspective : BaseProcessor
     {
+        #region public properties
+
+        #region IsWarpImage
+        /// <summary>
+        /// The <see cref="IsWarpImage" /> property's name.
+        /// </summary>
+        public const string IsWarpImagePropertyName = "IsWarpImage";
+        // IsInitialized is used to set ROI if filter is used the first time.
+        private bool _isWarpImage = true;
+        public bool IsWarpImage
+        {
+            get
+            {
+                return _isWarpImage;
+            }
+
+            set
+            {
+                if (_isWarpImage == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(IsWarpImagePropertyName);
+                _isWarpImage = value;
+                RaisePropertyChanged(IsWarpImagePropertyName);
+            }
+        }
+
+        #endregion
+        #endregion
+
         Matrix<double> cameraRotation = new Matrix<double>(3, 3);
         Matrix<double> homoGraphy = new Matrix<double>(3, 3);
 
         public override IDataContainer PreProcess(IDataContainer dataContainer)
         {
-            foreach (RotationMatrixData cameraMatrix in dataContainer.OfType<RotationMatrixData>())
+            if (IsWarpImage)
             {
-                cameraRotation = cameraMatrix.RotationMatrix;
-            }
-
-            if (cameraRotation == null)
-            {
-                return dataContainer;
-            }
-            foreach (GrayFloatImage imageData in dataContainer.OfType<GrayFloatImage>())
-            {
-                FindHomoGraphy(cameraRotation, imageData.Image.Width, imageData.Image.Height);
-                if (imageData.Key.Equals("depth"))
+                foreach (RotationMatrixData cameraMatrix in dataContainer.OfType<RotationMatrixData>())
                 {
-                    Image<Gray, float> warpDepthImage = imageData.Image.WarpPerspective(homoGraphy, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC, Emgu.CV.CvEnum.WARP.CV_WARP_DEFAULT, new Gray());
-                    Stage(new GrayFloatImage(this, "depth", warpDepthImage));
+                    cameraRotation = cameraMatrix.RotationMatrix;
                 }
 
-            }
-            foreach (RgbImageData imageData in dataContainer.OfType<RgbImageData>())
-            {
-                FindHomoGraphy(cameraRotation, imageData.Image.Width, imageData.Image.Height);
-                if (imageData.Key.Equals("color"))
+                if (cameraRotation == null)
                 {
-                    Image<Rgb, byte> warpColorImage = imageData.Image.WarpPerspective(homoGraphy, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC, Emgu.CV.CvEnum.WARP.CV_WARP_DEFAULT, new Rgb(0, 0, 0));
-                    Stage(new RgbImageData(this, "wrappedColor", warpColorImage));
+                    return dataContainer;
                 }
-                else if (imageData.Key.Equals("confidence"))
+                foreach (GrayFloatImage imageData in dataContainer.OfType<GrayFloatImage>())
                 {
-                    Image<Rgb, byte> warpConfidence = imageData.Image.WarpPerspective(homoGraphy, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC, Emgu.CV.CvEnum.WARP.CV_WARP_DEFAULT, new Rgb(0, 0, 0));
-                    Stage(new RgbImageData(this, "wrappedConfidence", warpConfidence));
+                    FindHomoGraphy(cameraRotation, imageData.Image.Width, imageData.Image.Height);
+                    if (imageData.Key.Equals("depth"))
+                    {
+                        Image<Gray, float> warpDepthImage = imageData.Image.WarpPerspective(homoGraphy, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC, Emgu.CV.CvEnum.WARP.CV_WARP_DEFAULT, new Gray());
+                        Stage(new GrayFloatImage(this, "depth", warpDepthImage));
+                    }
+
+                }
+                foreach (RgbImageData imageData in dataContainer.OfType<RgbImageData>())
+                {
+                    FindHomoGraphy(cameraRotation, imageData.Image.Width, imageData.Image.Height);
+                    if (imageData.Key.Equals("color"))
+                    {
+                        Image<Rgb, byte> warpColorImage = imageData.Image.WarpPerspective(homoGraphy, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC, Emgu.CV.CvEnum.WARP.CV_WARP_DEFAULT, new Rgb(0, 0, 0));
+                        Stage(new RgbImageData(this, "wrappedColor", warpColorImage));
+                    }
+                    else if (imageData.Key.Equals("confidence"))
+                    {
+                        Image<Rgb, byte> warpConfidence = imageData.Image.WarpPerspective(homoGraphy, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC, Emgu.CV.CvEnum.WARP.CV_WARP_DEFAULT, new Rgb(0, 0, 0));
+                        Stage(new RgbImageData(this, "wrappedConfidence", warpConfidence));
+                    }
+                }
+            }
+            else
+            {
+                foreach (IData imageData in dataContainer)
+                {
+                  Stage(imageData);
                 }
             }
             Push();
