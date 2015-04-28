@@ -94,6 +94,48 @@ namespace Huddle.Engine.Processor.Sensors.Utils
             return returnImages;
         }
 
+        public static IImage GetDepthImage(PXCMImage depthImage, float minValue, float maxValue)
+        {
+            var inputWidth = Align16(depthImage.info.width);  /* aligned width */
+            var inputHeight = (int)depthImage.info.height;
+
+             var returnImages = new Image<Gray, float>(inputWidth, inputHeight);
+
+            PXCMImage.ImageData cdata;
+            if (depthImage.AcquireAccess(PXCMImage.Access.ACCESS_READ, PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH, out cdata) <
+                pxcmStatus.PXCM_STATUS_NO_ERROR) return returnImages;
+
+            var depthValues = cdata.ToShortArray(0, inputWidth * inputHeight);
+            depthImage.ReleaseAccess(ref cdata);
+
+            var depthReturnImage = ((Image<Gray, float>)returnImages);
+            var depthReturnImageData = depthReturnImage.Data;
+
+            Parallel.For(0, inputHeight, y =>
+            {
+                for (int x = 0; x < inputWidth; x++)
+                {
+                    float depth = depthValues[y * inputWidth + x];
+                    if (depth != EmguExtensions.LowConfidence && depth != EmguExtensions.Saturation)
+                    {
+
+                        if (depth > maxValue)
+                            depth = maxValue;
+                        else if (depth < minValue)
+                            depth = minValue;
+
+                        depthReturnImageData[y, x, 0] = depth;
+                    }
+                    else
+                    {
+                        depthReturnImageData[y, x, 0] = depth;
+                    }
+                }
+            });
+
+            return returnImages;
+        }
+
         /// <summary>
         /// Get UV Map of a PXCMImage.
         /// </summary>
