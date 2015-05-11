@@ -114,4 +114,27 @@
             </Grid>
         </StackPanel>
     </DataTemplate>
+
+    <DataTemplate x:Key="ImageWarpPerspective" DataType="complex:ImageWarpPerspective">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Pre Processed Image"
+                          Grid.Column="0">
+                    <Grid>
+                        <Image Source="{Binding Path=PreProcessImage}" />
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="Post Processed Image"
+                          Grid.Column="1">
+                    <Image Source="{Binding Path=PostProcessImage}" />
+                </GroupBox>
+            </Grid>
+            <CheckBox Content="Warp Image" VerticalAlignment="Center" IsChecked="{Binding Path=IsWarpImage}" />
+        </StackPanel>
+    </DataTemplate>
 </ResourceDictionary>

@@ -131,7 +131,7 @@ namespace Emgu.CV.External.Extensions
                     {
                         var index = (int)((Gradient.Length - 1) * (255.0 - depth) / 255.0);
                         if (index < 0) index = 0;
-                        if (index > Gradient.Length) index = Gradient.Length - 1;
+                        if (index >= Gradient.Length) index = Gradient.Length - 1;
                         color = Gradient[index];
                     }
                     gradientImage[y, x] = color;

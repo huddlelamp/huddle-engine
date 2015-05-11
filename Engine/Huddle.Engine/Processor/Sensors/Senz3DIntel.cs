@@ -69,7 +69,7 @@ namespace Huddle.Engine.Processor.Sensors
         /// </summary>
         public const string IsAdaptiveSensingPropertyName = "IsAdaptiveSensing";
 
-        private bool _isAdaptiveSensing = true;
+        private bool _isAdaptiveSensing = false;
 
         /// <summary>
         /// Sets and gets the IsAdaptiveSensing property.
@@ -709,6 +709,10 @@ namespace Huddle.Engine.Processor.Sensors
                 var depth = _pp.QueryImage(PXCMImage.ImageType.IMAGE_TYPE_DEPTH);
                 var depthImageAndConfidence = Senz3DUtils.GetHighPrecisionDepthImage(depth, MinDepthValue, MaxDepthValue);
 
+                /* Get original depth image */
+                var originalDepth = Senz3DUtils.GetDepthImage(depth, 100, 1000);
+                var originalDepthImage = (Image<Gray, float>)originalDepth;
+
                 // do adaptive sensing (alternating low/high confidence threshold) on depth image if enabled
                 if (IsAdaptiveSensing)
                     depthImageAndConfidence = PerformAdaptiveSensing(depthImageAndConfidence);
@@ -730,7 +734,7 @@ namespace Huddle.Engine.Processor.Sensors
                     RenderImages(colorImage, depthImage, confidenceMapImage);
 
                 // publish images finally
-                PublishImages(colorImage, depthImage, confidenceMapImage);
+                PublishImages(colorImage, depthImage, confidenceMapImage, originalDepthImage);
             }
 
             _pp.Close();
@@ -746,13 +750,15 @@ namespace Huddle.Engine.Processor.Sensors
         private void PublishImages(
             Image<Rgb, byte> colorImage,
             Image<Gray, float> depthImage,
-            Image<Rgb, byte> confidenceMapImage)
+            Image<Rgb, byte> confidenceMapImage,
+            Image<Gray, float> OriginalDepthImage)
         {
             var dc = new DataContainer(++_frameId, DateTime.Now)
                     {
                         new RgbImageData(this, "color", colorImage),
                         new GrayFloatImage(this, "depth", depthImage),
                         new RgbImageData(this, "confidence", confidenceMapImage),
+                        new GrayFloatImage(this, "originalDepth", OriginalDepthImage),
                     };
 
             Publish(dc);
