@@ -1,0 +1,2 @@
+1. Install Kinect for Windows SDK 2.0 (http://www.microsoft.com/en-us/download/details.aspx?id=44561)
+2. Copy Microsoft.Kinect.dll and Microsoft.Kinect.xml from %PROGRAMS%/Microsoft SDKs/Kinect/v2.0_1409/Assemblies/ to %HUDDLE_ENGINE_HOME%/lib/Kinectv2
