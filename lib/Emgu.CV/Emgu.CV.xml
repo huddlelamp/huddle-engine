@@ -143,11 +143,6 @@
             The file name of the legacy library
             </summary>
         </member>
-        <member name="F:Emgu.CV.CvInvoke.OPENCV_CONTRIB_LIBRARY">
-            <summary>
-            The file name of the contrib library
-            </summary>
-        </member>
         <member name="F:Emgu.CV.CvInvoke.OPENCV_GPULEGACY_LIBRARY">
             <summary>
             The file name of the gpulegacy library
@@ -196,6 +191,11 @@
         <member name="F:Emgu.CV.CvInvoke.OPENCV_GPUFEATURES2D_LIBRARY">
             <summary>
             The file name of the gpufeatures2d library
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvInvoke.OPENCV_CONTRIB_LIBRARY">
+            <summary>
+            The file name of the contrib library
             </summary>
         </member>
         <member name="F:Emgu.CV.CvInvoke.OPENCV_OCL_LIBRARY">
@@ -604,22 +604,6 @@
             The function cvReleasePOSITObject releases memory previously allocated by the function cvCreatePOSITObject. 
             </summary>
             <param name="positObject">pointer to CvPOSIT structure</param>
-        </member>
-        <member name="M:Emgu.CV.CvInvoke.cvGetModuleInfo(System.IntPtr,System.IntPtr@,System.IntPtr@)">
-            <summary>
-            Returns information about one of or all of the registered modules
-            </summary>
-            <param name="moduleName">Name of the module of interest, or IntPtr.Zero, which means all the modules.</param>
-            <param name="version">Information about the module(s), including version</param>
-            <param name="loadedAddonPlugins">The list of names and versions of the optimized plugins that CXCORE was able to find and load</param>
-        </member>
-        <member name="M:Emgu.CV.CvInvoke.cvSetMemoryManager(Emgu.CV.CvInvoke.CvAllocFunc,Emgu.CV.CvInvoke.CvFreeFunc,System.IntPtr)">
-            <summary>
-            The function cvSetMemoryManager sets user-defined memory managment functions (substitutors for malloc and free) that will be called by cvAlloc, cvFree and higher-level functions (e.g. cvCreateImage)
-            </summary>
-            <param name="allocFunc">Allocation function</param>
-            <param name="freeFunc">Deallocation function</param>
-            <param name="userdata">User data that is transparetly passed to the custom functions</param>
         </member>
         <member name="F:Emgu.CV.CvInvoke.CvErrorHandlerThrowException">
             <summary>
@@ -6512,7 +6496,7 @@
             Kinect Camera capture
             </summary>
         </member>
-        <member name="M:Emgu.CV.KinectCapture.#ctor(Emgu.CV.KinectCapture.ImageGeneratorOutputMode)">
+        <member name="M:Emgu.CV.KinectCapture.#ctor(Emgu.CV.KinectCapture.DeviceType,Emgu.CV.KinectCapture.ImageGeneratorOutputMode)">
             <summary>
             Create the Kinect Camera capture object
             </summary>
@@ -6596,6 +6580,21 @@
             SXVGA resolution
             </summary>
         </member>
+        <member name="F:Emgu.CV.KinectCapture.ImageGeneratorOutputMode.SXGA_30HZ">
+            <summary>
+            SXVGA resolution
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.KinectCapture.ImageGeneratorOutputMode.QVGA_30HZ">
+            <summary>
+            QVGA resolution
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.KinectCapture.ImageGeneratorOutputMode.QVGA_60HZ">
+            <summary>
+            QVGA resolution
+            </summary>
+        </member>
         <member name="T:Emgu.CV.KinectCapture.OpenNIDataType">
             <summary>
             Open ni data type used by the retrieve functions
@@ -6634,6 +6633,21 @@
         <member name="F:Emgu.CV.KinectCapture.OpenNIDataType.GrayImage">
             <summary>
             Gray Image
+            </summary>
+        </member>
+        <member name="T:Emgu.CV.KinectCapture.DeviceType">
+            <summary>
+            Kinect device type
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.KinectCapture.DeviceType.Kinect">
+            <summary>
+            kinect
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.KinectCapture.DeviceType.Xtion">
+            <summary>
+            Asus xtion
             </summary>
         </member>
         <member name="T:Emgu.CV.KinectCapture.ColorPoint">
@@ -12999,9 +13013,29 @@
             CV Capture property identifier
             </summary>
         </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_DC1394_OFF">
+            <summary>
+            Turn the feature off (not controlled manually nor automatically)
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_DC1394_MODE_MANUAL">
+            <summary>
+            Set automatically when a value of the feature is set by the user
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_DC1394_MODE_AUTO">
+            <summary>
+            DC1394 mode auto
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_DC1394_MODE_ONE_PUSH_AUTO">
+            <summary>
+            DC1394 mode one push auto
+            </summary>
+        </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_POS_MSEC">
             <summary>
-            film current position in milliseconds or video capture timestamp
+            Film current position in milliseconds or video capture timestamp
             </summary>
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_POS_FRAMES">
@@ -13011,22 +13045,22 @@
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_POS_AVI_RATIO">
             <summary>
-            position in relative units (0 - start of the file, 1 - end of the file)
+            Position in relative units (0 - start of the file, 1 - end of the file)
             </summary>
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_FRAME_WIDTH">
             <summary>
-            width of frames in the video stream
+            Width of frames in the video stream
             </summary>
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_FRAME_HEIGHT">
             <summary>
-            height of frames in the video stream
+            Height of frames in the video stream
             </summary>
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_FPS">
             <summary>
-            frame rate 
+            Frame rate 
             </summary>
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_FOURCC">
@@ -13036,17 +13070,17 @@
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_FRAME_COUNT">
             <summary>
-            number of frames in video file
+            Number of frames in video file
             </summary>
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_FORMAT">
             <summary>
-            
+            Format
             </summary>
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_MODE">
             <summary>
-            
+            Mode
             </summary>
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_BRIGHTNESS">
@@ -13134,9 +13168,59 @@
             White balance red v
             </summary>
         </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_ZOOM">
+            <summary>
+            Zoom
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_FOCUS">
+            <summary>
+            Focus
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_GUID">
+            <summary>
+            GUID
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_ISO_SPEED">
+            <summary>
+            ISO SPEED
+            </summary>
+        </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_MAX_DC1394">
             <summary>
-            Max DC1394
+            MAX DC1394
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_BACKLIGHT">
+            <summary>
+            Backlight
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_PAN">
+            <summary>
+            Pan
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_TILT">
+            <summary>
+            Tilt
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_ROLL">
+            <summary>
+            Roll
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_IRIS">
+            <summary>
+            Iris
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_SETTINGS">
+            <summary>
+            Settings
             </summary>
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_AUTOGRAB">
@@ -13146,7 +13230,12 @@
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_SUPPORTED_PREVIEW_SIZES_STRING">
             <summary>
-            tricky property, returns cpnst char* indeed
+            readonly, tricky property, returns cpnst char* indeed
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_PREVIEW_FORMAT">
+            <summary>
+            readonly, tricky property, returns cpnst char* indeed
             </summary>
         </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_OPENNI_DEPTH_GENERATOR">
@@ -13184,6 +13273,50 @@
             Properties of cameras available through OpenNI interfaces, in pixels.
             </summary>
         </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_OPENNI_REGISTRATION">
+            <summary>
+            Flag that synchronizes the remapping depth map to image map
+            by changing depth generator's view point (if the flag is "on") or
+            sets this view point to its normal one (if the flag is "off").
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_OPENNI_REGISTRATION_ON">
+            <summary>
+            Flag that synchronizes the remapping depth map to image map
+            by changing depth generator's view point (if the flag is "on") or
+            sets this view point to its normal one (if the flag is "off").
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_OPENNI_APPROX_FRAME_SYNC">
+            <summary>
+            Approx frame sync
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_OPENNI_MAX_BUFFER_SIZE">
+            <summary>
+            Max buffer size
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_OPENNI_CIRCLE_BUFFER">
+            <summary>
+            Circle buffer
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_OPENNI_MAX_TIME_DURATION">
+            <summary>
+            Max time duration
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_OPENNI_GENERATOR_PRESENT">
+            <summary>
+            Generator present
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_OPENNI_IMAGE_GENERATOR_PRESENT">
+            <summary>
+            Openni image generator present
+            </summary>
+        </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_OPENNI_IMAGE_GENERATOR_OUTPUT_MODE">
             <summary>
             Image generator output mode
@@ -13199,9 +13332,224 @@
             Depth generator focal lenght, in pixels.
             </summary>
         </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_OPENNI_DEPTH_GENERATOR_REGISTRATION">
+            <summary>
+            Openni generator registration
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_OPENNI_DEPTH_GENERATOR_REGISTRATION_ON">
+            <summary>
+            Openni generator registration on
+            </summary>
+        </member>
         <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_GSTREAMER_QUEUE_LENGTH">
             <summary>
             Properties of cameras available through GStreamer interface. Default is 1
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_PVAPI_MULTICASTIP">
+            <summary>
+            Ip for anable multicast master mode. 0 for disable multicast
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_DOWNSAMPLING">
+            <summary>
+            Change image resolution by binning or skipping.
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_DATA_FORMAT">
+            <summary>
+            Output data format
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_OFFSET_X">
+            <summary>
+            Horizontal offset from the origin to the area of interest (in pixels).
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_OFFSET_Y">
+            <summary>
+            Vertical offset from the origin to the area of interest (in pixels).
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_TRG_SOURCE">
+            <summary>
+            Defines source of trigger.
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_TRG_SOFTWARE">
+            <summary>
+            Generates an internal trigger. PRM_TRG_SOURCE must be set to TRG_SOFTWARE.
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_GPI_SELECTOR">
+            <summary>
+            Selects general purpose input
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_GPI_MODE">
+            <summary>
+            Set general purpose input mode
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_GPI_LEVEL">
+            <summary>
+            Get general purpose level
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_GPO_SELECTOR">
+            <summary>
+            Selects general purpose output
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_GPO_MODE">
+            <summary>
+            Set general purpose output mode
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_LED_SELECTOR">
+            <summary>
+            Selects camera signalling LED
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_LED_MODE">
+            <summary>
+            Define camera signalling LED functionality
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_MANUAL_WB">
+            <summary>
+            Calculates White Balance(must be called during acquisition)
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_AUTO_WB">
+            <summary>
+            Automatic white balance
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_AEAG">
+            <summary>
+            Automatic exposure/gain
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_EXP_PRIORITY">
+            <summary>
+            Exposure priority (0.5 - exposure 50%, gain 50%).
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_AE_MAX_LIMIT">
+            <summary>
+            Maximum limit of exposure in AEAG procedure
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_AG_MAX_LIMIT">
+            <summary>
+            Maximum limit of gain in AEAG procedure
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_AEAG_LEVEL">
+            <summary>
+            Average intensity of output signal AEAG should achieve(in %)
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_XI_TIMEOUT">
+            <summary>
+            Image capture timeout in milliseconds
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_ANDROID_FLASH_MODE">
+            <summary>
+            Android flash mode
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_ANDROID_FOCUS_MODE">
+            <summary>
+            Android focus mode
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_ANDROID_WHITE_BALANCE">
+            <summary>
+            Android white balance
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_ANDROID_ANTIBANDING">
+            <summary>
+            Android anti banding
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_ANDROID_FOCAL_LENGTH">
+            <summary>
+            Android focal length
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_ANDROID_FOCUS_DISTANCE_NEAR">
+            <summary>
+            Android focus distance near
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_ANDROID_FOCUS_DISTANCE_OPTIMAL">
+            <summary>
+            Android focus distance optimal
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_ANDROID_FOCUS_DISTANCE_FAR">
+            <summary>
+            Android focus distance far
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_IOS_DEVICE_FOCUS">
+            <summary>
+            iOS device focus
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_IOS_DEVICE_EXPOSURE">
+            <summary>
+            iOS device exposure
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_IOS_DEVICE_FLASH">
+            <summary>
+            iOS device flash
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_IOS_DEVICE_WHITEBALANCE">
+            <summary>
+            iOS device whitebalance 
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_IOS_DEVICE_TORCH">
+            <summary>
+            iOS device torch
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_GIGA_FRAME_OFFSET_X">
+            <summary>
+            Smartek Giganetix Ethernet Vision: frame offset X
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_GIGA_FRAME_OFFSET_Y">
+            <summary>
+            Smartek Giganetix Ethernet Vision: frame offset Y
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_GIGA_FRAME_WIDTH_MAX">
+            <summary>
+            Smartek Giganetix Ethernet Vision: frame width max
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_GIGA_FRAME_HEIGH_MAX">
+            <summary>
+            Smartek Giganetix Ethernet Vision: frame height max
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_GIGA_FRAME_SENS_WIDTH">
+            <summary>
+            Smartek Giganetix Ethernet Vision: frame sens width
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_GIGA_FRAME_SENS_HEIGH">
+            <summary>
+            Smartek Giganetix Ethernet Vision: frame sens height
             </summary>
         </member>
         <member name="T:Emgu.CV.CvEnum.CHAIN_APPROX_METHOD">
@@ -16227,17 +16575,17 @@
             TYZX proprietary drivers
             </summary>
         </member>
-        <member name="F:Emgu.CV.CvEnum.CaptureType.LEFT">
+        <member name="F:Emgu.CV.CvEnum.CaptureType.TYZX_LEFT">
             <summary>
             TYZX proprietary drivers
             </summary>
         </member>
-        <member name="F:Emgu.CV.CvEnum.CaptureType.RIGHT">
+        <member name="F:Emgu.CV.CvEnum.CaptureType.TYZX_RIGHT">
             <summary>
             TYZX proprietary drivers
             </summary>
         </member>
-        <member name="F:Emgu.CV.CvEnum.CaptureType.COLOR">
+        <member name="F:Emgu.CV.CvEnum.CaptureType.TYZX_COLOR">
             <summary>
             TYZX proprietary drivers
             </summary>
@@ -16262,6 +16610,11 @@
             DirectShow (via videoInput)
             </summary>
         </member>
+        <member name="F:Emgu.CV.CvEnum.CaptureType.MSMF">
+            <summary>
+            Microsoft Media Foundation (via videoInput)
+            </summary>
+        </member>
         <member name="F:Emgu.CV.CvEnum.CaptureType.PVAPI">
             <summary>
             PvAPI, Prosilica GigE SDK
@@ -16272,9 +16625,39 @@
             OpenNI (for Kinect)
             </summary>
         </member>
+        <member name="F:Emgu.CV.CvEnum.CaptureType.OPENNI_ASUS">
+            <summary>
+            OpenNI (for Asus Xtion)
+            </summary>
+        </member>
         <member name="F:Emgu.CV.CvEnum.CaptureType.ANDROID">
             <summary>
             Android
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CaptureType.ANDROID_BACK">
+            <summary>
+            Android back camera
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CaptureType.ANDROID_FRONT">
+            <summary>
+            // Android front camera
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CaptureType.XIAPI">
+            <summary>
+            XIMEA Camera API
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CaptureType.AVFOUNDATION">
+            <summary>
+            AVFoundation framework for iOS (OS X Lion will have the same API)
+            </summary>
+        </member>
+        <member name="F:Emgu.CV.CvEnum.CaptureType.GIGANETIX">
+            <summary>
+             Smartek Giganetix GigEVisionSDK
             </summary>
         </member>
         <member name="T:Emgu.CV.CvEnum.KMeansInitType">

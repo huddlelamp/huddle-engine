@@ -207,6 +207,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\Intel PCSDK\libpxcclr.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Kinect, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Kinectv2\Microsoft.Kinect.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation">
       <HintPath>..\..\packages\CommonServiceLocator.1.0\lib\NET35\Microsoft.Practices.ServiceLocation.dll</HintPath>
     </Reference>
@@ -330,7 +334,9 @@
     <Compile Include="Processor\OpenCv\RectangleTrackerColor.cs" />
     <Compile Include="Processor\OpenCv\Struct\IdentificationState.cs" />
     <Compile Include="Processor\OpenCv\Struct\TrackingState.cs" />
+    <Compile Include="Processor\Sensors\Kinectv2.cs" />
     <Compile Include="Processor\Sensors\Senz3DIntel.cs" />
+    <Compile Include="Processor\Sensors\Utils\Kinectv2Extensions.cs" />
     <Compile Include="Processor\Sensors\Utils\Senz3DUtils.cs" />
     <Compile Include="Util\LambdaExtensions.cs" />
     <Compile Include="Util\LambdaValueConverter.cs" />
