@@ -577,11 +577,6 @@ namespace Huddle.Engine.Processor.Sensors
         {
             UpdateAdaptiveSensingMaskCommand = new RelayCommand(OnUpdateAdaptiveSensingMask);
 
-            PXCMSession session;
-            var sts = PXCMSession.CreateInstance(out session);
-
-            Debug.Assert(sts >= pxcmStatus.PXCM_STATUS_NO_ERROR, "could not create session instance");
-
             PropertyChanged += (s, e) =>
             {
                 switch (e.PropertyName)
@@ -621,6 +616,11 @@ namespace Huddle.Engine.Processor.Sensors
         /// </summary>
         public override void Start()
         {
+            PXCMSession session;
+            var sts = PXCMSession.CreateInstance(out session);
+
+            Debug.Assert(sts >= pxcmStatus.PXCM_STATUS_NO_ERROR, "could not create session instance");
+
             if (InitializeCamera())
             {
                 _isRunning = true;

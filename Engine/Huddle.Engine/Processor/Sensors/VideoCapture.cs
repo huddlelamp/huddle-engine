@@ -9,6 +9,8 @@ using Emgu.CV.Structure;
 using GalaSoft.MvvmLight.Threading;
 using Huddle.Engine.Data;
 using Huddle.Engine.Util;
+using System.Drawing;
+using Huddle.Engine.Extensions;
 
 namespace Huddle.Engine.Processor.Sensors
 {
@@ -151,6 +153,17 @@ namespace Huddle.Engine.Processor.Sensors
             });
 
             base.Stop();
+        }
+
+        public override Bitmap[] TakeSnapshots()
+        {
+            if (ColorImageSource == null)
+                return new Bitmap[0];
+
+            return new[]
+            {
+                ColorImageSource.BitmapFromSource()
+            };
         }
     }
 }
